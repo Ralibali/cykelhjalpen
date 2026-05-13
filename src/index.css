@@ -260,19 +260,36 @@
 @layer utilities {
   .text-brand-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(18 85% 55%), hsl(35 75% 55%));
+    background-image: linear-gradient(135deg, hsl(14 80% 62%), hsl(44 92% 62%));
   }
 
   .bg-hero-gradient {
     background:
-      radial-gradient(ellipse at top left, hsl(35 40% 94%), transparent 60%),
-      radial-gradient(ellipse at bottom right, hsl(18 40% 94%), transparent 60%),
-      hsl(40 20% 98%);
+      radial-gradient(ellipse at top left, hsl(44 90% 88% / 0.7), transparent 55%),
+      radial-gradient(ellipse at bottom right, hsl(14 85% 85% / 0.55), transparent 60%),
+      radial-gradient(ellipse at bottom left, hsl(182 50% 80% / 0.35), transparent 55%),
+      hsl(38 50% 96%);
   }
 
   .bg-mint-gradient {
-    background: linear-gradient(135deg, hsl(18 85% 55% / 0.06), hsl(35 75% 55% / 0.08));
+    background: linear-gradient(135deg, hsl(182 55% 22% / 0.06), hsl(14 80% 62% / 0.08));
   }
+
+  .grain {
+    background-image: radial-gradient(hsl(195 35% 12% / 0.05) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+
+  .sticker {
+    box-shadow: 4px 4px 0 hsl(195 35% 12%);
+    border: 2px solid hsl(195 35% 12%);
+  }
+
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-float { animation: float-y 6s ease-in-out infinite; }
 
   .shadow-blue {
     box-shadow: 0 4px 24px rgba(200, 90, 40, 0.18);
