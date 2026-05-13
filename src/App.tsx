@@ -19,6 +19,20 @@ import BuyerLayout from "@/components/BuyerLayout";
 import Index from "./pages/cykelhjalpen/CykelhjalpenIndex";
 const UpdroIndex = lazy(() => import("./pages/Index"));
 
+// Cykelhjälpen pages
+const BikeRequestWizard = lazy(() => import("./pages/cykelhjalpen/BikeRequestWizard"));
+const CustomerResponses = lazy(() => import("./pages/cykelhjalpen/CustomerResponses"));
+const RegisterWorkshopPage = lazy(() => import("./pages/cykelhjalpen/RegisterWorkshopPage"));
+const WorkshopLayout = lazy(() => import("./components/cykelhjalpen/WorkshopLayout"));
+const WorkshopDashboard = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopDashboard"));
+const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopRequests"));
+const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopBilling"));
+const WorkshopSettings = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopSettings"));
+const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
+const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
+const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
+const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
+
 // Lazy-loaded pages
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
