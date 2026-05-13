@@ -156,6 +156,7 @@ const App = () => (
             <Routes>
               {/* Public */}
               <Route path="/" element={<Index />} />
+              <Route path="/updro" element={<UpdroIndex />} />
               <Route path="/publicera" element={<ProjectWizard />} />
               <Route path="/byraer" element={<BrowseAgenciesPage />} />
               <Route path="/byraer/:slug" element={<AgencyProfilePage />} />
