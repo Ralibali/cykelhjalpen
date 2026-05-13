@@ -1,0 +1,137 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+# AI search / answer engines – allow discovery and source citation.
+# OpenAI separates search, user-triggered fetches and training crawlers.
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+# Perplexity search crawler.
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+# Anthropic Claude crawlers for search and user-triggered retrieval.
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+User-agent: Claude-User
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+# Traditional search engines that power AI search experiences.
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /logga-in
+Disallow: /registrera
+Disallow: /registrera/
+Disallow: /aterstall-losenord
+Disallow: /landing
+Disallow: /landing/
+
+# Sitemap-index är primär. /sitemap.xml genereras också som flat fallback i build.
+Sitemap: https://updro.se/sitemap-index.xml

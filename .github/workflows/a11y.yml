@@ -1,0 +1,91 @@
+name: Accessibility audit
+
+# Körs vid varje push till main (Lovable synkar hit vid varje accept/publicering)
+# samt manuellt via "Run workflow". Auditen körs mot den live publicerade sajten
+# updro.se så att resultaten speglar exakt det användarna ser efter deploy.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Daglig kontroll 06:00 UTC som säkerhetsnät
+    - cron: '0 6 * * *'
+
+jobs:
+  lighthouse:
+    name: Lighthouse a11y
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.13.x
+
+      - name: Run Lighthouse against published site
+        run: |
+          lhci collect \
+            --url=https://updro.se/ \
+            --url=https://updro.se/publicera \
+            --url=https://updro.se/byraer \
+            --url=https://updro.se/priser \
+            --url=https://updro.se/om-oss \
+            --numberOfRuns=1 \
+            --settings.onlyCategories=accessibility \
+            --settings.preset=desktop
+          lhci assert \
+            --assertions.categories:accessibility="[\"error\", {\"minScore\": 0.95}]" \
+            || echo "::warning::Lighthouse a11y score under 0.95 — se rapport nedan"
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-a11y-reports
+          path: .lighthouseci/
+          retention-days: 30
+
+  axe:
+    name: axe-core scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install axe-core CLI + Chrome
+        run: |
+          npm install -g @axe-core/cli@4
+          npx -y puppeteer browsers install chrome
+
+      - name: Run axe against key pages
+        run: |
+          mkdir -p axe-reports
+          set +e
+          FAILED=0
+          for path in "/" "/publicera" "/byraer" "/priser" "/om-oss"; do
+            slug=$(echo "$path" | sed 's|/|_|g; s|^_||; s|^$|home|')
+            echo "::group::axe https://updro.se${path}"
+            axe "https://updro.se${path}" \
+              --tags wcag2a,wcag2aa,wcag21aa \
+              --save "axe-reports/${slug}.json" \
+              --exit || FAILED=1
+            echo "::endgroup::"
+          done
+          if [ "$FAILED" = "1" ]; then
+            echo "::warning::axe hittade tillgänglighetsbrister — se artefakten axe-reports"
+          fi
+
+      - name: Upload axe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-a11y-reports
+          path: axe-reports/
+          retention-days: 30

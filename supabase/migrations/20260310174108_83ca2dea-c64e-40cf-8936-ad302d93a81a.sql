@@ -1,0 +1,1 @@
+CREATE POLICY "Admin deletes any project" ON public.projects FOR DELETE TO authenticated USING (is_admin(auth.uid()));

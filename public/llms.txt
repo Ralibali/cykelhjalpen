@@ -1,0 +1,28 @@
+# Updro
+
+> Sveriges marknadsplats för digitala uppdrag. Uppdragsgivare publicerar projekt och får upp till fem offerter från kvalitetssäkrade digitala byråer inom 24 timmar. Gratis för uppdragsgivare. Drivs av Aurora Media AB (org.nr 559272-0220) med säte i Linköping.
+
+## Viktiga sidor
+- [Startsida](https://updro.se/): Beskriv projekt, jämför byråer
+- [Publicera uppdrag](https://updro.se/publicera): Starta förfrågan gratis
+- [Hitta byrå](https://updro.se/byraer): Bläddra alla byråer
+- [För byråer](https://updro.se/registrera/byra): Registrera din byrå
+- [Priser](https://updro.se/priser): Prismodell för byråer
+- [Artiklar](https://updro.se/artiklar): Guider, jämförelser och nyheter (RSS: /rss.xml)
+- [Städer](https://updro.se/stader): Byråer per stad
+- [Vår metod](https://updro.se/metod): Så kvalitetssäkras byråer
+- [Redaktionell policy](https://updro.se/redaktionell-policy): Källor, AI-användning, rättelser
+- [Om oss](https://updro.se/om-oss): Grundare, organisationsnummer, kontakt
+
+## Tjänstekategorier
+- Webbutveckling
+- SEO & sökmotoroptimering
+- E-handel (Shopify, WooCommerce)
+- Apputveckling (iOS, Android)
+- Digital marknadsföring
+- Grafisk design & UX
+- Google Ads
+- E-postmarknadsföring
+
+## Kontakt
+info@auroramedia.se

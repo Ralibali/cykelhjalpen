@@ -1,0 +1,42 @@
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/admin
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/dashboard/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/dashboard
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/logga-in
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/registrera
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/aterstall-losenord
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/sitemap-index.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/sitemap-*.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=3600
