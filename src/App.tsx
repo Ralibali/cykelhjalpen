@@ -23,6 +23,7 @@ const UpdroIndex = lazy(() => import("./pages/Index"));
 const BikeRequestWizard = lazy(() => import("./pages/cykelhjalpen/BikeRequestWizard"));
 const CustomerResponses = lazy(() => import("./pages/cykelhjalpen/CustomerResponses"));
 const RegisterWorkshopPage = lazy(() => import("./pages/cykelhjalpen/RegisterWorkshopPage"));
+const ForVerkstaderPage = lazy(() => import("./pages/cykelhjalpen/ForVerkstaderPage"));
 const WorkshopLayout = lazy(() => import("./components/cykelhjalpen/WorkshopLayout"));
 const WorkshopDashboard = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopDashboard"));
 const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopRequests"));
