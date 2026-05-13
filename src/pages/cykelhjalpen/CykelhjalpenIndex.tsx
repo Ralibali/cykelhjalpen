@@ -167,7 +167,7 @@ const CykelhjalpenIndex = () => {
             <div className="max-w-2xl mb-14">
               <div className="font-mono-display text-xs uppercase tracking-[0.2em] text-[hsl(var(--accent))] mb-3">// så fungerar det</div>
               <h2 className="font-display text-4xl md:text-6xl font-medium leading-[1]">
-                Tre steg från <span className="italic text-[hsl(var(--brand-teal))]">trasig</span> till <span className="italic text-[hsl(var(--accent))]">åkbar</span>.
+                Tre steg från <span className="italic text-[hsl(var(--brand-teal))]">trasig</span> till <span className="italic text-[hsl(var(--accent))]">körbar</span>.
               </h2>
             </div>
             <div className="grid md:grid-cols-3 gap-5">
