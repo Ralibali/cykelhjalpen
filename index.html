@@ -6,105 +6,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <!-- Primary SEO -->
-    <title>Cykelhjälpen – Få prisförslag från cykelverkstäder i Linköping</title>
-    <meta name="description" content="Beskriv felet på din cykel och få prisförslag från lokala cykelverkstäder i Linköping. Helt gratis för dig som cyklar." />
-    <meta name="keywords" content="cykelverkstad linköping, cykelreparation, cykelservice, laga cykel, punktering, cykel växlar, cykel bromsar, elcykel service" />
+    <!-- Primary SEO (sitewide fallback — per-route Helmet overrides title/desc/canonical) -->
+    <title>Cykelhjälpen Linköping – jämför priser från cykelverkstäder</title>
+    <meta name="description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis och utan konto." />
+    <meta name="keywords" content="cykelverkstad Linköping, cykelreparation Linköping, cykelservice, laga cykel, punktering, växlar, bromsar, elcykel" />
     <meta name="author" content="Cykelhjälpen" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <link rel="canonical" href="/" />
 
-    <!-- Fonts: Urbanist (display) + Epilogue (body) -->
+    <!-- Fonts: Fraunces (display) + JetBrains Mono (mono) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@500;600;700;800&family=Epilogue:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 
-    <!-- Hreflang -->
-    <link rel="alternate" hreflang="sv" href="https://updro.se/" />
-    <link rel="alternate" hreflang="x-default" href="https://updro.se/" />
-
-    <!-- Open Graph -->
+    <!-- Open Graph (sitewide fallback) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="/" />
-    <meta property="og:title" content="Cykelhjälpen – Få prisförslag från cykelverkstäder i Linköping" />
-    <meta property="og:description" content="Beskriv felet på din cykel och få prisförslag från lokala cykelverkstäder i Linköping. Helt gratis." />
+    <meta property="og:title" content="Cykelhjälpen Linköping – jämför priser från cykelverkstäder" />
+    <meta property="og:description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis." />
     <meta property="og:site_name" content="Cykelhjälpen" />
     <meta property="og:locale" content="sv_SE" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Cykelhjälpen – Få prisförslag från cykelverkstäder i Linköping" />
-    <meta name="twitter:description" content="Beskriv felet på din cykel och få prisförslag från lokala cykelverkstäder i Linköping. Helt gratis." />
+    <meta name="twitter:title" content="Cykelhjälpen Linköping – jämför priser från cykelverkstäder" />
+    <meta name="twitter:description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis." />
 
     <!-- Performance hints -->
-    <link rel="dns-prefetch" href="https://opgjoevvlwhsddscqmpe.supabase.co" />
+    <link rel="dns-prefetch" href="https://xmwsumzujqdttphhzxyq.supabase.co" />
+    <link rel="preconnect" href="https://xmwsumzujqdttphhzxyq.supabase.co" crossorigin />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 
-    <!-- Discovery: RSS + sitemap -->
-    <link rel="alternate" type="application/rss+xml" title="Updro – Artiklar" href="https://updro.se/rss.xml" />
-    <link rel="sitemap" type="application/xml" href="https://updro.se/sitemap-index.xml" />
+    <!-- Sitemap discovery -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
-    <!-- Theme color -->
-    <meta name="theme-color" content="#111111" />
-    <meta name="msapplication-TileColor" content="#111111" />
+    <!-- Theme color (matches cream background) -->
+    <meta name="theme-color" content="#F7F1E3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#11181C" media="(prefers-color-scheme: dark)" />
 
-    <!-- Structured Data: Organization + WebSite + BreadcrumbList (global) -->
+    <!-- Structured Data: Organization + LocalBusiness + WebSite -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
           "@type": "Organization",
-          "@id": "https://updro.se/#organization",
-          "name": "Updro",
-          "legalName": "Aurora Media AB",
-          "identifier": "559272-0220",
-          "url": "https://updro.se",
-          "logo": "https://updro.se/logo-updro.png",
-          "description": "Sveriges marknadsplats för digitala uppdrag. Jämför offerter från kvalitetssäkrade digitala byråer.",
-          "founder": {
-            "@type": "Organization",
-            "name": "Aurora Media AB"
-          },
+          "@id": "/#organization",
+          "name": "Cykelhjälpen",
+          "url": "/",
+          "description": "Lokal leadplattform för cykelreparation i Linköping. Cyklister beskriver felet och får upp till fem prisförslag från anslutna cykelverkstäder.",
           "areaServed": {
-            "@type": "Country",
-            "name": "Sweden"
+            "@type": "City",
+            "name": "Linköping"
           },
           "contactPoint": {
             "@type": "ContactPoint",
             "contactType": "customer service",
             "email": "info@auroramedia.se",
-            "availableLanguage": ["Swedish", "English"]
-          },
-          "sameAs": []
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://updro.se/#website",
-          "url": "https://updro.se",
-          "name": "Updro",
-          "publisher": { "@id": "https://updro.se/#organization" },
-          "inLanguage": "sv-SE",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://updro.se/byraer?q={search_term_string}",
-            "query-input": "required name=search_term_string"
+            "availableLanguage": ["Swedish"]
           }
         },
         {
-          "@type": "BreadcrumbList",
-          "@id": "https://updro.se/#breadcrumb",
-          "itemListElement": [
-            {
-              "@type": "ListItem",
-              "position": 1,
-              "name": "Hem",
-              "item": "https://updro.se/"
-            }
-          ]
+          "@type": "LocalBusiness",
+          "@id": "/#localbusiness",
+          "name": "Cykelhjälpen Linköping",
+          "url": "/",
+          "image": "/og-image.png",
+          "description": "Jämför priser från lokala cykelverkstäder i Linköping. Skicka gratis ärende, få upp till fem offerter.",
+          "areaServed": {
+            "@type": "City",
+            "name": "Linköping"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Linköping",
+            "addressRegion": "Östergötland",
+            "addressCountry": "SE"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 58.4108,
+            "longitude": 15.6214
+          },
+          "priceRange": "0 kr",
+          "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+            "opens": "00:00",
+            "closes": "23:59"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "/#website",
+          "url": "/",
+          "name": "Cykelhjälpen",
+          "publisher": { "@id": "/#organization" },
+          "inLanguage": "sv-SE",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "/cykelverkstad-linkoping?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
         }
       ]
     }
@@ -129,9 +134,9 @@
     <div id="root"></div>
     <noscript>
       <main style="padding:2rem;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-        <h1>Cykelhjälpen – Få prisförslag från cykelverkstäder i Linköping</h1>
-        <p>Beskriv felet på din cykel och få prisförslag från lokala cykelverkstäder. Helt gratis.</p>
-        <p><a href="/skicka-arende">Skicka cykelärende</a> · <a href="/for-cykelverkstader">För verkstäder</a></p>
+        <h1>Cykelhjälpen Linköping – jämför priser från cykelverkstäder</h1>
+        <p>Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis och utan konto.</p>
+        <p><a href="/skicka-arende">Skicka cykelärende</a> · <a href="/cykelverkstad-linkoping">Cykelverkstäder i Linköping</a> · <a href="/for-cykelverkstader">För verkstäder</a></p>
       </main>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
