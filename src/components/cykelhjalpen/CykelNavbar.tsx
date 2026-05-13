@@ -3,6 +3,7 @@ import { Menu, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
+import ThemeToggle from './ThemeToggle'
 import { useAuth } from '@/hooks/useAuth'
 
 const CykelNavbar = () => {
@@ -36,6 +37,7 @@ const CykelNavbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle />
           {isAuthenticated ? (
             <Button asChild variant="outline" size="sm">
               <Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>Mitt konto</Link>
@@ -50,13 +52,16 @@ const CykelNavbar = () => {
           </Button>
         </div>
 
-        <button
-          className="md:hidden p-2"
-          aria-label={open ? 'Stäng meny' : 'Öppna meny'}
-          onClick={() => setOpen(v => !v)}
-        >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            className="p-2"
+            aria-label={open ? 'Stäng meny' : 'Öppna meny'}
+            onClick={() => setOpen(v => !v)}
+          >
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {open && (

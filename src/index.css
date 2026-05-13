@@ -35,7 +35,9 @@
     --radius: 1rem;
 
     /* Cykelhjälpen tokens */
+    --ink: 195 35% 12%;
     --brand-dark: 195 35% 12%;
+    --brand-cream: 38 50% 96%;
     --brand-blue: 182 55% 22%;
     --brand-blue-hover: 182 55% 16%;
     --brand-indigo: 182 55% 22%;
@@ -71,65 +73,71 @@
   }
 
   .dark {
-    --background: 20 10% 8%;
-    --foreground: 35 15% 92%;
+    /* Warm Satori-inspired dark — deep ink-brown bg, cream text, kept coral/teal/sun accents */
+    --background: 200 18% 8%;
+    --foreground: 38 35% 92%;
 
-    --card: 20 10% 11%;
-    --card-foreground: 35 15% 92%;
+    --card: 200 14% 12%;
+    --card-foreground: 38 35% 92%;
 
-    --popover: 20 10% 11%;
-    --popover-foreground: 35 15% 92%;
+    --popover: 200 14% 12%;
+    --popover-foreground: 38 35% 92%;
 
-    --primary: 35 15% 92%;
-    --primary-foreground: 20 14% 10%;
+    --primary: 182 55% 60%;
+    --primary-foreground: 200 20% 8%;
 
-    --secondary: 20 8% 15%;
-    --secondary-foreground: 35 15% 85%;
+    --secondary: 200 12% 16%;
+    --secondary-foreground: 38 30% 88%;
 
-    --muted: 20 8% 14%;
-    --muted-foreground: 25 5% 70%;
+    --muted: 200 10% 14%;
+    --muted-foreground: 38 12% 68%;
 
-    --accent: 18 85% 58%;
-    --accent-foreground: 20 14% 10%;
+    --accent: 14 85% 65%;
+    --accent-foreground: 200 20% 8%;
 
-    --destructive: 0 65% 50%;
+    --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 20 8% 18%;
-    --input: 20 8% 18%;
-    --ring: 18 85% 58%;
+    --border: 200 12% 22%;
+    --input: 200 12% 22%;
+    --ring: 14 85% 65%;
 
-    /* Updro custom tokens */
-    --brand-dark: 20 10% 5%;
-    --brand-blue: 35 15% 92%;
-    --brand-blue-hover: 35 15% 82%;
-    --brand-indigo: 35 15% 92%;
-    --brand-orange: 18 85% 58%;
-    --brand-orange-hover: 18 85% 50%;
-    --brand-mint: 150 35% 58%;
-    --brand-mint-hover: 150 35% 50%;
-    --brand-coral: 18 85% 58%;
-    --brand-amber: 35 75% 58%;
-    --brand-amber-glow: 35 75% 68%;
-    --surface-alt: 20 10% 11%;
-    --surface-2: 20 8% 13%;
-    --surface-3: 20 8% 16%;
-    --text-secondary: 25 5% 70%;
-    --border-strong: 20 8% 25%;
+    /* Cykelhjälpen tokens (dark) */
+    --ink: 38 50% 96%;            /* sticker shadow becomes cream */
+    --brand-dark: 38 50% 96%;     /* swap dark/cream so borders contrast bg */
+    --brand-cream: 200 18% 8%;
+    --brand-blue: 182 55% 60%;
+    --brand-blue-hover: 182 55% 70%;
+    --brand-indigo: 182 55% 60%;
+    --brand-orange: 14 85% 65%;
+    --brand-orange-hover: 14 85% 72%;
+    --brand-mint: 158 45% 55%;
+    --brand-mint-hover: 158 45% 65%;
+    --brand-coral: 14 85% 65%;
+    --brand-amber: 38 85% 65%;
+    --brand-amber-glow: 38 90% 75%;
+    --brand-sun: 44 92% 68%;
+    --brand-teal: 182 55% 55%;
+    --brand-plum: 320 35% 60%;
+    --surface-alt: 200 14% 12%;
+    --surface-2: 200 12% 14%;
+    --surface-3: 200 10% 18%;
+    --text-secondary: 38 12% 68%;
+    --border-strong: 200 12% 32%;
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
-    --shadow-brand: 0 4px 24px rgba(200, 90, 40, 0.25);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+    --shadow-brand: 0 8px 28px rgba(230, 110, 70, 0.30);
 
-    --sidebar-background: 20 10% 6%;
-    --sidebar-foreground: 25 5% 70%;
-    --sidebar-primary: 35 15% 92%;
-    --sidebar-primary-foreground: 20 10% 6%;
-    --sidebar-accent: 20 8% 13%;
-    --sidebar-accent-foreground: 35 15% 92%;
-    --sidebar-border: 20 8% 16%;
-    --sidebar-ring: 18 85% 58%;
+    --sidebar-background: 200 18% 7%;
+    --sidebar-foreground: 38 12% 68%;
+    --sidebar-primary: 14 85% 65%;
+    --sidebar-primary-foreground: 200 20% 8%;
+    --sidebar-accent: 200 12% 14%;
+    --sidebar-accent-foreground: 38 35% 92%;
+    --sidebar-border: 200 12% 18%;
+    --sidebar-ring: 14 85% 65%;
   }
 }
 
@@ -265,33 +273,33 @@
 
   .bg-hero-gradient {
     background:
-      radial-gradient(ellipse at top left, hsl(44 90% 88% / 0.7), transparent 55%),
-      radial-gradient(ellipse at bottom right, hsl(14 85% 85% / 0.55), transparent 60%),
-      radial-gradient(ellipse at bottom left, hsl(182 50% 80% / 0.35), transparent 55%),
-      hsl(38 50% 96%);
+      radial-gradient(ellipse at top left, hsl(var(--brand-sun) / 0.35), transparent 55%),
+      radial-gradient(ellipse at bottom right, hsl(var(--accent) / 0.28), transparent 60%),
+      radial-gradient(ellipse at bottom left, hsl(var(--brand-teal) / 0.25), transparent 55%),
+      hsl(var(--background));
   }
 
   .bg-mint-gradient {
-    background: linear-gradient(135deg, hsl(182 55% 22% / 0.06), hsl(14 80% 62% / 0.08));
+    background: linear-gradient(135deg, hsl(var(--brand-teal) / 0.06), hsl(var(--accent) / 0.08));
   }
 
   .grain {
-    background-image: radial-gradient(hsl(195 35% 12% / 0.05) 1px, transparent 1px);
+    background-image: radial-gradient(hsl(var(--ink) / 0.05) 1px, transparent 1px);
     background-size: 4px 4px;
   }
 
   .sticker {
-    box-shadow: 4px 4px 0 hsl(195 35% 12%);
-    border: 2px solid hsl(195 35% 12%);
+    box-shadow: 4px 4px 0 hsl(var(--ink));
+    border: 2px solid hsl(var(--ink));
     transition: transform 180ms cubic-bezier(.34,1.56,.64,1), box-shadow 180ms ease;
   }
   .sticker:hover {
     transform: translate(-2px, -2px) rotate(-0.5deg);
-    box-shadow: 6px 6px 0 hsl(195 35% 12%);
+    box-shadow: 6px 6px 0 hsl(var(--ink));
   }
   .sticker:active {
     transform: translate(2px, 2px) rotate(0deg);
-    box-shadow: 1px 1px 0 hsl(195 35% 12%);
+    box-shadow: 1px 1px 0 hsl(var(--ink));
     transition-duration: 80ms;
   }
 
@@ -321,7 +329,7 @@
   }
   .cta-playful:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 0 -2px hsl(195 35% 12% / 0.9), 0 18px 30px -12px hsl(14 80% 62% / 0.5);
+    box-shadow: 0 10px 0 -2px hsl(var(--ink) / 0.9), 0 18px 30px -12px hsl(var(--accent) / 0.5);
     animation: cta-halo 1.4s ease-out infinite;
   }
   .cta-playful:hover .cta-icon {
@@ -329,7 +337,7 @@
   }
   .cta-playful:active {
     transform: translateY(1px) scale(0.97);
-    box-shadow: 0 2px 0 0 hsl(195 35% 12% / 0.9);
+    box-shadow: 0 2px 0 0 hsl(var(--ink) / 0.9);
     transition-duration: 80ms;
     animation: none;
   }
