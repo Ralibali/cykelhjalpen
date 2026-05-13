@@ -202,7 +202,7 @@ const CykelhjalpenIndex = () => {
         {/* TRUST BAND */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="relative rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-8 md:p-14 overflow-hidden">
+            <div className="relative rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-8 md:p-14 overflow-hidden sticker">
               <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-[hsl(var(--accent))]/30 blur-2xl" />
               <div className="absolute -bottom-10 -left-10 h-56 w-56 rounded-full bg-[hsl(var(--brand-sun))]/20 blur-2xl" />
               <div className="relative grid md:grid-cols-3 gap-10 items-center">
