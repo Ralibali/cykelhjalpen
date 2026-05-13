@@ -135,7 +135,7 @@ const CykelhjalpenIndex = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="mt-16 max-w-6xl mx-auto"
             >
-              <div className="relative rounded-[2.5rem] overflow-hidden border-4 border-[hsl(var(--brand-dark))] shadow-2xl">
+              <div className="relative rounded-[2.5rem] overflow-hidden sticker">
                 <img
                   src={heroImg}
                   alt="Cyklar parkerade på en kullerstensgata i Linköping i kvällsljus"
@@ -202,7 +202,7 @@ const CykelhjalpenIndex = () => {
         {/* TRUST BAND */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="relative rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-8 md:p-14 overflow-hidden">
+            <div className="relative rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-8 md:p-14 overflow-hidden sticker">
               <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-[hsl(var(--accent))]/30 blur-2xl" />
               <div className="absolute -bottom-10 -left-10 h-56 w-56 rounded-full bg-[hsl(var(--brand-sun))]/20 blur-2xl" />
               <div className="relative grid md:grid-cols-3 gap-10 items-center">
@@ -221,7 +221,7 @@ const CykelhjalpenIndex = () => {
                     { Icon: Clock, label: 'Svar inom timmar, inte dagar' },
                     { Icon: Heart, label: 'Gratis & utan förbindelser' },
                   ].map(({ Icon, label }) => (
-                    <div key={label} className="flex items-center gap-3 rounded-xl bg-background/5 backdrop-blur-sm border border-background/10 px-4 py-3">
+                    <div key={label} className="flex items-center gap-3 rounded-xl bg-background/10 backdrop-blur-sm border-2 border-background/20 px-4 py-3 transition-transform hover:-translate-y-0.5 hover:translate-x-0.5">
                       <Icon className="h-5 w-5 text-[hsl(var(--brand-sun))]" />
                       <span className="text-sm text-background/90">{label}</span>
                     </div>
@@ -243,7 +243,7 @@ const CykelhjalpenIndex = () => {
             </div>
             <div className="space-y-3">
               {FAQS.map(({ q, a }) => (
-                <details key={q} className="group rounded-2xl border-2 border-[hsl(var(--brand-dark))]/15 hover:border-[hsl(var(--brand-dark))]/40 bg-card p-5 transition-colors">
+                <details key={q} className="group rounded-2xl bg-card p-5 sticker">
                   <summary className="flex items-center justify-between cursor-pointer font-display text-lg">
                     {q}
                     <span className="text-[hsl(var(--accent))] group-open:rotate-45 transition-transform text-3xl leading-none font-light">+</span>
@@ -258,7 +258,7 @@ const CykelhjalpenIndex = () => {
         {/* FINAL CTA */}
         <section className="py-24">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
+            <div className="max-w-3xl mx-auto sticker rounded-[2rem] bg-card p-10 md:p-14 text-center">
               <h2 className="font-display text-4xl md:text-6xl leading-[1]">
                 Redo att laga <span className="italic text-[hsl(var(--accent))]">cykeln</span>?
               </h2>
