@@ -1,4 +1,4 @@
-import { useParams, Navigate, Link } from 'react-router-dom'
+import { useLocation, Navigate, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Bike } from 'lucide-react'
 
 const CykelSeoPage = () => {
-  const { slug } = useParams()
+  const { pathname } = useLocation()
+  const slug = pathname.replace(/^\//, '').replace(/\/$/, '')
   const page = CYKEL_SEO_PAGES.find((p) => p.slug === slug)
   if (!page) return <Navigate to="/" replace />
 
