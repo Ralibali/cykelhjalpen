@@ -15,8 +15,9 @@ import SupplierLayout from "@/components/SupplierLayout";
 import BuyerLayout from "@/components/BuyerLayout";
 
 
-// Eager: Index (landing page) for fastest FCP
-import Index from "./pages/Index";
+// Eager: Cykelhjälpen landing page for fastest FCP
+import Index from "./pages/cykelhjalpen/CykelhjalpenIndex";
+const UpdroIndex = lazy(() => import("./pages/Index"));
 
 // Lazy-loaded pages
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -155,6 +156,7 @@ const App = () => (
             <Routes>
               {/* Public */}
               <Route path="/" element={<Index />} />
+              <Route path="/updro" element={<UpdroIndex />} />
               <Route path="/publicera" element={<ProjectWizard />} />
               <Route path="/byraer" element={<BrowseAgenciesPage />} />
               <Route path="/byraer/:slug" element={<AgencyProfilePage />} />
