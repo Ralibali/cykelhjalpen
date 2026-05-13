@@ -2,9 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>/skicka-arende</loc><changefreq>monthly</changefreq><priority>0.95</priority></url>
-  <url><loc>/for-cykelverkstader</loc><changefreq>monthly</changefreq><priority>0.85</priority></url>
   <url><loc>/registrera/verkstad</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>/sa-fungerar-det</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 
   <!-- Lokala SEO-landningssidor Linköping -->
   <url><loc>/cykelverkstad-linkoping</loc><changefreq>weekly</changefreq><priority>0.95</priority></url>
