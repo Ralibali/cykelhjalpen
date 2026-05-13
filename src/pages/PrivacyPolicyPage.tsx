@@ -114,6 +114,18 @@ const PrivacyPolicyPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">10. Ändringar</h2>
               <p>Vi kan uppdatera denna integritetspolicy när tjänsten, leverantörer eller lagkrav förändras. Den senaste versionen finns alltid på denna sida.</p>
             </div>
+
+            <div>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">11. Cykelhjälpen.se — särskild information</h2>
+              <p>Cykelhjälpen.se är en lokal leadplattform för cykelreparation i Linköping som drivs av Aurora Media AB. När du skickar ett cykelärende behandlar vi:</p>
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li><strong>Kontaktuppgifter:</strong> namn, e-post och eventuellt telefon, för att verkstaden ska kunna återkomma med offert.</li>
+                <li><strong>Ärendeuppgifter:</strong> cykeltyp, problembeskrivning, område, postnummer och bilder du laddar upp.</li>
+              </ul>
+              <p className="mt-2">Endast verkstäder som har skickat en betald offert (femtio kronor per offert) får se dina kontaktuppgifter. Övriga anslutna verkstäder ser endast ärendet utan personuppgifter. Ärendet stängs automatiskt när fem verkstäder har svarat.</p>
+              <p className="mt-2">Du kan när som helst begära att ditt ärende raderas genom att mejla <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a>. Bilder lagras i Lovable Cloud-storage och gallras tolv månader efter att ärendet stängts.</p>
+              <p className="mt-2">Rättslig grund: avtal (för att leverera tjänsten du efterfrågar) samt berättigat intresse (för verkstadens uppföljning av offerten).</p>
+            </div>
           </section>
         </article>
       </main>
