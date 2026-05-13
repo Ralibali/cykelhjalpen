@@ -135,7 +135,7 @@ const CykelhjalpenIndex = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="mt-16 max-w-6xl mx-auto"
             >
-              <div className="relative rounded-[2.5rem] overflow-hidden border-4 border-[hsl(var(--brand-dark))] shadow-2xl">
+              <div className="relative rounded-[2.5rem] overflow-hidden sticker">
                 <img
                   src={heroImg}
                   alt="Cyklar parkerade på en kullerstensgata i Linköping i kvällsljus"
