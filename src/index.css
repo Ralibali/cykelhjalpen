@@ -283,6 +283,16 @@
   .sticker {
     box-shadow: 4px 4px 0 hsl(195 35% 12%);
     border: 2px solid hsl(195 35% 12%);
+    transition: transform 180ms cubic-bezier(.34,1.56,.64,1), box-shadow 180ms ease;
+  }
+  .sticker:hover {
+    transform: translate(-2px, -2px) rotate(-0.5deg);
+    box-shadow: 6px 6px 0 hsl(195 35% 12%);
+  }
+  .sticker:active {
+    transform: translate(2px, 2px) rotate(0deg);
+    box-shadow: 1px 1px 0 hsl(195 35% 12%);
+    transition-duration: 80ms;
   }
 
   @keyframes float-y {
@@ -290,6 +300,45 @@
     50% { transform: translateY(-10px); }
   }
   .animate-float { animation: float-y 6s ease-in-out infinite; }
+
+  /* Playful CTA: snappy shadow, pulse halo, micro-bounce */
+  @keyframes cta-halo {
+    0%   { box-shadow: 0 0 0 0 hsl(14 80% 62% / 0.55); }
+    70%  { box-shadow: 0 0 0 14px hsl(14 80% 62% / 0); }
+    100% { box-shadow: 0 0 0 0 hsl(14 80% 62% / 0); }
+  }
+  @keyframes cta-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-1.5deg); }
+    75% { transform: rotate(1.5deg); }
+  }
+  .cta-playful {
+    position: relative;
+    transition: transform 180ms cubic-bezier(.34,1.56,.64,1),
+                box-shadow 180ms ease,
+                background-color 180ms ease;
+    will-change: transform;
+  }
+  .cta-playful:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 0 -2px hsl(195 35% 12% / 0.9), 0 18px 30px -12px hsl(14 80% 62% / 0.5);
+    animation: cta-halo 1.4s ease-out infinite;
+  }
+  .cta-playful:hover .cta-icon {
+    animation: cta-wiggle 600ms ease-in-out;
+  }
+  .cta-playful:active {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: 0 2px 0 0 hsl(195 35% 12% / 0.9);
+    transition-duration: 80ms;
+    animation: none;
+  }
+  .cta-playful:focus-visible {
+    outline: 2px dashed hsl(14 80% 62%);
+    outline-offset: 4px;
+  }
+  .cta-icon { display: inline-flex; transition: transform 200ms ease; }
+  .cta-playful:hover .cta-icon-arrow { transform: translateX(4px); }
 
   .shadow-blue {
     box-shadow: 0 4px 24px rgba(200, 90, 40, 0.18);
