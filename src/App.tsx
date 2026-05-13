@@ -176,6 +176,7 @@ const App = () => (
               <Route path="/skicka-arende" element={<BikeRequestWizard />} />
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
+              <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
 
               {/* Cykelhjälpen - workshop dashboard */}
               <Route path="/dashboard/verkstad" element={<WorkshopLayout />}>
