@@ -273,14 +273,14 @@
 
   .bg-hero-gradient {
     background:
-      radial-gradient(ellipse at top left, hsl(44 90% 88% / 0.7), transparent 55%),
-      radial-gradient(ellipse at bottom right, hsl(14 85% 85% / 0.55), transparent 60%),
-      radial-gradient(ellipse at bottom left, hsl(182 50% 80% / 0.35), transparent 55%),
-      hsl(38 50% 96%);
+      radial-gradient(ellipse at top left, hsl(var(--brand-sun) / 0.35), transparent 55%),
+      radial-gradient(ellipse at bottom right, hsl(var(--accent) / 0.28), transparent 60%),
+      radial-gradient(ellipse at bottom left, hsl(var(--brand-teal) / 0.25), transparent 55%),
+      hsl(var(--background));
   }
 
   .bg-mint-gradient {
-    background: linear-gradient(135deg, hsl(182 55% 22% / 0.06), hsl(14 80% 62% / 0.08));
+    background: linear-gradient(135deg, hsl(var(--brand-teal) / 0.06), hsl(var(--accent) / 0.08));
   }
 
   .grain {
