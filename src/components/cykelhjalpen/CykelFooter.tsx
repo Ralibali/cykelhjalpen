@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import CykelLogo from './CykelLogo'
 
+const homeSectionLink = '/#sa-fungerar-det'
+
 const CykelFooter = () => (
   <footer className="border-t border-border bg-muted/30 mt-24">
     <div className="container mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -16,7 +18,7 @@ const CykelFooter = () => (
         <ul className="space-y-2 text-sm">
           <li><Link to="/skicka-arende" className="hover:text-primary">Skicka cykelärende</Link></li>
           <li><Link to="/cykelverkstad-linkoping" className="hover:text-primary">Cykelverkstäder Linköping</Link></li>
-          <li><Link to="/sa-fungerar-det" className="hover:text-primary">Så fungerar det</Link></li>
+          <li><Link to={homeSectionLink} className="hover:text-primary">Så fungerar det</Link></li>
         </ul>
       </div>
 
