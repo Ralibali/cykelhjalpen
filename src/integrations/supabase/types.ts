@@ -1479,6 +1479,26 @@ export type Database = {
       get_workshop_id: { Args: { _user_id: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_workshop: { Args: { _user_id: string }; Returns: boolean }
+      submit_bike_repair_request: {
+        Args: {
+          p_area: string
+          p_bike_type: string
+          p_can_drop_off: boolean
+          p_city?: string
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_description: string
+          p_postcode: string
+          p_repair_category: string
+          p_urgency: string
+          p_wants_pickup: boolean
+        }
+        Returns: {
+          id: string
+          view_token: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
