@@ -4,7 +4,7 @@ import { ArrowRight, Bike, MapPin, MessageSquare, ShieldCheck, CheckCircle2, Wre
 import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
-import { Helmet } from 'react-helmet-async'
+
 
 const FAQS = [
   {
