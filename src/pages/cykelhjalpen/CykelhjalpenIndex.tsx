@@ -138,7 +138,7 @@ const CykelhjalpenIndex = () => {
               <div className="relative rounded-[2.5rem] overflow-hidden sticker">
                 <img
                   src={heroImg}
-                  alt="Cyklar parkerade på en kullerstensgata i Linköping i kvällsljus"
+                  alt="Akvarell av Stora torget i Linköping med Folke Filbyter-statyn (Folkungabrunnen) och cyklar i förgrunden"
                   width={1920}
                   height={1080}
                   className="w-full h-auto block"
