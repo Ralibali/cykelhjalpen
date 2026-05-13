@@ -262,8 +262,11 @@ const CykelhjalpenIndex = () => {
               <p className="mt-5 text-lg text-muted-foreground">
                 Det tar mindre än två minuter. Få dina första prisförslag samma dag.
               </p>
-              <Button asChild size="lg" className="mt-10 text-base h-14 px-8 rounded-full shadow-brand">
-                <Link to="/skicka-arende">Beskriv mitt cykelproblem <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Button asChild size="lg" className="cta-playful mt-10 text-base h-14 px-8 rounded-full shadow-brand">
+                <Link to="/skicka-arende">
+                  Beskriv mitt cykelproblem
+                  <span className="cta-icon cta-icon-arrow ml-2"><ArrowRight className="h-4 w-4" /></span>
+                </Link>
               </Button>
             </div>
           </div>
