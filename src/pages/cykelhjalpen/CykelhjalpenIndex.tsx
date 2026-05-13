@@ -104,12 +104,13 @@ const CykelhjalpenIndex = () => {
                 transition={{ delay: 0.35 }}
                 className="mt-10 flex flex-col sm:flex-row gap-3 justify-center"
               >
-                <Button asChild size="lg" className="text-base h-14 px-8 rounded-full shadow-brand">
+                <Button asChild size="lg" className="cta-playful text-base h-14 px-8 rounded-full shadow-brand">
                   <Link to="/skicka-arende">
-                    Beskriv mitt cykelproblem <ArrowRight className="ml-2 h-4 w-4" />
+                    Beskriv mitt cykelproblem
+                    <span className="cta-icon cta-icon-arrow ml-2"><ArrowRight className="h-4 w-4" /></span>
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="text-base h-14 px-8 rounded-full border-2 border-foreground/20 hover:bg-foreground hover:text-background">
+                <Button asChild size="lg" variant="outline" className="cta-playful text-base h-14 px-8 rounded-full border-2 border-foreground/20 hover:bg-foreground hover:text-background">
                   <Link to="/sa-fungerar-det">Så fungerar det</Link>
                 </Button>
               </motion.div>
