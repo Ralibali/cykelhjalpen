@@ -52,13 +52,16 @@ const CykelNavbar = () => {
           </Button>
         </div>
 
-        <button
-          className="md:hidden p-2"
-          aria-label={open ? 'Stäng meny' : 'Öppna meny'}
-          onClick={() => setOpen(v => !v)}
-        >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            className="p-2"
+            aria-label={open ? 'Stäng meny' : 'Öppna meny'}
+            onClick={() => setOpen(v => !v)}
+          >
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {open && (
