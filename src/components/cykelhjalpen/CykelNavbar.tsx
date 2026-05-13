@@ -6,6 +6,8 @@ import CykelLogo from './CykelLogo'
 import ThemeToggle from './ThemeToggle'
 import { useAuth } from '@/hooks/useAuth'
 
+const homeSectionLink = '/#sa-fungerar-det'
+
 const CykelNavbar = () => {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -32,7 +34,7 @@ const CykelNavbar = () => {
 
         <nav className="hidden md:flex items-center gap-6">
           <NavLink to="/cykelverkstad-linkoping" className={navLinkClass}>Cykelverkstäder</NavLink>
-          <NavLink to="/sa-fungerar-det" className={navLinkClass}>Så fungerar det</NavLink>
+          <NavLink to={homeSectionLink} className={navLinkClass}>Så fungerar det</NavLink>
           <NavLink to="/for-cykelverkstader" className={navLinkClass}>För verkstäder</NavLink>
         </nav>
 
@@ -68,7 +70,7 @@ const CykelNavbar = () => {
         <div className="md:hidden border-t border-border bg-background">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
             <NavLink to="/cykelverkstad-linkoping" onClick={() => setOpen(false)} className={navLinkClass}>Cykelverkstäder</NavLink>
-            <NavLink to="/sa-fungerar-det" onClick={() => setOpen(false)} className={navLinkClass}>Så fungerar det</NavLink>
+            <NavLink to={homeSectionLink} onClick={() => setOpen(false)} className={navLinkClass}>Så fungerar det</NavLink>
             <NavLink to="/for-cykelverkstader" onClick={() => setOpen(false)} className={navLinkClass}>För verkstäder</NavLink>
             <div className="flex flex-col gap-2 pt-3 border-t border-border">
               {isAuthenticated ? (
