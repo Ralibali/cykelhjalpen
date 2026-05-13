@@ -3,6 +3,7 @@ import { Menu, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
+import ThemeToggle from './ThemeToggle'
 import { useAuth } from '@/hooks/useAuth'
 
 const CykelNavbar = () => {
