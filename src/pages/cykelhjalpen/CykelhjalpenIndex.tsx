@@ -243,7 +243,7 @@ const CykelhjalpenIndex = () => {
             </div>
             <div className="space-y-3">
               {FAQS.map(({ q, a }) => (
-                <details key={q} className="group rounded-2xl border-2 border-[hsl(var(--brand-dark))]/15 hover:border-[hsl(var(--brand-dark))]/40 bg-card p-5 transition-colors">
+                <details key={q} className="group rounded-2xl bg-card p-5 sticker">
                   <summary className="flex items-center justify-between cursor-pointer font-display text-lg">
                     {q}
                     <span className="text-[hsl(var(--accent))] group-open:rotate-45 transition-transform text-3xl leading-none font-light">+</span>
