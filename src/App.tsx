@@ -23,6 +23,7 @@ const UpdroIndex = lazy(() => import("./pages/Index"));
 const BikeRequestWizard = lazy(() => import("./pages/cykelhjalpen/BikeRequestWizard"));
 const CustomerResponses = lazy(() => import("./pages/cykelhjalpen/CustomerResponses"));
 const RegisterWorkshopPage = lazy(() => import("./pages/cykelhjalpen/RegisterWorkshopPage"));
+const ForVerkstaderPage = lazy(() => import("./pages/cykelhjalpen/ForVerkstaderPage"));
 const WorkshopLayout = lazy(() => import("./components/cykelhjalpen/WorkshopLayout"));
 const WorkshopDashboard = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopDashboard"));
 const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopRequests"));
@@ -175,6 +176,7 @@ const App = () => (
               <Route path="/skicka-arende" element={<BikeRequestWizard />} />
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
+              <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
 
               {/* Cykelhjälpen - workshop dashboard */}
               <Route path="/dashboard/verkstad" element={<WorkshopLayout />}>
