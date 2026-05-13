@@ -284,22 +284,22 @@
   }
 
   .grain {
-    background-image: radial-gradient(hsl(195 35% 12% / 0.05) 1px, transparent 1px);
+    background-image: radial-gradient(hsl(var(--ink) / 0.05) 1px, transparent 1px);
     background-size: 4px 4px;
   }
 
   .sticker {
-    box-shadow: 4px 4px 0 hsl(195 35% 12%);
-    border: 2px solid hsl(195 35% 12%);
+    box-shadow: 4px 4px 0 hsl(var(--ink));
+    border: 2px solid hsl(var(--ink));
     transition: transform 180ms cubic-bezier(.34,1.56,.64,1), box-shadow 180ms ease;
   }
   .sticker:hover {
     transform: translate(-2px, -2px) rotate(-0.5deg);
-    box-shadow: 6px 6px 0 hsl(195 35% 12%);
+    box-shadow: 6px 6px 0 hsl(var(--ink));
   }
   .sticker:active {
     transform: translate(2px, 2px) rotate(0deg);
-    box-shadow: 1px 1px 0 hsl(195 35% 12%);
+    box-shadow: 1px 1px 0 hsl(var(--ink));
     transition-duration: 80ms;
   }
 
