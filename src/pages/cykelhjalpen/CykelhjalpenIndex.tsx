@@ -258,7 +258,7 @@ const CykelhjalpenIndex = () => {
         {/* FINAL CTA */}
         <section className="py-24">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center">
+            <div className="max-w-3xl mx-auto sticker rounded-[2rem] bg-card p-10 md:p-14 text-center">
               <h2 className="font-display text-4xl md:text-6xl leading-[1]">
                 Redo att laga <span className="italic text-[hsl(var(--accent))]">cykeln</span>?
               </h2>
