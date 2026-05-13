@@ -7,6 +7,8 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import heroImg from '@/assets/cykel-hero.jpg'
 import TestimonialsCarousel from '@/components/cykelhjalpen/TestimonialsCarousel'
 
+const homeSectionLink = '/#sa-fungerar-det'
+
 const FAQS = [
   {
     q: 'Vad kostar det att skicka in en förfrågan?',
@@ -112,7 +114,7 @@ const CykelhjalpenIndex = () => {
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="cta-playful text-base h-14 px-8 rounded-full border-2 border-foreground/20 hover:bg-foreground hover:text-background">
-                  <Link to="/sa-fungerar-det">Så fungerar det</Link>
+                  <Link to={homeSectionLink}>Så fungerar det</Link>
                 </Button>
               </motion.div>
 
