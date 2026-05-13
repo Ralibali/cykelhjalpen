@@ -6,9 +6,9 @@ import { setSEOMeta } from '@/lib/seoHelpers'
 const PrivacyPolicyPage = () => {
   useEffect(() => {
     setSEOMeta({
-      title: 'Integritetspolicy | Updro',
-      description: 'Läs Updros integritetspolicy. Här beskriver Aurora Media AB hur personuppgifter hanteras enligt GDPR.',
-      canonical: 'https://updro.se/integritetspolicy',
+      title: 'Integritetspolicy | Cykelhjälpen & Updro',
+      description: 'Integritetspolicy för Cykelhjälpen.se och Updro. Aurora Media AB beskriver hur personuppgifter hanteras enligt GDPR.',
+      canonical: '/integritetspolicy',
     })
   }, [])
 
