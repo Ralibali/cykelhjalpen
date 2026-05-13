@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import heroImg from '@/assets/cykel-hero.jpg'
+import TestimonialsCarousel from '@/components/cykelhjalpen/TestimonialsCarousel'
 
 const FAQS = [
   {
@@ -230,6 +231,8 @@ const CykelhjalpenIndex = () => {
             </div>
           </div>
         </section>
+
+        <TestimonialsCarousel />
 
         {/* FAQ */}
         <section className="py-24">
