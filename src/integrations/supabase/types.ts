@@ -222,6 +222,102 @@ export type Database = {
           },
         ]
       }
+      bike_repair_requests: {
+        Row: {
+          area: string | null
+          bike_type: string
+          can_drop_off: boolean
+          city: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          description: string
+          id: string
+          postcode: string | null
+          repair_category: string
+          status: string
+          updated_at: string
+          urgency: string | null
+          view_token: string
+          wants_pickup: boolean
+        }
+        Insert: {
+          area?: string | null
+          bike_type: string
+          can_drop_off?: boolean
+          city?: string
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          description: string
+          id?: string
+          postcode?: string | null
+          repair_category: string
+          status?: string
+          updated_at?: string
+          urgency?: string | null
+          view_token?: string
+          wants_pickup?: boolean
+        }
+        Update: {
+          area?: string | null
+          bike_type?: string
+          can_drop_off?: boolean
+          city?: string
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          description?: string
+          id?: string
+          postcode?: string | null
+          repair_category?: string
+          status?: string
+          updated_at?: string
+          urgency?: string | null
+          view_token?: string
+          wants_pickup?: boolean
+        }
+        Relationships: []
+      }
+      bike_request_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          request_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          request_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bike_request_images_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "bike_repair_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bike_request_images_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "bike_requests_for_workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       click_events: {
         Row: {
           created_at: string
@@ -290,6 +386,74 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      lead_charges: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          request_id: string
+          response_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          workshop_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          request_id: string
+          response_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          workshop_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          request_id?: string
+          response_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_charges_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "bike_repair_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_charges_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "bike_requests_for_workshops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_charges_response_id_fkey"
+            columns: ["response_id"]
+            isOneToOne: false
+            referencedRelation: "workshop_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_charges_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -964,8 +1128,186 @@ export type Database = {
           },
         ]
       }
+      workshop_responses: {
+        Row: {
+          can_pickup: boolean
+          created_at: string
+          estimated_price_max: number | null
+          estimated_price_min: number | null
+          estimated_time: string | null
+          id: string
+          message: string
+          paid: boolean
+          request_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          workshop_id: string
+        }
+        Insert: {
+          can_pickup?: boolean
+          created_at?: string
+          estimated_price_max?: number | null
+          estimated_price_min?: number | null
+          estimated_time?: string | null
+          id?: string
+          message: string
+          paid?: boolean
+          request_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          workshop_id: string
+        }
+        Update: {
+          can_pickup?: boolean
+          created_at?: string
+          estimated_price_max?: number | null
+          estimated_price_min?: number | null
+          estimated_time?: string | null
+          id?: string
+          message?: string
+          paid?: boolean
+          request_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_responses_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "bike_repair_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workshop_responses_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "bike_requests_for_workshops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workshop_responses_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshops: {
+        Row: {
+          address: string | null
+          approved: boolean
+          areas_served: string[] | null
+          city: string
+          company_name: string
+          created_at: string
+          email: string
+          id: string
+          phone: string | null
+          services: string[] | null
+          slug: string | null
+          stripe_customer_id: string | null
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          approved?: boolean
+          areas_served?: string[] | null
+          city?: string
+          company_name: string
+          created_at?: string
+          email: string
+          id?: string
+          phone?: string | null
+          services?: string[] | null
+          slug?: string | null
+          stripe_customer_id?: string | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          approved?: boolean
+          areas_served?: string[] | null
+          city?: string
+          company_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          phone?: string | null
+          services?: string[] | null
+          slug?: string | null
+          stripe_customer_id?: string | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
+      bike_requests_for_workshops: {
+        Row: {
+          already_responded: boolean | null
+          area: string | null
+          bike_type: string | null
+          can_drop_off: boolean | null
+          city: string | null
+          created_at: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          description: string | null
+          id: string | null
+          postcode: string | null
+          repair_category: string | null
+          status: string | null
+          urgency: string | null
+          wants_pickup: boolean | null
+        }
+        Insert: {
+          already_responded?: never
+          area?: string | null
+          bike_type?: string | null
+          can_drop_off?: boolean | null
+          city?: string | null
+          created_at?: string | null
+          customer_email?: never
+          customer_name?: never
+          customer_phone?: never
+          description?: string | null
+          id?: string | null
+          postcode?: string | null
+          repair_category?: string | null
+          status?: string | null
+          urgency?: string | null
+          wants_pickup?: boolean | null
+        }
+        Update: {
+          already_responded?: never
+          area?: string | null
+          bike_type?: string | null
+          can_drop_off?: boolean | null
+          city?: string | null
+          created_at?: string | null
+          customer_email?: never
+          customer_name?: never
+          customer_phone?: never
+          description?: string | null
+          id?: string | null
+          postcode?: string | null
+          repair_category?: string | null
+          status?: string | null
+          urgency?: string | null
+          wants_pickup?: boolean | null
+        }
+        Relationships: []
+      }
       public_agency_directory: {
         Row: {
           avatar_url: string | null
@@ -1134,7 +1476,9 @@ export type Database = {
       }
     }
     Functions: {
+      get_workshop_id: { Args: { _user_id: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_approved_workshop: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
