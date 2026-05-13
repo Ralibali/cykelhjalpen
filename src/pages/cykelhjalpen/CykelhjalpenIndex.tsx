@@ -232,6 +232,8 @@ const CykelhjalpenIndex = () => {
           </div>
         </section>
 
+        <TestimonialsCarousel />
+
         {/* FAQ */}
         <section className="py-24">
           <div className="container mx-auto px-4 max-w-3xl">
