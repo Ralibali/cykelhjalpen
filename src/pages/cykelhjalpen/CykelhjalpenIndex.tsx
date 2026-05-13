@@ -32,12 +32,6 @@ const FAQS = [
 const CykelhjalpenIndex = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Cykelhjälpen – Få prisförslag från cykelverkstäder i Linköping</title>
-        <meta name="description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis och utan förbindelse." />
-        <link rel="canonical" href="/" />
-      </Helmet>
-
       <CykelNavbar />
 
       <main>
