@@ -35,7 +35,9 @@
     --radius: 1rem;
 
     /* Cykelhjälpen tokens */
+    --ink: 195 35% 12%;
     --brand-dark: 195 35% 12%;
+    --brand-cream: 38 50% 96%;
     --brand-blue: 182 55% 22%;
     --brand-blue-hover: 182 55% 16%;
     --brand-indigo: 182 55% 22%;
