@@ -4,67 +4,70 @@
 
 @layer base {
   :root {
-    --background: 40 20% 98%;
-    --foreground: 20 14% 10%;
+    --background: 38 50% 96%;
+    --foreground: 195 35% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 20 14% 10%;
+    --card: 40 45% 98%;
+    --card-foreground: 195 35% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 14% 10%;
+    --popover: 40 45% 98%;
+    --popover-foreground: 195 35% 12%;
 
-    --primary: 20 14% 10%;
-    --primary-foreground: 40 20% 98%;
+    --primary: 182 55% 22%;
+    --primary-foreground: 40 50% 97%;
 
-    --secondary: 35 15% 94%;
-    --secondary-foreground: 20 14% 20%;
+    --secondary: 38 40% 92%;
+    --secondary-foreground: 195 35% 18%;
 
-    --muted: 35 15% 94%;
-    --muted-foreground: 25 8% 35%;
+    --muted: 38 35% 93%;
+    --muted-foreground: 195 15% 38%;
 
-    --accent: 18 85% 55%;
+    --accent: 14 80% 62%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 45%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 88%;
-    --input: 30 15% 88%;
-    --ring: 18 85% 55%;
+    --border: 35 30% 86%;
+    --input: 35 30% 86%;
+    --ring: 14 80% 62%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
-    /* Updro custom tokens */
-    --brand-dark: 20 14% 10%;
-    --brand-blue: 20 14% 10%;
-    --brand-blue-hover: 20 14% 18%;
-    --brand-indigo: 20 14% 10%;
-    --brand-orange: 18 85% 55%;
-    --brand-orange-hover: 18 85% 48%;
-    --brand-mint: 150 35% 32%;
-    --brand-mint-hover: 150 35% 26%;
-    --brand-coral: 18 85% 55%;
-    --brand-amber: 35 75% 55%;
-    --brand-amber-glow: 35 75% 65%;
-    --surface-alt: 35 20% 96%;
-    --surface-2: 35 15% 94%;
-    --surface-3: 30 15% 91%;
-    --text-secondary: 25 8% 35%;
-    --border-strong: 30 15% 78%;
+    /* Cykelhjälpen tokens */
+    --brand-dark: 195 35% 12%;
+    --brand-blue: 182 55% 22%;
+    --brand-blue-hover: 182 55% 16%;
+    --brand-indigo: 182 55% 22%;
+    --brand-orange: 14 80% 62%;
+    --brand-orange-hover: 14 80% 54%;
+    --brand-mint: 158 45% 38%;
+    --brand-mint-hover: 158 45% 30%;
+    --brand-coral: 14 80% 62%;
+    --brand-amber: 38 90% 60%;
+    --brand-amber-glow: 38 95% 70%;
+    --brand-sun: 44 92% 62%;
+    --brand-teal: 182 55% 32%;
+    --brand-plum: 320 30% 35%;
+    --surface-alt: 38 45% 94%;
+    --surface-2: 38 35% 92%;
+    --surface-3: 35 30% 88%;
+    --text-secondary: 195 15% 38%;
+    --border-strong: 35 25% 76%;
 
-    --shadow-sm: 0 1px 2px rgba(30, 20, 10, 0.04);
-    --shadow-md: 0 4px 16px rgba(30, 20, 10, 0.06);
-    --shadow-lg: 0 12px 32px rgba(30, 20, 10, 0.08);
-    --shadow-brand: 0 4px 24px rgba(200, 90, 40, 0.15);
+    --shadow-sm: 0 1px 2px rgba(20, 40, 50, 0.05);
+    --shadow-md: 0 6px 20px rgba(20, 40, 50, 0.07);
+    --shadow-lg: 0 18px 40px rgba(20, 40, 50, 0.10);
+    --shadow-brand: 0 8px 28px rgba(230, 110, 70, 0.22);
 
-    --sidebar-background: 35 20% 96%;
-    --sidebar-foreground: 25 8% 35%;
-    --sidebar-primary: 20 14% 10%;
-    --sidebar-primary-foreground: 40 20% 98%;
-    --sidebar-accent: 35 15% 92%;
-    --sidebar-accent-foreground: 20 14% 10%;
-    --sidebar-border: 30 15% 88%;
-    --sidebar-ring: 18 85% 55%;
+    --sidebar-background: 38 45% 94%;
+    --sidebar-foreground: 195 15% 38%;
+    --sidebar-primary: 182 55% 22%;
+    --sidebar-primary-foreground: 40 50% 97%;
+    --sidebar-accent: 38 35% 90%;
+    --sidebar-accent-foreground: 182 55% 22%;
+    --sidebar-border: 35 30% 86%;
+    --sidebar-ring: 14 80% 62%;
   }
 
   .dark {
@@ -201,8 +204,14 @@
   }
 
   h1, h2, h3, h4, .font-display {
-    font-family: Georgia, "Times New Roman", serif;
-    font-weight: 400;
+    font-family: 'Fraunces', Georgia, "Times New Roman", serif;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    font-optical-sizing: auto;
+  }
+
+  .font-mono-display {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     letter-spacing: -0.02em;
   }
 
@@ -251,19 +260,36 @@
 @layer utilities {
   .text-brand-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(18 85% 55%), hsl(35 75% 55%));
+    background-image: linear-gradient(135deg, hsl(14 80% 62%), hsl(44 92% 62%));
   }
 
   .bg-hero-gradient {
     background:
-      radial-gradient(ellipse at top left, hsl(35 40% 94%), transparent 60%),
-      radial-gradient(ellipse at bottom right, hsl(18 40% 94%), transparent 60%),
-      hsl(40 20% 98%);
+      radial-gradient(ellipse at top left, hsl(44 90% 88% / 0.7), transparent 55%),
+      radial-gradient(ellipse at bottom right, hsl(14 85% 85% / 0.55), transparent 60%),
+      radial-gradient(ellipse at bottom left, hsl(182 50% 80% / 0.35), transparent 55%),
+      hsl(38 50% 96%);
   }
 
   .bg-mint-gradient {
-    background: linear-gradient(135deg, hsl(18 85% 55% / 0.06), hsl(35 75% 55% / 0.08));
+    background: linear-gradient(135deg, hsl(182 55% 22% / 0.06), hsl(14 80% 62% / 0.08));
   }
+
+  .grain {
+    background-image: radial-gradient(hsl(195 35% 12% / 0.05) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+
+  .sticker {
+    box-shadow: 4px 4px 0 hsl(195 35% 12%);
+    border: 2px solid hsl(195 35% 12%);
+  }
+
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .animate-float { animation: float-y 6s ease-in-out infinite; }
 
   .shadow-blue {
     box-shadow: 0 4px 24px rgba(200, 90, 40, 0.18);

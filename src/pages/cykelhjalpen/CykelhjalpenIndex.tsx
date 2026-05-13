@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Bike, MapPin, MessageSquare, ShieldCheck, CheckCircle2, Wrench, Clock, Heart } from 'lucide-react'
+import { ArrowRight, MapPin, MessageSquare, ShieldCheck, CheckCircle2, Wrench, Clock, Heart, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
-
+import heroImg from '@/assets/cykel-hero.jpg'
 
 const FAQS = [
   {
@@ -31,71 +31,125 @@ const FAQS = [
 
 const CykelhjalpenIndex = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-hero-gradient">
       <CykelNavbar />
 
       <main>
         {/* HERO */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background pt-12 pb-20 md:pt-20 md:pb-28">
-          <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
+        <section className="relative overflow-hidden pt-10 pb-24 md:pt-16 md:pb-32">
+          {/* floating stickers */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute top-24 left-[6%] hidden md:block animate-float">
+              <div className="rotate-[-8deg] sticker rounded-2xl bg-[hsl(var(--brand-sun))] px-4 py-2 font-mono-display text-xs font-semibold text-[hsl(var(--brand-dark))]">
+                ✺ punktering? fixat.
+              </div>
+            </div>
+            <div className="absolute bottom-32 right-[4%] hidden md:block animate-float" style={{ animationDelay: '1.5s' }}>
+              <div className="rotate-[6deg] sticker rounded-2xl bg-[hsl(var(--accent))] px-4 py-2 font-mono-display text-xs font-semibold text-white">
+                ⚙ växel-trubbel? fixat.
+              </div>
+            </div>
+          </div>
+
+          <div className="container mx-auto px-4 relative">
+            {/* mono ticker */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              className="flex items-center justify-center gap-3 mb-8 font-mono-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                <MapPin className="h-4 w-4" />
-                Linköping
-              </div>
-              <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-                Få prisförslag från <span className="text-primary">cykelverkstäder</span> i Linköping
-              </h1>
-              <p className="mt-6 text-lg text-muted-foreground max-w-lg">
-                Beskriv vad som är fel med din cykel. Vi skickar din förfrågan till anslutna cykelverkstäder i Linköping. Du får prisförslag och väljer själv om du vill gå vidare.
-              </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Button asChild size="lg" className="text-base">
-                  <Link to="/skicka-arende">
-                    Beskriv ditt cykelproblem <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="text-base">
-                  <Link to="/sa-fungerar-det">Så fungerar det</Link>
-                </Button>
-              </div>
-              <div className="mt-6 flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Helt gratis</span>
-                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Inga förbindelser</span>
-                <span className="inline-flex items-center gap-1.5 hidden sm:inline-flex"><CheckCircle2 className="h-4 w-4 text-primary" /> Lokala verkstäder</span>
-              </div>
+              <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--accent))] animate-pulse" />
+              <span>cykelhjälpen · linköping · est. 2026</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--brand-teal))]" />
             </motion.div>
 
+            <div className="max-w-5xl mx-auto text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[hsl(var(--brand-sun))]/30 border border-[hsl(var(--brand-sun))]/50 text-[hsl(var(--brand-dark))] text-xs font-mono-display font-semibold mb-6"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                bara för cyklister i Linköping
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.05 }}
+                className="font-display text-5xl md:text-7xl lg:text-8xl font-medium leading-[0.95] tracking-tight"
+              >
+                Trasig cykel?{' '}
+                <span className="relative inline-block">
+                  <span className="italic text-[hsl(var(--accent))]">Vi fixar det.</span>
+                  <svg className="absolute -bottom-3 left-0 w-full" viewBox="0 0 300 12" preserveAspectRatio="none">
+                    <path d="M2 8 Q 75 2, 150 6 T 298 5" stroke="hsl(var(--brand-sun))" strokeWidth="4" fill="none" strokeLinecap="round" />
+                  </svg>
+                </span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25, duration: 0.5 }}
+                className="mt-8 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+              >
+                Beskriv vad som krånglar med din cykel. Anslutna verkstäder i Linköping skickar dig prisförslag inom timmar. <span className="text-foreground font-medium">Helt gratis. Inga förbindelser.</span>
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="mt-10 flex flex-col sm:flex-row gap-3 justify-center"
+              >
+                <Button asChild size="lg" className="text-base h-14 px-8 rounded-full shadow-brand">
+                  <Link to="/skicka-arende">
+                    Beskriv mitt cykelproblem <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="text-base h-14 px-8 rounded-full border-2 border-foreground/20 hover:bg-foreground hover:text-background">
+                  <Link to="/sa-fungerar-det">Så fungerar det</Link>
+                </Button>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground font-mono-display"
+              >
+                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> 0 kr för dig</span>
+                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> upp till 5 prisförslag</span>
+                <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> svar samma dag</span>
+              </motion.div>
+            </div>
+
+            {/* Hero image */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="relative"
+              initial={{ opacity: 0, y: 40, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="mt-16 max-w-6xl mx-auto"
             >
-              <div className="aspect-[4/5] rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 p-8 flex flex-col justify-between border border-border/50 shadow-xl">
-                <div>
-                  <Bike className="h-12 w-12 text-primary" />
-                  <p className="mt-6 font-display text-2xl font-semibold leading-tight">
-                    "Punktering på elcykeln. Fick tre prisförslag samma dag."
-                  </p>
-                  <p className="mt-3 text-muted-foreground">— Anna, Vasastan</p>
-                </div>
-                <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border/50">
-                  <div>
-                    <div className="font-display text-2xl font-bold">tre</div>
-                    <div className="text-xs text-muted-foreground">prisförslag</div>
-                  </div>
-                  <div>
-                    <div className="font-display text-2xl font-bold">fyra</div>
-                    <div className="text-xs text-muted-foreground">timmar</div>
-                  </div>
-                  <div>
-                    <div className="font-display text-2xl font-bold">noll</div>
-                    <div className="text-xs text-muted-foreground">kronor</div>
+              <div className="relative rounded-[2.5rem] overflow-hidden border-4 border-[hsl(var(--brand-dark))] shadow-2xl">
+                <img
+                  src={heroImg}
+                  alt="Cyklar parkerade på en kullerstensgata i Linköping i kvällsljus"
+                  width={1920}
+                  height={1080}
+                  className="w-full h-auto block"
+                />
+                {/* overlay quote card */}
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto sm:max-w-sm">
+                  <div className="rounded-2xl bg-background/95 backdrop-blur-sm border-2 border-[hsl(var(--brand-dark))] p-4 sticker">
+                    <div className="flex items-center gap-2 font-mono-display text-[10px] uppercase tracking-widest text-[hsl(var(--accent))] mb-2">
+                      <Sparkles className="h-3 w-3" /> kund · vasastan
+                    </div>
+                    <p className="font-display text-base md:text-lg leading-snug">
+                      "Punktering på elcykeln en måndag. Tre prisförslag innan lunch."
+                    </p>
                   </div>
                 </div>
               </div>
@@ -104,53 +158,72 @@ const CykelhjalpenIndex = () => {
         </section>
 
         {/* HOW IT WORKS */}
-        <section id="sa-fungerar-det" className="py-20 bg-muted/20">
+        <section id="sa-fungerar-det" className="py-24 relative">
           <div className="container mx-auto px-4">
-            <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="font-display text-3xl md:text-4xl font-bold">Så fungerar det</h2>
-              <p className="mt-4 text-muted-foreground">Tre enkla steg från trasig cykel till åkbar cykel.</p>
+            <div className="max-w-2xl mb-14">
+              <div className="font-mono-display text-xs uppercase tracking-[0.2em] text-[hsl(var(--accent))] mb-3">// så fungerar det</div>
+              <h2 className="font-display text-4xl md:text-6xl font-medium leading-[1]">
+                Tre steg från <span className="italic text-[hsl(var(--brand-teal))]">trasig</span> till <span className="italic text-[hsl(var(--accent))]">åkbar</span>.
+              </h2>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-5">
               {[
-                { icon: Wrench, n: 'Ett', title: 'Beskriv felet på din cykel', desc: 'Berätta vilken cykel du har och vad som krånglar. Lägg gärna till en bild.' },
-                { icon: MessageSquare, n: 'Två', title: 'Lokala verkstäder svarar med prisförslag', desc: 'Anslutna verkstäder i Linköping skickar dig prisförslag inom kort.' },
-                { icon: Heart, n: 'Tre', title: 'Du väljer själv vem du vill anlita', desc: 'Jämför pris, leveranstid och omdömen. Inga förbindelser.' },
-              ].map(({ icon: Icon, n, title, desc }) => (
-                <div key={title} className="rounded-2xl border border-border bg-card p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">{n}</div>
-                    <Icon className="h-6 w-6 text-primary" />
+                { icon: Wrench, n: '01', title: 'Beskriv felet', desc: 'Berätta vilken cykel du har och vad som krånglar. Lägg gärna till en bild.', color: 'hsl(var(--brand-sun))' },
+                { icon: MessageSquare, n: '02', title: 'Få prisförslag', desc: 'Anslutna verkstäder i Linköping skickar dig upp till fem prisförslag.', color: 'hsl(var(--accent))' },
+                { icon: Heart, n: '03', title: 'Välj fritt', desc: 'Jämför pris, leveranstid och omdömen. Du bestämmer – inga förbindelser.', color: 'hsl(var(--brand-teal))' },
+              ].map(({ icon: Icon, n, title, desc, color }, i) => (
+                <motion.div
+                  key={title}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                  transition={{ delay: i * 0.1 }}
+                  className="group relative rounded-3xl border-2 border-[hsl(var(--brand-dark))] bg-card p-7 hover:-translate-y-1 transition-transform sticker"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="font-mono-display text-sm font-semibold text-muted-foreground">{n}</span>
+                    <div
+                      className="h-12 w-12 rounded-2xl flex items-center justify-center border-2 border-[hsl(var(--brand-dark))]"
+                      style={{ backgroundColor: color }}
+                    >
+                      <Icon className="h-5 w-5 text-[hsl(var(--brand-dark))]" />
+                    </div>
                   </div>
-                  <h3 className="font-display font-semibold text-xl mb-2">{title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
-                </div>
+                  <h3 className="font-display text-2xl mb-2">{title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{desc}</p>
+                </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* TRUST */}
+        {/* TRUST BAND */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-8 md:p-12 grid md:grid-cols-3 gap-8 items-center">
-              <div className="md:col-span-2">
-                <h2 className="font-display text-3xl md:text-4xl font-bold">Tryggt, lokalt och gratis för dig</h2>
-                <p className="mt-4 text-muted-foreground max-w-xl">
-                  Cykelhjälpen är gjort för dig som cyklar i Linköping. Du betalar aldrig något till oss – det är verkstäderna som betalar för att få svara på din förfrågan.
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <ShieldCheck className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <div className="text-xs text-muted-foreground">Godkända verkstäder</div>
+            <div className="relative rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-8 md:p-14 overflow-hidden">
+              <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-[hsl(var(--accent))]/30 blur-2xl" />
+              <div className="absolute -bottom-10 -left-10 h-56 w-56 rounded-full bg-[hsl(var(--brand-sun))]/20 blur-2xl" />
+              <div className="relative grid md:grid-cols-3 gap-10 items-center">
+                <div className="md:col-span-2">
+                  <div className="font-mono-display text-xs uppercase tracking-[0.2em] text-[hsl(var(--brand-sun))] mb-3">// varför oss</div>
+                  <h2 className="font-display text-3xl md:text-5xl leading-[1.05]">
+                    Tryggt, lokalt, och <span className="italic text-[hsl(var(--brand-sun))]">noll kronor</span> för dig.
+                  </h2>
+                  <p className="mt-5 text-background/70 max-w-xl leading-relaxed">
+                    Cykelhjälpen är gjort för dig som cyklar i Linköping. Du betalar aldrig något till oss. Verkstäderna betalar en liten avgift för att få lämna prisförslag – det är så vi håller det gratis åt dig.
+                  </p>
                 </div>
-                <div>
-                  <Clock className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <div className="text-xs text-muted-foreground">Snabba svar</div>
-                </div>
-                <div>
-                  <Heart className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <div className="text-xs text-muted-foreground">Gratis för dig</div>
+                <div className="space-y-3">
+                  {[
+                    { Icon: ShieldCheck, label: 'Endast godkända verkstäder' },
+                    { Icon: Clock, label: 'Svar inom timmar, inte dagar' },
+                    { Icon: Heart, label: 'Gratis & utan förbindelser' },
+                  ].map(({ Icon, label }) => (
+                    <div key={label} className="flex items-center gap-3 rounded-xl bg-background/5 backdrop-blur-sm border border-background/10 px-4 py-3">
+                      <Icon className="h-5 w-5 text-[hsl(var(--brand-sun))]" />
+                      <span className="text-sm text-background/90">{label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -158,17 +231,20 @@ const CykelhjalpenIndex = () => {
         </section>
 
         {/* FAQ */}
-        <section className="py-20 bg-muted/20">
+        <section className="py-24">
           <div className="container mx-auto px-4 max-w-3xl">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-12">Vanliga frågor</h2>
-            <div className="space-y-4">
+            <div className="text-center mb-12">
+              <div className="font-mono-display text-xs uppercase tracking-[0.2em] text-[hsl(var(--accent))] mb-3">// vanliga frågor</div>
+              <h2 className="font-display text-4xl md:text-5xl">Du undrar säkert.</h2>
+            </div>
+            <div className="space-y-3">
               {FAQS.map(({ q, a }) => (
-                <details key={q} className="group rounded-xl border border-border bg-card p-5">
-                  <summary className="flex items-center justify-between cursor-pointer font-display font-semibold">
+                <details key={q} className="group rounded-2xl border-2 border-[hsl(var(--brand-dark))]/15 hover:border-[hsl(var(--brand-dark))]/40 bg-card p-5 transition-colors">
+                  <summary className="flex items-center justify-between cursor-pointer font-display text-lg">
                     {q}
-                    <span className="text-primary group-open:rotate-45 transition-transform text-2xl leading-none">+</span>
+                    <span className="text-[hsl(var(--accent))] group-open:rotate-45 transition-transform text-3xl leading-none font-light">+</span>
                   </summary>
-                  <p className="mt-3 text-muted-foreground text-sm leading-relaxed">{a}</p>
+                  <p className="mt-3 text-muted-foreground leading-relaxed">{a}</p>
                 </details>
               ))}
             </div>
@@ -176,15 +252,19 @@ const CykelhjalpenIndex = () => {
         </section>
 
         {/* FINAL CTA */}
-        <section className="py-20">
-          <div className="container mx-auto px-4 text-center max-w-2xl">
-            <h2 className="font-display text-3xl md:text-4xl font-bold">Redo att laga cykeln?</h2>
-            <p className="mt-4 text-muted-foreground">
-              Det tar mindre än två minuter att beskriva felet. Få dina första prisförslag samma dag.
-            </p>
-            <Button asChild size="lg" className="mt-8 text-base">
-              <Link to="/skicka-arende">Beskriv ditt cykelproblem <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
+        <section className="py-24">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="font-display text-4xl md:text-6xl leading-[1]">
+                Redo att laga <span className="italic text-[hsl(var(--accent))]">cykeln</span>?
+              </h2>
+              <p className="mt-5 text-lg text-muted-foreground">
+                Det tar mindre än två minuter. Få dina första prisförslag samma dag.
+              </p>
+              <Button asChild size="lg" className="mt-10 text-base h-14 px-8 rounded-full shadow-brand">
+                <Link to="/skicka-arende">Beskriv mitt cykelproblem <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+            </div>
           </div>
         </section>
       </main>
