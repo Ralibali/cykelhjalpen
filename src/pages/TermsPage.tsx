@@ -160,9 +160,21 @@ const TermsPage = () => {
             </div>
 
             <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">13. Kontakt</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">13. Cykelhjälpen.se — särskilda villkor</h2>
+              <p>För cyklister är Cykelhjälpen.se gratis. För anslutna cykelverkstäder gäller följande:</p>
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li>Verkstaden måste godkännas av admin innan den kan se ärenden eller skicka offerter.</li>
+                <li>Varje skickad offert kostar femtio kronor (50 kr) inklusive moms och debiteras via Stripe vid avsändandet.</li>
+                <li>Maximalt fem verkstäder kan svara per ärende, först-till-kvarn.</li>
+                <li>Återbetalning sker endast om kundens kontaktuppgifter saknas eller är felaktiga och Cykelhjälpen inte kan tillhandahålla rättade uppgifter inom sju dagar.</li>
+                <li>Aurora Media AB förmedlar kontakt men är inte part i avtalet mellan kund och verkstad och ansvarar inte för utfört arbete.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">14. Kontakt</h2>
               <p>Aurora Media AB<br />
-              E-post: <a href="mailto:support@updro.se" className="text-primary hover:underline">support@updro.se</a><br />
+              E-post: <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a><br />
               Organisationsnummer: 559272-0220</p>
             </div>
           </section>

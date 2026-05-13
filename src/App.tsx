@@ -19,6 +19,20 @@ import BuyerLayout from "@/components/BuyerLayout";
 import Index from "./pages/cykelhjalpen/CykelhjalpenIndex";
 const UpdroIndex = lazy(() => import("./pages/Index"));
 
+// Cykelhjälpen pages
+const BikeRequestWizard = lazy(() => import("./pages/cykelhjalpen/BikeRequestWizard"));
+const CustomerResponses = lazy(() => import("./pages/cykelhjalpen/CustomerResponses"));
+const RegisterWorkshopPage = lazy(() => import("./pages/cykelhjalpen/RegisterWorkshopPage"));
+const WorkshopLayout = lazy(() => import("./components/cykelhjalpen/WorkshopLayout"));
+const WorkshopDashboard = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopDashboard"));
+const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopRequests"));
+const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopBilling"));
+const WorkshopSettings = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopSettings"));
+const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
+const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
+const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
+const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
+
 // Lazy-loaded pages
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
@@ -156,6 +170,37 @@ const App = () => (
             <Routes>
               {/* Public */}
               <Route path="/" element={<Index />} />
+
+              {/* Cykelhjälpen - public */}
+              <Route path="/skicka-arende" element={<BikeRequestWizard />} />
+              <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
+              <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
+
+              {/* Cykelhjälpen - workshop dashboard */}
+              <Route path="/dashboard/verkstad" element={<WorkshopLayout />}>
+                <Route index element={<WorkshopDashboard />} />
+                <Route path="arenden" element={<WorkshopRequests />} />
+                <Route path="betalningar" element={<WorkshopBilling />} />
+                <Route path="installningar" element={<WorkshopSettings />} />
+              </Route>
+
+              {/* Cykelhjälpen - admin */}
+              <Route path="/admin/cykelarenden" element={<ProtectedRoute role="admin"><AdminBikeRequests /></ProtectedRoute>} />
+              <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
+              <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
+
+              {/* Cykelhjälpen - lokala SEO-sidor */}
+              <Route path="/cykelverkstad-linkoping" element={<CykelSeoPage />} />
+              <Route path="/cykelreparation-linkoping" element={<CykelSeoPage />} />
+              <Route path="/punktering-linkoping" element={<CykelSeoPage />} />
+              <Route path="/cykelservice-linkoping" element={<CykelSeoPage />} />
+              <Route path="/elcykel-reparation-linkoping" element={<CykelSeoPage />} />
+              <Route path="/cykelverkstad-innerstaden-linkoping" element={<CykelSeoPage />} />
+              <Route path="/cykelverkstad-ryd-linkoping" element={<CykelSeoPage />} />
+              <Route path="/cykelverkstad-vallastaden-linkoping" element={<CykelSeoPage />} />
+              <Route path="/mobil-cykelreparation-linkoping" element={<CykelSeoPage />} />
+
+              <Route path="/updro" element={<UpdroIndex />} />
               <Route path="/updro" element={<UpdroIndex />} />
               <Route path="/publicera" element={<ProjectWizard />} />
               <Route path="/byraer" element={<BrowseAgenciesPage />} />
