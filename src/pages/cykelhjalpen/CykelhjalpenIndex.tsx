@@ -221,7 +221,7 @@ const CykelhjalpenIndex = () => {
                     { Icon: Clock, label: 'Svar inom timmar, inte dagar' },
                     { Icon: Heart, label: 'Gratis & utan förbindelser' },
                   ].map(({ Icon, label }) => (
-                    <div key={label} className="flex items-center gap-3 rounded-xl bg-background/5 backdrop-blur-sm border border-background/10 px-4 py-3">
+                    <div key={label} className="flex items-center gap-3 rounded-xl bg-background/10 backdrop-blur-sm border-2 border-background/20 px-4 py-3 transition-transform hover:-translate-y-0.5 hover:translate-x-0.5">
                       <Icon className="h-5 w-5 text-[hsl(var(--brand-sun))]" />
                       <span className="text-sm text-background/90">{label}</span>
                     </div>
