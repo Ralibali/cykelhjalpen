@@ -1,49 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://updro.se/</loc><lastmod>2026-04-26</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://updro.se/publicera</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
-  <url><loc>https://updro.se/byraer</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://updro.se/priser</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/hemsida-pris-kalkylator</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.95</priority></url>
-  <url><loc>https://updro.se/vad-kostar-en-hemsida-kalkylator</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/om-oss</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.65</priority></url>
-  <url><loc>https://updro.se/hitta-webbyra</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
-  <url><loc>https://updro.se/hitta-seo-byra</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
-  <url><loc>https://updro.se/hitta-digital-byra</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.95</priority></url>
-  <url><loc>https://updro.se/partna-alternativ</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://updro.se/updro-vs-partna</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/jamfor</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/basta-webbyran</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/basta-seo-byran</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/basta-google-ads-byran</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/basta-ehandel-byran</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/webbutveckling</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://updro.se/webbutveckling/pris</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/webbutveckling/stockholm</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/webbutveckling/goteborg</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://updro.se/webbyra-stockholm</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://updro.se/webbyra-goteborg</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/webbyra-malmo</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/seo</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://updro.se/seo/pris</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/seo/stockholm</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/seo-byra-stockholm</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://updro.se/seo-byra-goteborg</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/seo-byra-malmo</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/ehandel</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/ehandel/pris</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://updro.se/ehandel/shopify</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://updro.se/google-ads</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/digital-marknadsforing</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://updro.se/stader</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/byraer/stockholm</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/byraer/goteborg</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://updro.se/byraer/malmo</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://updro.se/byraer/stockholm/webb</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/byraer/goteborg/webb</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://updro.se/byraer/malmo/webb</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://updro.se/artiklar</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/verktyg</loc><lastmod>2026-04-26</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://updro.se/redaktionell-policy</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.45</priority></url>
-  <url><loc>https://updro.se/metod</loc><lastmod>2026-04-26</lastmod><changefreq>monthly</changefreq><priority>0.45</priority></url>
+  <url><loc>/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>/skicka-arende</loc><changefreq>monthly</changefreq><priority>0.95</priority></url>
+  <url><loc>/for-cykelverkstader</loc><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>/registrera/verkstad</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>/sa-fungerar-det</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <!-- Lokala SEO-landningssidor Linköping -->
+  <url><loc>/cykelverkstad-linkoping</loc><changefreq>weekly</changefreq><priority>0.95</priority></url>
+  <url><loc>/cykelreparation-linkoping</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>/punktering-linkoping</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>/cykelservice-linkoping</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>/elcykel-reparation-linkoping</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>/cykelverkstad-innerstaden-linkoping</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>/cykelverkstad-ryd-linkoping</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>/cykelverkstad-vallastaden-linkoping</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>/mobil-cykelreparation-linkoping</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+
+  <!-- Legal -->
+  <url><loc>/integritetspolicy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>/villkor</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>/cookies</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
