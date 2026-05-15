@@ -80,8 +80,22 @@ const BikeRequestWizard = () => {
   }
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
+    const MAX = 5 * 1024 * 1024
     const list = Array.from(e.target.files || []).slice(0, 4)
-    setFiles(list)
+    const valid: File[] = []
+    for (const f of list) {
+      if (!ALLOWED.includes(f.type)) {
+        toast.error(`${f.name}: endast JPEG, PNG eller WebP tillåts`)
+        continue
+      }
+      if (f.size > MAX) {
+        toast.error(`${f.name}: filen är större än fem MB`)
+        continue
+      }
+      valid.push(f)
+    }
+    setFiles(valid)
   }
 
   const submit = async () => {
