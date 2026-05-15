@@ -277,7 +277,7 @@ const BikeRequestWizard = () => {
                 <label className="sticker bg-muted/50 p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-muted">
                   <Camera className="h-8 w-8 mb-2 text-muted-foreground" />
                   <span className="text-sm">Välj bilder</span>
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleFiles} />
+                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleFiles} />
                 </label>
                 {files.length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
