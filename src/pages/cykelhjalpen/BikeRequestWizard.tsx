@@ -124,14 +124,15 @@ const BikeRequestWizard = () => {
       const req = Array.isArray(rows) ? rows[0] : rows
       if (!req) throw new Error('Kunde inte skapa ärende')
 
-      // Upload images (best-effort)
+      // Upload images to private bucket; store storage path (signed URLs generated on read)
       for (const file of files) {
-        const ext = file.name.split('.').pop() || 'jpg'
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
         const path = `${req.id}/${crypto.randomUUID()}.${ext}`
-        const { error: upErr } = await supabase.storage.from('bike-images').upload(path, file, { upsert: false })
+        const { error: upErr } = await supabase.storage
+          .from('bike-images')
+          .upload(path, file, { upsert: false, contentType: file.type })
         if (!upErr) {
-          const { data } = supabase.storage.from('bike-images').getPublicUrl(path)
-          await supabase.from('bike_request_images').insert({ request_id: req.id, image_url: data.publicUrl })
+          await supabase.from('bike_request_images').insert({ request_id: req.id, image_url: path })
         }
       }
 
