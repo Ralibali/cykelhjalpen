@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import heroImg from '@/assets/cykel-hero.jpg'
-import TestimonialsCarousel from '@/components/cykelhjalpen/TestimonialsCarousel'
+
 
 const homeSectionLink = '/#sa-fungerar-det'
 
@@ -149,7 +149,7 @@ const CykelhjalpenIndex = () => {
                 <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto sm:max-w-sm">
                   <div className="rounded-2xl bg-background/95 backdrop-blur-sm border-2 border-[hsl(var(--brand-dark))] p-4 sticker">
                     <div className="flex items-center gap-2 font-mono-display text-[10px] uppercase tracking-widest text-[hsl(var(--accent))] mb-2">
-                      <Sparkles className="h-3 w-3" /> kund · vasastan
+                      <Sparkles className="h-3 w-3" /> exempel · vasastaden
                     </div>
                     <p className="font-display text-base md:text-lg leading-snug">
                       "Punktering på elcykeln en måndag. Tre prisförslag innan lunch."
@@ -234,7 +234,62 @@ const CykelhjalpenIndex = () => {
           </div>
         </section>
 
-        <TestimonialsCarousel />
+        {/* VÅRA LÖFTEN */}
+        <section className="py-24 bg-[hsl(var(--brand-cream))]/40">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12 max-w-2xl mx-auto">
+              <div className="font-mono-display text-xs uppercase tracking-[0.2em] text-[hsl(var(--accent))] mb-3">
+                // så lovar vi att leverera
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl leading-[1.05]">
+                Tre tydliga <span className="italic text-[hsl(var(--brand-teal))]">löften</span> till dig.
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Cykelhjälpen är nylanserad. Istället för påhittade citat berättar vi vad du faktiskt får från dag ett.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+              {[
+                {
+                  Icon: ShieldCheck,
+                  title: 'Endast godkända verkstäder',
+                  desc: 'Varje verkstad granskas manuellt innan de släpps in. Bara seriösa aktörer i Linköping får svara på ditt ärende.',
+                  color: 'hsl(var(--brand-sun))',
+                },
+                {
+                  Icon: Clock,
+                  title: 'Svar samma dag',
+                  desc: 'På vardagar når vi de flesta verkstäder inom timmar. Du får upp till fem prisförslag — inte ett enda samtal att ringa själv.',
+                  color: 'hsl(var(--accent))',
+                },
+                {
+                  Icon: Heart,
+                  title: 'Max fem offerter, noll förbindelser',
+                  desc: 'Ärendet stängs automatiskt efter fem svar så du slipper drunkna i meddelanden. Du väljer fritt — eller väljer ingen alls.',
+                  color: 'hsl(var(--brand-teal))',
+                },
+              ].map(({ Icon, title, desc, color }, i) => (
+                <motion.div
+                  key={title}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                  transition={{ delay: i * 0.1 }}
+                  className="sticker bg-card rounded-3xl p-7 border-2 border-[hsl(var(--brand-dark))]"
+                >
+                  <div
+                    className="h-12 w-12 rounded-2xl flex items-center justify-center border-2 border-[hsl(var(--brand-dark))] mb-5"
+                    style={{ backgroundColor: color }}
+                  >
+                    <Icon className="h-5 w-5 text-[hsl(var(--brand-dark))]" />
+                  </div>
+                  <h3 className="font-display text-2xl mb-2">{title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* FAQ */}
         <section className="py-24">
