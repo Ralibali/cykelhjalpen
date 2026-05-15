@@ -80,8 +80,22 @@ const BikeRequestWizard = () => {
   }
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
+    const MAX = 5 * 1024 * 1024
     const list = Array.from(e.target.files || []).slice(0, 4)
-    setFiles(list)
+    const valid: File[] = []
+    for (const f of list) {
+      if (!ALLOWED.includes(f.type)) {
+        toast.error(`${f.name}: endast JPEG, PNG eller WebP tillåts`)
+        continue
+      }
+      if (f.size > MAX) {
+        toast.error(`${f.name}: filen är större än fem MB`)
+        continue
+      }
+      valid.push(f)
+    }
+    setFiles(valid)
   }
 
   const submit = async () => {
@@ -110,14 +124,15 @@ const BikeRequestWizard = () => {
       const req = Array.isArray(rows) ? rows[0] : rows
       if (!req) throw new Error('Kunde inte skapa ärende')
 
-      // Upload images (best-effort)
+      // Upload images to private bucket; store storage path (signed URLs generated on read)
       for (const file of files) {
-        const ext = file.name.split('.').pop() || 'jpg'
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
         const path = `${req.id}/${crypto.randomUUID()}.${ext}`
-        const { error: upErr } = await supabase.storage.from('bike-images').upload(path, file, { upsert: false })
+        const { error: upErr } = await supabase.storage
+          .from('bike-images')
+          .upload(path, file, { upsert: false, contentType: file.type })
         if (!upErr) {
-          const { data } = supabase.storage.from('bike-images').getPublicUrl(path)
-          await supabase.from('bike_request_images').insert({ request_id: req.id, image_url: data.publicUrl })
+          await supabase.from('bike_request_images').insert({ request_id: req.id, image_url: path })
         }
       }
 
@@ -262,7 +277,7 @@ const BikeRequestWizard = () => {
                 <label className="sticker bg-muted/50 p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-muted">
                   <Camera className="h-8 w-8 mb-2 text-muted-foreground" />
                   <span className="text-sm">Välj bilder</span>
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleFiles} />
+                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleFiles} />
                 </label>
                 {files.length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
