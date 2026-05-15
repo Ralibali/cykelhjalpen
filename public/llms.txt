@@ -1,28 +1,20 @@
-# Updro
+# Cykelhjälpen
 
-> Sveriges marknadsplats för digitala uppdrag. Uppdragsgivare publicerar projekt och får upp till fem offerter från kvalitetssäkrade digitala byråer inom 24 timmar. Gratis för uppdragsgivare. Drivs av Aurora Media AB (org.nr 559272-0220) med säte i Linköping.
+> Lokal leadplattform för cykelreparation i Linköping. Cyklister beskriver felet och får upp till fem prisförslag från lokala cykelverkstäder.
 
 ## Viktiga sidor
-- [Startsida](https://updro.se/): Beskriv projekt, jämför byråer
-- [Publicera uppdrag](https://updro.se/publicera): Starta förfrågan gratis
-- [Hitta byrå](https://updro.se/byraer): Bläddra alla byråer
-- [För byråer](https://updro.se/registrera/byra): Registrera din byrå
-- [Priser](https://updro.se/priser): Prismodell för byråer
-- [Artiklar](https://updro.se/artiklar): Guider, jämförelser och nyheter (RSS: /rss.xml)
-- [Städer](https://updro.se/stader): Byråer per stad
-- [Vår metod](https://updro.se/metod): Så kvalitetssäkras byråer
-- [Redaktionell policy](https://updro.se/redaktionell-policy): Källor, AI-användning, rättelser
-- [Om oss](https://updro.se/om-oss): Grundare, organisationsnummer, kontakt
+- [Startsida](https://cykelhjalpen.se/)
+- [Skicka cykelärende](https://cykelhjalpen.se/skicka-arende)
+- [För verkstäder](https://cykelhjalpen.se/for-cykelverkstader)
+- [Anslut din verkstad](https://cykelhjalpen.se/registrera/verkstad)
+- [Cykelverkstad Linköping](https://cykelhjalpen.se/cykelverkstad-linkoping)
+- [Cykelreparation Linköping](https://cykelhjalpen.se/cykelreparation-linkoping)
+- [Cykelservice Linköping](https://cykelhjalpen.se/cykelservice-linkoping)
+- [Elcykel-reparation Linköping](https://cykelhjalpen.se/elcykel-reparation-linkoping)
+- [Punktering Linköping](https://cykelhjalpen.se/punktering-linkoping)
 
-## Tjänstekategorier
-- Webbutveckling
-- SEO & sökmotoroptimering
-- E-handel (Shopify, WooCommerce)
-- Apputveckling (iOS, Android)
-- Digital marknadsföring
-- Grafisk design & UX
-- Google Ads
-- E-postmarknadsföring
+## Affärsmodell
+Gratis för cyklister. Verkstäder betalar 50 kr exkl. moms per skickad offert via Stripe. Max fem offerter per ärende.
 
 ## Kontakt
-info@auroramedia.se
+info@auroramedia.se — Aurora Media AB (org.nr 559272-0220), säte Linköping.
