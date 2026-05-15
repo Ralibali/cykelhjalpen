@@ -203,7 +203,6 @@ const App = () => (
               <Route path="/mobil-cykelreparation-linkoping" element={<CykelSeoPage />} />
 
               <Route path="/updro" element={<UpdroIndex />} />
-              <Route path="/updro" element={<UpdroIndex />} />
               <Route path="/publicera" element={<ProjectWizard />} />
               <Route path="/byraer" element={<BrowseAgenciesPage />} />
               <Route path="/byraer/:slug" element={<AgencyProfilePage />} />
@@ -304,10 +303,7 @@ const App = () => (
               <Route path="/admin/besokare" element={<ProtectedRoute role="admin"><AdminVisitors /></ProtectedRoute>} />
               <Route path="/admin/marketplace-health" element={<ProtectedRoute role="admin"><AdminMarketplaceHealth /></ProtectedRoute>} />
 
-              {/* SEO pillar + sub pages (catch-all) */}
-              <Route path="/:category" element={<PillarPage />} />
-              <Route path="/:category/:sub" element={<SubPage />} />
-
+              {/* No Updro catch-all on Cykelhjälpen — unknown routes go to 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
