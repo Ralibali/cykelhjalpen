@@ -34,7 +34,7 @@ const CookiePolicyPage = () => {
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">2. Vem ansvarar?</h2>
               <p><strong>Cykelhjälpen</strong> ansvarar för användningen av cookies på Cykelhjälpen.se.</p>
-              <p className="mt-1">Kontakt: <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a></p>
+              <p className="mt-1">Kontakt: <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
             </div>
 
             <div>
@@ -86,7 +86,7 @@ const CookiePolicyPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">8. Kontakt</h2>
-              <p>Har du frågor om cookies eller personuppgifter? Kontakta oss på <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a>.</p>
+              <p>Har du frågor om cookies eller personuppgifter? Kontakta oss på <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a>.</p>
               <p className="mt-2">Se även vår <a href="/integritetspolicy" className="text-primary hover:underline">integritetspolicy</a> för mer information om hur vi behandlar personuppgifter.</p>
             </div>
           </section>

@@ -17,4 +17,4 @@
 Gratis för cyklister. Verkstäder betalar 50 kr exkl. moms per skickad offert via Stripe. Max fem offerter per ärende.
 
 ## Kontakt
-info@cykelhjalpen.se — Cykelhjälpen, säte Linköping.
+info@auroramedia.se — Cykelhjälpen, säte Linköping.
