@@ -1,5 +1,5 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "cykelhjalpen",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,8 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seo:verify": "bun run build",
-    "a11y:local": "npx -y @axe-core/cli@4 https://updro.se/ --tags wcag2a,wcag2aa,wcag21aa",
-    "a11y:lighthouse": "npx -y @lhci/cli@0.13.x collect --url=https://updro.se/ --numberOfRuns=1 --settings.onlyCategories=accessibility --settings.preset=desktop"
+    "a11y:local": "npx -y @axe-core/cli@4 https://cykelhjalpen.se/ --tags wcag2a,wcag2aa,wcag21aa",
+    "a11y:lighthouse": "npx -y @lhci/cli@0.13.x collect --url=https://cykelhjalpen.se/ --numberOfRuns=1 --settings.onlyCategories=accessibility --settings.preset=desktop"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
