@@ -44,8 +44,8 @@ const CykelFooter = () => (
     <div className="border-t border-border">
       <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="text-center md:text-left">
-          <p className="font-medium text-foreground/80">Aurora Media AB</p>
-          <p>Org.nr: 559272-0220 · Säte: Linköping · <a href="mailto:info@auroramedia.se" className="hover:text-primary">info@auroramedia.se</a></p>
+          <p className="font-medium text-foreground/80">Cykelhjälpen</p>
+          <p>Säte: Linköping · <a href="mailto:info@cykelhjalpen.se" className="hover:text-primary">info@cykelhjalpen.se</a></p>
         </div>
         <p>© {new Date().getFullYear()} Cykelhjälpen. Alla rättigheter reserverade.</p>
       </div>

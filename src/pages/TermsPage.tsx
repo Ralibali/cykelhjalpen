@@ -24,7 +24,7 @@ const TermsPage = () => {
           <section className="space-y-6 text-sm leading-relaxed text-foreground/80">
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">1. Om tjänsten</h2>
-              <p>Cykelhjälpen.se ("Tjänsten") drivs av Aurora Media AB, org.nr. 559272-0220, med säte i Linköping. Tjänsten är en lokal leadplattform där cyklister i Linköping kan beskriva ett cykelproblem och få upp till fem prisförslag från anslutna cykelverkstäder.</p>
+              <p>Cykelhjälpen.se ("Tjänsten") drivs av Cykelhjälpen, med säte i Linköping. Tjänsten är en lokal leadplattform där cyklister i Linköping kan beskriva ett cykelproblem och få upp till fem prisförslag från anslutna cykelverkstäder.</p>
               <p className="mt-2">Cykelhjälpen är en förmedlingsplattform och är inte part i avtalet mellan cyklist och verkstad. Ansvaret för utfört arbete, garanti och betalning ligger hos respektive part.</p>
             </div>
 
@@ -65,7 +65,7 @@ const TermsPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">5. Ångerrätt</h2>
               <p>Enligt <strong>Distansavtalslagen (2005:59)</strong> har konsumenter 14 dagars ångerrätt från det att avtalet ingicks. Cykelhjälpen riktar sig till verkstäder som näringsidkare (B2B) — ångerrätten gäller därför normalt inte verkstadsavtalet.</p>
               <p className="mt-2">För den enskilda offert som verkstaden betalat lead-avgift för: tjänsten anses påbörjad och levererad i samma stund som offerten skickas och cyklistens kontaktuppgifter frigörs. Återbetalning av lead-avgift sker endast om cyklistens kontaktuppgifter saknas eller är felaktiga och Cykelhjälpen inte kan tillhandahålla rättade uppgifter inom sju dagar.</p>
-              <p className="mt-2">Ångerrätt eller återbetalning utövas genom att kontakta <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a>. Adress för skriftlig kontakt: Aurora Media AB, c/o info@auroramedia.se, Linköping.</p>
+              <p className="mt-2">Ångerrätt eller återbetalning utövas genom att kontakta <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a>. Adress för skriftlig kontakt: Cykelhjälpen, c/o info@cykelhjalpen.se, Linköping.</p>
             </div>
 
             <div>
@@ -112,10 +112,9 @@ const TermsPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">11. Kontakt</h2>
-              <p>Aurora Media AB<br />
-              Organisationsnummer: 559272-0220<br />
+              <p>Cykelhjälpen<br />
               Säte: Linköping<br />
-              E-post: <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
+              E-post: <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a></p>
             </div>
           </section>
         </article>

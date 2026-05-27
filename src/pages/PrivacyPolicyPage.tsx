@@ -7,7 +7,7 @@ const PrivacyPolicyPage = () => {
   useEffect(() => {
     setSEOMeta({
       title: 'Integritetspolicy | Cykelhjälpen',
-      description: 'Integritetspolicy för Cykelhjälpen.se. Aurora Media AB beskriver hur personuppgifter hanteras enligt GDPR.',
+      description: 'Integritetspolicy för Cykelhjälpen.se. Så här hanterar Cykelhjälpen personuppgifter enligt GDPR.',
       canonical: '/integritetspolicy',
     })
   }, [])
@@ -23,8 +23,8 @@ const PrivacyPolicyPage = () => {
           <section className="space-y-6 text-sm leading-relaxed text-foreground/80">
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">1. Personuppgiftsansvarig</h2>
-              <p><strong>Aurora Media AB</strong>, org.nr. <strong>559272-0220</strong>, är personuppgiftsansvarig för behandlingen av personuppgifter på Cykelhjälpen.se.</p>
-              <p className="mt-1">Kontakt: <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
+              <p><strong>Cykelhjälpen</strong> är personuppgiftsansvarig för behandlingen av personuppgifter på Cykelhjälpen.se.</p>
+              <p className="mt-1">Kontakt: <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a></p>
             </div>
 
             <div>
@@ -86,7 +86,7 @@ const PrivacyPolicyPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">8. Dina rättigheter</h2>
-              <p>Du har enligt GDPR rätt att begära tillgång, rättelse, radering, begränsning, dataportabilitet samt invända mot eller återkalla samtycke. Kontakta <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a>. Vi svarar normalt inom 30 dagar.</p>
+              <p>Du har enligt GDPR rätt att begära tillgång, rättelse, radering, begränsning, dataportabilitet samt invända mot eller återkalla samtycke. Kontakta <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a>. Vi svarar normalt inom 30 dagar.</p>
               <p className="mt-1">Klagomål kan lämnas till Integritetsskyddsmyndigheten (IMY): <a href="https://www.imy.se" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">www.imy.se</a>.</p>
             </div>
 
