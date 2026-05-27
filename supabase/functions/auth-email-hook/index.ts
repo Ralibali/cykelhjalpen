@@ -16,7 +16,7 @@ const corsHeaders = {
 }
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
-const FROM_EMAIL = 'Updro <info@auroramedia.se>'
+const FROM_EMAIL = 'Cykelhjälpen <info@auroramedia.se>'
 
 const EMAIL_SUBJECTS: Record<string, string> = {
   signup: 'Bekräfta din e-post – Updro',
