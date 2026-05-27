@@ -317,7 +317,7 @@ const BikeRequestWizard = () => {
                 Fortsätt <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={submit} disabled={submitting} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={submit} disabled={submitting || !turnstileToken} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
                 Skicka ärende
               </Button>
