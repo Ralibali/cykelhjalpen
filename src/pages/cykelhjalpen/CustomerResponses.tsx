@@ -55,7 +55,7 @@ const CustomerResponses = () => {
         ) : !request ? (
           <div className="sticker bg-card p-8 text-center">
             <h1 className="font-display text-2xl font-bold mb-2">Ärendet hittades inte</h1>
-            <p className="text-muted-foreground">Länken kan ha gått ut. Kontakta info@cykelhjalpen.se om du behöver hjälp.</p>
+            <p className="text-muted-foreground">Länken kan ha gått ut. Kontakta info@auroramedia.se om du behöver hjälp.</p>
           </div>
         ) : (
           <>
