@@ -12,7 +12,7 @@ import {
   SITEMAP_SECTIONS,
 } from "./src/lib/seoStatic";
 
-function seoBuildPlugin(): Plugin {
+function seoBuildPlugin(host: 'cykelhjalpen' | 'updro'): Plugin {
   return {
     name: 'vite-plugin-updro-seo-build',
     configureServer(s) {
@@ -23,9 +23,9 @@ function seoBuildPlugin(): Plugin {
         try {
           const name = match[1];
           let xml: string | null = null;
-          if (name === 'sitemap') xml = generateSitemapXml();
-          else if (name === 'sitemap-index') xml = generateSitemapIndexXml();
-          else xml = generateSectionSitemapXml(name.replace(/^sitemap-/, '') as any);
+          if (name === 'sitemap') xml = generateSitemapXml(host);
+          else if (name === 'sitemap-index') xml = generateSitemapIndexXml(host);
+          else xml = generateSectionSitemapXml(name.replace(/^sitemap-/, '') as any, host);
           if (!xml) {
             res.statusCode = 404;
             res.end('Not found');
@@ -43,24 +43,24 @@ function seoBuildPlugin(): Plugin {
       const fs = await import('node:fs/promises');
       const distDir = path.resolve(process.cwd(), 'dist');
 
-      const flat = generateSitemapXml();
+      const flat = generateSitemapXml(host);
       await fs.writeFile(path.join(distDir, 'sitemap.xml'), flat, 'utf8');
 
-      const indexXml = generateSitemapIndexXml();
+      const indexXml = generateSitemapIndexXml(host);
       await fs.writeFile(path.join(distDir, 'sitemap-index.xml'), indexXml, 'utf8');
 
       let sectionUrlCount = 0;
       for (const section of SITEMAP_SECTIONS) {
-        const xml = generateSectionSitemapXml(section);
+        const xml = generateSectionSitemapXml(section, host);
         if (!xml) continue;
         await fs.writeFile(path.join(distDir, `sitemap-${section}.xml`), xml, 'utf8');
         sectionUrlCount += (xml.match(/<url>/g) || []).length;
       }
 
       const flatCount = (flat.match(/<url>/g) || []).length;
-      const noindexCount = getNoindexSeoRoutes().length;
-      const routeCount = getIndexableSeoRoutes().length + noindexCount;
-      console.log(`✅ SEO build: sitemap generated for ${flatCount} indexable URLs, ${sectionUrlCount} section URLs, ${noindexCount} noindex programmatic URLs, ${routeCount} registered routes`);
+      const noindexCount = getNoindexSeoRoutes(host).length;
+      const routeCount = getIndexableSeoRoutes(host).length + noindexCount;
+      console.log(`✅ SEO build [host=${host}]: sitemap generated for ${flatCount} indexable URLs, ${sectionUrlCount} section URLs, ${noindexCount} noindex programmatic URLs, ${routeCount} registered routes`);
     },
   };
 }
@@ -68,6 +68,7 @@ function seoBuildPlugin(): Plugin {
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const siteHost = (env.SITE_HOST === 'updro' ? 'updro' : 'cykelhjalpen') as 'cykelhjalpen' | 'updro';
   return {
     define: {
       __BUILD_TIMESTAMP__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')),
@@ -87,16 +88,11 @@ export default defineConfig(({ mode }) => {
       cssCodeSplit: true,
       sourcemap: false,
       chunkSizeWarningLimit: 1500,
-      // NOTE: Do NOT add custom manualChunks here. A custom split was previously
-      // causing "Cannot read properties of undefined (reading 'forwardRef')" in
-      // production because libs like @radix-ui were placed in a vendor chunk
-      // that loaded before the React chunk initialized. Let Vite/Rollup handle
-      // chunking automatically — it correctly hoists shared deps.
     },
     plugins: [
       react(),
       mode === "development" && componentTagger(),
-      seoBuildPlugin(),
+      seoBuildPlugin(siteHost),
     ].filter(Boolean),
     resolve: {
       alias: {

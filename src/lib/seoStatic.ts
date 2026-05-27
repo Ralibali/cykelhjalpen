@@ -1,6 +1,8 @@
 import { CYKEL_SEO_PAGES } from './cykelSeoPages'
+import type { SiteHost } from './hostConfig'
 
 export const SITE_URL = 'https://cykelhjalpen.se'
+export const UPDRO_SITE_URL = 'https://updro.se'
 export type SitemapSection = 'main'
 export const SITEMAP_SECTIONS: SitemapSection[] = ['main']
 
@@ -18,13 +20,17 @@ export interface StaticSeoRoute {
 }
 
 const today = () => new Date().toISOString().split('T')[0]
-const abs = (path: string) => `${SITE_URL}${path === '/' ? '/' : path}`
+const siteUrlFor = (host: SiteHost) => (host === 'updro' ? UPDRO_SITE_URL : SITE_URL)
+const absFor = (host: SiteHost, path: string) => `${siteUrlFor(host)}${path === '/' ? '/' : path}`
 const clean = (value = '') => value.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
 const trunc = (value: string, max = 155) => clean(value).length <= max ? clean(value) : `${clean(value).slice(0, max - 1).trim()}…`
 const esc = (value = '') => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+// =====================================================
 // Cykelhjälpen — indexable routes
-const indexableRoutes = (): StaticSeoRoute[] => [
+// Per spec: ONLY "/" + the nine /cykelverkstad-*-linkoping variants.
+// =====================================================
+const cykelIndexableRoutes = (): StaticSeoRoute[] => [
   {
     path: '/',
     title: 'Cykelhjälpen Linköping – jämför priser från cykelverkstäder',
@@ -38,33 +44,6 @@ const indexableRoutes = (): StaticSeoRoute[] => [
       { label: 'För cykelverkstäder', href: '/for-cykelverkstader' },
     ],
   },
-  {
-    path: '/skicka-arende',
-    title: 'Skicka cykelärende – få upp till fem offerter | Cykelhjälpen',
-    description: 'Beskriv felet på cykeln på två minuter och få upp till fem offerter från lokala cykelverkstäder i Linköping. Gratis och utan konto.',
-    h1: 'Skicka ditt cykelärende',
-    priority: 0.95,
-    changefreq: 'weekly',
-    lastmod: today(),
-  },
-  {
-    path: '/registrera/verkstad',
-    title: 'Registrera din cykelverkstad | Cykelhjälpen',
-    description: 'Anslut din cykelverkstad till Cykelhjälpen och få relevanta lokala leads i Linköping. Betala endast per skickad offert.',
-    h1: 'Registrera din cykelverkstad',
-    priority: 0.7,
-    changefreq: 'monthly',
-    lastmod: today(),
-  },
-  {
-    path: '/for-cykelverkstader',
-    title: 'För cykelverkstäder – så fungerar Cykelhjälpen',
-    description: 'Få lokala leads från cyklister i Linköping. Betala 50 kr exkl. moms per skickad offert. Inga abonnemang.',
-    h1: 'För cykelverkstäder',
-    priority: 0.8,
-    changefreq: 'monthly',
-    lastmod: today(),
-  },
   ...CYKEL_SEO_PAGES.map<StaticSeoRoute>((p) => ({
     path: `/${p.slug}`,
     title: p.title,
@@ -75,26 +54,56 @@ const indexableRoutes = (): StaticSeoRoute[] => [
     lastmod: today(),
     faq: p.faq,
   })),
-  { path: '/integritetspolicy', title: 'Integritetspolicy | Cykelhjälpen', description: 'Så hanterar Cykelhjälpen personuppgifter, cookies och dataskydd.', h1: 'Integritetspolicy', priority: 0.3, changefreq: 'yearly', lastmod: today() },
-  { path: '/villkor', title: 'Allmänna villkor | Cykelhjälpen', description: 'Villkor för att använda Cykelhjälpen som cyklist och som ansluten cykelverkstad.', h1: 'Allmänna villkor', priority: 0.3, changefreq: 'yearly', lastmod: today() },
-  { path: '/cookies', title: 'Cookiepolicy | Cykelhjälpen', description: 'Information om hur Cykelhjälpen använder cookies och liknande tekniker.', h1: 'Cookiepolicy', priority: 0.3, changefreq: 'yearly', lastmod: today() },
 ]
 
-// Legacy Updro routes that should be noindexed if they happen to render
-const NOINDEX_PATHS = [
+// Paths that should be noindexed on the Cykelhjälpen host (legacy Updro paths
+// plus Cykelhjälpen-specific private/legal pages we don't want in search).
+const CYKEL_NOINDEX_PATHS = [
+  // Cykelhjälpen private/legal
+  '/skicka-arende', '/registrera/verkstad', '/for-cykelverkstader',
+  '/mitt-arende', '/integritetspolicy', '/villkor', '/cookies',
+  // Legacy Updro paths
   '/publicera', '/byraer', '/priser', '/om-oss', '/artiklar', '/verktyg', '/stader',
   '/jamfor', '/hitta-webbyra', '/hitta-seo-byra', '/hitta-digital-byra',
   '/redaktionell-policy', '/metod', '/landing', '/landing/byra', '/sitemap',
   '/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord',
   '/updro', '/partna-alternativ',
-  // Updro pillars
   '/webbutveckling', '/ehandel', '/digital-marknadsforing', '/grafisk-design',
   '/seo', '/app-utveckling', '/mjukvaruutveckling', '/google-ads', '/ux-ui-design', '/ai-utveckling',
 ]
 
-const noindexRoutes = (): StaticSeoRoute[] => NOINDEX_PATHS.map((path) => ({
+// =====================================================
+// Updro — indexable routes (legacy Updro surface kept intact)
+// =====================================================
+const UPDRO_INDEXABLE_PATHS = [
+  '/', '/publicera', '/byraer', '/priser', '/om-oss', '/artiklar', '/verktyg',
+  '/stader', '/jamfor', '/hitta-webbyra', '/hitta-seo-byra', '/hitta-digital-byra',
+  '/redaktionell-policy', '/metod', '/partna-alternativ',
+  '/webbutveckling', '/ehandel', '/digital-marknadsforing', '/grafisk-design',
+  '/seo', '/app-utveckling', '/mjukvaruutveckling', '/google-ads', '/ux-ui-design', '/ai-utveckling',
+  '/integritetspolicy', '/villkor', '/cookies',
+]
+
+const updroIndexableRoutes = (): StaticSeoRoute[] => UPDRO_INDEXABLE_PATHS.map((path) => ({
   path,
-  title: 'Cykelhjälpen',
+  title: 'Updro',
+  description: '',
+  h1: '',
+  priority: path === '/' ? 1.0 : 0.6,
+  changefreq: 'weekly' as const,
+  lastmod: today(),
+}))
+
+// Paths noindexed on Updro host (Cykelhjälpen-only surface)
+const UPDRO_NOINDEX_PATHS = [
+  '/skicka-arende', '/registrera/verkstad', '/for-cykelverkstader', '/mitt-arende',
+  ...CYKEL_SEO_PAGES.map((p) => `/${p.slug}`),
+  '/dashboard', '/admin', '/logga-in', '/registrera', '/aterstall-losenord',
+]
+
+const noindexRoutesFor = (paths: string[]): StaticSeoRoute[] => paths.map((path) => ({
+  path,
+  title: '',
   description: '',
   h1: '',
   priority: 0.1,
@@ -102,52 +111,65 @@ const noindexRoutes = (): StaticSeoRoute[] => NOINDEX_PATHS.map((path) => ({
   noindex: true,
 }))
 
-export const getAllStaticSeoRoutes = () => {
+// =====================================================
+// Public API (host-aware, defaults to cykelhjalpen)
+// =====================================================
+const indexableFor = (host: SiteHost): StaticSeoRoute[] =>
+  host === 'updro' ? updroIndexableRoutes() : cykelIndexableRoutes()
+
+const noindexFor = (host: SiteHost): StaticSeoRoute[] =>
+  noindexRoutesFor(host === 'updro' ? UPDRO_NOINDEX_PATHS : CYKEL_NOINDEX_PATHS)
+
+export const getAllStaticSeoRoutes = (host: SiteHost = 'cykelhjalpen') => {
   const map = new Map<string, StaticSeoRoute>()
-  for (const route of [...indexableRoutes(), ...noindexRoutes()]) map.set(route.path, route)
+  for (const route of [...indexableFor(host), ...noindexFor(host)]) map.set(route.path, route)
   return [...map.values()]
 }
 
-export const getIndexableSeoRoutes = () => getAllStaticSeoRoutes().filter((r) => !r.noindex)
-export const getNoindexSeoRoutes = () => getAllStaticSeoRoutes().filter((r) => r.noindex)
+export const getIndexableSeoRoutes = (host: SiteHost = 'cykelhjalpen') =>
+  getAllStaticSeoRoutes(host).filter((r) => !r.noindex)
+export const getNoindexSeoRoutes = (host: SiteHost = 'cykelhjalpen') =>
+  getAllStaticSeoRoutes(host).filter((r) => r.noindex)
 
-const urlset = (routes: StaticSeoRoute[]) =>
+const urlset = (host: SiteHost, routes: StaticSeoRoute[]) =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes
-    .map((r) => `  <url><loc>${abs(r.path)}</loc><lastmod>${r.lastmod || today()}</lastmod><changefreq>${r.changefreq}</changefreq><priority>${r.priority.toFixed(1)}</priority></url>`)
+    .map((r) => `  <url><loc>${absFor(host, r.path)}</loc><lastmod>${r.lastmod || today()}</lastmod><changefreq>${r.changefreq}</changefreq><priority>${r.priority.toFixed(1)}</priority></url>`)
     .join('\n')}\n</urlset>`
 
-export const generateSitemapXml = () => urlset(getIndexableSeoRoutes())
-export const generateSectionSitemapXml = (_s: SitemapSection) => generateSitemapXml()
-export const generateSitemapIndexXml = () =>
-  `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>${SITE_URL}/sitemap.xml</loc><lastmod>${today()}</lastmod></sitemap>\n</sitemapindex>`
+export const generateSitemapXml = (host: SiteHost = 'cykelhjalpen') =>
+  urlset(host, getIndexableSeoRoutes(host))
+export const generateSectionSitemapXml = (_s: SitemapSection, host: SiteHost = 'cykelhjalpen') =>
+  generateSitemapXml(host)
+export const generateSitemapIndexXml = (host: SiteHost = 'cykelhjalpen') =>
+  `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>${siteUrlFor(host)}/sitemap.xml</loc><lastmod>${today()}</lastmod></sitemap>\n</sitemapindex>`
 
-const jsonLd = (route: StaticSeoRoute) =>
+const jsonLd = (host: SiteHost, route: StaticSeoRoute) =>
   JSON.stringify({
     '@context': 'https://schema.org',
     '@graph': [
-      { '@type': 'Organization', '@id': `${SITE_URL}/#organization`, name: 'Cykelhjälpen', legalName: 'Aurora Media AB', url: SITE_URL },
-      { '@type': 'WebSite', '@id': `${SITE_URL}/#website`, url: SITE_URL, name: 'Cykelhjälpen', publisher: { '@id': `${SITE_URL}/#organization` }, inLanguage: 'sv-SE' },
-      { '@type': 'WebPage', '@id': `${abs(route.path)}#webpage`, url: abs(route.path), name: route.title, headline: route.h1, description: route.description, inLanguage: 'sv-SE' },
+      { '@type': 'Organization', '@id': `${siteUrlFor(host)}/#organization`, name: host === 'updro' ? 'Updro' : 'Cykelhjälpen', legalName: 'Aurora Media AB', url: siteUrlFor(host) },
+      { '@type': 'WebSite', '@id': `${siteUrlFor(host)}/#website`, url: siteUrlFor(host), name: host === 'updro' ? 'Updro' : 'Cykelhjälpen', publisher: { '@id': `${siteUrlFor(host)}/#organization` }, inLanguage: 'sv-SE' },
+      { '@type': 'WebPage', '@id': `${absFor(host, route.path)}#webpage`, url: absFor(host, route.path), name: route.title, headline: route.h1, description: route.description, inLanguage: 'sv-SE' },
       ...(route.faq?.length
         ? [{ '@type': 'FAQPage', mainEntity: route.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }]
         : []),
     ],
   }).replace(/</g, '\\u003c')
 
-const head = (route: StaticSeoRoute) =>
+const head = (host: SiteHost, route: StaticSeoRoute) =>
   [
     `<title>${esc(route.title)}</title>`,
     `<meta name="description" content="${esc(route.description)}" />`,
     `<meta name="robots" content="${route.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}" />`,
-    `<link rel="canonical" href="${abs(route.path)}" />`,
+    `<link rel="canonical" href="${absFor(host, route.path)}" />`,
     `<meta property="og:type" content="website" />`,
-    `<meta property="og:url" content="${abs(route.path)}" />`,
+    `<meta property="og:url" content="${absFor(host, route.path)}" />`,
     `<meta property="og:title" content="${esc(route.title)}" />`,
     `<meta property="og:description" content="${esc(route.description)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${esc(route.title)}" />`,
     `<meta name="twitter:description" content="${esc(route.description)}" />`,
-    `<script type="application/ld+json">${jsonLd(route)}</script>`,
+    `<script type="application/ld+json">${jsonLd(host, route)}</script>`,
   ].join('\n    ')
 
 const body = (route: StaticSeoRoute) =>
@@ -161,16 +183,16 @@ const body = (route: StaticSeoRoute) =>
       : ''
   }</main>`
 
-export const renderStaticHtml = (template: string, route: StaticSeoRoute) => {
+export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: SiteHost = 'cykelhjalpen') => {
   let html = template
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(route.title)}</title>`)
     .replace(/<meta name="description" content="[^"]*"\s*\/?>/, `<meta name="description" content="${esc(route.description)}" />`)
     .replace(/<meta name="robots" content="[^"]*"\s*\/?>/, `<meta name="robots" content="${route.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}" />`)
-    .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/, `<link rel="canonical" href="${abs(route.path)}" />`)
+    .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/, `<link rel="canonical" href="${absFor(host, route.path)}" />`)
   html = html
     .replace(/<meta property="og:[^>]+>\n?/g, '')
     .replace(/<meta name="twitter:[^>]+>\n?/g, '')
     .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, '')
-  html = html.replace('</head>', `    ${head(route)}\n  </head>`)
+  html = html.replace('</head>', `    ${head(host, route)}\n  </head>`)
   return html.replace(/<div id="root">[\s\S]*?<\/div>/, `<div id="root">${body(route)}</div>`)
 }
