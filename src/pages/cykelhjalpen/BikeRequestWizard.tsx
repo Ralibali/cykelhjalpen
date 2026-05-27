@@ -14,6 +14,7 @@ import { Bike, Camera, ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-reac
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { Helmet } from 'react-helmet-async'
+import Turnstile from '@/components/cykelhjalpen/Turnstile'
 
 const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat']
 const REPAIR_CATEGORIES = [
@@ -54,6 +55,7 @@ const BikeRequestWizard = () => {
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [files, setFiles] = useState<File[]>([])
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [form, setForm] = useState({
     bike_type: '',
     repair_category: '',
@@ -104,25 +106,32 @@ const BikeRequestWizard = () => {
       toast.error(parsed.error.issues[0]?.message || 'Något saknas')
       return
     }
+    if (!turnstileToken) {
+      toast.error('Bekräfta säkerhetskontrollen innan du skickar')
+      return
+    }
     setSubmitting(true)
     try {
-      const { data: rows, error } = await supabase.rpc('submit_bike_repair_request', {
-        p_bike_type: form.bike_type,
-        p_repair_category: form.repair_category,
-        p_description: form.description,
-        p_area: form.area || null,
-        p_postcode: form.postcode || null,
-        p_urgency: form.urgency,
-        p_can_drop_off: form.can_drop_off,
-        p_wants_pickup: form.wants_pickup,
-        p_customer_name: form.customer_name,
-        p_customer_email: form.customer_email,
-        p_customer_phone: form.customer_phone || null,
-        p_city: 'Linköping',
+      const { data: req, error } = await supabase.functions.invoke('submit-bike-request', {
+        body: {
+          bike_type: form.bike_type,
+          repair_category: form.repair_category,
+          description: form.description,
+          area: form.area || null,
+          postcode: form.postcode || null,
+          urgency: form.urgency,
+          can_drop_off: form.can_drop_off,
+          wants_pickup: form.wants_pickup,
+          customer_name: form.customer_name,
+          customer_email: form.customer_email,
+          customer_phone: form.customer_phone || null,
+          city: 'Linköping',
+          turnstile_token: turnstileToken,
+        },
       })
       if (error) throw error
-      const req = Array.isArray(rows) ? rows[0] : rows
-      if (!req) throw new Error('Kunde inte skapa ärende')
+      if (!req?.id) throw new Error(req?.error || 'Kunde inte skapa ärende')
+
 
       // Upload images to private bucket; store storage path (signed URLs generated on read)
       for (const file of files) {
@@ -288,6 +297,13 @@ const BikeRequestWizard = () => {
                     ))}
                   </div>
                 )}
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground mb-2">Säkerhetskontroll</p>
+                  <Turnstile
+                    onVerify={(t) => setTurnstileToken(t)}
+                    onExpire={() => setTurnstileToken(null)}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -301,7 +317,7 @@ const BikeRequestWizard = () => {
                 Fortsätt <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={submit} disabled={submitting} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={submit} disabled={submitting || !turnstileToken} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
                 Skicka ärende
               </Button>
