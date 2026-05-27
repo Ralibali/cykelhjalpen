@@ -218,6 +218,12 @@ const AppRoutes = () => {
           <Route path="/villkor" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
 
+          {/* Shared auth + admin entry — rendered on both hosts */}
+          <Route path="/logga-in" element={<LoginPage />} />
+          <Route path="/registrera" element={<RegisterPage />} />
+          <Route path="/aterstall-losenord" element={<PlaceholderPage title="Återställ lösenord" />} />
+          <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+
           {/* ============ Updro-only routes ============ */}
           {host === 'updro' && (
             <>
