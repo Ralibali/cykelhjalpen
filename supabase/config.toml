@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.get-bike-request-by-token]
 verify_jwt = false
+
+[functions.submit-bike-request]
+verify_jwt = false
+
+[functions.get-turnstile-key]
+verify_jwt = false
