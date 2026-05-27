@@ -136,7 +136,19 @@ const RegisterWorkshopPage = () => {
               ))}
             </div>
           </div>
-          <Button type="submit" disabled={loading} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+          <label className="flex items-start gap-2 text-sm cursor-pointer pt-2 border-t">
+            <input
+              type="checkbox"
+              checked={form.terms_accepted}
+              onChange={(e) => update('terms_accepted', e.target.checked)}
+              className="mt-1 h-4 w-4"
+              required
+            />
+            <span className="text-muted-foreground leading-relaxed">
+              Jag godkänner <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>, och förstår att <strong className="text-foreground">50 kr exkl. moms (62,50 kr inkl. moms)</strong> debiteras automatiskt via Stripe varje gång jag skickar en offert.
+            </span>
+          </label>
+          <Button type="submit" disabled={loading || !form.terms_accepted} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Skicka ansökan
           </Button>
