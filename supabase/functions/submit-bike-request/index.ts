@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
         if (!workshops || workshops.length === 0) return
 
         const subject = `Ny cykelförfrågan i ${body.city ?? 'Linköping'} – ${body.repair_category}`
-        const dashboardUrl = 'https://cykelhjalpen.lovable.app/dashboard/verkstad'
+        const dashboardUrl = 'https://cykelhjalpen.se/dashboard/verkstad'
         const descShort = body.description.length > 240
           ? body.description.slice(0, 240) + '…'
           : body.description
