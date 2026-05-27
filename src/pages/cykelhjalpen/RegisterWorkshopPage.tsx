@@ -88,7 +88,7 @@ const RegisterWorkshopPage = () => {
           <div className="sticker bg-accent p-2"><Wrench className="h-5 w-5 text-accent-foreground" /></div>
           <h1 className="font-display text-3xl font-bold">Anslut din verkstad</h1>
         </div>
-        <p className="text-muted-foreground mb-8">Gratis att gå med. Du betalar bara femtio kronor per offert du skickar.</p>
+        <p className="text-muted-foreground mb-8">Gratis att gå med. Du betalar bara femtio kronor exkl. moms per offert du skickar (62,50 kr inkl. moms).</p>
 
         <form onSubmit={submit} className="sticker bg-card p-6 space-y-4">
           <div>
