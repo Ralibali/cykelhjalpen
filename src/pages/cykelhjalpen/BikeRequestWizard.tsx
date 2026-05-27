@@ -14,6 +14,7 @@ import { Bike, Camera, ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-reac
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { Helmet } from 'react-helmet-async'
+import Turnstile from '@/components/cykelhjalpen/Turnstile'
 
 const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat']
 const REPAIR_CATEGORIES = [
