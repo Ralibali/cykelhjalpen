@@ -169,10 +169,8 @@ const AppRoutes = () => {
           {/* Root: differs by host */}
           <Route path="/" element={host === 'updro' ? <UpdroIndex /> : <Index />} />
 
-          {/* /updro stays available on cykelhjalpen host as an opt-in */}
-          {host === 'cykelhjalpen' && (
-            <Route path="/updro" element={<UpdroIndex />} />
-          )}
+
+
 
           {/* ============ Cykelhjälpen-only routes ============ */}
           {host === 'cykelhjalpen' && (

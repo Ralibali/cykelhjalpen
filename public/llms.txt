@@ -17,4 +17,4 @@
 Gratis för cyklister. Verkstäder betalar 50 kr exkl. moms per skickad offert via Stripe. Max fem offerter per ärende.
 
 ## Kontakt
-info@auroramedia.se — Aurora Media AB (org.nr 559272-0220), säte Linköping.
+info@cykelhjalpen.se — Cykelhjälpen, säte Linköping.

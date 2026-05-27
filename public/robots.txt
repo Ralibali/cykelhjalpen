@@ -6,25 +6,8 @@ Disallow: /dashboard
 Disallow: /dashboard/
 Disallow: /logga-in
 Disallow: /registrera
-Disallow: /registrera/byra
+Disallow: /registrera/verkstad
 Disallow: /aterstall-losenord
 Disallow: /mitt-arende/
-Disallow: /landing
-Disallow: /landing/
-Disallow: /updro
-Disallow: /publicera
-Disallow: /byraer
-Disallow: /priser
-Disallow: /artiklar
-Disallow: /verktyg
-Disallow: /stader
-Disallow: /jamfor
-Disallow: /hitta-webbyra
-Disallow: /hitta-seo-byra
-Disallow: /hitta-digital-byra
-Disallow: /partna-alternativ
-Disallow: /redaktionell-policy
-Disallow: /metod
-Disallow: /sitemap
 
 Sitemap: https://cykelhjalpen.se/sitemap.xml
