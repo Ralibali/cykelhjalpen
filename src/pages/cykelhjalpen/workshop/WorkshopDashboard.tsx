@@ -37,7 +37,7 @@ const WorkshopDashboard = () => {
         <ol className="list-decimal pl-5 space-y-1 text-sm">
           <li>Bläddra bland öppna ärenden från cyklister i Linköping.</li>
           <li>Skriv ditt prisförslag och välj “Skicka offert”.</li>
-          <li>Du betalar femtio kronor per offert. Då frigörs kundens kontaktuppgifter.</li>
+          <li>Du betalar femtio kronor exkl. moms per offert (62,50 kr inkl. moms). Då frigörs kundens kontaktuppgifter.</li>
           <li>Max fem verkstäder svarar per ärende.</li>
         </ol>
       </div>
