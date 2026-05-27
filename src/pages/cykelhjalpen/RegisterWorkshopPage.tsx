@@ -30,7 +30,7 @@ const RegisterWorkshopPage = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.terms_accepted) return toast.error('Du måste godkänna villkoren')
-    if (form.password.length < 8) return toast.error('Lösenord minst åtta tecken')
+    if (form.password.length < 6) return toast.error('Lösenord minst sex tecken')
     setLoading(true)
     try {
       const { data: signUp, error: signErr } = await supabase.auth.signUp({
@@ -116,7 +116,7 @@ const RegisterWorkshopPage = () => {
             </div>
             <div>
               <Label htmlFor="pw">Lösenord</Label>
-              <Input id="pw" type="password" required minLength={8} value={form.password} onChange={(e) => update('password', e.target.value)} />
+              <Input id="pw" type="password" required minLength={6} value={form.password} onChange={(e) => update('password', e.target.value)} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
