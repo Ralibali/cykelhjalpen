@@ -79,7 +79,7 @@ const RegisterWorkshopPage = () => {
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>Anslut din cykelverkstad — Linköping | Cykelhjälpen</title>
-        <meta name="description" content="Få fler kunder till din cykelverkstad i Linköping. Registrera dig gratis och betala bara för svaren du faktiskt skickar — femtio kronor per offert." />
+        <meta name="description" content="Få fler kunder till din cykelverkstad i Linköping. Registrera dig gratis och betala bara för svaren du faktiskt skickar — femtio kronor exklusive moms per offert." />
         <link rel="canonical" href="/registrera/verkstad" />
       </Helmet>
       <CykelNavbar />
