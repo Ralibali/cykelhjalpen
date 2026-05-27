@@ -72,6 +72,64 @@ Deno.serve(async (req) => {
     })
     if (error) throw error
     const row = Array.isArray(data) ? data[0] : data
+
+    // Notify approved workshops in the same city (fire-and-forget)
+    ;(async () => {
+      try {
+        const { data: workshops } = await supabase
+          .from('workshops')
+          .select('email, company_name, city')
+          .eq('approved', true)
+          .eq('city', body.city ?? 'Linköping')
+
+        if (!workshops || workshops.length === 0) return
+
+        const subject = `Ny cykelförfrågan i ${body.city ?? 'Linköping'} – ${body.repair_category}`
+        const dashboardUrl = 'https://cykelhjalpen.lovable.app/dashboard/verkstad'
+        const descShort = body.description.length > 240
+          ? body.description.slice(0, 240) + '…'
+          : body.description
+
+        await Promise.allSettled(workshops.map((w: any) =>
+          fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-transactional-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            },
+            body: JSON.stringify({
+              to: w.email,
+              subject,
+              html: `
+                <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+                  <h2 style="margin:0 0 16px">Ny cykelförfrågan i ${body.city ?? 'Linköping'}</h2>
+                  <p>Hej ${w.company_name},</p>
+                  <p>En ny kund söker hjälp med sin cykel:</p>
+                  <table style="border-collapse:collapse;margin:16px 0">
+                    <tr><td style="padding:4px 12px 4px 0;color:#555">Cykeltyp:</td><td><strong>${body.bike_type}</strong></td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#555">Kategori:</td><td><strong>${body.repair_category}</strong></td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#555">Brådska:</td><td><strong>${body.urgency}</strong></td></tr>
+                    ${body.area ? `<tr><td style="padding:4px 12px 4px 0;color:#555">Område:</td><td>${body.area}</td></tr>` : ''}
+                  </table>
+                  <p style="background:#f5f5f5;padding:12px;border-radius:6px">${descShort}</p>
+                  <p style="margin-top:24px">
+                    <a href="${dashboardUrl}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">
+                      Logga in och lägg offert
+                    </a>
+                  </p>
+                  <p style="color:#888;font-size:12px;margin-top:32px">
+                    Cykelhjälpen – Linköping. Du får detta mejl som godkänd verkstad i vårt nätverk.
+                  </p>
+                </div>
+              `,
+            }),
+          }).catch((err) => console.error('Notify workshop failed', w.email, err))
+        ))
+      } catch (err) {
+        console.error('Workshop notification batch failed', err)
+      }
+    })()
+
     return new Response(JSON.stringify(row), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
