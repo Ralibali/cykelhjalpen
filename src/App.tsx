@@ -11,6 +11,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import CookieConsent from "@/components/CookieConsent";
 import { COMPARISON_PAGES } from "./lib/seoComparisons";
 import { getNoindexSeoRoutes } from "./lib/seoStatic";
+import { getCurrentHost } from "./lib/hostConfig";
 import SupplierLayout from "@/components/SupplierLayout";
 import BuyerLayout from "@/components/BuyerLayout";
 
@@ -128,12 +129,12 @@ const PageLoader = () => (
 
 const PageTracker = () => { usePageTracking(); return null; };
 
-const NoindexGuard = () => {
+const NoindexGuard = ({ host }: { host: 'cykelhjalpen' | 'updro' }) => {
   const location = useLocation();
 
   useEffect(() => {
     const path = location.pathname.replace(/\/$/, '') || '/';
-    const noindexPaths = new Set(getNoindexSeoRoutes().map(route => route.path));
+    const noindexPaths = new Set(getNoindexSeoRoutes(host).map(route => route.path));
     const privatePrefixes = ['/admin', '/dashboard'];
     const privateExact = ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/landing', '/landing/byra'];
     const shouldNoindex = noindexPaths.has(path) || privateExact.includes(path) || privatePrefixes.some(prefix => path === prefix || path.startsWith(`${prefix}/`));
@@ -152,7 +153,7 @@ const NoindexGuard = () => {
 
     applyNoindex();
     window.setTimeout(applyNoindex, 0);
-  }, [location.pathname]);
+  }, [location.pathname, host]);
 
   return null;
 };
