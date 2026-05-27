@@ -54,11 +54,15 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "payment",
+      automatic_tax: { enabled: true },
+      customer_update: { address: "auto", name: "auto" },
+      billing_address_collection: "required",
       line_items: [{
         price_data: {
           currency: "sek",
           product_data: { name: "Cykelhjälpen — offert till kund", description: `Lead-avgift för ärende ${resp.request_id.slice(0, 8)}` },
           unit_amount: 5000,
+          tax_behavior: "exclusive",
         },
         quantity: 1,
       }],
