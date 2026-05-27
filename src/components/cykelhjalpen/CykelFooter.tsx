@@ -34,17 +34,20 @@ const CykelFooter = () => (
       <div>
         <h3 className="font-display font-semibold mb-3">Information</h3>
         <ul className="space-y-2 text-sm">
+          <li><Link to="/villkor" className="hover:text-primary">Allmänna villkor</Link></li>
           <li><Link to="/integritetspolicy" className="hover:text-primary">Integritetspolicy</Link></li>
-          <li><Link to="/villkor" className="hover:text-primary">Villkor</Link></li>
           <li><Link to="/cookies" className="hover:text-primary">Cookies</Link></li>
         </ul>
       </div>
     </div>
 
     <div className="border-t border-border">
-      <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+      <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+        <div className="text-center md:text-left">
+          <p className="font-medium text-foreground/80">Aurora Media AB</p>
+          <p>Org.nr: 559272-0220 · Säte: Linköping · <a href="mailto:info@auroramedia.se" className="hover:text-primary">info@auroramedia.se</a></p>
+        </div>
         <p>© {new Date().getFullYear()} Cykelhjälpen. Alla rättigheter reserverade.</p>
-        <p>Kontakt: <a href="mailto:info@auroramedia.se" className="hover:text-primary">info@auroramedia.se</a></p>
       </div>
     </div>
   </footer>

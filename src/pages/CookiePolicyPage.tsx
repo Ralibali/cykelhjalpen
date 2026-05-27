@@ -7,14 +7,14 @@ import { setSEOMeta } from '@/lib/seoHelpers'
 const CookiePolicyPage = () => {
   useEffect(() => {
     setSEOMeta({
-      title: 'Cookiepolicy | Updro',
-      description: 'Läs om hur Updro använder nödvändiga cookies, samtycke, Google Analytics och Google Ads.',
-      canonical: 'https://updro.se/cookies',
+      title: 'Cookiepolicy | Cykelhjälpen',
+      description: 'Läs om hur Cykelhjälpen använder nödvändiga cookies, samtycke, Google Analytics och Google Ads.',
+      canonical: 'https://cykelhjalpen.se/cookies',
     })
   }, [])
 
   const openCookieSettings = () => {
-    window.dispatchEvent(new Event('updro:open-cookie-settings'))
+    window.dispatchEvent(new Event('cookie-settings:open'))
   }
 
   return (
@@ -33,7 +33,7 @@ const CookiePolicyPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">2. Vem ansvarar?</h2>
-              <p><strong>Aurora Media AB</strong>, org.nr. <strong>559272-0220</strong>, ansvarar för användningen av cookies på Updro.</p>
+              <p><strong>Aurora Media AB</strong>, org.nr. <strong>559272-0220</strong>, ansvarar för användningen av cookies på Cykelhjälpen.</p>
               <p className="mt-1">Kontakt: <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
             </div>
 

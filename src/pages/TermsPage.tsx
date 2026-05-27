@@ -6,9 +6,9 @@ import { setSEOMeta } from '@/lib/seoHelpers'
 const TermsPage = () => {
   useEffect(() => {
     setSEOMeta({
-      title: 'Allmänna villkor | Updro',
-      description: 'Läs Updros allmänna villkor för användning av tjänsten. Gäller för både beställare och byråer.',
-      canonical: 'https://updro.se/villkor',
+      title: 'Allmänna villkor | Cykelhjälpen',
+      description: 'Allmänna villkor för Cykelhjälpen.se — lokal leadplattform för cykelreparation i Linköping.',
+      canonical: 'https://cykelhjalpen.se/villkor',
     })
   }, [])
   return (
@@ -22,121 +22,65 @@ const TermsPage = () => {
           <section className="space-y-6 text-sm leading-relaxed text-foreground/80">
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">1. Om tjänsten</h2>
-              <p>Updro.se ("Tjänsten") drivs av Aurora Media AB, org.nr. 559272-0220, och är en marknadsplats som förmedlar kontakt mellan beställare av digitala tjänster och byråer/konsulter ("Leverantörer").</p>
-              <p className="mt-2">Updro är en förmedlingsplattform och inte part i avtal som ingås mellan beställare och leverantörer. Ansvaret för leverans, kvalitet och betalning ligger hos respektive part.</p>
+              <p>Cykelhjälpen.se ("Tjänsten") drivs av Aurora Media AB, org.nr. 559272-0220, med säte i Linköping. Tjänsten är en lokal leadplattform där cyklister i Linköping kan beskriva ett cykelproblem och få upp till fem prisförslag från anslutna cykelverkstäder.</p>
+              <p className="mt-2">Cykelhjälpen är en förmedlingsplattform och är inte part i avtalet mellan cyklist och verkstad. Ansvaret för utfört arbete, garanti och betalning ligger hos respektive part.</p>
             </div>
 
             <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">2. Registrering och konto</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">2. För cyklister</h2>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Du måste vara minst 18 år och behörig att ingå avtal.</li>
-                <li>Juridiska personer måste registreras av en behörig företrädare.</li>
+                <li>Tjänsten är helt gratis för cyklister och kräver inget konto.</li>
+                <li>Du förbinder dig att lämna korrekta uppgifter om ditt ärende och dina kontaktuppgifter.</li>
+                <li>Dina kontaktuppgifter delas med en verkstad först efter att verkstaden har betalat lead-avgiften (se §4). Maximalt fem verkstäder per ärende får dina kontaktuppgifter.</li>
+                <li>Du väljer själv om du vill anlita någon av de verkstäder som svarar.</li>
+                <li>Avtal om reparation, garanti och betalning ingås direkt mellan dig och verkstaden.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">3. För cykelverkstäder</h2>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Du måste vara minst 18 år och behörig att ingå avtal å verkstadens vägnar.</li>
+                <li>Verkstaden måste godkännas manuellt av Cykelhjälpen innan den får tillgång till ärenden.</li>
                 <li>Du ansvarar för att uppgifterna i ditt konto är korrekta och uppdaterade.</li>
-                <li>Du ansvarar för all aktivitet som sker under ditt konto.</li>
-                <li>Det är inte tillåtet att skapa fler än ett konto per person/organisation.</li>
+                <li>Du ansvarar för att lämnade offerter och utfört arbete uppfyller svensk konsumentlagstiftning, inklusive Konsumenttjänstlagen och Köplagen där den är tillämplig.</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">3. Beställare</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">4. Lead-avgift och betalning (verkstäder)</h2>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Det är gratis att publicera uppdrag och ta emot offerter.</li>
-                <li>Du förbinder dig att lämna korrekta och tillräckliga uppgifter om ditt uppdrag.</li>
-                <li>Du ansvarar för att utvärdera och välja leverantör.</li>
-                <li>Avtal om leverans ingås direkt mellan dig och leverantören.</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">4. Leverantörer (byråer/konsulter)</h2>
-              <h3 className="font-semibold text-foreground mt-3 mb-1">4.1 Provperiod</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Nya leverantörer erbjuds en kostnadsfri provperiod med fem lead-krediter under sju dagar.</li>
-                <li>Provperioden avslutas automatiskt efter sju dagar eller när alla fem leads har använts.</li>
-                <li>Inget kreditkort krävs under provperioden.</li>
-              </ul>
-
-              <h3 className="font-semibold text-foreground mt-3 mb-1">4.2 Priser och betalning</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li><strong>Pay as you go:</strong> 119 kr per lead (öppningserbjudande, exkl. moms)</li>
-                <li><strong>Standard:</strong> 699 kr/månad, tio leads inkluderat (exkl. moms)</li>
-                <li><strong>Premium:</strong> 1 490 kr/månad, obegränsat antal leads (exkl. moms)</li>
-                <li>Alla priser anges i svenska kronor, exklusive moms om inte annat anges.</li>
-                <li>Betalning sker via Stripe. Du ansvarar för att giltiga betalningsuppgifter finns.</li>
-              </ul>
-
-              <h3 className="font-semibold text-foreground mt-3 mb-1">4.3 Fakturering</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Abonnemang faktureras månadsvis i förskott.</li>
-                <li>Enskilda leads faktureras vid köp.</li>
-                <li>Fakturor finns tillgängliga i ditt konto under Fakturering.</li>
+                <li>Det är gratis att registrera och godkänna en verkstad.</li>
+                <li>Varje skickad offert kostar <strong>50 kr exklusive moms (62,50 kr inkl. moms)</strong> och debiteras via Stripe vid avsändandet.</li>
+                <li>Moms beräknas automatiskt baserat på verkstadens fakturaadress.</li>
+                <li>Maximalt fem verkstäder kan svara per ärende — först-till-kvarn-principen gäller.</li>
+                <li>När verkstaden har betalat lead-avgiften frigörs cyklistens kontaktuppgifter i verkstadens dashboard.</li>
+                <li>Fakturor och kvitton finns tillgängliga i verkstadens dashboard.</li>
               </ul>
             </div>
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">5. Ångerrätt</h2>
-              <p>Enligt <strong>Distansavtalslagen (2005:59)</strong> har konsumenter 14 dagars ångerrätt från det att avtalet ingicks.</p>
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>Ångerrätten gäller för prenumerationer (Standard/Premium-planer).</li>
-                <li>Ångerrätten gäller <strong>inte</strong> för enskilda lead-köp (Pay as you go) som redan har levererats/använts, eftersom tjänsten har påbörjats med konsumentens uttryckliga samtycke (Art. 16c Konsumenträttsdirektivet).</li>
-                <li>För att utöva ångerrätten, kontakta oss på <a href="mailto:support@updro.se" className="text-primary hover:underline">support@updro.se</a> inom 14 dagar.</li>
-                <li>Återbetalning sker inom 14 dagar efter mottaget ångermeddelande, till samma betalningsmetod.</li>
-              </ul>
-
-              <div className="bg-muted/50 rounded-xl p-4 mt-3 border">
-                <h4 className="font-semibold text-foreground text-xs mb-2">📋 Ångerblankett</h4>
-                <p className="text-xs">Du kan använda Konsumentverkets standardblankett för att utöva ångerrätten. Skicka den till <a href="mailto:support@updro.se" className="text-primary hover:underline">support@updro.se</a> eller per post till Aurora Media AB, [Adress].</p>
-                <p className="text-xs mt-1">Mall: "Jag meddelar härmed att jag frånträder mitt avtal om följande tjänst: [ange tjänst]. Beställt den: [datum]. Konsumentens namn och adress: [dina uppgifter]. Datum och underskrift."</p>
-              </div>
+              <p>Enligt <strong>Distansavtalslagen (2005:59)</strong> har konsumenter 14 dagars ångerrätt från det att avtalet ingicks. Cykelhjälpen riktar sig till verkstäder som näringsidkare (B2B) — ångerrätten gäller därför normalt inte verkstadsavtalet.</p>
+              <p className="mt-2">För den enskilda offert som verkstaden betalat lead-avgift för: tjänsten anses påbörjad och levererad i samma stund som offerten skickas och cyklistens kontaktuppgifter frigörs. Återbetalning av lead-avgift sker endast om cyklistens kontaktuppgifter saknas eller är felaktiga och Cykelhjälpen inte kan tillhandahålla rättade uppgifter inom sju dagar.</p>
+              <p className="mt-2">Ångerrätt eller återbetalning utövas genom att kontakta <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a>. Adress för skriftlig kontakt: Aurora Media AB, c/o info@auroramedia.se, Linköping.</p>
             </div>
 
             <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">6. Uppsägning av abonnemang</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">6. Ansvarsbegränsning</h2>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Du kan säga upp ditt abonnemang när som helst via Fakturering i ditt konto.</li>
-                <li>Uppsägningen träder i kraft vid utgången av innevarande betalperiod.</li>
-                <li>Inga bindningstider gäller.</li>
-                <li>Outnyttjade lead-krediter återbetalas inte vid uppsägning.</li>
+                <li>Cykelhjälpen ansvarar inte för utfört arbete, garanti, tvister eller skador mellan cyklist och verkstad.</li>
+                <li>Cykelhjälpen garanterar inte kvaliteten på verkstadens arbete eller cyklistens betalningsförmåga.</li>
+                <li>Cykelhjälpens totala ansvar gentemot en verkstad är begränsat till det belopp verkstaden betalat till Cykelhjälpen de senaste tolv månaderna.</li>
+                <li>Cykelhjälpen ansvarar inte för indirekta skador, utebliven vinst eller förlust av data.</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">7. Betalningsskydd (valfritt)</h2>
-              <p>Updro erbjuder valfritt betalningsskydd (escrow) där beställaren kan välja att sätta in projektbeloppet hos Updro.</p>
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>Beloppet hålls av Updro tills beställaren godkänner leveransen.</li>
-                <li>Updros serviceavgift är 4% av projektbeloppet.</li>
-                <li>Vid godkänd leverans utbetalas beloppet minus serviceavgift till leverantören.</li>
-                <li>Vid tvist medierar Updro mellan parterna. Updros beslut är vägledande men inte rättsligt bindande.</li>
-                <li>Betalningsskyddet är helt valfritt — beställare kan välja att betala direkt till leverantören.</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">8. Ansvarsbegränsning</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">7. Förbjudet beteende</h2>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Updro ansvarar inte för avtal, leveranser eller tvister mellan beställare och leverantörer.</li>
-                <li>Updro garanterar inte kvaliteten på leverantörers arbete eller beställares betalningsförmåga.</li>
-                <li>Updros totala ansvar gentemot dig är begränsat till det belopp du betalat till Updro de senaste 12 månaderna.</li>
-                <li>Updro ansvarar inte för indirekta skador, utebliven vinst eller förlust av data.</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">9. Upphovsrätt och innehåll</h2>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Du behåller alla rättigheter till det innehåll du laddar upp.</li>
-                <li>Du ger Updro en icke-exklusiv, avgiftsfri licens att visa ditt innehåll på plattformen.</li>
-                <li>Du ansvarar för att du har rätt att publicera det innehåll du laddar upp.</li>
-                <li>Updro förbehåller sig rätten att ta bort innehåll som bryter mot dessa villkor.</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">10. Förbjudet beteende</h2>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Falska uppgifter, manipulering av omdömen eller missbruk av tjänsten.</li>
-                <li>Försök att kringgå plattformens betalningssystem.</li>
+                <li>Falska ärenden, falska verkstadsuppgifter eller manipulering av offerter.</li>
+                <li>Försök att kringgå plattformens betalningssystem (t.ex. genom att kontakta cyklisten utanför plattformen innan lead-avgiften är betald).</li>
                 <li>Spam, trakasserier eller annan olämplig kommunikation.</li>
                 <li>Automatiserad åtkomst (scraping, bots) utan skriftligt tillstånd.</li>
               </ul>
@@ -144,38 +88,32 @@ const TermsPage = () => {
             </div>
 
             <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">11. Tvistlösning och tillämplig lag</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">8. Personuppgifter</h2>
+              <p>Behandling av personuppgifter beskrivs i vår <a href="/integritetspolicy" className="text-primary hover:underline">integritetspolicy</a>.</p>
+            </div>
+
+            <div>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">9. Tvistlösning och tillämplig lag</h2>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Svensk lag tillämpas på dessa villkor.</li>
                 <li>Tvister ska i första hand lösas genom förhandling.</li>
                 <li>Konsumenter kan vända sig till <strong>Allmänna reklamationsnämnden (ARN)</strong>: <a href="https://www.arn.se" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">www.arn.se</a></li>
                 <li>EU:s plattform för tvistlösning online: <a href="https://ec.europa.eu/odr" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">ec.europa.eu/odr</a></li>
-                <li>Om tvisten inte kan lösas genom förhandling eller ARN, avgörs den av svensk allmän domstol.</li>
+                <li>Om tvisten inte kan lösas genom förhandling avgörs den av svensk allmän domstol med Linköpings tingsrätt som första instans.</li>
               </ul>
             </div>
 
             <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">12. Ändringar av villkoren</h2>
-              <p>Vi förbehåller oss rätten att ändra dessa villkor. Väsentliga ändringar meddelas minst 30 dagar i förväg via e-post eller notis i tjänsten. Fortsatt användning av tjänsten efter ändringsperioden innebär att du accepterar de uppdaterade villkoren.</p>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">10. Ändringar av villkoren</h2>
+              <p>Vi förbehåller oss rätten att ändra dessa villkor. Väsentliga ändringar meddelas verkstäder minst 30 dagar i förväg via e-post eller notis i tjänsten. Fortsatt användning av tjänsten efter ändringsperioden innebär att verkstaden accepterar de uppdaterade villkoren.</p>
             </div>
 
             <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">13. Cykelhjälpen.se — särskilda villkor</h2>
-              <p>För cyklister är Cykelhjälpen.se gratis. För anslutna cykelverkstäder gäller följande:</p>
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>Verkstaden måste godkännas av admin innan den kan se ärenden eller skicka offerter.</li>
-                <li>Varje skickad offert kostar femtio kronor (50 kr) exklusive moms (62,50 kr inkl. moms) och debiteras via Stripe vid avsändandet. Moms beräknas automatiskt baserat på verkstadens fakturaadress.</li>
-                <li>Maximalt fem verkstäder kan svara per ärende, först-till-kvarn.</li>
-                <li>Återbetalning sker endast om kundens kontaktuppgifter saknas eller är felaktiga och Cykelhjälpen inte kan tillhandahålla rättade uppgifter inom sju dagar.</li>
-                <li>Aurora Media AB förmedlar kontakt men är inte part i avtalet mellan kund och verkstad och ansvarar inte för utfört arbete.</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-2">14. Kontakt</h2>
+              <h2 className="font-display text-lg font-semibold text-foreground mb-2">11. Kontakt</h2>
               <p>Aurora Media AB<br />
-              E-post: <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a><br />
-              Organisationsnummer: 559272-0220</p>
+              Organisationsnummer: 559272-0220<br />
+              Säte: Linköping<br />
+              E-post: <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
             </div>
           </section>
         </article>
