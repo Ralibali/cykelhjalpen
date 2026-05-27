@@ -164,7 +164,7 @@ const TermsPage = () => {
               <p>För cyklister är Cykelhjälpen.se gratis. För anslutna cykelverkstäder gäller följande:</p>
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 <li>Verkstaden måste godkännas av admin innan den kan se ärenden eller skicka offerter.</li>
-                <li>Varje skickad offert kostar femtio kronor (50 kr) inklusive moms och debiteras via Stripe vid avsändandet.</li>
+                <li>Varje skickad offert kostar femtio kronor (50 kr) exklusive moms (62,50 kr inkl. moms) och debiteras via Stripe vid avsändandet. Moms beräknas automatiskt baserat på verkstadens fakturaadress.</li>
                 <li>Maximalt fem verkstäder kan svara per ärende, först-till-kvarn.</li>
                 <li>Återbetalning sker endast om kundens kontaktuppgifter saknas eller är felaktiga och Cykelhjälpen inte kan tillhandahålla rättade uppgifter inom sju dagar.</li>
                 <li>Aurora Media AB förmedlar kontakt men är inte part i avtalet mellan kund och verkstad och ansvarar inte för utfört arbete.</li>
