@@ -27,7 +27,7 @@ serve(async (req) => {
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    const { data: ws } = await admin.from("workshops").select("id, approved, company_name, stripe_customer_id, email").eq("user_id", user.id).maybeSingle();
+    const { data: ws } = await admin.from("workshops").select("id, approved, company_name, stripe_customer_id, email, free_leads_remaining").eq("user_id", user.id).maybeSingle();
     if (!ws || !ws.approved) throw new Error("Workshop not approved");
 
     const { data: resp } = await admin.from("workshop_responses").select("id, request_id, workshop_id, paid").eq("id", response_id).maybeSingle();
@@ -37,6 +37,24 @@ serve(async (req) => {
     // Cap of 5 paid responses
     const { count } = await admin.from("workshop_responses").select("*", { head: true, count: "exact" }).eq("request_id", resp.request_id).eq("paid", true);
     if ((count || 0) >= 5) throw new Error("Ärendet är fullt — max fem verkstäder har redan svarat.");
+
+    // Free-lead path: if admin has granted free leads, consume one and unlock without Stripe
+    if ((ws.free_leads_remaining || 0) > 0) {
+      await admin.from("workshop_responses").update({ paid: true, used_free_lead: true }).eq("id", resp.id);
+      await admin.from("workshops").update({ free_leads_remaining: ws.free_leads_remaining - 1 }).eq("id", ws.id);
+      await admin.from("lead_charges").insert({
+        response_id: resp.id,
+        request_id: resp.request_id,
+        workshop_id: ws.id,
+        amount: 0,
+        currency: "sek",
+        status: "free_lead",
+      });
+      const origin = req.headers.get("origin") || "https://cykelhjalpen.se";
+      return new Response(JSON.stringify({ url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1`, free_lead: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
 

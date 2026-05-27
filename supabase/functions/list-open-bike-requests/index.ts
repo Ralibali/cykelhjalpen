@@ -20,11 +20,12 @@ serve(async (req) => {
     const { data: ws } = await admin.from("workshops").select("id, approved").eq("user_id", u.user.id).maybeSingle();
     if (!ws || !ws.approved) throw new Error("not approved");
 
-    // Get all open requests, exclude PII
+    // Get admin-approved open requests, exclude PII
     const { data } = await admin
       .from("bike_repair_requests")
       .select("id, bike_type, repair_category, description, area, postcode, urgency, can_drop_off, wants_pickup, status, created_at")
       .in("status", ["new", "has_offers"])
+      .eq("admin_status", "approved")
       .order("created_at", { ascending: false })
       .limit(100);
 
