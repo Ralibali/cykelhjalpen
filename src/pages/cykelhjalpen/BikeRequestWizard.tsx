@@ -167,7 +167,18 @@ const BikeRequestWizard = () => {
       <Helmet>
         <title>Skicka cykelärende — gratis offert i Linköping | Cykelhjälpen</title>
         <meta name="description" content="Beskriv ditt cykelproblem på två minuter och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis." />
-        <link rel="canonical" href="/skicka-arende" />
+        <link rel="canonical" href="https://cykelhjalpen.se/skicka-arende" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Skicka cykelärende — gratis offert i Linköping | Cykelhjälpen" />
+        <meta property="og:description" content="Beskriv ditt cykelproblem på två minuter och få upp till fem prisförslag från lokala cykelverkstäder i Linköping." />
+        <meta property="og:url" content="https://cykelhjalpen.se/skicka-arende" />
+        <meta property="og:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Skicka cykelärende — gratis offert i Linköping" />
+        <meta name="twitter:description" content="Få upp till fem prisförslag från lokala cykelverkstäder i Linköping." />
+        <meta name="twitter:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
       </Helmet>
       <CykelNavbar />
       <main className="container mx-auto px-4 py-12 max-w-2xl">
