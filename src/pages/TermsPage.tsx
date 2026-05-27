@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import UpdroNavbar from '@/components/Navbar'
+import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
+import { getCurrentHost } from '@/lib/hostConfig'
+import UpdroFooter from '@/components/Footer'
+import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { setSEOMeta } from '@/lib/seoHelpers'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 
