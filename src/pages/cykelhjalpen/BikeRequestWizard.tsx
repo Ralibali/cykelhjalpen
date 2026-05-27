@@ -106,25 +106,32 @@ const BikeRequestWizard = () => {
       toast.error(parsed.error.issues[0]?.message || 'Något saknas')
       return
     }
+    if (!turnstileToken) {
+      toast.error('Bekräfta säkerhetskontrollen innan du skickar')
+      return
+    }
     setSubmitting(true)
     try {
-      const { data: rows, error } = await supabase.rpc('submit_bike_repair_request', {
-        p_bike_type: form.bike_type,
-        p_repair_category: form.repair_category,
-        p_description: form.description,
-        p_area: form.area || null,
-        p_postcode: form.postcode || null,
-        p_urgency: form.urgency,
-        p_can_drop_off: form.can_drop_off,
-        p_wants_pickup: form.wants_pickup,
-        p_customer_name: form.customer_name,
-        p_customer_email: form.customer_email,
-        p_customer_phone: form.customer_phone || null,
-        p_city: 'Linköping',
+      const { data: req, error } = await supabase.functions.invoke('submit-bike-request', {
+        body: {
+          bike_type: form.bike_type,
+          repair_category: form.repair_category,
+          description: form.description,
+          area: form.area || null,
+          postcode: form.postcode || null,
+          urgency: form.urgency,
+          can_drop_off: form.can_drop_off,
+          wants_pickup: form.wants_pickup,
+          customer_name: form.customer_name,
+          customer_email: form.customer_email,
+          customer_phone: form.customer_phone || null,
+          city: 'Linköping',
+          turnstile_token: turnstileToken,
+        },
       })
       if (error) throw error
-      const req = Array.isArray(rows) ? rows[0] : rows
-      if (!req) throw new Error('Kunde inte skapa ärende')
+      if (!req?.id) throw new Error(req?.error || 'Kunde inte skapa ärende')
+
 
       // Upload images to private bucket; store storage path (signed URLs generated on read)
       for (const file of files) {
