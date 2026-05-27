@@ -19,6 +19,7 @@ const RegisterWorkshopPage = () => {
   const [form, setForm] = useState({
     company_name: '', email: '', password: '', phone: '', address: '', website: '', notes: '',
     services: [] as string[],
+    terms_accepted: false,
   })
 
   const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }))
@@ -27,6 +28,7 @@ const RegisterWorkshopPage = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!form.terms_accepted) return toast.error('Du måste godkänna villkoren')
     if (form.password.length < 8) return toast.error('Lösenord minst åtta tecken')
     setLoading(true)
     try {
