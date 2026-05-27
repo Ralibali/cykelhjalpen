@@ -91,7 +91,7 @@ const AgencyProfilePage = () => {
           <div className="flex items-end gap-4 mb-6">
             <div className="h-24 w-24 rounded-full bg-card border-4 border-card shadow-lg flex items-center justify-center text-3xl font-bold text-primary overflow-hidden">
               {agency.logo_url ? (
-                <img src={agency.logo_url} alt={profile?.company_name || 'Logo'} className="h-full w-full object-contain" />
+                <img src={agency.logo_url} alt={profile?.company_name ? `${profile.company_name} logotyp` : ''} className="h-full w-full object-contain" />
               ) : (
                 (profile?.company_name || profile?.full_name || '?')[0]
               )}
@@ -145,13 +145,13 @@ const AgencyProfilePage = () => {
             <TabsContent value="overview" className="mt-6">
               {agency.bio && (
                 <div className="bg-card rounded-xl border p-5 mb-6">
-                  <h3 className="font-semibold mb-2">Om byrån</h3>
+                  <h2 className="font-semibold mb-2">Om byrån</h2>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">{agency.bio}</p>
                 </div>
               )}
               {(agency.services || []).length > 0 && (
                 <div className="bg-card rounded-xl border p-5">
-                  <h3 className="font-semibold mb-2">Tjänster</h3>
+                  <h2 className="font-semibold mb-2">Tjänster</h2>
                   <div className="flex flex-wrap gap-2">
                     {agency.services.map((s: string) => (
                       <span key={s} className="bg-muted rounded-full px-3 py-1 text-xs">{s}</span>
