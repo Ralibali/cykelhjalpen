@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Duplicate lockfiles — only bun.lock is the source of truth
+bun.lockb
+package-lock.json
