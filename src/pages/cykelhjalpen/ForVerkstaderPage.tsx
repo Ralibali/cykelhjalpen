@@ -25,6 +25,17 @@ const ForVerkstaderPage = () => {
         <title>För cykelverkstäder i Linköping | Cykelhjälpen</title>
         <meta name="description" content="Anslut din cykelverkstad till Cykelhjälpen och få nya kunder i Linköping. Gratis att registrera. Du betalar femtio kronor exkl. moms per skickad offert — max fem verkstäder per ärende." />
         <link rel="canonical" href="https://cykelhjalpen.se/for-cykelverkstader" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="För cykelverkstäder i Linköping | Cykelhjälpen" />
+        <meta property="og:description" content="Anslut din cykelverkstad och få nya kunder i Linköping. Gratis registrering — betala bara per skickad offert." />
+        <meta property="og:url" content="https://cykelhjalpen.se/for-cykelverkstader" />
+        <meta property="og:image" content="https://cykelhjalpen.se/og/for-cykelverkstader.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="För cykelverkstäder i Linköping | Cykelhjälpen" />
+        <meta name="twitter:description" content="Anslut din cykelverkstad och få nya kunder i Linköping." />
+        <meta name="twitter:image" content="https://cykelhjalpen.se/og/for-cykelverkstader.jpg" />
       </Helmet>
 
       <CykelNavbar />
