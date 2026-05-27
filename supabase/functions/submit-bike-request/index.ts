@@ -1,6 +1,6 @@
-import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
+import { corsFor } from '../_shared/cors.ts'
 
 const BodySchema = z.object({
   bike_type: z.string().min(1).max(80),
@@ -19,6 +19,7 @@ const BodySchema = z.object({
 })
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req)
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
