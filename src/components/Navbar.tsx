@@ -73,7 +73,7 @@ const Navbar = () => {
             </Link>
 
             <Link to="/om-oss" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Om Updro
+              Om oss
             </Link>
           </nav>
 
@@ -139,7 +139,7 @@ const Navbar = () => {
               För byråer
             </Link>
             <Link to="/om-oss" className="min-h-12 flex items-center rounded-xl px-3 text-lg font-medium text-foreground active:bg-muted" onClick={closeMobile}>
-              Om Updro
+              Om oss
             </Link>
 
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-5 px-3">Kategorier</p>

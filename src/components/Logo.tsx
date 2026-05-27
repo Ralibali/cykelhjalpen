@@ -1,5 +1,3 @@
-import { Zap } from 'lucide-react'
-
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg'
   className?: string
@@ -12,17 +10,17 @@ const sizes = {
 }
 
 const iconSizes = {
-  sm: 'h-4 w-4',
-  md: 'h-5 w-5',
-  lg: 'h-7 w-7',
+  sm: 'h-6 w-6',
+  md: 'h-7 w-7',
+  lg: 'h-9 w-9',
 }
 
 const Logo = ({ size = 'md', className = '' }: LogoProps) => {
   return (
-    <a href="/" className={`flex items-center gap-1.5 font-display font-bold ${sizes[size]} ${className}`} aria-label="Updro logotyp – marknadsplats för digitala byråer i Sverige">
-      <Zap className={`${iconSizes[size]} text-primary fill-primary`} aria-hidden="true" />
-      <span className="text-foreground tracking-tight">upd</span>
-      <span className="text-primary tracking-tight -ml-1">ro</span>
+    <a href="/" className={`flex items-center gap-2 font-display font-bold ${sizes[size]} ${className}`} aria-label="Cykelhjälpen logotyp – jämför cykelverkstäder i Linköping">
+      <img src="/logo-icon.png" alt="" className={`${iconSizes[size]} object-contain`} aria-hidden="true" />
+      <span className="text-foreground tracking-tight">Cykel</span>
+      <span className="text-primary tracking-tight -ml-1">hjälpen</span>
     </a>
   )
 }
