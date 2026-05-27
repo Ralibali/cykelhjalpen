@@ -10,6 +10,7 @@ import { Wrench, Loader2 } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { Helmet } from 'react-helmet-async'
+import { LEAD_FEE_KR } from '@/lib/pricing'
 
 const SERVICES = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Hjulbygge', 'Mobil reparation']
 
@@ -145,7 +146,7 @@ const RegisterWorkshopPage = () => {
               required
             />
             <span className="text-muted-foreground leading-relaxed">
-              Jag godkänner <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>, och förstår att <strong className="text-foreground">50 kr exkl. moms (62,50 kr inkl. moms)</strong> debiteras automatiskt via Stripe varje gång jag skickar en offert.
+              Jag godkänner <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>, och förstår att <strong className="text-foreground">{LEAD_FEE_KR} kr exkl. moms (62,50 kr inkl. moms)</strong> debiteras automatiskt via Stripe varje gång jag skickar en offert.
             </span>
           </label>
           <Button type="submit" disabled={loading || !form.terms_accepted} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
