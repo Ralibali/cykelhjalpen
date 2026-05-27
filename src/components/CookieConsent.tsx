@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
 
-const COOKIE_KEY = 'updro_cookie_consent'
+const COOKIE_KEY = 'cykelhjalpen_cookie_consent'
 const GA_ID = 'G-C0XMZG0KDQ'
 const ADS_ID = 'AW-10941540384'
 
@@ -91,8 +91,8 @@ const CookieConsent = () => {
 
   useEffect(() => {
     const openSettings = () => setVisible(true)
-    window.addEventListener('updro:open-cookie-settings', openSettings)
-    return () => window.removeEventListener('updro:open-cookie-settings', openSettings)
+    window.addEventListener('cookie-settings:open', openSettings)
+    return () => window.removeEventListener('cookie-settings:open', openSettings)
   }, [])
 
   const accept = (level: ConsentLevel) => {
