@@ -102,7 +102,7 @@ const BillingPage = lazy(() => import("./pages/supplier/BillingPage"));
 const ReferralPage = lazy(() => import("./pages/supplier/ReferralPage"));
 
 // Admin pages
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminDashboard = lazy(() => import("./pages/admin/CykelAdminHub"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminUserDetail = lazy(() => import("./pages/admin/AdminUserDetail"));
 const AdminProjects = lazy(() => import("./pages/admin/AdminProjects"));
