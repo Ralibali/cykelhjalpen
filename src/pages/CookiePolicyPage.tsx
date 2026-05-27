@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 import UpdroNavbar from '@/components/Navbar'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import { getCurrentHost } from '@/lib/hostConfig'
@@ -8,13 +9,15 @@ import { Button } from '@/components/ui/button'
 import { setSEOMeta } from '@/lib/seoHelpers'
 
 const CookiePolicyPage = () => {
+  const isCykel = getCurrentHost() === 'cykelhjalpen'
   useEffect(() => {
+    if (isCykel) return
     setSEOMeta({
       title: 'Cookiepolicy | Cykelhjälpen',
       description: 'Läs om hur Cykelhjälpen använder nödvändiga cookies, samtycke, Google Analytics och Google Ads.',
       canonical: 'https://cykelhjalpen.se/cookies',
     })
-  }, [])
+  }, [isCykel])
 
   const openCookieSettings = () => {
     window.dispatchEvent(new Event('cookie-settings:open'))
@@ -22,7 +25,25 @@ const CookiePolicyPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {getCurrentHost() === 'cykelhjalpen' ? <CykelNavbar /> : <UpdroNavbar />}
+      {isCykel && (
+        <Helmet>
+          <title>Cookiepolicy | Cykelhjälpen</title>
+          <meta name="description" content="Läs om hur Cykelhjälpen använder nödvändiga cookies, samtycke, Google Analytics och Google Ads." />
+          <link rel="canonical" href="https://cykelhjalpen.se/cookies" />
+          <meta property="og:type" content="article" />
+          <meta property="og:title" content="Cookiepolicy | Cykelhjälpen" />
+          <meta property="og:description" content="Cookies på Cykelhjälpen.se — nödvändiga, samtycke och analys." />
+          <meta property="og:url" content="https://cykelhjalpen.se/cookies" />
+          <meta property="og:image" content="https://cykelhjalpen.se/og/cookies.jpg" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Cookiepolicy | Cykelhjälpen" />
+          <meta name="twitter:description" content="Cookies på Cykelhjälpen.se." />
+          <meta name="twitter:image" content="https://cykelhjalpen.se/og/cookies.jpg" />
+        </Helmet>
+      )}
+      {isCykel ? <CykelNavbar /> : <UpdroNavbar />}
       <main className="flex-1 py-16 px-4">
         <article className="max-w-3xl mx-auto prose prose-slate">
           <h1 className="font-display text-3xl font-bold mb-2">Cookiepolicy</h1>
