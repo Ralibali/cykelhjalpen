@@ -37,7 +37,32 @@ serve(async (req) => {
       workshop: r.workshops,
     }));
 
-    return new Response(JSON.stringify({ request, responses: mapped }), {
+    // Fetch images for this request and return signed URLs (1 hour)
+    const { data: imageRows } = await admin
+      .from("bike_request_images")
+      .select("id, image_url, created_at")
+      .eq("request_id", request.id)
+      .order("created_at", { ascending: true });
+
+    const images: { id: string; url: string }[] = [];
+    for (const row of imageRows || []) {
+      // image_url is stored as the storage path inside the bike-images bucket
+      let path = row.image_url as string;
+      // If a full URL was stored, extract the path after the bucket name
+      const marker = "/bike-images/";
+      const idx = path.indexOf(marker);
+      if (idx !== -1) path = path.slice(idx + marker.length);
+
+      const { data: signed } = await admin.storage
+        .from("bike-images")
+        .createSignedUrl(path, 3600);
+
+      if (signed?.signedUrl) {
+        images.push({ id: row.id, url: signed.signedUrl });
+      }
+    }
+
+    return new Response(JSON.stringify({ request, responses: mapped, images }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
