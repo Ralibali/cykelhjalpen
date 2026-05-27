@@ -218,6 +218,12 @@ const AppRoutes = () => {
           <Route path="/villkor" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
 
+          {/* Shared auth + admin entry — rendered on both hosts */}
+          <Route path="/logga-in" element={<LoginPage />} />
+          <Route path="/registrera" element={<RegisterPage />} />
+          <Route path="/aterstall-losenord" element={<PlaceholderPage title="Återställ lösenord" />} />
+          <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+
           {/* ============ Updro-only routes ============ */}
           {host === 'updro' && (
             <>
@@ -227,10 +233,7 @@ const AppRoutes = () => {
               <Route path="/priser" element={<PricingPage />} />
               <Route path="/om-oss" element={<AboutPage />} />
               <Route path="/support" element={<PlaceholderPage title="Support" />} />
-              <Route path="/logga-in" element={<LoginPage />} />
-              <Route path="/registrera" element={<RegisterPage />} />
               <Route path="/registrera/byra" element={<RegisterSupplierPage />} />
-              <Route path="/aterstall-losenord" element={<PlaceholderPage title="Återställ lösenord" />} />
               <Route path="/sitemap" element={<SitemapPage />} />
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/landing/byra" element={<SupplierLandingPage />} />
@@ -301,7 +304,6 @@ const AppRoutes = () => {
               </Route>
 
               {/* Admin (Updro surface) */}
-              <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/anvandare" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
               <Route path="/admin/anvandare/:id" element={<ProtectedRoute role="admin"><AdminUserDetail /></ProtectedRoute>} />
               <Route path="/admin/byraer" element={<ProtectedRoute role="admin"><AdminSuppliers /></ProtectedRoute>} />

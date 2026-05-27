@@ -45,7 +45,7 @@ const CykelNavbar = () => {
               <Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>Mitt konto</Link>
             </Button>
           ) : (
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="outline" size="sm">
               <Link to="/logga-in">Logga in</Link>
             </Button>
           )}
@@ -78,7 +78,7 @@ const CykelNavbar = () => {
                   <Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>Mitt konto</Link>
                 </Button>
               ) : (
-                <Button asChild variant="ghost" size="sm" onClick={() => setOpen(false)}>
+                <Button asChild variant="outline" size="sm" onClick={() => setOpen(false)}>
                   <Link to="/logga-in">Logga in</Link>
                 </Button>
               )}
