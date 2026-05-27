@@ -116,7 +116,7 @@ const RegisterWorkshopPage = () => {
             </div>
             <div>
               <Label htmlFor="pw">Lösenord</Label>
-              <Input id="pw" type="password" required minLength={8} value={form.password} onChange={(e) => update('password', e.target.value)} />
+              <Input id="pw" type="password" required minLength={6} value={form.password} onChange={(e) => update('password', e.target.value)} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
