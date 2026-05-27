@@ -11,6 +11,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import CookieConsent from "@/components/CookieConsent";
 import { COMPARISON_PAGES } from "./lib/seoComparisons";
 import { getNoindexSeoRoutes } from "./lib/seoStatic";
+import { getCurrentHost } from "./lib/hostConfig";
 import SupplierLayout from "@/components/SupplierLayout";
 import BuyerLayout from "@/components/BuyerLayout";
 
@@ -128,12 +129,12 @@ const PageLoader = () => (
 
 const PageTracker = () => { usePageTracking(); return null; };
 
-const NoindexGuard = () => {
+const NoindexGuard = ({ host }: { host: 'cykelhjalpen' | 'updro' }) => {
   const location = useLocation();
 
   useEffect(() => {
     const path = location.pathname.replace(/\/$/, '') || '/';
-    const noindexPaths = new Set(getNoindexSeoRoutes().map(route => route.path));
+    const noindexPaths = new Set(getNoindexSeoRoutes(host).map(route => route.path));
     const privatePrefixes = ['/admin', '/dashboard'];
     const privateExact = ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/landing', '/landing/byra'];
     const shouldNoindex = noindexPaths.has(path) || privateExact.includes(path) || privatePrefixes.some(prefix => path === prefix || path.startsWith(`${prefix}/`));
@@ -152,46 +153,56 @@ const NoindexGuard = () => {
 
     applyNoindex();
     window.setTimeout(applyNoindex, 0);
-  }, [location.pathname]);
+  }, [location.pathname, host]);
 
   return null;
 };
 
-const App = () => (
-  <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <PageTracker />
-          <NoindexGuard />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              {/* Public */}
-              <Route path="/" element={<Index />} />
+const AppRoutes = () => {
+  const host = getCurrentHost();
+  return (
+    <>
+      <PageTracker />
+      <NoindexGuard host={host} />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Root: differs by host */}
+          <Route path="/" element={host === 'updro' ? <UpdroIndex /> : <Index />} />
 
-              {/* Cykelhjälpen - public */}
+          {/* /updro stays available on cykelhjalpen host as an opt-in */}
+          {host === 'cykelhjalpen' && (
+            <Route path="/updro" element={<UpdroIndex />} />
+          )}
+
+          {/* ============ Cykelhjälpen-only routes ============ */}
+          {host === 'cykelhjalpen' && (
+            <>
               <Route path="/skicka-arende" element={<BikeRequestWizard />} />
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
               <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
 
-              {/* Cykelhjälpen - workshop dashboard */}
-              <Route path="/dashboard/verkstad" element={<WorkshopLayout />}>
+              {/* Workshop dashboard — now protected */}
+              <Route
+                path="/dashboard/verkstad"
+                element={
+                  <ProtectedRoute role="workshop">
+                    <WorkshopLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<WorkshopDashboard />} />
                 <Route path="arenden" element={<WorkshopRequests />} />
                 <Route path="betalningar" element={<WorkshopBilling />} />
                 <Route path="installningar" element={<WorkshopSettings />} />
               </Route>
 
-              {/* Cykelhjälpen - admin */}
+              {/* Cykelhjälpen admin */}
               <Route path="/admin/cykelarenden" element={<ProtectedRoute role="admin"><AdminBikeRequests /></ProtectedRoute>} />
               <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
 
-              {/* Cykelhjälpen - lokala SEO-sidor */}
+              {/* Local SEO */}
               <Route path="/cykelverkstad-linkoping" element={<CykelSeoPage />} />
               <Route path="/cykelreparation-linkoping" element={<CykelSeoPage />} />
               <Route path="/punktering-linkoping" element={<CykelSeoPage />} />
@@ -201,17 +212,23 @@ const App = () => (
               <Route path="/cykelverkstad-ryd-linkoping" element={<CykelSeoPage />} />
               <Route path="/cykelverkstad-vallastaden-linkoping" element={<CykelSeoPage />} />
               <Route path="/mobil-cykelreparation-linkoping" element={<CykelSeoPage />} />
+            </>
+          )}
 
-              <Route path="/updro" element={<UpdroIndex />} />
+          {/* Shared legal pages — rendered on both hosts (Cykelhjälpen footer + Updro footer both link here) */}
+          <Route path="/integritetspolicy" element={<PrivacyPolicyPage />} />
+          <Route path="/villkor" element={<TermsPage />} />
+          <Route path="/cookies" element={<CookiePolicyPage />} />
+
+          {/* ============ Updro-only routes ============ */}
+          {host === 'updro' && (
+            <>
               <Route path="/publicera" element={<ProjectWizard />} />
               <Route path="/byraer" element={<BrowseAgenciesPage />} />
               <Route path="/byraer/:slug" element={<AgencyProfilePage />} />
               <Route path="/priser" element={<PricingPage />} />
               <Route path="/om-oss" element={<AboutPage />} />
               <Route path="/support" element={<PlaceholderPage title="Support" />} />
-              <Route path="/integritetspolicy" element={<PrivacyPolicyPage />} />
-              <Route path="/villkor" element={<TermsPage />} />
-              <Route path="/cookies" element={<CookiePolicyPage />} />
               <Route path="/logga-in" element={<LoginPage />} />
               <Route path="/registrera" element={<RegisterPage />} />
               <Route path="/registrera/byra" element={<RegisterSupplierPage />} />
@@ -219,13 +236,14 @@ const App = () => (
               <Route path="/sitemap" element={<SitemapPage />} />
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/landing/byra" element={<SupplierLandingPage />} />
-              {/* Legacy redirects → /artiklar (consolidated content hub) */}
+
+              {/* Legacy redirects */}
               <Route path="/guider" element={<Navigate to="/artiklar" replace />} />
               <Route path="/guider/:slug" element={<RedirectToArtikel />} />
               <Route path="/kunskapsbank" element={<Navigate to="/artiklar" replace />} />
               <Route path="/kunskapsbank/:artikel" element={<RedirectToArtikel />} />
 
-              {/* E-E-A-T pages */}
+              {/* E-E-A-T */}
               <Route path="/redaktionell-policy" element={<EditorialPolicyPage />} />
               <Route path="/metod" element={<MetodPage />} />
 
@@ -247,15 +265,13 @@ const App = () => (
               <Route path="/stader/:city" element={<CityHubPage />} />
               <Route path="/jamfor" element={<ComparisonsIndex />} />
 
-              {/* Agency SEO pages */}
+              {/* Agency SEO */}
               <Route path="/byraer/kategori/:kategori" element={<AgencyCategoryPage />} />
               <Route path="/byraer/:stad/:kategori" element={<AgencyCityCategoryPage />} />
               <Route path="/byraer/:stad" element={<AgencyCityPage />} />
 
               {/* Service pages */}
               <Route path="/leveranser/:tjanst" element={<ServicePage />} />
-
-              {/* Knowledge bank routes consolidated above into /artiklar redirects */}
 
               {/* Admin: content planner */}
               <Route path="/admin/innehallsplan" element={<ProtectedRoute role="admin"><AdminContentPlanner /></ProtectedRoute>} />
@@ -286,7 +302,7 @@ const App = () => (
                 <Route path="bjud-in" element={<ReferralPage />} />
               </Route>
 
-              {/* Admin */}
+              {/* Admin (Updro surface) */}
               <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/anvandare" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
               <Route path="/admin/anvandare/:id" element={<ProtectedRoute role="admin"><AdminUserDetail /></ProtectedRoute>} />
@@ -302,11 +318,26 @@ const App = () => (
               <Route path="/admin/audit" element={<ProtectedRoute role="admin"><AdminAuditLog /></ProtectedRoute>} />
               <Route path="/admin/besokare" element={<ProtectedRoute role="admin"><AdminVisitors /></ProtectedRoute>} />
               <Route path="/admin/marketplace-health" element={<ProtectedRoute role="admin"><AdminMarketplaceHealth /></ProtectedRoute>} />
+            </>
+          )}
 
-              {/* No Updro catch-all on Cykelhjälpen — unknown routes go to 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          {/* 404 fallback for both hosts */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </>
+  );
+};
+
+const App = () => (
+  <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
           <CookieConsent />
         </AuthProvider>
       </BrowserRouter>
