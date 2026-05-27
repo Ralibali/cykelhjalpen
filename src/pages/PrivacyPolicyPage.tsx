@@ -17,7 +17,7 @@ const PrivacyPolicyPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      {getCurrentHost() === 'cykelhjalpen' ? <CykelNavbar /> : <UpdroNavbar />}
       <main className="flex-1 py-16 px-4">
         <article className="max-w-3xl mx-auto prose prose-slate">
           <h1 className="font-display text-3xl font-bold mb-2">Integritetspolicy</h1>
@@ -105,7 +105,7 @@ const PrivacyPolicyPage = () => {
           </section>
         </article>
       </main>
-      <Footer />
+      {getCurrentHost() === 'cykelhjalpen' ? <CykelFooter /> : <UpdroFooter />}
     </div>
   )
 }
