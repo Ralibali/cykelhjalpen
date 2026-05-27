@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { LEAD_FEE_ORE } from "../_shared/pricing.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,7 +63,7 @@ serve(async (req) => {
         price_data: {
           currency: "sek",
           product_data: { name: "Cykelhjälpen — offert till kund", description: `Lead-avgift för ärende ${resp.request_id.slice(0, 8)}` },
-          unit_amount: 5000,
+          unit_amount: LEAD_FEE_ORE,
           tax_behavior: "exclusive",
         },
         quantity: 1,
@@ -76,7 +78,7 @@ serve(async (req) => {
       request_id: resp.request_id,
       workshop_id: ws.id,
       stripe_session_id: session.id,
-      amount: 5000,
+      amount: LEAD_FEE_ORE,
       currency: "sek",
       status: "pending",
     });

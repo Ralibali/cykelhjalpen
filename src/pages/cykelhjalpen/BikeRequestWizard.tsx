@@ -132,20 +132,28 @@ const BikeRequestWizard = () => {
       if (error) throw error
       if (!req?.id) throw new Error(req?.error || 'Kunde inte skapa ärende')
 
-
       // Upload images to private bucket; store storage path (signed URLs generated on read)
+      const uploadErrors: string[] = []
       for (const file of files) {
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
         const path = `${req.id}/${crypto.randomUUID()}.${ext}`
         const { error: upErr } = await supabase.storage
           .from('bike-images')
           .upload(path, file, { upsert: false, contentType: file.type })
-        if (!upErr) {
-          await supabase.from('bike_request_images').insert({ request_id: req.id, image_url: path })
+        if (upErr) {
+          uploadErrors.push(file.name)
+          continue
         }
+        const { error: insErr } = await supabase
+          .from('bike_request_images')
+          .insert({ request_id: req.id, image_url: path })
+        if (insErr) uploadErrors.push(file.name)
       }
 
       toast.success('Tack! Ditt ärende är skickat.')
+      if (uploadErrors.length > 0) {
+        toast.error(`${uploadErrors.length} av ${files.length} bilder kunde inte laddas upp — du kan lägga till dem senare`)
+      }
       navigate(`/mitt-arende/${req.view_token}`)
     } catch (e: any) {
       toast.error(e.message || 'Något gick fel, försök igen.')

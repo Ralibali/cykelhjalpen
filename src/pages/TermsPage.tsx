@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { setSEOMeta } from '@/lib/seoHelpers'
+import { LEAD_FEE_KR } from '@/lib/pricing'
+
 
 const TermsPage = () => {
   useEffect(() => {
@@ -51,7 +53,7 @@ const TermsPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">4. Lead-avgift och betalning (verkstäder)</h2>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Det är gratis att registrera och godkänna en verkstad.</li>
-                <li>Varje skickad offert kostar <strong>50 kr exklusive moms (62,50 kr inkl. moms)</strong> och debiteras via Stripe vid avsändandet.</li>
+                <li>Varje skickad offert kostar <strong>{LEAD_FEE_KR} kr exklusive moms (62,50 kr inkl. moms)</strong> och debiteras via Stripe vid avsändandet.</li>
                 <li>Moms beräknas automatiskt baserat på verkstadens fakturaadress.</li>
                 <li>Maximalt fem verkstäder kan svara per ärende — först-till-kvarn-principen gäller.</li>
                 <li>När verkstaden har betalat lead-avgiften frigörs cyklistens kontaktuppgifter i verkstadens dashboard.</li>
