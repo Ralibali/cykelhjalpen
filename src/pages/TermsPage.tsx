@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 import UpdroNavbar from '@/components/Navbar'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import { getCurrentHost } from '@/lib/hostConfig'
@@ -9,16 +10,36 @@ import { LEAD_FEE_KR } from '@/lib/pricing'
 
 
 const TermsPage = () => {
+  const isCykel = getCurrentHost() === 'cykelhjalpen'
   useEffect(() => {
+    if (isCykel) return
     setSEOMeta({
       title: 'Allmänna villkor | Cykelhjälpen',
       description: 'Allmänna villkor för Cykelhjälpen.se — lokal leadplattform för cykelreparation i Linköping.',
       canonical: 'https://cykelhjalpen.se/villkor',
     })
-  }, [])
+  }, [isCykel])
   return (
     <div className="min-h-screen flex flex-col">
-      {getCurrentHost() === 'cykelhjalpen' ? <CykelNavbar /> : <UpdroNavbar />}
+      {isCykel && (
+        <Helmet>
+          <title>Allmänna villkor | Cykelhjälpen</title>
+          <meta name="description" content="Allmänna villkor för Cykelhjälpen.se — lokal leadplattform för cykelreparation i Linköping." />
+          <link rel="canonical" href="https://cykelhjalpen.se/villkor" />
+          <meta property="og:type" content="article" />
+          <meta property="og:title" content="Allmänna villkor | Cykelhjälpen" />
+          <meta property="og:description" content="Villkor för Cykelhjälpen.se — lokal leadplattform i Linköping." />
+          <meta property="og:url" content="https://cykelhjalpen.se/villkor" />
+          <meta property="og:image" content="https://cykelhjalpen.se/og/villkor.jpg" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Allmänna villkor | Cykelhjälpen" />
+          <meta name="twitter:description" content="Villkor för Cykelhjälpen.se." />
+          <meta name="twitter:image" content="https://cykelhjalpen.se/og/villkor.jpg" />
+        </Helmet>
+      )}
+      {isCykel ? <CykelNavbar /> : <UpdroNavbar />}
       <main className="flex-1 py-16 px-4">
         <article className="max-w-3xl mx-auto prose prose-slate">
           <h1 className="font-display text-3xl font-bold mb-2">Allmänna villkor</h1>

@@ -27,7 +27,19 @@ const CykelSeoPage = () => {
       <Helmet>
         <title>{page.title}</title>
         <meta name="description" content={page.description} />
-        <link rel="canonical" href={`/${page.slug}`} />
+        <link rel="canonical" href={`https://cykelhjalpen.se/${page.slug}`} />
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={page.title} />
+        <meta property="og:description" content={page.description} />
+        <meta property="og:url" content={`https://cykelhjalpen.se/${page.slug}`} />
+        <meta property="og:image" content={`https://cykelhjalpen.se/og/${page.slug}.jpg`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={page.h1} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={page.title} />
+        <meta name="twitter:description" content={page.description} />
+        <meta name="twitter:image" content={`https://cykelhjalpen.se/og/${page.slug}.jpg`} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <CykelNavbar />

@@ -83,7 +83,18 @@ const RegisterWorkshopPage = () => {
       <Helmet>
         <title>Anslut din cykelverkstad — Linköping | Cykelhjälpen</title>
         <meta name="description" content="Få fler kunder till din cykelverkstad i Linköping. Registrera dig gratis och betala bara för svaren du faktiskt skickar — femtio kronor exklusive moms per offert." />
-        <link rel="canonical" href="/registrera/verkstad" />
+        <link rel="canonical" href="https://cykelhjalpen.se/registrera/verkstad" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Anslut din cykelverkstad — Linköping | Cykelhjälpen" />
+        <meta property="og:description" content="Registrera din cykelverkstad gratis. Betala bara per skickad offert." />
+        <meta property="og:url" content="https://cykelhjalpen.se/registrera/verkstad" />
+        <meta property="og:image" content="https://cykelhjalpen.se/og/registrera-verkstad.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Anslut din cykelverkstad — Linköping" />
+        <meta name="twitter:description" content="Registrera din cykelverkstad gratis. Betala bara per skickad offert." />
+        <meta name="twitter:image" content="https://cykelhjalpen.se/og/registrera-verkstad.jpg" />
       </Helmet>
       <CykelNavbar />
       <main className="container mx-auto px-4 py-12 max-w-xl">

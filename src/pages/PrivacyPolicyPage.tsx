@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 import UpdroNavbar from '@/components/Navbar'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import { getCurrentHost } from '@/lib/hostConfig'
@@ -7,17 +8,37 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { setSEOMeta } from '@/lib/seoHelpers'
 
 const PrivacyPolicyPage = () => {
+  const isCykel = getCurrentHost() === 'cykelhjalpen'
   useEffect(() => {
+    if (isCykel) return
     setSEOMeta({
       title: 'Integritetspolicy | Cykelhjälpen',
       description: 'Integritetspolicy för Cykelhjälpen.se. Så här hanterar Cykelhjälpen personuppgifter enligt GDPR.',
       canonical: '/integritetspolicy',
     })
-  }, [])
+  }, [isCykel])
 
   return (
     <div className="min-h-screen flex flex-col">
-      {getCurrentHost() === 'cykelhjalpen' ? <CykelNavbar /> : <UpdroNavbar />}
+      {isCykel && (
+        <Helmet>
+          <title>Integritetspolicy | Cykelhjälpen</title>
+          <meta name="description" content="Integritetspolicy för Cykelhjälpen.se. Så här hanterar Cykelhjälpen personuppgifter enligt GDPR." />
+          <link rel="canonical" href="https://cykelhjalpen.se/integritetspolicy" />
+          <meta property="og:type" content="article" />
+          <meta property="og:title" content="Integritetspolicy | Cykelhjälpen" />
+          <meta property="og:description" content="Så här hanterar Cykelhjälpen personuppgifter enligt GDPR." />
+          <meta property="og:url" content="https://cykelhjalpen.se/integritetspolicy" />
+          <meta property="og:image" content="https://cykelhjalpen.se/og/integritetspolicy.jpg" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Integritetspolicy | Cykelhjälpen" />
+          <meta name="twitter:description" content="Så här hanterar Cykelhjälpen personuppgifter enligt GDPR." />
+          <meta name="twitter:image" content="https://cykelhjalpen.se/og/integritetspolicy.jpg" />
+        </Helmet>
+      )}
+      {isCykel ? <CykelNavbar /> : <UpdroNavbar />}
       <main className="flex-1 py-16 px-4">
         <article className="max-w-3xl mx-auto prose prose-slate">
           <h1 className="font-display text-3xl font-bold mb-2">Integritetspolicy</h1>

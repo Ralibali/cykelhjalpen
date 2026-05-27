@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { ArrowRight, MapPin, MessageSquare, ShieldCheck, CheckCircle2, Wrench, Clock, Heart, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -35,7 +36,24 @@ const FAQS = [
 const CykelhjalpenIndex = () => {
   return (
     <div className="min-h-screen flex flex-col bg-hero-gradient">
+      <Helmet>
+        <title>Cykelhjälpen – cykelverkstäder i Linköping</title>
+        <meta name="description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis och utan konto." />
+        <link rel="canonical" href="https://cykelhjalpen.se/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Cykelhjälpen – cykelverkstäder i Linköping" />
+        <meta property="og:description" content="Jämför lokala cykelverkstäder i Linköping. Få upp till fem prisförslag — gratis och utan konto." />
+        <meta property="og:url" content="https://cykelhjalpen.se/" />
+        <meta property="og:image" content="https://cykelhjalpen.se/og/hem.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Cykelhjälpen – cykelverkstäder i Linköping" />
+        <meta name="twitter:description" content="Jämför lokala cykelverkstäder i Linköping — gratis och utan konto." />
+        <meta name="twitter:image" content="https://cykelhjalpen.se/og/hem.jpg" />
+      </Helmet>
       <CykelNavbar />
+
 
       <main>
         {/* HERO */}
