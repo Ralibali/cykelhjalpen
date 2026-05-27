@@ -297,6 +297,13 @@ const BikeRequestWizard = () => {
                     ))}
                   </div>
                 )}
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground mb-2">Säkerhetskontroll</p>
+                  <Turnstile
+                    onVerify={(t) => setTurnstileToken(t)}
+                    onExpire={() => setTurnstileToken(null)}
+                  />
+                </div>
               </div>
             )}
           </div>
