@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import UpdroNavbar from '@/components/Navbar'
+import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
+import { getCurrentHost } from '@/lib/hostConfig'
+import UpdroFooter from '@/components/Footer'
+import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { Button } from '@/components/ui/button'
 import { setSEOMeta } from '@/lib/seoHelpers'
 
@@ -19,7 +22,7 @@ const CookiePolicyPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      {getCurrentHost() === 'cykelhjalpen' ? <CykelNavbar /> : <UpdroNavbar />}
       <main className="flex-1 py-16 px-4">
         <article className="max-w-3xl mx-auto prose prose-slate">
           <h1 className="font-display text-3xl font-bold mb-2">Cookiepolicy</h1>
@@ -92,7 +95,7 @@ const CookiePolicyPage = () => {
           </section>
         </article>
       </main>
-      <Footer />
+      {getCurrentHost() === 'cykelhjalpen' ? <CykelFooter /> : <UpdroFooter />}
     </div>
   )
 }
