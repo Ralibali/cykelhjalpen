@@ -15,7 +15,7 @@ export const CYKEL_SEO_PAGES: CykelSeoPage[] = [
   {
     slug: 'cykelverkstad-linkoping',
     h1: 'Cykelverkstad i Linköping',
-    title: 'Cykelverkstad Linköping — jämför priser från lokala verkstäder',
+    title: 'Cykelverkstad Linköping — jämför lokala priser',
     description: 'Hitta en cykelverkstad i Linköping. Skicka gratis ärende och få upp till fem offerter på reparation, service eller punktering.',
     intro: lokalt('Linköping', 'en cykelverkstad'),
     sections: [

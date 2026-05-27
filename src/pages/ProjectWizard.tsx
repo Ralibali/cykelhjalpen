@@ -167,7 +167,7 @@ const ProjectWizard = () => {
           {/* STEP 1 */}
           {step === 1 && (
             <div className="space-y-6">
-              <h2 className="font-display text-2xl font-bold">Berätta om ditt uppdrag</h2>
+              <h1 className="font-display text-2xl font-bold">Berätta om ditt uppdrag</h1>
 
               {/* AI brief assistant */}
               <AiBriefAssistant onAccept={applyAiBrief} initialText={form.description} />
