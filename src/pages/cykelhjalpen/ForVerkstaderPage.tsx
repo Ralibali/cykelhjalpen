@@ -15,7 +15,7 @@ const benefits = [
 const steps = [
   'Registrera din verkstad gratis på under fem minuter.',
   'Få ärenden från cyklister i Linköping direkt i din inkorg.',
-  'Lämna offert, utför jobbet och få betalt.',
+  'Skicka offert (femtio kronor exkl. moms per skickad offert, max fem verkstäder per ärende). Vinner du jobbet får du betalt direkt av kunden.',
 ]
 
 const ForVerkstaderPage = () => {
@@ -23,7 +23,7 @@ const ForVerkstaderPage = () => {
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>För cykelverkstäder i Linköping | Cykelhjälpen</title>
-        <meta name="description" content="Anslut din cykelverkstad till Cykelhjälpen och få nya kunder i Linköping. Gratis att registrera, du betalar bara för de ärenden du tar." />
+        <meta name="description" content="Anslut din cykelverkstad till Cykelhjälpen och få nya kunder i Linköping. Gratis att registrera. Du betalar femtio kronor exkl. moms per skickad offert — max fem verkstäder per ärende." />
         <link rel="canonical" href="https://cykelhjalpen.se/for-cykelverkstader" />
       </Helmet>
 

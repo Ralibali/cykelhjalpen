@@ -71,33 +71,23 @@
           }
         },
         {
-          "@type": "LocalBusiness",
-          "@id": "/#localbusiness",
-          "name": "Cykelhjälpen Linköping",
+          "@type": "Service",
+          "@id": "/#service",
+          "name": "Cykelhjälpen – jämför cykelverkstäder i Linköping",
           "url": "/",
           "image": "/og-image.png",
-          "description": "Jämför priser från lokala cykelverkstäder i Linköping. Skicka gratis ärende, få upp till fem offerter.",
+          "description": "Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis för cyklister.",
+          "provider": { "@id": "/#organization" },
           "areaServed": {
             "@type": "City",
             "name": "Linköping"
           },
-          "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "Linköping",
-            "addressRegion": "Östergötland",
-            "addressCountry": "SE"
-          },
-          "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": 58.4108,
-            "longitude": 15.6214
-          },
-          "priceRange": "0 kr",
-          "openingHoursSpecification": {
-            "@type": "OpeningHoursSpecification",
-            "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-            "opens": "00:00",
-            "closes": "23:59"
+          "serviceType": "Cykelreparation och cykelservice",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "SEK",
+            "availability": "https://schema.org/InStock"
           }
         },
         {
