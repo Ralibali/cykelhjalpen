@@ -73,7 +73,7 @@ const Navbar = () => {
             </Link>
 
             <Link to="/om-oss" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Om Updro
+              Om oss
             </Link>
           </nav>
 
