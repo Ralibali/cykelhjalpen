@@ -55,6 +55,7 @@ const BikeRequestWizard = () => {
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [files, setFiles] = useState<File[]>([])
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [form, setForm] = useState({
     bike_type: '',
     repair_category: '',
