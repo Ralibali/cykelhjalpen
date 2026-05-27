@@ -224,6 +224,8 @@ export type Database = {
       }
       bike_repair_requests: {
         Row: {
+          admin_status: string
+          approved_at: string | null
           area: string | null
           bike_type: string
           can_drop_off: boolean
@@ -235,6 +237,7 @@ export type Database = {
           description: string
           id: string
           postcode: string | null
+          rejected_reason: string | null
           repair_category: string
           status: string
           updated_at: string
@@ -243,6 +246,8 @@ export type Database = {
           wants_pickup: boolean
         }
         Insert: {
+          admin_status?: string
+          approved_at?: string | null
           area?: string | null
           bike_type: string
           can_drop_off?: boolean
@@ -254,6 +259,7 @@ export type Database = {
           description: string
           id?: string
           postcode?: string | null
+          rejected_reason?: string | null
           repair_category: string
           status?: string
           updated_at?: string
@@ -262,6 +268,8 @@ export type Database = {
           wants_pickup?: boolean
         }
         Update: {
+          admin_status?: string
+          approved_at?: string | null
           area?: string | null
           bike_type?: string
           can_drop_off?: boolean
@@ -273,6 +281,7 @@ export type Database = {
           description?: string
           id?: string
           postcode?: string | null
+          rejected_reason?: string | null
           repair_category?: string
           status?: string
           updated_at?: string
@@ -345,6 +354,33 @@ export type Database = {
           metadata?: Json | null
           path?: string
           session_id?: string
+        }
+        Relationships: []
+      }
+      free_lead_grants: {
+        Row: {
+          admin_id: string
+          amount: number
+          created_at: string
+          id: string
+          reason: string | null
+          workshop_id: string
+        }
+        Insert: {
+          admin_id: string
+          amount?: number
+          created_at?: string
+          id?: string
+          reason?: string | null
+          workshop_id: string
+        }
+        Update: {
+          admin_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          reason?: string | null
+          workshop_id?: string
         }
         Relationships: []
       }
@@ -1141,6 +1177,7 @@ export type Database = {
           request_id: string
           status: string
           stripe_payment_intent_id: string | null
+          used_free_lead: boolean
           workshop_id: string
         }
         Insert: {
@@ -1155,6 +1192,7 @@ export type Database = {
           request_id: string
           status?: string
           stripe_payment_intent_id?: string | null
+          used_free_lead?: boolean
           workshop_id: string
         }
         Update: {
@@ -1169,6 +1207,7 @@ export type Database = {
           request_id?: string
           status?: string
           stripe_payment_intent_id?: string | null
+          used_free_lead?: boolean
           workshop_id?: string
         }
         Relationships: [
@@ -1204,6 +1243,7 @@ export type Database = {
           company_name: string
           created_at: string
           email: string
+          free_leads_remaining: number
           id: string
           phone: string | null
           services: string[] | null
@@ -1221,6 +1261,7 @@ export type Database = {
           company_name: string
           created_at?: string
           email: string
+          free_leads_remaining?: number
           id?: string
           phone?: string | null
           services?: string[] | null
@@ -1238,6 +1279,7 @@ export type Database = {
           company_name?: string
           created_at?: string
           email?: string
+          free_leads_remaining?: number
           id?: string
           phone?: string | null
           services?: string[] | null
