@@ -75,7 +75,7 @@ const PricingPage = () => {
                         {plan.badge}
                       </span>
                     )}
-                    <h3 className="font-display font-bold text-lg">{plan.name}</h3>
+                    <h2 className="font-display font-bold text-lg">{plan.name}</h2>
                     <div className="mt-2 mb-4">
                       <span className="text-4xl font-bold">{plan.price.toLocaleString('sv-SE')}</span>
                       <span className="text-muted-foreground ml-1">kr {plan.per}</span>

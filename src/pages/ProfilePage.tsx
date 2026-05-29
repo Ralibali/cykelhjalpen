@@ -104,13 +104,14 @@ const ProfilePage = () => {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
+                  aria-label="Ladda upp företagets logotyp"
                   className="relative h-20 w-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors flex items-center justify-center overflow-hidden bg-muted group"
                 >
                   {uploadingLogo ? (
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   ) : logoPreview ? (
                     <>
-                      <img src={logoPreview} alt="Logotyp" className="h-full w-full object-contain" />
+                      <img src={logoPreview} alt="Företagets logotyp" className="h-full w-full object-contain" />
                       <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Camera className="h-5 w-5 text-foreground" />
                       </div>
