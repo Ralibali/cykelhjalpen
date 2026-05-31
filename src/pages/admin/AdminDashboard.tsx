@@ -28,7 +28,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
-      <Navbar />
+      {getCurrentHost() === 'updro' ? <Navbar /> : <CykelNavbar />}
       <div className="flex-1 flex">
         <aside className="hidden md:flex w-64 border-r bg-card flex-col p-4 gap-1 shrink-0">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">Admin</p>
