@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import Navbar from '@/components/Navbar'
+import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
+import { getCurrentHost } from '@/lib/hostConfig'
 import { Home, Users, Bike, Wrench, CreditCard, Settings, TrendingUp, BookOpen, Receipt, Shield, Eye, MoreHorizontal, Sparkles, Building2, ClipboardList, BarChart3, ArrowLeft } from 'lucide-react'
 import MarketplaceHealthPanel from '@/components/admin/MarketplaceHealthPanel'
 import { cn } from '@/lib/utils'
@@ -26,7 +28,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
-      <Navbar />
+      {getCurrentHost() === 'updro' ? <Navbar /> : <CykelNavbar />}
       <div className="flex-1 flex">
         <aside className="hidden md:flex w-64 border-r bg-card flex-col p-4 gap-1 shrink-0">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">Admin</p>
