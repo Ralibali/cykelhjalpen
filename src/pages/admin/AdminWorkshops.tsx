@@ -62,7 +62,7 @@ const AdminWorkshops = () => {
           </table>
         </div>
       )}
-    </div>
+    </div></AdminLayout>
   )
 }
 
