@@ -22,15 +22,11 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://cykelhjalpen.se/" />
     <link rel="canonical" href="https://cykelhjalpen.se/" />
-    
-    
     <meta property="og:site_name" content="Cykelhjälpen" />
     <meta property="og:locale" content="sv_SE" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    
-    
 
     <!-- Performance hints -->
     <link rel="dns-prefetch" href="https://xmwsumzujqdttphhzxyq.supabase.co" />
@@ -47,16 +43,16 @@
     <meta name="theme-color" content="#F7F1E3" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#11181C" media="(prefers-color-scheme: dark)" />
 
-    <!-- Structured Data: Organization + LocalBusiness + WebSite -->
+    <!-- Structured Data: Organization + Service + WebSite -->
     <script type="application/ld+json" id="base-jsonld">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
           "@type": "Organization",
-          "@id": "/#organization",
+          "@id": "https://cykelhjalpen.se/#organization",
           "name": "Cykelhjälpen",
-          "url": "/",
+          "url": "https://cykelhjalpen.se/",
           "description": "Lokal leadplattform för cykelreparation i Linköping. Cyklister beskriver felet och får upp till fem prisförslag från anslutna cykelverkstäder.",
           "areaServed": {
             "@type": "City",
@@ -65,18 +61,18 @@
           "contactPoint": {
             "@type": "ContactPoint",
             "contactType": "customer service",
-            "email": "info@auroramedia.se",
+            "email": "info@cykelhjalpen.se",
             "availableLanguage": ["Swedish"]
           }
         },
         {
           "@type": "Service",
-          "@id": "/#service",
+          "@id": "https://cykelhjalpen.se/#service",
           "name": "Cykelhjälpen – jämför cykelverkstäder i Linköping",
-          "url": "/",
-          "image": "/og-image.png",
+          "url": "https://cykelhjalpen.se/",
+          "image": "https://cykelhjalpen.se/og/default.jpg",
           "description": "Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis för cyklister.",
-          "provider": { "@id": "/#organization" },
+          "provider": { "@id": "https://cykelhjalpen.se/#organization" },
           "areaServed": {
             "@type": "City",
             "name": "Linköping"
@@ -91,16 +87,11 @@
         },
         {
           "@type": "WebSite",
-          "@id": "/#website",
-          "url": "/",
+          "@id": "https://cykelhjalpen.se/#website",
+          "url": "https://cykelhjalpen.se/",
           "name": "Cykelhjälpen",
-          "publisher": { "@id": "/#organization" },
-          "inLanguage": "sv-SE",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "/cykelverkstad-linkoping?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-          }
+          "publisher": { "@id": "https://cykelhjalpen.se/#organization" },
+          "inLanguage": "sv-SE"
         }
       ]
     }
@@ -120,15 +111,15 @@
       });
     </script>
     <meta property="og:title" content="Cykelhjälpen – cykelverkstäder i Linköping">
-  <meta name="twitter:title" content="Cykelhjälpen – cykelverkstäder i Linköping">
-  <meta property="og:description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis och utan konto.">
-  <meta name="twitter:description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis och utan konto.">
-  <meta property="og:image" content="https://cykelhjalpen.se/og/default.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Cykelhjälpen – cykelverkstäder i Linköping">
-  <meta name="twitter:image" content="https://cykelhjalpen.se/og/default.jpg">
-</head>
+    <meta name="twitter:title" content="Cykelhjälpen – cykelverkstäder i Linköping">
+    <meta property="og:description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis och utan konto.">
+    <meta name="twitter:description" content="Beskriv felet på din cykel och få upp till fem prisförslag från lokala cykelverkstäder i Linköping. Helt gratis och utan konto.">
+    <meta property="og:image" content="https://cykelhjalpen.se/og/default.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Cykelhjälpen – cykelverkstäder i Linköping">
+    <meta name="twitter:image" content="https://cykelhjalpen.se/og/default.jpg">
+  </head>
 
   <body>
     <div id="root"></div>
