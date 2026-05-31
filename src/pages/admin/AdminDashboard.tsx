@@ -39,7 +39,14 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             </Link>
           ))}
         </aside>
-        <main className="flex-1 p-4 md:p-8 overflow-x-auto pb-24 md:pb-8">{children}</main>
+        <main className="flex-1 p-4 md:p-8 overflow-x-auto pb-24 md:pb-8">
+          {location.pathname !== '/admin' && (
+            <Link to="/admin" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
+              <ArrowLeft className="h-4 w-4" /> Tillbaka till översikt
+            </Link>
+          )}
+          {children}
+        </main>
       </div>
       {/* Mobile bottom nav for admin */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t flex justify-around py-2 z-50">
