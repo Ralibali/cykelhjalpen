@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Loader2, Check, X, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { AdminLayout } from './AdminDashboard'
 
 const AdminWorkshops = () => {
   const [items, setItems] = useState<any[]>([])
