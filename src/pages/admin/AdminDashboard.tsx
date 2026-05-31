@@ -2,26 +2,22 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import Navbar from '@/components/Navbar'
-import { Home, Users, ClipboardList, CreditCard, BarChart3, Settings, Bell, Building2, TrendingUp, BookOpen, Receipt, Shield, Eye, MoreHorizontal, Sparkles, Activity } from 'lucide-react'
-import MarketplaceHealthPanel from '@/components/admin/MarketplaceHealthPanel'
+import { Home, Users, Bike, Wrench, CreditCard, Settings, TrendingUp, BookOpen, Receipt, Shield, Eye, MoreHorizontal, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 const navItems = [
   { label: 'Översikt', href: '/admin', icon: Home },
-  { label: 'Statistik', href: '/admin/statistik', icon: TrendingUp },
-  { label: 'Besökare', href: '/admin/besokare', icon: Eye },
+  { label: 'Cykelärenden', href: '/admin/cykelarenden', icon: Bike },
+  { label: 'Verkstäder', href: '/admin/verkstader', icon: Wrench },
+  { label: 'Betalningar', href: '/admin/cykelbetalningar', icon: CreditCard },
   { label: 'Användare', href: '/admin/anvandare', icon: Users },
-  { label: 'Byråer', href: '/admin/byraer', icon: Building2 },
-  { label: 'Uppdrag', href: '/admin/uppdrag', icon: ClipboardList },
-  { label: 'Offerter', href: '/admin/offerter', icon: CreditCard },
+  { label: 'Besökare', href: '/admin/besokare', icon: Eye },
+  { label: 'Statistik', href: '/admin/statistik', icon: TrendingUp },
   { label: 'Guider', href: '/admin/guider', icon: BookOpen },
   { label: 'Artikelgenerator', href: '/admin/artikelgenerator', icon: Sparkles },
-  { label: 'Innehållsplan', href: '/admin/innehallsplan', icon: ClipboardList },
   { label: 'Stripe-logg', href: '/admin/stripe', icon: Receipt },
   { label: 'Audit-logg', href: '/admin/audit', icon: Shield },
-  { label: 'Notifikationer', href: '/admin/notifikationer', icon: Bell },
-  { label: 'Marketplace health', href: '/admin/marketplace-health', icon: Activity },
   { label: 'Inställningar', href: '/admin/installningar', icon: Settings },
 ]
 
