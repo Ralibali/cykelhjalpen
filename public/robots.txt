@@ -6,7 +6,6 @@ Disallow: /dashboard
 Disallow: /dashboard/
 Disallow: /logga-in
 Disallow: /registrera
-Disallow: /registrera/verkstad
 Disallow: /aterstall-losenord
 Disallow: /mitt-arende/
 
