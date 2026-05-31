@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { z } from 'zod'
@@ -71,6 +71,17 @@ const BikeRequestWizard = () => {
     consent: false,
   })
 
+  const imagePreviews = useMemo(
+    () => files.map((file) => ({ file, url: URL.createObjectURL(file) })),
+    [files],
+  )
+
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url))
+    }
+  }, [imagePreviews])
+
   const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }))
 
   const canNext = () => {
@@ -98,6 +109,7 @@ const BikeRequestWizard = () => {
       valid.push(f)
     }
     setFiles(valid)
+    e.target.value = ''
   }
 
   const submit = async () => {
@@ -132,7 +144,6 @@ const BikeRequestWizard = () => {
       if (error) throw error
       if (!req?.id) throw new Error(req?.error || 'Kunde inte skapa ärende')
 
-      // Upload images to private bucket; store storage path (signed URLs generated on read)
       const uploadErrors: string[] = []
       for (const file of files) {
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
@@ -307,11 +318,11 @@ const BikeRequestWizard = () => {
                   <span className="text-sm">Välj bilder</span>
                   <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleFiles} />
                 </label>
-                {files.length > 0 && (
+                {imagePreviews.length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
-                    {files.map((f, i) => (
-                      <div key={i} className="aspect-square sticker bg-muted overflow-hidden">
-                        <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
+                    {imagePreviews.map(({ file, url }) => (
+                      <div key={`${file.name}-${file.lastModified}-${file.size}`} className="aspect-square sticker bg-muted overflow-hidden">
+                        <img src={url} alt="Förhandsvisning av vald cykelbild" className="w-full h-full object-cover" />
                       </div>
                     ))}
                   </div>
