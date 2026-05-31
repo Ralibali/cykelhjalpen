@@ -18,6 +18,13 @@ const BodySchema = z.object({
   turnstile_token: z.string().min(10).max(4096),
 })
 
+const escapeHtml = (value: unknown) => String(value ?? '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;')
+
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -91,8 +98,16 @@ Deno.serve(async (req) => {
           ? body.description.slice(0, 240) + '…'
           : body.description
 
-        await Promise.allSettled(workshops.map((w: any) =>
-          fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-transactional-email`, {
+        const safeCity = escapeHtml(body.city ?? 'Linköping')
+        const safeBikeType = escapeHtml(body.bike_type)
+        const safeRepairCategory = escapeHtml(body.repair_category)
+        const safeUrgency = escapeHtml(body.urgency)
+        const safeArea = escapeHtml(body.area)
+        const safeDescription = escapeHtml(descShort)
+
+        await Promise.allSettled(workshops.map((w: any) => {
+          const safeCompanyName = escapeHtml(w.company_name)
+          return fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-transactional-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -103,16 +118,16 @@ Deno.serve(async (req) => {
               subject,
               html: `
                 <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-                  <h2 style="margin:0 0 16px">Ny cykelförfrågan i ${body.city ?? 'Linköping'}</h2>
-                  <p>Hej ${w.company_name},</p>
+                  <h2 style="margin:0 0 16px">Ny cykelförfrågan i ${safeCity}</h2>
+                  <p>Hej ${safeCompanyName},</p>
                   <p>En ny kund söker hjälp med sin cykel:</p>
                   <table style="border-collapse:collapse;margin:16px 0">
-                    <tr><td style="padding:4px 12px 4px 0;color:#555">Cykeltyp:</td><td><strong>${body.bike_type}</strong></td></tr>
-                    <tr><td style="padding:4px 12px 4px 0;color:#555">Kategori:</td><td><strong>${body.repair_category}</strong></td></tr>
-                    <tr><td style="padding:4px 12px 4px 0;color:#555">Brådska:</td><td><strong>${body.urgency}</strong></td></tr>
-                    ${body.area ? `<tr><td style="padding:4px 12px 4px 0;color:#555">Område:</td><td>${body.area}</td></tr>` : ''}
+                    <tr><td style="padding:4px 12px 4px 0;color:#555">Cykeltyp:</td><td><strong>${safeBikeType}</strong></td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#555">Kategori:</td><td><strong>${safeRepairCategory}</strong></td></tr>
+                    <tr><td style="padding:4px 12px 4px 0;color:#555">Brådska:</td><td><strong>${safeUrgency}</strong></td></tr>
+                    ${body.area ? `<tr><td style="padding:4px 12px 4px 0;color:#555">Område:</td><td>${safeArea}</td></tr>` : ''}
                   </table>
-                  <p style="background:#f5f5f5;padding:12px;border-radius:6px">${descShort}</p>
+                  <p style="background:#f5f5f5;padding:12px;border-radius:6px">${safeDescription}</p>
                   <p style="margin-top:24px">
                     <a href="${dashboardUrl}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">
                       Logga in och lägg offert
@@ -125,7 +140,7 @@ Deno.serve(async (req) => {
               `,
             }),
           }).catch((err) => console.error('Notify workshop failed', w.email, err))
-        ))
+        }))
       } catch (err) {
         console.error('Workshop notification batch failed', err)
       }
