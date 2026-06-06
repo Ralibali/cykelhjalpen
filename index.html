@@ -91,7 +91,79 @@
           "url": "https://cykelhjalpen.se/",
           "name": "Cykelhjälpen",
           "publisher": { "@id": "https://cykelhjalpen.se/#organization" },
-          "inLanguage": "sv-SE"
+          "inLanguage": "sv-SE",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://cykelhjalpen.se/cykelverkstad-linkoping?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "LocalBusiness",
+          "@id": "https://cykelhjalpen.se/#localbusiness",
+          "name": "Cykelhjälpen Linköping",
+          "url": "https://cykelhjalpen.se/",
+          "image": "https://cykelhjalpen.se/og/default.jpg",
+          "description": "Jämför prisförslag från cykelverkstäder i Linköping. Beskriv felet och få upp till fem offerter inom 24 timmar. Helt gratis för cyklister.",
+          "priceRange": "Gratis",
+          "areaServed": [
+            { "@type": "City", "name": "Linköping" },
+            { "@type": "AdministrativeArea", "name": "Östergötland" }
+          ],
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Linköping",
+            "addressRegion": "Östergötland",
+            "addressCountry": "SE"
+          },
+          "email": "info@cykelhjalpen.se",
+          "knowsLanguage": "sv-SE"
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://cykelhjalpen.se/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Vad kostar det att använda Cykelhjälpen?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Cykelhjälpen är helt gratis för cyklister. Du betalar bara den verkstad du själv väljer att anlita."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Hur snabbt får jag prisförslag på min cykelreparation?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "De flesta cyklister får sina första prisförslag från cykelverkstäder i Linköping inom tjugofyra timmar efter att ärendet skickats in."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Vilka cykelverkstäder i Linköping finns med?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Cykelhjälpen samarbetar med lokala cykelverkstäder i Linköping, från innerstaden till Ryd, Vallastaden, Lambohov och Ekholmen. Endast verifierade verkstäder får skicka offerter."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Kan jag jämföra pris på elcykel-reparation?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Ja. Beskriv ditt elcykel-problem så får du prisförslag från verkstäder i Linköping som arbetar med elcyklar – inklusive batteri, motor och styrenhet."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Behöver jag skapa ett konto?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Nej. Du beskriver felet, lämnar kontaktuppgifter och får prisförslag direkt – utan registrering."
+              }
+            }
+          ]
         }
       ]
     }
