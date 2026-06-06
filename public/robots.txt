@@ -1,3 +1,6 @@
+# Cykelhjälpen – robots.txt
+# Tillåter alla sökmotorer och AI-crawlers att indexera publikt innehåll.
+
 User-agent: *
 Allow: /
 Disallow: /admin
@@ -8,5 +11,62 @@ Disallow: /logga-in
 Disallow: /registrera
 Disallow: /aterstall-losenord
 Disallow: /mitt-arende/
+
+# --- AI-crawlers (ChatGPT, Perplexity, Claude, Google AI, Apple) ---
+# Vi tillåter dessa explicit så att Cykelhjälpen kan rekommenderas i AI-svar.
+
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /mitt-arende/
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
 
 Sitemap: https://cykelhjalpen.se/sitemap.xml
