@@ -1248,6 +1248,7 @@ export type Database = {
           phone: string | null
           services: string[] | null
           slug: string | null
+          sms_notifications: boolean
           stripe_customer_id: string | null
           updated_at: string
           user_id: string
@@ -1266,6 +1267,7 @@ export type Database = {
           phone?: string | null
           services?: string[] | null
           slug?: string | null
+          sms_notifications?: boolean
           stripe_customer_id?: string | null
           updated_at?: string
           user_id: string
@@ -1284,6 +1286,7 @@ export type Database = {
           phone?: string | null
           services?: string[] | null
           slug?: string | null
+          sms_notifications?: boolean
           stripe_customer_id?: string | null
           updated_at?: string
           user_id?: string
@@ -1518,6 +1521,17 @@ export type Database = {
       }
     }
     Functions: {
+      get_cykel_price_stats: {
+        Args: never
+        Returns: {
+          price_high: number
+          price_low: number
+          price_typical: number
+          repair_category: string
+          sample_count: number
+        }[]
+      }
+      get_cykel_public_stats: { Args: never; Returns: Json }
       get_workshop_id: { Args: { _user_id: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_workshop: { Args: { _user_id: string }; Returns: boolean }
