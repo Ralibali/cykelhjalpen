@@ -1,11 +1,40 @@
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, MapPin, MessageSquare, ShieldCheck, CheckCircle2, Wrench, Clock, Heart, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
+import { supabase } from '@/integrations/supabase/client'
 import heroImg from '@/assets/cykel-hero.jpg'
+
+type PublicStats = { workshops: number; requests: number; responses: number }
+
+const LiveStats = () => {
+  const { data } = useQuery({
+    queryKey: ['cykel-public-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_cykel_public_stats')
+      if (error) throw error
+      return data as unknown as PublicStats
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  })
+  if (!data) return null
+  if (data.workshops < 3 || data.requests < 10) return null
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.55 }}
+      className="mt-6 text-sm text-muted-foreground font-mono-display"
+    >
+      {data.workshops} godkända verkstäder i Linköping · {data.requests} ärenden skickade
+    </motion.div>
+  )
+}
 
 
 const homeSectionLink = '/#sa-fungerar-det'
@@ -146,6 +175,7 @@ const CykelhjalpenIndex = () => {
                 <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> upp till 5 prisförslag</span>
                 <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> svar samma dag</span>
               </motion.div>
+              <LiveStats />
             </div>
 
             {/* Hero image */}

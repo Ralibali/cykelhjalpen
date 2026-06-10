@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
       try {
         const { data: workshops } = await supabase
           .from('workshops')
-          .select('email, company_name, city')
+          .select('email, company_name, city, phone, sms_notifications')
           .eq('approved', true)
           .eq('city', body.city ?? 'Linköping')
 
