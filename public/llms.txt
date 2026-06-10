@@ -22,10 +22,29 @@ Cykelhjälpen samlar prisförslag från flera oberoende cykelverkstäder i Link�
 - [Elcykel-reparation Linköping](https://cykelhjalpen.se/elcykel-reparation-linkoping): Specifika tjänster för elcyklar.
 - [Mobil cykelreparation Linköping](https://cykelhjalpen.se/mobil-cykelreparation-linkoping): Verkstäder som kommer hem till dig.
 
-## Stadsdelssidor
+## Reparationstyper
+- [Vad kostar cykelreparation Linköping](https://cykelhjalpen.se/vad-kostar-cykelreparation-linkoping): Riktiga priser från lämnade offerter.
+- [Växeljustering Linköping](https://cykelhjalpen.se/vaxeljustering-linkoping)
+- [Bromsservice cykel Linköping](https://cykelhjalpen.se/bromsservice-linkoping)
+- [Kedjebyte cykel Linköping](https://cykelhjalpen.se/kedjebyte-linkoping)
+- [Däckbyte cykel Linköping](https://cykelhjalpen.se/dackbyte-cykel-linkoping)
+- [Hjul och ekrar Linköping](https://cykelhjalpen.se/hjul-och-ekrar-linkoping)
+- [Cykelmontering Linköping](https://cykelhjalpen.se/cykelmontering-linkoping)
+- [Vårservice cykel Linköping](https://cykelhjalpen.se/varservice-cykel-linkoping)
+
+## Stadsdelar
 - [Cykelverkstad innerstaden Linköping](https://cykelhjalpen.se/cykelverkstad-innerstaden-linkoping)
 - [Cykelverkstad Ryd Linköping](https://cykelhjalpen.se/cykelverkstad-ryd-linkoping)
 - [Cykelverkstad Vallastaden Linköping](https://cykelhjalpen.se/cykelverkstad-vallastaden-linkoping)
+- [Cykelverkstad Lambohov Linköping](https://cykelhjalpen.se/cykelverkstad-lambohov-linkoping)
+- [Cykelverkstad Ekholmen Linköping](https://cykelhjalpen.se/cykelverkstad-ekholmen-linkoping)
+- [Cykelverkstad Skäggetorp Linköping](https://cykelhjalpen.se/cykelverkstad-skaggetorp-linkoping)
+- [Cykelverkstad Tannefors Linköping](https://cykelhjalpen.se/cykelverkstad-tannefors-linkoping)
+- [Cykelverkstad Berga Linköping](https://cykelhjalpen.se/cykelverkstad-berga-linkoping)
+- [Cykelverkstad Tallboda Linköping](https://cykelhjalpen.se/cykelverkstad-tallboda-linkoping)
+- [Cykelverkstad Ljungsbro](https://cykelhjalpen.se/cykelverkstad-ljungsbro-linkoping)
+- [Cykelverkstad Sturefors](https://cykelhjalpen.se/cykelverkstad-sturefors-linkoping)
+- [Cykelverkstad Malmslätt](https://cykelhjalpen.se/cykelverkstad-malmslatt-linkoping)
 
 ## Geografi
 - Stad: Linköping

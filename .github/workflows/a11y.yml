@@ -34,6 +34,10 @@ jobs:
             --url=https://updro.se/byraer \
             --url=https://updro.se/priser \
             --url=https://updro.se/om-oss \
+            --url=https://cykelhjalpen.se/ \
+            --url=https://cykelhjalpen.se/skicka-arende \
+            --url=https://cykelhjalpen.se/for-cykelverkstader \
+            --url=https://cykelhjalpen.se/cykelverkstad-linkoping \
             --numberOfRuns=1 \
             --settings.onlyCategories=accessibility \
             --settings.preset=desktop

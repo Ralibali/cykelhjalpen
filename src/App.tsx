@@ -31,6 +31,7 @@ const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/Worksh
 const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopBilling"));
 const WorkshopSettings = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopSettings"));
 const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
+import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
 const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
 const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
@@ -200,16 +201,10 @@ const AppRoutes = () => {
               <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
 
-              {/* Local SEO */}
-              <Route path="/cykelverkstad-linkoping" element={<CykelSeoPage />} />
-              <Route path="/cykelreparation-linkoping" element={<CykelSeoPage />} />
-              <Route path="/punktering-linkoping" element={<CykelSeoPage />} />
-              <Route path="/cykelservice-linkoping" element={<CykelSeoPage />} />
-              <Route path="/elcykel-reparation-linkoping" element={<CykelSeoPage />} />
-              <Route path="/cykelverkstad-innerstaden-linkoping" element={<CykelSeoPage />} />
-              <Route path="/cykelverkstad-ryd-linkoping" element={<CykelSeoPage />} />
-              <Route path="/cykelverkstad-vallastaden-linkoping" element={<CykelSeoPage />} />
-              <Route path="/mobil-cykelreparation-linkoping" element={<CykelSeoPage />} />
+              {/* Local SEO — dynamiska routes från CYKEL_SEO_PAGES */}
+              {CYKEL_SEO_PAGES.map((p) => (
+                <Route key={p.slug} path={`/${p.slug}`} element={<CykelSeoPage />} />
+              ))}
             </>
           )}
 

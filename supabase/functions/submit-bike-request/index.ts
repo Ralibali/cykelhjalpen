@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
       try {
         const { data: workshops } = await supabase
           .from('workshops')
-          .select('email, company_name, city')
+          .select('email, company_name, city, phone, sms_notifications')
           .eq('approved', true)
           .eq('city', body.city ?? 'Linköping')
 
@@ -141,6 +141,41 @@ Deno.serve(async (req) => {
             }),
           }).catch((err) => console.error('Notify workshop failed', w.email, err))
         }))
+
+        // SMS-notiser via 46elks (fire-and-forget, tyst om credentials saknas)
+        const elksUser = Deno.env.get('ELKS_API_USERNAME')
+        const elksPass = Deno.env.get('ELKS_API_PASSWORD')
+        if (elksUser && elksPass) {
+          const smsRecipients = workshops.filter((w: any) => w.sms_notifications && w.phone)
+          if (smsRecipients.length > 0) {
+            const toE164 = (raw: string) => {
+              const digits = raw.replace(/[^\d+]/g, '')
+              if (digits.startsWith('+')) return digits
+              if (digits.startsWith('00')) return '+' + digits.slice(2)
+              if (digits.startsWith('0')) return '+46' + digits.slice(1)
+              return digits
+            }
+            const cityForSms = body.city ?? 'Linköping'
+            const message = `Nytt cykelärende i ${cityForSms}: ${body.repair_category}. Logga in och svara — max 5 verkstäder kan lämna offert. cykelhjalpen.se/dashboard`
+            const auth = btoa(`${elksUser}:${elksPass}`)
+            await Promise.allSettled(smsRecipients.map((w: any) =>
+              fetch('https://api.46elks.com/a1/sms', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Basic ${auth}`,
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                  from: 'Cykelhjalpen',
+                  to: toE164(w.phone),
+                  message,
+                }).toString(),
+              }).catch((err) => console.error('SMS failed', w.phone, err))
+            ))
+          }
+        } else {
+          console.log('46elks credentials missing — skipping SMS notifications')
+        }
       } catch (err) {
         console.error('Workshop notification batch failed', err)
       }
