@@ -31,6 +31,7 @@ const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/Worksh
 const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopBilling"));
 const WorkshopSettings = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopSettings"));
 const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
+import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
 const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
 const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
