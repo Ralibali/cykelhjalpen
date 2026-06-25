@@ -34,6 +34,21 @@ const URGENCY = [
   { value: 'flexible', label: 'Flexibel' },
 ]
 
+interface FormState {
+  bike_type: string
+  repair_category: string
+  description: string
+  area: string
+  postcode: string
+  urgency: string
+  can_drop_off: boolean
+  wants_pickup: boolean
+  customer_name: string
+  customer_email: string
+  customer_phone: string
+  consent: boolean
+}
+
 const schema = z.object({
   bike_type: z.string().min(1, 'Välj vilken typ av cykel du har'),
   repair_category: z.string().min(1, 'Välj vad du behöver hjälp med'),
@@ -48,8 +63,6 @@ const schema = z.object({
   customer_phone: z.string().trim().max(40).optional(),
   consent: z.literal(true, { errorMap: () => ({ message: 'Du måste godkänna integritetspolicyn' }) }),
 })
-
-type FormState = z.input<typeof schema>
 
 const DEFAULT_FORM: FormState = {
   bike_type: '',
@@ -85,7 +98,7 @@ const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
         if (typeof firstMessage === 'string') return firstMessage
       }
     } catch {
-      // The edge function did not return JSON.
+      // Edge-funktionen returnerade inte JSON.
     }
   }
   return (error as any)?.message || fallback
@@ -121,14 +134,11 @@ const BikeRequestWizard = () => {
   }, [])
 
   useEffect(() => {
-    const draft = { ...form, consent: false }
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, consent: false }))
   }, [form])
 
   useEffect(() => {
-    return () => {
-      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url))
-    }
+    return () => imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url))
   }, [imagePreviews])
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
@@ -142,7 +152,7 @@ const BikeRequestWizard = () => {
     if (step === 3) {
       return form.customer_name.trim().length >= 2
         && /\S+@\S+\.\S+/.test(form.customer_email)
-        && form.consent === true
+        && form.consent
     }
     return false
   }
@@ -175,13 +185,8 @@ const BikeRequestWizard = () => {
     event.target.value = ''
   }
 
-  const handleTurnstileVerify = useCallback((token: string) => {
-    setTurnstileToken(token)
-  }, [])
-
-  const handleTurnstileExpire = useCallback(() => {
-    setTurnstileToken(null)
-  }, [])
+  const handleTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), [])
+  const handleTurnstileExpire = useCallback(() => setTurnstileToken(null), [])
 
   const resetTurnstile = () => {
     setTurnstileToken(null)
@@ -282,12 +287,7 @@ const BikeRequestWizard = () => {
         <meta property="og:description" content="Beskriv ditt cykelproblem på två minuter och få upp till fem prisförslag från lokala cykelverkstäder i Linköping." />
         <meta property="og:url" content="https://cykelhjalpen.se/skicka-arende" />
         <meta property="og:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Skicka cykelärende — gratis offert i Linköping" />
-        <meta name="twitter:description" content="Få upp till fem prisförslag från lokala cykelverkstäder i Linköping." />
-        <meta name="twitter:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
       </Helmet>
 
       <CykelNavbar />
@@ -411,11 +411,11 @@ const BikeRequestWizard = () => {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="area">Område <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
-                    <Input id="area" value={form.area || ''} onChange={(event) => update('area', event.target.value)} placeholder="Exempel: Ryd" />
+                    <Input id="area" value={form.area} onChange={(event) => update('area', event.target.value)} placeholder="Exempel: Ryd" />
                   </div>
                   <div>
                     <Label htmlFor="postcode">Postnummer <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
-                    <Input id="postcode" inputMode="numeric" value={form.postcode || ''} onChange={(event) => update('postcode', event.target.value)} placeholder="583 30" />
+                    <Input id="postcode" inputMode="numeric" value={form.postcode} onChange={(event) => update('postcode', event.target.value)} placeholder="583 30" />
                   </div>
                 </div>
 
@@ -460,7 +460,7 @@ const BikeRequestWizard = () => {
                 </div>
                 <div>
                   <Label htmlFor="phone">Telefon <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
-                  <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" value={form.customer_phone || ''} onChange={(event) => update('customer_phone', event.target.value)} />
+                  <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" value={form.customer_phone} onChange={(event) => update('customer_phone', event.target.value)} />
                 </div>
 
                 <div className="flex items-start gap-3 rounded-md border p-3">
@@ -473,11 +473,7 @@ const BikeRequestWizard = () => {
 
                 <div className="border-t pt-5">
                   <p className="text-sm font-medium mb-2">Säkerhetskontroll</p>
-                  <Turnstile
-                    onVerify={handleTurnstileVerify}
-                    onExpire={handleTurnstileExpire}
-                    resetKey={turnstileResetKey}
-                  />
+                  <Turnstile onVerify={handleTurnstileVerify} onExpire={handleTurnstileExpire} resetKey={turnstileResetKey} />
                 </div>
 
                 <p className="text-xs text-center text-muted-foreground">
