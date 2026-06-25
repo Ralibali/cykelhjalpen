@@ -39,7 +39,6 @@ Deno.serve(async (req) => {
     }
     const body = parsed.data
 
-    // Verify Turnstile
     const secret = Deno.env.get('TURNSTILE_SECRET_KEY')
     if (!secret) {
       return new Response(JSON.stringify({ error: 'Turnstile not configured' }), {
@@ -53,8 +52,8 @@ Deno.serve(async (req) => {
       body: new URLSearchParams({ secret, response: body.turnstile_token, remoteip: ip }),
     })
     const verify = await verifyRes.json()
-    if (!verify.success) {
-      return new Response(JSON.stringify({ error: 'Turnstile-verifiering misslyckades' }), {
+    if (!verify.success || (verify.action && verify.action !== 'submit_bike_request')) {
+      return new Response(JSON.stringify({ error: 'Säkerhetskontrollen gick ut eller misslyckades. Bekräfta den igen och försök på nytt.' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -81,8 +80,9 @@ Deno.serve(async (req) => {
     if (error) throw error
     const row = Array.isArray(data) ? data[0] : data
 
-    // Notify approved workshops in the same city (fire-and-forget)
-    ;(async () => {
+    // Vänta in notiserna innan svaret skickas. Tidigare kunde edge-körningen
+    // avslutas medan mejl och SMS fortfarande låg i en frikopplad async-uppgift.
+    await (async () => {
       try {
         const { data: workshops } = await supabase
           .from('workshops')
@@ -142,7 +142,6 @@ Deno.serve(async (req) => {
           }).catch((err) => console.error('Notify workshop failed', w.email, err))
         }))
 
-        // SMS-notiser via 46elks (fire-and-forget, tyst om credentials saknas)
         const elksUser = Deno.env.get('ELKS_API_USERNAME')
         const elksPass = Deno.env.get('ELKS_API_PASSWORD')
         if (elksUser && elksPass) {
@@ -156,7 +155,7 @@ Deno.serve(async (req) => {
               return digits
             }
             const cityForSms = body.city ?? 'Linköping'
-            const message = `Nytt cykelärende i ${cityForSms}: ${body.repair_category}. Logga in och svara — max 5 verkstäder kan lämna offert. cykelhjalpen.se/dashboard`
+            const message = `Nytt cykelärende i ${cityForSms}: ${body.repair_category}. Logga in och svara — max 5 verkstäder kan lämna offert. cykelhjalpen.se/dashboard/verkstad`
             const auth = btoa(`${elksUser}:${elksPass}`)
             await Promise.allSettled(smsRecipients.map((w: any) =>
               fetch('https://api.46elks.com/a1/sms', {
@@ -166,7 +165,7 @@ Deno.serve(async (req) => {
                   'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: new URLSearchParams({
-                  from: 'Cykelhjalpen',
+                  from: 'CykelHjalp',
                   to: toE164(w.phone),
                   message,
                 }).toString(),
