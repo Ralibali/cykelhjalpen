@@ -50,7 +50,7 @@ const WorkshopBilling = () => {
         <p className="text-sm text-muted-foreground mt-1">Historik för skickade offerter från {workshop.company_name}.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <div className="sticker bg-card p-4"><p className="text-xs text-muted-foreground">Totalt betalt</p><p className="font-display text-2xl font-bold mt-1">{totals.paid.toLocaleString('sv-SE')} kr</p></div>
         <div className="sticker bg-card p-4"><p className="text-xs text-muted-foreground">Betalda offerter</p><p className="font-display text-2xl font-bold mt-1">{totals.paidCount}</p></div>
         <div className="sticker bg-card p-4"><p className="text-xs text-muted-foreground">Gratis-leads</p><p className="font-display text-2xl font-bold mt-1">{totals.freeCount}</p></div>
@@ -62,7 +62,7 @@ const WorkshopBilling = () => {
         <div className="sticker bg-card p-8 text-center text-muted-foreground"><Receipt className="h-8 w-8 mx-auto mb-3 opacity-50" />Inga betalningar ännu.</div>
       ) : (
         <div className="sticker bg-card overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[620px]">
             <thead className="bg-muted/40">
               <tr>
                 <th className="text-left p-3">Datum</th>
