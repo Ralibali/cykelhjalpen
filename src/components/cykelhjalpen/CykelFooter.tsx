@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import CykelLogo from './CykelLogo'
+import { CYKEL_CITIES, cityQuery } from '@/lib/cykelCities'
 
 const homeSectionLink = '/#sa-fungerar-det'
 
@@ -9,7 +10,7 @@ const CykelFooter = () => (
       <div className="col-span-2 md:col-span-1">
         <CykelLogo />
         <p className="mt-3 text-sm text-muted-foreground max-w-xs">
-          Lokal leadplattform för cykelreparation i Linköping.
+          Lokal leadplattform för cykelreparation i Linköping, Norrköping, Uppsala och Lund.
         </p>
       </div>
 
@@ -17,8 +18,10 @@ const CykelFooter = () => (
         <h3 className="font-display font-semibold mb-3">För cyklister</h3>
         <ul className="space-y-2 text-sm">
           <li><Link to="/skicka-arende" className="hover:text-primary">Skicka cykelärende</Link></li>
-          <li><Link to="/cykelverkstad-linkoping" className="hover:text-primary">Cykelverkstäder Linköping</Link></li>
           <li><Link to={homeSectionLink} className="hover:text-primary">Så fungerar det</Link></li>
+          {CYKEL_CITIES.map((city) => (
+            <li key={city.name}><Link to={cityQuery(city.name)} className="hover:text-primary">Cykelhjälpen {city.name}</Link></li>
+          ))}
         </ul>
       </div>
 
