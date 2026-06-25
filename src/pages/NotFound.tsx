@@ -1,22 +1,31 @@
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useLocation, Link } from 'react-router-dom'
+import { useEffect } from 'react'
 import { setSEOMeta } from '@/lib/seoHelpers'
 import { useNoindex } from '@/hooks/useNoindex'
+import { getCurrentHost } from '@/lib/hostConfig'
+import CykelCityLandingPage from '@/pages/cykelhjalpen/CykelCityLandingPage'
+import type { CykelCityName } from '@/lib/cykelCities'
 
-const NotFound = () => {
-  const location = useLocation();
-  useNoindex();
+const CITY_ROUTES: Record<string, CykelCityName> = {
+  '/cykelverkstad-norrkoping': 'Norrköping',
+  '/cykelverkstad-uppsala': 'Uppsala',
+  '/cykelverkstad-lund': 'Lund',
+}
+
+const ActualNotFound = ({ pathname }: { pathname: string }) => {
+  useNoindex()
+  const host = getCurrentHost()
+  const isCykel = host === 'cykelhjalpen'
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    console.error('404 Error: User attempted to access non-existent route:', pathname)
     setSEOMeta({
-      title: 'Sidan hittades inte (404) | Updro',
+      title: `Sidan hittades inte (404) | ${isCykel ? 'Cykelhjälpen' : 'Updro'}`,
       description: 'Sidan du söker finns inte. Gå tillbaka till startsidan för att hitta rätt.',
-      canonical: `https://updro.se${location.pathname}`,
+      canonical: `${isCykel ? 'https://cykelhjalpen.se' : 'https://updro.se'}${pathname}`,
       noindex: true,
     })
-    // Best-effort soft signal for crawlers — sets a custom header-like meta.
-    // Real 404 status requires hosting support; we at least keep noindex hard.
+
     let prerenderStatus = document.querySelector('meta[name="prerender-status-code"]') as HTMLMetaElement | null
     if (!prerenderStatus) {
       prerenderStatus = document.createElement('meta')
@@ -24,7 +33,7 @@ const NotFound = () => {
       document.head.appendChild(prerenderStatus)
     }
     prerenderStatus.content = '404'
-  }, [location.pathname]);
+  }, [pathname, isCykel])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface-alt px-6">
@@ -36,22 +45,27 @@ const NotFound = () => {
           Sidan du letar efter finns inte – kanske flyttad, kanske aldrig publicerad. Härifrån kan du hitta tillbaka.
         </p>
         <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-base">
-          <Link
-            to="/"
-            className="text-foreground font-semibold underline underline-offset-4 decoration-1 hover:decoration-2 transition-all"
-          >
+          <Link to="/" className="text-foreground font-semibold underline underline-offset-4 decoration-1 hover:decoration-2 transition-all">
             Till startsidan
           </Link>
           <Link
-            to="/byraer"
+            to={isCykel ? '/skicka-arende' : '/byraer'}
             className="text-foreground font-semibold underline underline-offset-4 decoration-1 hover:decoration-2 transition-all"
           >
-            Hitta byrå
+            {isCykel ? 'Få prisförslag' : 'Hitta byrå'}
           </Link>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default NotFound;
+const NotFound = () => {
+  const location = useLocation()
+  const city = getCurrentHost() === 'cykelhjalpen' ? CITY_ROUTES[location.pathname.replace(/\/$/, '') || '/'] : undefined
+
+  if (city) return <CykelCityLandingPage city={city} />
+  return <ActualNotFound pathname={location.pathname} />
+}
+
+export default NotFound
