@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 
-const TURNSTILE_ERROR_MESSAGE = 'Säkerhetskontrollen kunde inte laddas. Ladda om sidan eller kontakta oss om problemet kvarstår.'
+const TURNSTILE_ERROR_MESSAGE = 'Säkerhetskontrollen kunde inte laddas. Kontrollera anslutningen och försök igen.'
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
 
 declare global {
@@ -35,7 +35,8 @@ const loadScript = () => {
       existing.addEventListener('error', handleError, { once: true })
       window.setTimeout(() => {
         if (window.turnstile) resolve()
-      }, 250)
+        else reject(new Error('turnstile-api-timeout'))
+      }, 5000)
       return
     }
 
@@ -67,6 +68,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0 }: Props) => {
   const onExpireRef = useRef(onExpire)
   const [siteKey, setSiteKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [retryVersion, setRetryVersion] = useState(0)
 
   useEffect(() => {
     onVerifyRef.current = onVerify
@@ -79,6 +81,8 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0 }: Props) => {
   useEffect(() => {
     let mounted = true
     let resolved = false
+    setError(null)
+
     const timeout = window.setTimeout(() => {
       if (mounted && !resolved) setError(TURNSTILE_ERROR_MESSAGE)
     }, 8000)
@@ -87,20 +91,24 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0 }: Props) => {
       if (!mounted) return
       resolved = true
       if (functionError || !data?.siteKey) {
+        setSiteKey(null)
         setError(TURNSTILE_ERROR_MESSAGE)
         return
       }
       setError(null)
       setSiteKey(data.siteKey)
     }).catch(() => {
-      if (mounted) setError(TURNSTILE_ERROR_MESSAGE)
+      if (mounted) {
+        setSiteKey(null)
+        setError(TURNSTILE_ERROR_MESSAGE)
+      }
     }).finally(() => window.clearTimeout(timeout))
 
     return () => {
       mounted = false
       window.clearTimeout(timeout)
     }
-  }, [])
+  }, [retryVersion])
 
   useEffect(() => {
     if (!siteKey || !containerRef.current) return
@@ -114,7 +122,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0 }: Props) => {
         try {
           window.turnstile.remove(widgetIdRef.current)
         } catch {
-          // Widget may already have been removed by Cloudflare.
+          // Widgeten kan redan ha tagits bort av Cloudflare.
         }
       }
       widgetIdRef.current = null
@@ -148,12 +156,35 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0 }: Props) => {
       cancelled = true
       removeWidget()
     }
-  }, [siteKey, resetKey])
+  }, [siteKey, resetKey, retryVersion])
 
-  if (error) return <div className="text-sm text-destructive" role="alert">{error}</div>
-  if (!siteKey) return <div className="text-xs text-muted-foreground">Laddar säkerhetskontroll…</div>
+  const retry = () => {
+    setError(null)
+    setSiteKey(null)
+    onExpireRef.current?.()
+    setRetryVersion((current) => current + 1)
+  }
 
-  return <div ref={containerRef} />
+  return (
+    <div className="space-y-2">
+      {!siteKey && !error && (
+        <div className="text-xs text-muted-foreground" aria-live="polite">Laddar säkerhetskontroll…</div>
+      )}
+      <div ref={containerRef} />
+      {error && (
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3" role="alert">
+          <p className="text-sm text-destructive">{error}</p>
+          <button
+            type="button"
+            onClick={retry}
+            className="mt-2 text-sm font-medium underline underline-offset-4"
+          >
+            Försök igen
+          </button>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default Turnstile
