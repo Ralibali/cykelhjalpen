@@ -5,74 +5,111 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Wrench, Loader2 } from 'lucide-react'
+import { Wrench, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { Helmet } from 'react-helmet-async'
 import { LEAD_FEE_KR } from '@/lib/pricing'
+import { trackClick } from '@/hooks/usePageTracking'
 
 const SERVICES = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Hjulbygge', 'Mobil reparation']
+
+const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
+  const gtag = (window as any).gtag
+  if (typeof gtag === 'function') gtag('event', eventName, parameters)
+}
+
+const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
+  const context = (error as any)?.context
+  if (context instanceof Response) {
+    try {
+      const payload = await context.clone().json()
+      if (typeof payload?.error === 'string') return payload.error
+    } catch {
+      // The edge function did not return JSON.
+    }
+  }
+  return (error as any)?.message || fallback
+}
 
 const RegisterWorkshopPage = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
-    company_name: '', email: '', password: '', phone: '', address: '', website: '', notes: '',
+    company_name: '',
+    email: '',
+    password: '',
+    phone: '',
+    address: '',
+    website: '',
     services: [] as string[],
     terms_accepted: false,
   })
 
-  const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }))
-  const toggleService = (s: string) =>
-    update('services', form.services.includes(s) ? form.services.filter((x) => x !== s) : [...form.services, s])
+  const update = (key: string, value: unknown) => setForm((current) => ({ ...current, [key]: value }))
+  const toggleService = (service: string) => {
+    update(
+      'services',
+      form.services.includes(service)
+        ? form.services.filter((current) => current !== service)
+        : [...form.services, service],
+    )
+  }
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.terms_accepted) return toast.error('Du måste godkänna villkoren')
-    if (form.password.length < 6) return toast.error('Lösenord minst sex tecken')
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!form.terms_accepted) {
+      toast.error('Du måste godkänna villkoren')
+      return
+    }
+    if (form.company_name.trim().length < 2) {
+      toast.error('Ange verkstadens namn')
+      return
+    }
+    if (form.password.length < 6) {
+      toast.error('Lösenordet måste vara minst sex tecken')
+      return
+    }
+
     setLoading(true)
     try {
-      const { data: signUp, error: signErr } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard/verkstad`,
-          data: { full_name: form.company_name, role: 'supplier' },
+      const { data, error } = await supabase.functions.invoke('register-workshop', {
+        body: {
+          company_name: form.company_name,
+          email: form.email,
+          password: form.password,
+          phone: form.phone || null,
+          address: form.address || null,
+          website: form.website || null,
+          services: form.services,
+          terms_accepted: form.terms_accepted,
         },
       })
-      if (signErr) throw signErr
-      const userId = signUp.user?.id
-      if (!userId) throw new Error('Något gick fel vid registreringen')
 
-      // Create profile (supplier role piggyback for auth gating)
-      await supabase.from('profiles').upsert({
-        id: userId,
-        role: 'supplier',
-        full_name: form.company_name,
-        email: form.email,
-        company_name: form.company_name,
-        city: 'Linköping',
-        phone: form.phone || null,
+      if (error) throw new Error(await getFunctionErrorMessage(error, 'Registreringen misslyckades'))
+      if (data?.error) throw new Error(data.error)
+
+      trackClick('workshop_registration_completed', 'Skicka ansökan', {
+        services_count: form.services.length,
       })
+      trackGoogleEvent('sign_up', { method: 'workshop_registration' })
 
-      // Create workshop row (approved=false)
-      const { error: wErr } = await supabase.from('workshops').insert({
-        user_id: userId,
-        company_name: form.company_name,
-        email: form.email,
-        phone: form.phone || null,
-        address: form.address || null,
-        website: form.website || null,
-        services: form.services,
-        city: 'Linköping',
-      })
-      if (wErr) throw wErr
+      if (data?.session?.access_token && data?.session?.refresh_token) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        })
+        if (sessionError) throw sessionError
 
-      toast.success('Tack! Vi granskar din ansökan och hör av oss inom ett dygn.')
-      navigate('/dashboard/verkstad')
-    } catch (e: any) {
-      toast.error(e.message || 'Registreringen misslyckades')
+        toast.success('Tack! Din verkstad är registrerad och väntar nu på godkännande.')
+        navigate('/dashboard/verkstad')
+        return
+      }
+
+      toast.success('Kontot är skapat. Bekräfta e-postadressen via länken vi skickat innan du loggar in.')
+      navigate('/logga-in?registrerad=verkstad')
+    } catch (error) {
+      toast.error((error as Error)?.message || 'Registreringen misslyckades')
     } finally {
       setLoading(false)
     }
@@ -96,79 +133,100 @@ const RegisterWorkshopPage = () => {
         <meta name="twitter:description" content="Registrera din cykelverkstad gratis. Betala bara per skickad offert." />
         <meta name="twitter:image" content="https://cykelhjalpen.se/og/registrera-verkstad.jpg" />
       </Helmet>
+
       <CykelNavbar />
-      <main className="container mx-auto px-4 py-12 max-w-xl">
-        <div className="flex items-center gap-3 mb-2">
+
+      <main className="container mx-auto px-4 py-10 md:py-14 max-w-2xl">
+        <div className="flex items-center gap-3 mb-3">
           <div className="sticker bg-accent p-2"><Wrench className="h-5 w-5 text-accent-foreground" /></div>
           <h1 className="font-display text-3xl font-bold">Anslut din verkstad</h1>
         </div>
-        <p className="text-muted-foreground mb-8">Gratis att gå med. Du betalar bara femtio kronor exkl. moms per offert du skickar (62,50 kr inkl. moms).</p>
+        <p className="text-muted-foreground mb-5">
+          Skapa ett kostnadsfritt konto och få förfrågningar från cyklister i Linköping. Du väljer själv vilka jobb du vill svara på.
+        </p>
 
-        <form onSubmit={submit} className="sticker bg-card p-6 space-y-4">
+        <div className="grid sm:grid-cols-3 gap-2 mb-8 text-sm">
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> Ingen månadsavgift</div>
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> Välj ärenden själv</div>
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><ShieldCheck className="h-4 w-4 text-primary shrink-0" /> Manuell granskning</div>
+        </div>
+
+        <form onSubmit={submit} className="sticker bg-card p-6 md:p-8 space-y-5">
           <div>
             <Label htmlFor="cn">Verkstadens namn</Label>
-            <Input id="cn" required value={form.company_name} onChange={(e) => update('company_name', e.target.value)} />
+            <Input id="cn" autoComplete="organization" required value={form.company_name} onChange={(event) => update('company_name', event.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="em">E-post (inloggning)</Label>
-              <Input id="em" type="email" required value={form.email} onChange={(e) => update('email', e.target.value)} />
+              <Label htmlFor="em">E-post</Label>
+              <Input id="em" type="email" inputMode="email" autoComplete="email" required value={form.email} onChange={(event) => update('email', event.target.value)} />
             </div>
             <div>
               <Label htmlFor="pw">Lösenord</Label>
-              <Input id="pw" type="password" required minLength={6} value={form.password} onChange={(e) => update('password', e.target.value)} />
+              <Input id="pw" type="password" autoComplete="new-password" required minLength={6} value={form.password} onChange={(event) => update('password', event.target.value)} />
+              <p className="text-xs text-muted-foreground mt-1">Minst sex tecken.</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+
+          <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="ph">Telefon</Label>
-              <Input id="ph" value={form.phone} onChange={(e) => update('phone', e.target.value)} />
+              <Label htmlFor="ph">Telefon <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+              <Input id="ph" type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={(event) => update('phone', event.target.value)} />
             </div>
             <div>
-              <Label htmlFor="ws">Webbplats</Label>
-              <Input id="ws" value={form.website} onChange={(e) => update('website', e.target.value)} placeholder="https://" />
+              <Label htmlFor="ws">Webbplats <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+              <Input id="ws" inputMode="url" autoComplete="url" value={form.website} onChange={(event) => update('website', event.target.value)} placeholder="verkstad.se" />
             </div>
           </div>
+
           <div>
-            <Label htmlFor="ad">Adress i Linköping</Label>
-            <Input id="ad" value={form.address} onChange={(e) => update('address', e.target.value)} />
+            <Label htmlFor="ad">Adress i Linköping <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+            <Input id="ad" autoComplete="street-address" value={form.address} onChange={(event) => update('address', event.target.value)} />
           </div>
+
           <div>
-            <Label>Tjänster ni erbjuder</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {SERVICES.map((s) => (
+            <Label>Tjänster ni erbjuder <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+            <p className="text-sm text-muted-foreground mt-1 mb-3">Det hjälper oss att skicka mer relevanta förfrågningar.</p>
+            <div className="flex flex-wrap gap-2">
+              {SERVICES.map((service) => (
                 <button
-                  key={s}
+                  key={service}
                   type="button"
-                  onClick={() => toggleService(s)}
-                  className={`px-3 py-1 rounded-full border-2 border-foreground text-sm ${form.services.includes(s) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                  onClick={() => toggleService(service)}
+                  aria-pressed={form.services.includes(service)}
+                  className={`px-3 py-2 rounded-full border-2 border-foreground text-sm transition ${form.services.includes(service) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
                 >
-                  {s}
+                  {service}
                 </button>
               ))}
             </div>
           </div>
-          <label className="flex items-start gap-2 text-sm cursor-pointer pt-2 border-t">
+
+          <label className="flex items-start gap-3 text-sm cursor-pointer pt-4 border-t">
             <input
               type="checkbox"
               checked={form.terms_accepted}
-              onChange={(e) => update('terms_accepted', e.target.checked)}
+              onChange={(event) => update('terms_accepted', event.target.checked)}
               className="mt-1 h-4 w-4"
               required
             />
             <span className="text-muted-foreground leading-relaxed">
-              Jag godkänner <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>, och förstår att <strong className="text-foreground">{LEAD_FEE_KR} kr exkl. moms (62,50 kr inkl. moms)</strong> debiteras automatiskt via Stripe varje gång jag skickar en offert.
+              Jag godkänner <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>. Jag förstår att <strong className="text-foreground">{LEAD_FEE_KR} kr exkl. moms (62,50 kr inkl. moms)</strong> debiteras via Stripe först när jag väljer att skicka en offert.
             </span>
           </label>
-          <Button type="submit" disabled={loading || !form.terms_accepted} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+
+          <Button type="submit" disabled={loading || !form.terms_accepted} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-12">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Skicka ansökan
+            {loading ? 'Skapar verkstad…' : 'Registrera verkstaden gratis'}
           </Button>
+
           <p className="text-xs text-center text-muted-foreground">
             Har du redan ett konto? <Link to="/logga-in" className="underline">Logga in</Link>
           </p>
         </form>
       </main>
+
       <CykelFooter />
     </div>
   )
