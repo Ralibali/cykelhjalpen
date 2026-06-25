@@ -71,6 +71,12 @@ const BikeRequestWizard = () => {
     [files],
   )
 
+  const handleTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), [])
+  const handleTurnstileExpire = useCallback(() => setTurnstileToken(null), [])
+  const removeFile = useCallback((target: File) => {
+    setFiles((current) => current.filter((file) => file !== target))
+  }, [])
+
   useEffect(() => {
     trackClick('bike_request_started', 'Skicka cykelärende', { city: form.city })
     trackGoogleEvent('begin_checkout', { item_name: 'Cykelärende', city: form.city })
@@ -239,9 +245,9 @@ const BikeRequestWizard = () => {
               update={update}
               setStep={setStep}
               onFiles={handleFiles}
-              onRemoveFile={(file) => setFiles((current) => current.filter((item) => item !== file))}
-              onTurnstileVerify={useCallback((token: string) => setTurnstileToken(token), [])}
-              onTurnstileExpire={useCallback(() => setTurnstileToken(null), [])}
+              onRemoveFile={removeFile}
+              onTurnstileVerify={handleTurnstileVerify}
+              onTurnstileExpire={handleTurnstileExpire}
             />
           </div>
 
