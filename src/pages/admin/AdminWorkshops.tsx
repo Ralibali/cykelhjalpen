@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Loader2, Check, X, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { AdminLayout } from './AdminDashboard'
+import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
 
 const AdminWorkshops = () => {
   const [items, setItems] = useState<any[]>([])
@@ -29,7 +29,7 @@ const AdminWorkshops = () => {
   }
 
   return (
-    <AdminLayout><div className="container mx-auto px-4 py-8">
+    <CykelAdminLayout><div>
       <h1 className="text-2xl font-bold mb-6">Verkstäder</h1>
       {loading ? <Loader2 className="animate-spin" /> : (
         <div className="overflow-x-auto border rounded-md">
@@ -62,7 +62,7 @@ const AdminWorkshops = () => {
           </table>
         </div>
       )}
-    </div></AdminLayout>
+    </div></CykelAdminLayout>
   )
 }
 
