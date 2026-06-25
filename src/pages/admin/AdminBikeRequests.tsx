@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { ExternalLink, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { AdminLayout } from './AdminDashboard'
+import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
 
 interface BikeRequestRow {
   id: string
@@ -42,7 +42,7 @@ const AdminBikeRequests = () => {
   useEffect(() => { load() }, [load])
 
   return (
-    <AdminLayout>
+    <CykelAdminLayout>
       <div className="flex items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="font-display text-2xl font-bold">Cykelärenden</h1>
@@ -114,7 +114,7 @@ const AdminBikeRequests = () => {
           </table>
         </div>
       )}
-    </AdminLayout>
+    </CykelAdminLayout>
   )
 }
 
