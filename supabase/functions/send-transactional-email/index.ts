@@ -4,7 +4,7 @@ const corsHeaders = {
 }
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
-const FROM_EMAIL = 'Cykelhjälpen <info@auroramedia.se>'
+const FROM_EMAIL = 'Cykelhjälpen <info@cykelhjalpen.se>'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
