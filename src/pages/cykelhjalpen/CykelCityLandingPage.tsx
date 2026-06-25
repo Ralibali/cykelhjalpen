@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { ArrowRight, Bike, CheckCircle2, MapPin, ShieldCheck, Wrench } from 'lucide-react'
@@ -30,11 +31,16 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
   const content = CITY_CONTENT[city]
   const canonical = `https://cykelhjalpen.se/cykelverkstad-${cityData.slug}`
 
+  useEffect(() => {
+    document.querySelector('meta[name="prerender-status-code"]')?.remove()
+  }, [])
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>Cykelverkstad {city} – jämför lokala prisförslag</title>
         <meta name="description" content={`Hitta cykelverkstad i ${city}. Beskriv problemet gratis och jämför pris och tid från lokala verkstäder utan konto.`} />
+        <meta name="robots" content="index, follow" />
         <link rel="canonical" href={canonical} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={`Cykelverkstad ${city} – jämför lokala prisförslag`} />
@@ -87,7 +93,7 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
         <section className="container mx-auto px-4 py-16 max-w-4xl space-y-10">
           <div>
             <h2 className="font-display text-3xl font-bold">Lokal cykelhjälp i {city}</h2>
-            <p className="text-muted-foreground mt-3 leading-relaxed">Vi hjälper cyklister i bland annat {content.areas}. Ärendet granskas innan det skickas vidare, och verkstäder i andra städer ska inte få tillgång till det.</p>
+            <p className="text-muted-foreground mt-3 leading-relaxed">Vi hjälper cyklister i bland annat {content.areas}. Ärendet granskas innan det skickas vidare och matchningen utgår från den stad du väljer.</p>
           </div>
           <div>
             <h2 className="font-display text-3xl font-bold">För studenter och pendlare</h2>
