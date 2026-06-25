@@ -1,44 +1,63 @@
 import { useEffect, useState } from 'react'
 import { useOutletContext, Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
-import { Bike, Receipt, Send } from 'lucide-react'
+import { Bike, Receipt, Send, Gift, Loader2 } from 'lucide-react'
+import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 
 const WorkshopDashboard = () => {
-  const { workshop }: any = useOutletContext()
-  const [stats, setStats] = useState({ open: 0, sent: 0, paid_total: 0 })
+  const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
+  const [stats, setStats] = useState({ sent: 0, paidTotal: 0 })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const load = async () => {
-      if (!workshop?.approved) return
-      const [{ count: open }, { data: responses }, { data: charges }] = await Promise.all([
-        supabase.from('bike_repair_requests').select('*', { head: true, count: 'exact' }).eq('status', 'new'),
-        supabase.from('workshop_responses').select('id').eq('workshop_id', workshop.id),
+      const [{ data: responses }, { data: charges }] = await Promise.all([
+        supabase.from('workshop_responses').select('id').eq('workshop_id', workshop.id).eq('paid', true),
         supabase.from('lead_charges').select('amount').eq('workshop_id', workshop.id).eq('status', 'paid'),
       ])
       setStats({
-        open: open || 0,
         sent: responses?.length || 0,
-        paid_total: (charges || []).reduce((s, c: any) => s + (c.amount || 0), 0) / 100,
+        paidTotal: (charges || []).reduce((sum, charge: any) => sum + (charge.amount || 0), 0) / 100,
       })
+      setLoading(false)
     }
     load()
-  }, [workshop])
+  }, [workshop.id])
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-bold mb-6">Hej {workshop.company_name}!</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Stat icon={<Bike className="h-5 w-5" />} label="Öppna ärenden" value={stats.open} link="/dashboard/verkstad/arenden" />
-        <Stat icon={<Send className="h-5 w-5" />} label="Skickade offerter" value={stats.sent} />
-        <Stat icon={<Receipt className="h-5 w-5" />} label="Betalat totalt" value={`${stats.paid_total} kr`} />
+      <div className="mb-6">
+        <h1 className="font-display text-3xl font-bold">Hej {workshop.company_name}!</h1>
+        <p className="text-muted-foreground mt-1">Din verkstad är ansluten i {workshop.city}.</p>
       </div>
+
+      {loading ? (
+        <div className="flex justify-center py-10"><Loader2 className="animate-spin" /></div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <Stat icon={<Send className="h-5 w-5" />} label="Skickade offerter" value={stats.sent} />
+          <Stat icon={<Receipt className="h-5 w-5" />} label="Betalat totalt" value={`${stats.paidTotal.toLocaleString('sv-SE')} kr`} link="/dashboard/verkstad/betalningar" />
+          <Stat icon={<Gift className="h-5 w-5" />} label="Gratis-leads kvar" value={workshop.free_leads_remaining || 0} />
+        </div>
+      )}
+
+      <div className="grid md:grid-cols-[1fr_auto] gap-5 items-center sticker bg-card p-6 mb-6">
+        <div>
+          <h2 className="font-display text-xl font-bold mb-1">Se nya ärenden i {workshop.city}</h2>
+          <p className="text-sm text-muted-foreground">Välj bara de jobb som passar er kapacitet och kompetens.</p>
+        </div>
+        <Link to="/dashboard/verkstad/arenden" className="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-5 py-3 font-medium hover:opacity-90">
+          <Bike className="h-4 w-4" /> Öppna ärenden
+        </Link>
+      </div>
+
       <div className="sticker bg-card p-6">
         <h2 className="font-display text-xl font-bold mb-2">Så fungerar det</h2>
-        <ol className="list-decimal pl-5 space-y-1 text-sm">
-          <li>Bläddra bland öppna ärenden från cyklister i Linköping.</li>
-          <li>Skriv ditt prisförslag och välj “Skicka offert”.</li>
-          <li>Du betalar femtio kronor exkl. moms per offert (62,50 kr inkl. moms). Då frigörs kundens kontaktuppgifter.</li>
-          <li>Max fem verkstäder svarar per ärende.</li>
+        <ol className="list-decimal pl-5 space-y-2 text-sm text-foreground/85">
+          <li>Välj bland ärenden från cyklister i {workshop.city}.</li>
+          <li>Skriv pris, beräknad tid och ett tydligt meddelande.</li>
+          <li>Granska offerten och betala via Stripe först när du vill skicka den.</li>
+          <li>Max fem verkstäder kan lämna prisförslag per ärende.</li>
         </ol>
       </div>
     </div>
@@ -47,7 +66,7 @@ const WorkshopDashboard = () => {
 
 const Stat = ({ icon, label, value, link }: any) => {
   const inner = (
-    <div className="sticker bg-card p-5 flex items-center gap-4 hover:bg-muted/30 transition">
+    <div className="sticker bg-card p-5 flex items-center gap-4 hover:bg-muted/30 transition h-full">
       <div className="sticker bg-primary text-primary-foreground p-2">{icon}</div>
       <div>
         <div className="text-xs text-muted-foreground uppercase tracking-wide">{label}</div>
