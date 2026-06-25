@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { AdminLayout } from './AdminDashboard'
+import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
 
 interface LeadCharge {
   id: string
@@ -52,7 +52,7 @@ const AdminBikePayments = () => {
   }, [items])
 
   return (
-    <AdminLayout>
+    <CykelAdminLayout>
       <div className="flex items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="font-display text-2xl font-bold">Cykelbetalningar</h1>
@@ -114,7 +114,7 @@ const AdminBikePayments = () => {
           </table>
         </div>
       )}
-    </AdminLayout>
+    </CykelAdminLayout>
   )
 }
 
