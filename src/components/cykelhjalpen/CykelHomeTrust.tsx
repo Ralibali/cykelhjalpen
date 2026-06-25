@@ -16,10 +16,10 @@ interface Props {
 
 const CykelHomeTrust = ({ stats }: Props) => (
   <>
-    <section className="py-20 bg-brand-cream/40">
+    <section className="py-20 bg-[hsl(var(--brand-cream))]/40">
       <div className="container mx-auto px-4 max-w-6xl grid lg:grid-cols-[1fr_.8fr] gap-8 items-center">
-        <div className="rounded-[2rem] bg-brand-dark text-background p-8 md:p-12 sticker">
-          <ShieldCheck className="h-9 w-9 text-brand-sun mb-5" />
+        <div className="rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-8 md:p-12 sticker">
+          <ShieldCheck className="h-9 w-9 text-[hsl(var(--brand-sun))] mb-5" />
           <h2 className="font-display text-4xl md:text-5xl">Tryggt för cyklisten. Relevant för verkstaden.</h2>
           <p className="mt-5 text-background/70 leading-relaxed">Vi granskar kundärenden och verkstäder. Verkstäder betalar först när de själva väljer att skicka ett prisförslag.</p>
           {stats && stats.workshops > 0 && (
