@@ -1,18 +1,14 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Bike, CreditCard, Eye, Home, MoreHorizontal, Settings, Shield, Wrench } from 'lucide-react'
+import { Bike, CreditCard, Home, Wrench } from 'lucide-react'
 import CykelNavbar from './CykelNavbar'
 import { cn } from '@/lib/utils'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 const navItems = [
   { label: 'Översikt', href: '/admin', icon: Home },
   { label: 'Cykelärenden', href: '/admin/cykelarenden', icon: Bike },
   { label: 'Verkstäder', href: '/admin/verkstader', icon: Wrench },
   { label: 'Betalningar', href: '/admin/cykelbetalningar', icon: CreditCard },
-  { label: 'Besökare', href: '/admin/besokare', icon: Eye },
-  { label: 'Audit-logg', href: '/admin/audit', icon: Shield },
-  { label: 'Inställningar', href: '/admin/installningar', icon: Settings },
 ]
 
 const isActivePath = (pathname: string, href: string) => (
@@ -56,8 +52,8 @@ const CykelAdminLayout = ({ children }: { children: ReactNode }) => {
         </main>
       </div>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t flex justify-around py-2 z-50">
-        {navItems.slice(0, 4).map((item) => {
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t grid grid-cols-4 py-2 z-50">
+        {navItems.map((item) => {
           const active = isActivePath(location.pathname, item.href)
           return (
             <Link
@@ -70,41 +66,6 @@ const CykelAdminLayout = ({ children }: { children: ReactNode }) => {
             </Link>
           )
         })}
-
-        <Sheet>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              className={cn(
-                'flex flex-col items-center gap-0.5 text-xs p-1',
-                navItems.slice(4).some((item) => isActivePath(location.pathname, item.href)) ? 'text-primary' : 'text-muted-foreground',
-              )}
-            >
-              <MoreHorizontal className="h-5 w-5" />
-              <span>Mer</span>
-            </button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-2xl pb-8">
-            <div className="grid grid-cols-3 gap-2 pt-4">
-              {navItems.slice(4).map((item) => {
-                const active = isActivePath(location.pathname, item.href)
-                return (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(
-                      'flex flex-col items-center gap-1.5 rounded-xl p-3 text-xs font-medium',
-                      active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted',
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    {item.label}
-                  </Link>
-                )
-              })}
-            </div>
-          </SheetContent>
-        </Sheet>
       </nav>
     </div>
   )
