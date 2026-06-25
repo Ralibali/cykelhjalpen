@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
-import { Bike, Mail, Phone, Loader2 } from 'lucide-react'
+import { Bike, Mail, Phone, Loader2, RefreshCw } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
+import { Button } from '@/components/ui/button'
 
 interface Response {
   id: string
@@ -19,43 +20,56 @@ interface Response {
 const CustomerResponses = () => {
   const { token } = useParams()
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [request, setRequest] = useState<any>(null)
   const [responses, setResponses] = useState<Response[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const load = async () => {
-      // Public read by token via edge function would be safer; using RPC-less query is blocked by RLS.
-      // Fallback: call edge function for token-based view.
-      try {
-        const { data, error } = await supabase.functions.invoke('get-bike-request-by-token', {
-          body: { token },
-        })
-        if (error) throw error
-        setRequest(data?.request || null)
-        setResponses(data?.responses || [])
-      } catch (e) {
-        // ignore
-      } finally {
-        setLoading(false)
-      }
+  const load = useCallback(async (showSpinner = false) => {
+    if (!token) return
+    if (showSpinner) setRefreshing(true)
+    setLoadError(null)
+
+    try {
+      const { data, error } = await supabase.functions.invoke('get-bike-request-by-token', {
+        body: { token },
+      })
+      if (error) throw error
+      setRequest(data?.request || null)
+      setResponses(data?.responses || [])
+    } catch (error) {
+      setLoadError((error as Error)?.message || 'Kunde inte läsa ärendet just nu.')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
-    if (token) load()
   }, [token])
+
+  useEffect(() => { load() }, [load])
 
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>Mitt cykelärende | Cykelhjälpen</title>
-        <meta name="robots" content="noindex" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <CykelNavbar />
       <main className="container mx-auto px-4 py-12 max-w-3xl">
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>
+        ) : loadError ? (
+          <div className="sticker bg-card p-8 text-center">
+            <h1 className="font-display text-2xl font-bold mb-2">Kunde inte läsa ärendet</h1>
+            <p className="text-muted-foreground mb-5">{loadError}</p>
+            <Button onClick={() => load(true)} disabled={refreshing}>
+              {refreshing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+              Försök igen
+            </Button>
+          </div>
         ) : !request ? (
           <div className="sticker bg-card p-8 text-center">
             <h1 className="font-display text-2xl font-bold mb-2">Ärendet hittades inte</h1>
-            <p className="text-muted-foreground">Länken kan ha gått ut. Kontakta info@auroramedia.se om du behöver hjälp.</p>
+            <p className="text-muted-foreground">Kontakta info@cykelhjalpen.se om du behöver hjälp.</p>
           </div>
         ) : (
           <>
@@ -64,31 +78,41 @@ const CustomerResponses = () => {
                 <Bike className="h-6 w-6" />
                 <h1 className="font-display text-2xl font-bold">Tack {request.customer_name}!</h1>
               </div>
-              <p className="text-sm">Ditt ärende är skickat till lokala cykelverkstäder i Linköping. Du får e-post när nya prisförslag kommer in.</p>
+              <p className="text-sm">
+                Ditt ärende är mottaget och granskas innan det publiceras för verkstäderna. Du får e-post när granskningen är klar och när nya prisförslag kommer in.
+              </p>
             </div>
 
-            <h2 className="font-display text-xl font-bold mb-4">Prisförslag ({responses.length})</h2>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="font-display text-xl font-bold">Prisförslag ({responses.length})</h2>
+              <Button variant="outline" size="sm" onClick={() => load(true)} disabled={refreshing}>
+                {refreshing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                Uppdatera
+              </Button>
+            </div>
+
             {responses.length === 0 ? (
               <div className="sticker bg-card p-6 text-center text-muted-foreground">
-                Inga svar än. Verkstäderna brukar svara inom ett dygn.
+                Inga prisförslag ännu. När ärendet har godkänts brukar verkstäderna svara inom ett dygn.
               </div>
             ) : (
               <div className="space-y-4">
-                {responses.map((r) => (
-                  <div key={r.id} className="sticker bg-card p-5">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-display font-bold text-lg">{r.workshop?.company_name}</h3>
-                      {r.estimated_price_min !== null && (
-                        <span className="font-bold text-accent">
-                          {r.estimated_price_min}{r.estimated_price_max ? `–${r.estimated_price_max}` : ''} kr
+                {responses.map((response) => (
+                  <div key={response.id} className="sticker bg-card p-5">
+                    <div className="flex justify-between items-start gap-3 mb-2">
+                      <h3 className="font-display font-bold text-lg">{response.workshop?.company_name || 'Cykelverkstad'}</h3>
+                      {response.estimated_price_min !== null && (
+                        <span className="font-bold text-accent whitespace-nowrap">
+                          {response.estimated_price_min}{response.estimated_price_max ? `–${response.estimated_price_max}` : ''} kr
                         </span>
                       )}
                     </div>
-                    <p className="text-sm mb-3">{r.message}</p>
-                    {r.estimated_time && <p className="text-xs text-muted-foreground mb-2">Beräknad tid: {r.estimated_time}</p>}
+                    <p className="text-sm mb-3 whitespace-pre-wrap">{response.message}</p>
+                    {response.estimated_time && <p className="text-xs text-muted-foreground mb-2">Beräknad tid: {response.estimated_time}</p>}
+                    {response.can_pickup && <p className="text-xs text-muted-foreground mb-2">Verkstaden kan erbjuda hämtning.</p>}
                     <div className="flex flex-wrap gap-3 text-sm pt-3 border-t border-border">
-                      {r.workshop?.email && <a href={`mailto:${r.workshop.email}`} className="flex items-center gap-1 hover:text-primary"><Mail className="h-4 w-4" /> {r.workshop.email}</a>}
-                      {r.workshop?.phone && <a href={`tel:${r.workshop.phone}`} className="flex items-center gap-1 hover:text-primary"><Phone className="h-4 w-4" /> {r.workshop.phone}</a>}
+                      {response.workshop?.email && <a href={`mailto:${response.workshop.email}`} className="flex items-center gap-1 hover:text-primary"><Mail className="h-4 w-4" /> {response.workshop.email}</a>}
+                      {response.workshop?.phone && <a href={`tel:${response.workshop.phone}`} className="flex items-center gap-1 hover:text-primary"><Phone className="h-4 w-4" /> {response.workshop.phone}</a>}
                     </div>
                   </div>
                 ))}
