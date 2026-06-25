@@ -1,108 +1,222 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { LEAD_FEE_ORE } from "../_shared/pricing.ts";
-import { corsFor } from "../_shared/cors.ts";
+import Stripe from 'npm:stripe@18.5.0'
+import { createClient } from 'npm:@supabase/supabase-js@2'
+import { z } from 'npm:zod@3'
+import { LEAD_FEE_ORE } from '../_shared/pricing.ts'
+import { corsFor } from '../_shared/cors.ts'
 
-serve(async (req) => {
-  const corsHeaders = corsFor(req);
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+const BodySchema = z.object({ response_id: z.string().uuid() })
+
+const allowedOrigin = (origin: string | null) => {
+  if (origin && /^(https:\/\/(www\.)?cykelhjalpen\.se|https:\/\/[a-z0-9-]+\.lovable\.app|http:\/\/localhost(:\d+)?)$/i.test(origin)) {
+    return origin
+  }
+  return 'https://cykelhjalpen.se'
+}
+
+const escapeHtml = (value: unknown) => String(value ?? '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;')
+
+Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req)
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Metoden stöds inte.' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No auth");
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('Du behöver logga in')
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_PUBLISHABLE_KEY') ?? ''
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    if (!supabaseUrl || !anonKey || !serviceRoleKey) throw new Error('Backend configuration is missing')
 
-    const { data: userData, error: uErr } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (uErr || !userData.user) throw new Error("Unauthenticated");
-    const user = userData.user;
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    })
+    const token = authHeader.replace(/^Bearer\s+/i, '')
+    const { data: userData, error: userError } = await userClient.auth.getUser(token)
+    if (userError || !userData.user) throw new Error('Du behöver logga in igen')
 
-    const { response_id } = await req.json();
-    if (!response_id) throw new Error("response_id required");
+    const parsed = BodySchema.safeParse(await req.json())
+    if (!parsed.success) throw new Error('Ogiltigt offert-id')
 
-    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
+    const { data: workshop, error: workshopError } = await admin
+      .from('workshops')
+      .select('id, approved, company_name, stripe_customer_id, email, free_leads_remaining')
+      .eq('user_id', userData.user.id)
+      .maybeSingle()
+    if (workshopError) throw workshopError
+    if (!workshop?.approved) throw new Error('Verkstaden är inte godkänd ännu')
 
-    const { data: ws } = await admin.from("workshops").select("id, approved, company_name, stripe_customer_id, email, free_leads_remaining").eq("user_id", user.id).maybeSingle();
-    if (!ws || !ws.approved) throw new Error("Workshop not approved");
+    const { data: response, error: responseError } = await admin
+      .from('workshop_responses')
+      .select('id, request_id, workshop_id, paid, status')
+      .eq('id', parsed.data.response_id)
+      .maybeSingle()
+    if (responseError) throw responseError
+    if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
+    if (response.paid) throw new Error('Offerten är redan skickad')
 
-    const { data: resp } = await admin.from("workshop_responses").select("id, request_id, workshop_id, paid").eq("id", response_id).maybeSingle();
-    if (!resp || resp.workshop_id !== ws.id) throw new Error("Response not found");
-    if (resp.paid) throw new Error("Already paid");
+    const { count, error: countError } = await admin
+      .from('workshop_responses')
+      .select('*', { head: true, count: 'exact' })
+      .eq('request_id', response.request_id)
+      .eq('paid', true)
+    if (countError) throw countError
+    if ((count || 0) >= 5) throw new Error('Ärendet är fullt – fem verkstäder har redan svarat.')
 
-    // Cap of 5 paid responses
-    const { count } = await admin.from("workshop_responses").select("*", { head: true, count: "exact" }).eq("request_id", resp.request_id).eq("paid", true);
-    if ((count || 0) >= 5) throw new Error("Ärendet är fullt — max fem verkstäder har redan svarat.");
+    const origin = allowedOrigin(req.headers.get('origin'))
 
-    // Free-lead path: if admin has granted free leads, consume one and unlock without Stripe
-    if ((ws.free_leads_remaining || 0) > 0) {
-      await admin.from("workshop_responses").update({ paid: true, used_free_lead: true }).eq("id", resp.id);
-      await admin.from("workshops").update({ free_leads_remaining: ws.free_leads_remaining - 1 }).eq("id", ws.id);
-      await admin.from("lead_charges").insert({
-        response_id: resp.id,
-        request_id: resp.request_id,
-        workshop_id: ws.id,
+    if ((workshop.free_leads_remaining || 0) > 0) {
+      const previousBalance = workshop.free_leads_remaining || 0
+      const { data: balanceUpdate, error: balanceError } = await admin
+        .from('workshops')
+        .update({ free_leads_remaining: previousBalance - 1 })
+        .eq('id', workshop.id)
+        .eq('free_leads_remaining', previousBalance)
+        .select('id')
+        .maybeSingle()
+      if (balanceError) throw balanceError
+      if (!balanceUpdate) throw new Error('Gratis-leaden hann användas av en annan offert. Försök igen.')
+
+      const { error: paidError } = await admin
+        .from('workshop_responses')
+        .update({ paid: true, used_free_lead: true, status: 'sent' })
+        .eq('id', response.id)
+        .eq('paid', false)
+      if (paidError) {
+        await admin.from('workshops').update({ free_leads_remaining: previousBalance }).eq('id', workshop.id)
+        throw paidError
+      }
+
+      const { error: chargeError } = await admin.from('lead_charges').insert({
+        response_id: response.id,
+        request_id: response.request_id,
+        workshop_id: workshop.id,
         amount: 0,
-        currency: "sek",
-        status: "free_lead",
-      });
-      const origin = req.headers.get("origin") || "https://cykelhjalpen.se";
-      return new Response(JSON.stringify({ url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1`, free_lead: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+        currency: 'sek',
+        status: 'free_lead',
+      })
+      if (chargeError) console.error('Could not record free lead charge', chargeError)
+
+      await admin.from('bike_repair_requests').update({ status: 'has_offers' }).eq('id', response.request_id)
+
+      const { data: requestRow } = await admin
+        .from('bike_repair_requests')
+        .select('customer_name, customer_email, repair_category, view_token')
+        .eq('id', response.request_id)
+        .maybeSingle()
+
+      if (requestRow?.customer_email) {
+        const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token || '')}`
+        const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${serviceRoleKey}`,
+          },
+          body: JSON.stringify({
+            to: requestRow.customer_email,
+            subject: `Nytt prisförslag på din cykel – ${requestRow.repair_category}`,
+            html: `
+              <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+                <h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2>
+                <p><strong>${escapeHtml(workshop.company_name)}</strong> har lämnat ett prisförslag på ditt cykelärende.</p>
+                <p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p>
+              </div>
+            `,
+          }),
+        }).catch((emailError) => console.error('Free lead customer notification failed', emailError))
+
+        const edgeRuntime = (globalThis as any).EdgeRuntime
+        if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(emailTask)
+        else await emailTask
+      }
+
+      return new Response(JSON.stringify({
+        url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1`,
+        free_lead: true,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
+    const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeSecret) throw new Error('Stripe är inte konfigurerat')
+    const stripe = new Stripe(stripeSecret, { apiVersion: '2025-08-27.basil' })
 
-    let customerId = ws.stripe_customer_id;
+    let customerId = workshop.stripe_customer_id
     if (!customerId) {
-      const customer = await stripe.customers.create({ email: ws.email, name: ws.company_name });
-      customerId = customer.id;
-      await admin.from("workshops").update({ stripe_customer_id: customerId }).eq("id", ws.id);
+      const customer = await stripe.customers.create({ email: workshop.email, name: workshop.company_name })
+      customerId = customer.id
+      const { error: customerSaveError } = await admin
+        .from('workshops')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', workshop.id)
+      if (customerSaveError) console.error('Could not save Stripe customer id', customerSaveError)
     }
-
-    const origin = req.headers.get("origin") || "https://cykelhjalpen.se";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      mode: "payment",
+      mode: 'payment',
       automatic_tax: { enabled: true },
-      customer_update: { address: "auto", name: "auto" },
-      billing_address_collection: "required",
+      customer_update: { address: 'auto', name: 'auto' },
+      billing_address_collection: 'required',
       line_items: [{
         price_data: {
-          currency: "sek",
-          product_data: { name: "Cykelhjälpen — offert till kund", description: `Lead-avgift för ärende ${resp.request_id.slice(0, 8)}` },
+          currency: 'sek',
+          product_data: {
+            name: 'Cykelhjälpen – offert till kund',
+            description: `Lead-avgift för ärende ${response.request_id.slice(0, 8)}`,
+          },
           unit_amount: LEAD_FEE_ORE,
-          tax_behavior: "exclusive",
+          tax_behavior: 'exclusive',
         },
         quantity: 1,
       }],
       success_url: `${origin}/dashboard/verkstad/arenden?paid=true`,
       cancel_url: `${origin}/dashboard/verkstad/arenden?canceled=true`,
-      metadata: { response_id: resp.id, request_id: resp.request_id, workshop_id: ws.id },
-    });
+      metadata: {
+        response_id: response.id,
+        request_id: response.request_id,
+        workshop_id: workshop.id,
+      },
+    })
 
-    await admin.from("lead_charges").insert({
-      response_id: resp.id,
-      request_id: resp.request_id,
-      workshop_id: ws.id,
+    const { error: chargeError } = await admin.from('lead_charges').insert({
+      response_id: response.id,
+      request_id: response.request_id,
+      workshop_id: workshop.id,
       stripe_session_id: session.id,
       amount: LEAD_FEE_ORE,
-      currency: "sek",
-      status: "pending",
-    });
+      currency: 'sek',
+      status: 'pending',
+    })
+    if (chargeError) {
+      await stripe.checkout.sessions.expire(session.id).catch(() => undefined)
+      throw chargeError
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "Unknown";
-    console.error("[create-bike-response-payment]", msg);
-    return new Response(JSON.stringify({ error: msg }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Okänt fel'
+    console.error('create-bike-response-payment', message)
+    return new Response(JSON.stringify({ error: message }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
-});
+})
