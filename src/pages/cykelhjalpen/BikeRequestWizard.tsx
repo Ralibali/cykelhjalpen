@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { z } from 'zod'
@@ -10,11 +10,12 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Bike, Camera, ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react'
+import { Bike, Camera, ArrowRight, ArrowLeft, Check, Loader2, ShieldCheck, Clock3 } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { Helmet } from 'react-helmet-async'
 import Turnstile from '@/components/cykelhjalpen/Turnstile'
+import { trackClick } from '@/hooks/usePageTracking'
 
 const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat']
 const REPAIR_CATEGORIES = [
@@ -34,21 +35,61 @@ const URGENCY = [
 ]
 
 const schema = z.object({
-  bike_type: z.string().min(1),
-  repair_category: z.string().min(1),
+  bike_type: z.string().min(1, 'Välj vilken typ av cykel du har'),
+  repair_category: z.string().min(1, 'Välj vad du behöver hjälp med'),
   description: z.string().trim().min(10, 'Beskriv felet med minst tio tecken').max(2000),
   area: z.string().trim().max(80).optional(),
   postcode: z.string().trim().max(10).optional(),
   urgency: z.string().min(1),
   can_drop_off: z.boolean(),
   wants_pickup: z.boolean(),
-  customer_name: z.string().trim().min(2).max(80),
-  customer_email: z.string().trim().email('Ogiltig e-post').max(160),
+  customer_name: z.string().trim().min(2, 'Ange ditt namn').max(80),
+  customer_email: z.string().trim().email('Ange en giltig e-postadress').max(160),
   customer_phone: z.string().trim().max(40).optional(),
-  consent: z.literal(true, { errorMap: () => ({ message: 'Du måste godkänna villkoren' }) }),
+  consent: z.literal(true, { errorMap: () => ({ message: 'Du måste godkänna integritetspolicyn' }) }),
 })
 
-const steps = ['Cykel', 'Problem', 'Plats', 'Kontakt', 'Bilder']
+type FormState = z.input<typeof schema>
+
+const DEFAULT_FORM: FormState = {
+  bike_type: '',
+  repair_category: '',
+  description: '',
+  area: '',
+  postcode: '',
+  urgency: 'flexible',
+  can_drop_off: true,
+  wants_pickup: false,
+  customer_name: '',
+  customer_email: '',
+  customer_phone: '',
+  consent: false,
+}
+
+const DRAFT_KEY = 'cykelhjalpen_request_draft_v2'
+const steps = ['Cykel', 'Problem', 'Plats', 'Kontakt & skicka']
+
+const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
+  const gtag = (window as any).gtag
+  if (typeof gtag === 'function') gtag('event', eventName, parameters)
+}
+
+const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
+  const context = (error as any)?.context
+  if (context instanceof Response) {
+    try {
+      const payload = await context.clone().json()
+      if (typeof payload?.error === 'string') return payload.error
+      if (payload?.error && typeof payload.error === 'object') {
+        const firstMessage = Object.values(payload.error).flat().find((value) => typeof value === 'string')
+        if (typeof firstMessage === 'string') return firstMessage
+      }
+    } catch {
+      // The edge function did not return JSON.
+    }
+  }
+  return (error as any)?.message || fallback
+}
 
 const BikeRequestWizard = () => {
   const navigate = useNavigate()
@@ -56,19 +97,17 @@ const BikeRequestWizard = () => {
   const [submitting, setSubmitting] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-  const [form, setForm] = useState({
-    bike_type: '',
-    repair_category: '',
-    description: '',
-    area: '',
-    postcode: '',
-    urgency: 'flexible',
-    can_drop_off: true,
-    wants_pickup: false,
-    customer_name: '',
-    customer_email: '',
-    customer_phone: '',
-    consent: false,
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
+  const [form, setForm] = useState<FormState>(() => {
+    if (typeof window === 'undefined') return DEFAULT_FORM
+    try {
+      const draft = sessionStorage.getItem(DRAFT_KEY)
+      if (!draft) return DEFAULT_FORM
+      return { ...DEFAULT_FORM, ...JSON.parse(draft), consent: false }
+    } catch {
+      sessionStorage.removeItem(DRAFT_KEY)
+      return DEFAULT_FORM
+    }
   })
 
   const imagePreviews = useMemo(
@@ -77,97 +116,156 @@ const BikeRequestWizard = () => {
   )
 
   useEffect(() => {
+    trackClick('bike_request_started', 'Skicka cykelärende')
+    trackGoogleEvent('begin_checkout', { item_name: 'Cykelärende' })
+  }, [])
+
+  useEffect(() => {
+    const draft = { ...form, consent: false }
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+  }, [form])
+
+  useEffect(() => {
     return () => {
       imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url))
     }
   }, [imagePreviews])
 
-  const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }))
-
-  const canNext = () => {
-    if (step === 0) return !!form.bike_type
-    if (step === 1) return !!form.repair_category && form.description.trim().length >= 10
-    if (step === 2) return !!form.urgency && (form.can_drop_off || form.wants_pickup)
-    if (step === 3) return form.customer_name.length >= 2 && /\S+@\S+\.\S+/.test(form.customer_email) && form.consent
-    return true
+  const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+    setForm((current) => ({ ...current, [key]: value }))
   }
 
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
-    const MAX = 5 * 1024 * 1024
-    const list = Array.from(e.target.files || []).slice(0, 4)
-    const valid: File[] = []
-    for (const f of list) {
-      if (!ALLOWED.includes(f.type)) {
-        toast.error(`${f.name}: endast JPEG, PNG eller WebP tillåts`)
-        continue
-      }
-      if (f.size > MAX) {
-        toast.error(`${f.name}: filen är större än fem MB`)
-        continue
-      }
-      valid.push(f)
+  const canContinue = () => {
+    if (step === 0) return Boolean(form.bike_type)
+    if (step === 1) return Boolean(form.repair_category) && form.description.trim().length >= 10
+    if (step === 2) return Boolean(form.urgency) && (form.can_drop_off || form.wants_pickup)
+    if (step === 3) {
+      return form.customer_name.trim().length >= 2
+        && /\S+@\S+\.\S+/.test(form.customer_email)
+        && form.consent === true
     }
+    return false
+  }
+
+  const goNext = () => {
+    if (!canContinue()) return
+    trackClick('bike_request_step_completed', steps[step], { step: step + 1 })
+    setStep((current) => Math.min(steps.length - 1, current + 1))
+  }
+
+  const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const maxSize = 5 * 1024 * 1024
+    const selected = Array.from(event.target.files || []).slice(0, 4)
+    const valid: File[] = []
+
+    for (const file of selected) {
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`${file.name}: endast JPEG, PNG eller WebP tillåts`)
+        continue
+      }
+      if (file.size > maxSize) {
+        toast.error(`${file.name}: filen är större än fem MB`)
+        continue
+      }
+      valid.push(file)
+    }
+
     setFiles(valid)
-    e.target.value = ''
+    event.target.value = ''
+  }
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token)
+  }, [])
+
+  const handleTurnstileExpire = useCallback(() => {
+    setTurnstileToken(null)
+  }, [])
+
+  const resetTurnstile = () => {
+    setTurnstileToken(null)
+    setTurnstileResetKey((current) => current + 1)
+  }
+
+  const uploadImages = async (requestId: string) => {
+    const results = await Promise.all(files.map(async (file) => {
+      const extension = (file.name.split('.').pop() || 'jpg').toLowerCase()
+      const path = `${requestId}/${crypto.randomUUID()}.${extension}`
+      const { error: uploadError } = await supabase.storage
+        .from('bike-images')
+        .upload(path, file, { upsert: false, contentType: file.type })
+
+      if (uploadError) return file.name
+
+      const { error: insertError } = await supabase
+        .from('bike_request_images')
+        .insert({ request_id: requestId, image_url: path })
+
+      return insertError ? file.name : null
+    }))
+
+    return results.filter((result): result is string => Boolean(result))
   }
 
   const submit = async () => {
     const parsed = schema.safeParse(form)
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message || 'Något saknas')
+      toast.error(parsed.error.issues[0]?.message || 'Kontrollera att alla obligatoriska uppgifter är ifyllda')
       return
     }
     if (!turnstileToken) {
       toast.error('Bekräfta säkerhetskontrollen innan du skickar')
       return
     }
+
     setSubmitting(true)
     try {
-      const { data: req, error } = await supabase.functions.invoke('submit-bike-request', {
+      const { data: request, error } = await supabase.functions.invoke('submit-bike-request', {
         body: {
-          bike_type: form.bike_type,
-          repair_category: form.repair_category,
-          description: form.description,
-          area: form.area || null,
-          postcode: form.postcode || null,
-          urgency: form.urgency,
-          can_drop_off: form.can_drop_off,
-          wants_pickup: form.wants_pickup,
-          customer_name: form.customer_name,
-          customer_email: form.customer_email,
-          customer_phone: form.customer_phone || null,
+          bike_type: parsed.data.bike_type,
+          repair_category: parsed.data.repair_category,
+          description: parsed.data.description,
+          area: parsed.data.area || null,
+          postcode: parsed.data.postcode || null,
+          urgency: parsed.data.urgency,
+          can_drop_off: parsed.data.can_drop_off,
+          wants_pickup: parsed.data.wants_pickup,
+          customer_name: parsed.data.customer_name,
+          customer_email: parsed.data.customer_email,
+          customer_phone: parsed.data.customer_phone || null,
           city: 'Linköping',
           turnstile_token: turnstileToken,
         },
       })
-      if (error) throw error
-      if (!req?.id) throw new Error(req?.error || 'Kunde inte skapa ärende')
 
-      const uploadErrors: string[] = []
-      for (const file of files) {
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
-        const path = `${req.id}/${crypto.randomUUID()}.${ext}`
-        const { error: upErr } = await supabase.storage
-          .from('bike-images')
-          .upload(path, file, { upsert: false, contentType: file.type })
-        if (upErr) {
-          uploadErrors.push(file.name)
-          continue
-        }
-        const { error: insErr } = await supabase
-          .from('bike_request_images')
-          .insert({ request_id: req.id, image_url: path })
-        if (insErr) uploadErrors.push(file.name)
+      if (error) throw new Error(await getFunctionErrorMessage(error, 'Kunde inte skicka ärendet'))
+      if (!request?.id || !request?.view_token) {
+        throw new Error(typeof request?.error === 'string' ? request.error : 'Kunde inte skapa ärendet')
       }
 
-      toast.success('Tack! Ditt ärende är skickat.')
+      const uploadErrors = files.length > 0 ? await uploadImages(request.id) : []
+
+      sessionStorage.removeItem(DRAFT_KEY)
+      trackClick('bike_request_submitted', 'Skicka ärende', {
+        bike_type: parsed.data.bike_type,
+        repair_category: parsed.data.repair_category,
+        has_images: files.length > 0,
+      })
+      trackGoogleEvent('generate_lead', {
+        currency: 'SEK',
+        value: 0,
+        lead_type: 'bike_repair_request',
+      })
+
+      toast.success('Tack! Ditt ärende är skickat till anslutna verkstäder.')
       if (uploadErrors.length > 0) {
-        toast.error(`${uploadErrors.length} av ${files.length} bilder kunde inte laddas upp — du kan lägga till dem senare`)
+        toast.error(`${uploadErrors.length} av ${files.length} bilder kunde inte laddas upp. Själva ärendet är ändå skickat.`)
       }
-      navigate(`/mitt-arende/${req.view_token}`)
-    } catch (e: any) {
-      toast.error(e.message || 'Något gick fel, försök igen.')
+      navigate(`/mitt-arende/${request.view_token}`)
+    } catch (error) {
+      resetTurnstile()
+      toast.error((error as Error)?.message || 'Något gick fel. Försök igen.')
     } finally {
       setSubmitting(false)
     }
@@ -191,34 +289,47 @@ const BikeRequestWizard = () => {
         <meta name="twitter:description" content="Få upp till fem prisförslag från lokala cykelverkstäder i Linköping." />
         <meta name="twitter:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
       </Helmet>
-      <CykelNavbar />
-      <main className="container mx-auto px-4 py-12 max-w-2xl">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="sticker bg-brand-sun p-2"><Bike className="h-5 w-5" /></div>
-            <h1 className="font-display text-3xl font-bold">Skicka cykelärende</h1>
-          </div>
-          <p className="text-muted-foreground mb-8">Gratis. Inget konto. Du får svar inom ett dygn.</p>
 
-          <div className="flex gap-2 mb-8">
-            {steps.map((s, i) => (
-              <div key={s} className={`flex-1 h-2 rounded-full ${i <= step ? 'bg-primary' : 'bg-muted'}`} />
+      <CykelNavbar />
+
+      <main className="container mx-auto px-4 py-8 md:py-12 max-w-2xl">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="sticker bg-brand-sun p-2"><Bike className="h-5 w-5" /></div>
+            <div>
+              <h1 className="font-display text-3xl font-bold">Få pris på cykelreparation</h1>
+              <p className="text-sm text-muted-foreground">Steg {step + 1} av {steps.length}: {steps[step]}</p>
+            </div>
+          </div>
+
+          <div className="mb-7 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-primary" /> Gratis och utan konto</span>
+            <span className="inline-flex items-center gap-1.5"><Clock3 className="h-4 w-4 text-primary" /> Tar cirka två minuter</span>
+          </div>
+
+          <div className="flex gap-2 mb-8" aria-label={`Steg ${step + 1} av ${steps.length}`}>
+            {steps.map((label, index) => (
+              <div key={label} className={`flex-1 h-2 rounded-full ${index <= step ? 'bg-primary' : 'bg-muted'}`} />
             ))}
           </div>
 
           <div className="sticker bg-card p-6 md:p-8 space-y-6">
             {step === 0 && (
               <div className="space-y-3">
-                <Label>Vilken typ av cykel?</Label>
+                <div>
+                  <Label className="text-base">Vilken typ av cykel behöver hjälp?</Label>
+                  <p className="text-sm text-muted-foreground mt-1">Välj det alternativ som ligger närmast.</p>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {BIKE_TYPES.map((t) => (
+                  {BIKE_TYPES.map((type) => (
                     <button
-                      key={t}
+                      key={type}
                       type="button"
-                      onClick={() => update('bike_type', t)}
-                      className={`text-left px-4 py-3 border-2 border-foreground rounded-md transition ${form.bike_type === t ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                      onClick={() => update('bike_type', type)}
+                      className={`text-left px-4 py-3 border-2 border-foreground rounded-md transition ${form.bike_type === type ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                      aria-pressed={form.bike_type === type}
                     >
-                      {t}
+                      {type}
                     </button>
                   ))}
                 </div>
@@ -226,135 +337,175 @@ const BikeRequestWizard = () => {
             )}
 
             {step === 1 && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="space-y-3">
-                  <Label>Vad är problemet?</Label>
+                  <div>
+                    <Label className="text-base">Vad behöver du hjälp med?</Label>
+                    <p className="text-sm text-muted-foreground mt-1">Du behöver inte själv veta exakt vad som är fel.</p>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {REPAIR_CATEGORIES.map((c) => (
+                    {REPAIR_CATEGORIES.map((category) => (
                       <button
-                        key={c}
+                        key={category}
                         type="button"
-                        onClick={() => update('repair_category', c)}
-                        className={`text-left px-4 py-3 border-2 border-foreground rounded-md transition ${form.repair_category === c ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                        onClick={() => update('repair_category', category)}
+                        className={`text-left px-4 py-3 border-2 border-foreground rounded-md transition ${form.repair_category === category ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                        aria-pressed={form.repair_category === category}
                       >
-                        {c}
+                        {category}
                       </button>
                     ))}
                   </div>
                 </div>
+
                 <div>
-                  <Label htmlFor="desc">Beskriv felet</Label>
-                  <Textarea id="desc" rows={5} value={form.description} onChange={(e) => update('description', e.target.value)} placeholder="T.ex. 'Bakhjulet vinglar och bromsen tar dåligt.'" />
+                  <Label htmlFor="desc">Beskriv problemet</Label>
+                  <Textarea
+                    id="desc"
+                    rows={4}
+                    value={form.description}
+                    onChange={(event) => update('description', event.target.value)}
+                    placeholder="Exempel: Bakhjulet vinglar och bromsen tar dåligt. Problemet började i går."
+                    maxLength={2000}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Minst tio tecken · {form.description.length}/2000</p>
+                </div>
+
+                <div className="space-y-3 border-t pt-5">
+                  <div>
+                    <Label>Bilder <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+                    <p className="text-sm text-muted-foreground mt-1">En bild kan ge snabbare och mer träffsäkra prisförslag.</p>
+                  </div>
+                  <label className="sticker bg-muted/50 p-5 flex items-center justify-center gap-3 cursor-pointer hover:bg-muted">
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                    <span className="text-sm font-medium">Välj upp till fyra bilder</span>
+                    <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleFiles} />
+                  </label>
+                  {imagePreviews.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2">
+                      {imagePreviews.map(({ file, url }) => (
+                        <div key={`${file.name}-${file.lastModified}-${file.size}`} className="aspect-square sticker bg-muted overflow-hidden">
+                          <img src={url} alt="Förhandsvisning av vald cykelbild" className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             {step === 2 && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <Label>När behöver du hjälp?</Label>
-                  <RadioGroup value={form.urgency} onValueChange={(v) => update('urgency', v)} className="mt-2">
-                    {URGENCY.map((u) => (
-                      <div key={u.value} className="flex items-center space-x-2">
-                        <RadioGroupItem value={u.value} id={u.value} />
-                        <Label htmlFor={u.value}>{u.label}</Label>
+                  <Label className="text-base">När behöver du hjälp?</Label>
+                  <RadioGroup value={form.urgency} onValueChange={(value) => update('urgency', value)} className="mt-3">
+                    {URGENCY.map((urgency) => (
+                      <div key={urgency.value} className="flex items-center space-x-2 rounded-md border p-3">
+                        <RadioGroupItem value={urgency.value} id={urgency.value} />
+                        <Label htmlFor={urgency.value} className="flex-1 cursor-pointer">{urgency.label}</Label>
                       </div>
                     ))}
                   </RadioGroup>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                <div className="grid sm:grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="area">Område (valfritt)</Label>
-                    <Input id="area" value={form.area} onChange={(e) => update('area', e.target.value)} placeholder="T.ex. Ryd, Innerstaden" />
+                    <Label htmlFor="area">Område <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+                    <Input id="area" value={form.area || ''} onChange={(event) => update('area', event.target.value)} placeholder="Exempel: Ryd" />
                   </div>
                   <div>
-                    <Label htmlFor="postcode">Postnummer (valfritt)</Label>
-                    <Input id="postcode" value={form.postcode} onChange={(e) => update('postcode', e.target.value)} placeholder="58330" />
+                    <Label htmlFor="postcode">Postnummer <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+                    <Input id="postcode" inputMode="numeric" value={form.postcode || ''} onChange={(event) => update('postcode', event.target.value)} placeholder="583 30" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Checkbox id="drop" checked={form.can_drop_off} onCheckedChange={(v) => update('can_drop_off', !!v)} />
-                    <Label htmlFor="drop">Jag kan lämna in cykeln på verkstaden</Label>
+
+                <div className="space-y-3 border-t pt-5">
+                  <div className="flex items-start gap-3 rounded-md border p-3">
+                    <Checkbox id="drop" checked={form.can_drop_off} onCheckedChange={(value) => update('can_drop_off', value === true)} />
+                    <Label htmlFor="drop" className="cursor-pointer leading-snug">Jag kan lämna in cykeln på verkstaden</Label>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox id="pick" checked={form.wants_pickup} onCheckedChange={(v) => update('wants_pickup', !!v)} />
-                    <Label htmlFor="pick">Jag vill helst att verkstaden hämtar cykeln</Label>
+                  <div className="flex items-start gap-3 rounded-md border p-3">
+                    <Checkbox id="pick" checked={form.wants_pickup} onCheckedChange={(value) => update('wants_pickup', value === true)} />
+                    <Label htmlFor="pick" className="cursor-pointer leading-snug">Jag vill helst att verkstaden hämtar cykeln</Label>
                   </div>
+                  {!form.can_drop_off && !form.wants_pickup && (
+                    <p className="text-sm text-destructive">Välj minst ett av alternativen ovan.</p>
+                  )}
                 </div>
               </div>
             )}
 
             {step === 3 && (
-              <div className="space-y-4">
+              <div className="space-y-5">
+                <div className="rounded-xl bg-muted/60 p-4 text-sm">
+                  <div className="font-semibold mb-2">Din förfrågan</div>
+                  <div className="grid sm:grid-cols-2 gap-2 text-muted-foreground">
+                    <button type="button" onClick={() => setStep(0)} className="text-left hover:text-foreground">
+                      Cykel: <span className="text-foreground font-medium">{form.bike_type}</span>
+                    </button>
+                    <button type="button" onClick={() => setStep(1)} className="text-left hover:text-foreground">
+                      Problem: <span className="text-foreground font-medium">{form.repair_category}</span>
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <Label htmlFor="name">Namn</Label>
-                  <Input id="name" value={form.customer_name} onChange={(e) => update('customer_name', e.target.value)} />
+                  <Input id="name" autoComplete="name" value={form.customer_name} onChange={(event) => update('customer_name', event.target.value)} />
                 </div>
                 <div>
                   <Label htmlFor="email">E-post</Label>
-                  <Input id="email" type="email" value={form.customer_email} onChange={(e) => update('customer_email', e.target.value)} />
+                  <Input id="email" type="email" inputMode="email" autoComplete="email" value={form.customer_email} onChange={(event) => update('customer_email', event.target.value)} />
+                  <p className="text-xs text-muted-foreground mt-1">Vi mejlar en personlig länk där du ser och jämför svaren.</p>
                 </div>
                 <div>
-                  <Label htmlFor="phone">Telefon (valfritt)</Label>
-                  <Input id="phone" value={form.customer_phone} onChange={(e) => update('customer_phone', e.target.value)} />
+                  <Label htmlFor="phone">Telefon <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+                  <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" value={form.customer_phone || ''} onChange={(event) => update('customer_phone', event.target.value)} />
                 </div>
-                <div className="flex items-start gap-2 pt-2">
-                  <Checkbox id="consent" checked={form.consent} onCheckedChange={(v) => update('consent', !!v)} />
-                  <Label htmlFor="consent" className="text-sm leading-relaxed">
-                    Jag godkänner att mina uppgifter delas med anslutna cykelverkstäder som vill lämna offert, enligt{' '}
-                    <a href="/integritetspolicy" className="underline">integritetspolicyn</a>.
+
+                <div className="flex items-start gap-3 rounded-md border p-3">
+                  <Checkbox id="consent" checked={form.consent} onCheckedChange={(value) => update('consent', value === true)} />
+                  <Label htmlFor="consent" className="text-sm leading-relaxed cursor-pointer">
+                    Jag godkänner att uppgifterna delas med anslutna cykelverkstäder som vill lämna offert, enligt{' '}
+                    <a href="/integritetspolicy" target="_blank" rel="noreferrer" className="underline">integritetspolicyn</a>.
                   </Label>
                 </div>
-              </div>
-            )}
 
-            {step === 4 && (
-              <div className="space-y-3">
-                <Label>Bilder (valfritt — max fyra)</Label>
-                <p className="text-sm text-muted-foreground">Hjälper verkstaden ge en mer exakt offert.</p>
-                <label className="sticker bg-muted/50 p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-muted">
-                  <Camera className="h-8 w-8 mb-2 text-muted-foreground" />
-                  <span className="text-sm">Välj bilder</span>
-                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleFiles} />
-                </label>
-                {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {imagePreviews.map(({ file, url }) => (
-                      <div key={`${file.name}-${file.lastModified}-${file.size}`} className="aspect-square sticker bg-muted overflow-hidden">
-                        <img src={url} alt="Förhandsvisning av vald cykelbild" className="w-full h-full object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground mb-2">Säkerhetskontroll</p>
+                <div className="border-t pt-5">
+                  <p className="text-sm font-medium mb-2">Säkerhetskontroll</p>
                   <Turnstile
-                    onVerify={(t) => setTurnstileToken(t)}
-                    onExpire={() => setTurnstileToken(null)}
+                    onVerify={handleTurnstileVerify}
+                    onExpire={handleTurnstileExpire}
+                    resetKey={turnstileResetKey}
                   />
                 </div>
+
+                <p className="text-xs text-center text-muted-foreground">
+                  Det kostar ingenting och du förbinder dig inte att välja någon verkstad.
+                </p>
               </div>
             )}
           </div>
 
-          <div className="flex justify-between mt-6">
-            <Button variant="outline" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0 || submitting}>
+          <div className="flex justify-between gap-3 mt-6">
+            <Button variant="outline" onClick={() => setStep((current) => Math.max(0, current - 1))} disabled={step === 0 || submitting}>
               <ArrowLeft className="h-4 w-4 mr-1" /> Tillbaka
             </Button>
+
             {step < steps.length - 1 ? (
-              <Button onClick={() => setStep((s) => s + 1)} disabled={!canNext()}>
+              <Button onClick={goNext} disabled={!canContinue()} className="min-w-32">
                 Fortsätt <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={submit} disabled={submitting || !turnstileToken} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={submit} disabled={submitting || !canContinue() || !turnstileToken} className="bg-accent text-accent-foreground hover:bg-accent/90 min-w-40">
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
-                Skicka ärende
+                {submitting ? 'Skickar…' : 'Skicka gratis'}
               </Button>
             )}
           </div>
         </motion.div>
       </main>
+
       <CykelFooter />
     </div>
   )
