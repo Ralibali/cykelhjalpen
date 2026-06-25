@@ -1,29 +1,91 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Loader2, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import { AdminLayout } from './AdminDashboard'
+
+interface LeadCharge {
+  id: string
+  created_at: string
+  amount: number
+  status: string
+  stripe_session_id: string | null
+  workshops?: { company_name: string } | null
+}
+
+const formatMoney = (ore: number) => new Intl.NumberFormat('sv-SE', {
+  style: 'currency',
+  currency: 'SEK',
+  maximumFractionDigits: 2,
+}).format((ore || 0) / 100)
 
 const AdminBikePayments = () => {
-  const [items, setItems] = useState<any[]>([])
+  const [items, setItems] = useState<LeadCharge[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    supabase
+  const load = useCallback(async () => {
+    setLoading(true)
+    const { data, error } = await supabase
       .from('lead_charges')
-      .select('*, workshops(company_name)')
+      .select('id, created_at, amount, status, stripe_session_id, workshops(company_name)')
       .order('created_at', { ascending: false })
-      .then(({ data }) => { setItems(data || []); setLoading(false) })
+
+    if (error) {
+      toast.error(`Kunde inte läsa betalningar: ${error.message}`)
+      setItems([])
+    } else {
+      setItems((data as LeadCharge[]) || [])
+    }
+    setLoading(false)
   }, [])
 
-  const total = items.filter((i) => i.status === 'paid').reduce((s, i) => s + i.amount, 0) / 100
+  useEffect(() => { load() }, [load])
+
+  const totals = useMemo(() => {
+    const paid = items.filter((item) => item.status === 'paid')
+    return {
+      amount: paid.reduce((sum, item) => sum + (item.amount || 0), 0),
+      count: paid.length,
+      pending: items.filter((item) => item.status !== 'paid').length,
+    }
+  }, [items])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-2">Betalningar (cykel)</h1>
-      <p className="text-muted-foreground mb-6">Totalt inbetalat: <strong>{total} kr</strong></p>
-      {loading ? <Loader2 className="animate-spin" /> : (
-        <div className="overflow-x-auto border rounded-md">
+    <AdminLayout>
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="font-display text-2xl font-bold">Cykelbetalningar</h1>
+          <p className="text-sm text-muted-foreground mt-1">Stripe-betalningar för skickade verkstadsofferter.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Uppdatera
+        </Button>
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-3 mb-6">
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Totalt betalt</p>
+          <p className="font-display text-2xl font-bold mt-1">{formatMoney(totals.amount)}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Betalda offerter</p>
+          <p className="font-display text-2xl font-bold mt-1">{totals.count}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Övriga statusar</p>
+          <p className="font-display text-2xl font-bold mt-1">{totals.pending}</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>
+      ) : items.length === 0 ? (
+        <div className="rounded-xl border bg-card p-8 text-center text-muted-foreground">Inga betalningar registrerade ännu.</div>
+      ) : (
+        <div className="overflow-x-auto border rounded-xl bg-card">
           <table className="w-full text-sm">
-            <thead className="bg-muted">
+            <thead className="bg-muted/60">
               <tr>
                 <th className="text-left p-3">Datum</th>
                 <th className="text-left p-3">Verkstad</th>
@@ -33,20 +95,26 @@ const AdminBikePayments = () => {
               </tr>
             </thead>
             <tbody>
-              {items.map((i) => (
-                <tr key={i.id} className="border-t">
-                  <td className="p-3">{new Date(i.created_at).toLocaleString('sv-SE')}</td>
-                  <td className="p-3">{i.workshops?.company_name || '—'}</td>
-                  <td className="p-3">{(i.amount / 100).toFixed(0)} kr</td>
-                  <td className="p-3">{i.status}</td>
-                  <td className="p-3 text-xs text-muted-foreground">{i.stripe_session_id?.slice(0, 24)}…</td>
+              {items.map((item) => (
+                <tr key={item.id} className="border-t">
+                  <td className="p-3 whitespace-nowrap">{new Date(item.created_at).toLocaleString('sv-SE')}</td>
+                  <td className="p-3">{item.workshops?.company_name || '—'}</td>
+                  <td className="p-3 font-medium">{formatMoney(item.amount)}</td>
+                  <td className="p-3">
+                    <span className={`text-xs rounded-full px-2 py-1 font-medium ${item.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'}`}>
+                      {item.status}
+                    </span>
+                  </td>
+                  <td className="p-3 text-xs text-muted-foreground font-mono">
+                    {item.stripe_session_id ? item.stripe_session_id.slice(0, 28) : '—'}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-    </div>
+    </AdminLayout>
   )
 }
 
