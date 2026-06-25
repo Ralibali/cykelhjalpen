@@ -5,14 +5,16 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Wrench, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { Wrench, Loader2, CheckCircle2, ShieldCheck, MapPin } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { Helmet } from 'react-helmet-async'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
+import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, type CykelCityName } from '@/lib/cykelCities'
 
 const SERVICES = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Hjulbygge', 'Mobil reparation']
+const PENDING_CITY_KEY = 'cykelhjalpen_pending_workshop_city'
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
   const gtag = (window as any).gtag
@@ -26,7 +28,7 @@ const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
       const payload = await context.clone().json()
       if (typeof payload?.error === 'string') return payload.error
     } catch {
-      // The edge function did not return JSON.
+      // Edge-funktionen returnerade inte JSON.
     }
   }
   return (error as any)?.message || fallback
@@ -42,45 +44,34 @@ const RegisterWorkshopPage = () => {
     phone: '',
     address: '',
     website: '',
+    city: DEFAULT_CYKEL_CITY as CykelCityName,
     services: [] as string[],
     terms_accepted: false,
   })
 
   const update = (key: string, value: unknown) => setForm((current) => ({ ...current, [key]: value }))
   const toggleService = (service: string) => {
-    update(
-      'services',
-      form.services.includes(service)
-        ? form.services.filter((current) => current !== service)
-        : [...form.services, service],
-    )
+    update('services', form.services.includes(service) ? form.services.filter((current) => current !== service) : [...form.services, service])
   }
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!form.terms_accepted) {
-      toast.error('Du måste godkänna villkoren')
-      return
-    }
-    if (form.company_name.trim().length < 2) {
-      toast.error('Ange verkstadens namn')
-      return
-    }
-    if (form.password.length < 6) {
-      toast.error('Lösenordet måste vara minst sex tecken')
-      return
-    }
+    if (!form.terms_accepted) return toast.error('Du måste godkänna villkoren')
+    if (form.company_name.trim().length < 2) return toast.error('Ange verkstadens namn')
+    if (form.password.length < 6) return toast.error('Lösenordet måste vara minst sex tecken')
 
     setLoading(true)
     try {
+      localStorage.setItem(PENDING_CITY_KEY, form.city)
       const { data, error } = await supabase.functions.invoke('register-workshop', {
         body: {
-          company_name: form.company_name,
-          email: form.email,
+          company_name: form.company_name.trim(),
+          email: form.email.trim(),
           password: form.password,
           phone: form.phone || null,
           address: form.address || null,
           website: form.website || null,
+          city: form.city,
           services: form.services,
           terms_accepted: form.terms_accepted,
         },
@@ -89,10 +80,8 @@ const RegisterWorkshopPage = () => {
       if (error) throw new Error(await getFunctionErrorMessage(error, 'Registreringen misslyckades'))
       if (data?.error) throw new Error(data.error)
 
-      trackClick('workshop_registration_completed', 'Skicka ansökan', {
-        services_count: form.services.length,
-      })
-      trackGoogleEvent('sign_up', { method: 'workshop_registration' })
+      trackClick('workshop_registration_completed', 'Skicka ansökan', { services_count: form.services.length, city: form.city })
+      trackGoogleEvent('sign_up', { method: 'workshop_registration', city: form.city })
 
       if (data?.session?.access_token && data?.session?.refresh_token) {
         const { error: sessionError } = await supabase.auth.setSession({
@@ -101,7 +90,7 @@ const RegisterWorkshopPage = () => {
         })
         if (sessionError) throw sessionError
 
-        toast.success('Tack! Din verkstad är registrerad och väntar nu på godkännande.')
+        toast.success(`Tack! ${form.company_name} är registrerad i ${form.city} och väntar på godkännande.`)
         navigate('/dashboard/verkstad')
         return
       }
@@ -118,31 +107,25 @@ const RegisterWorkshopPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Anslut din cykelverkstad — Linköping | Cykelhjälpen</title>
-        <meta name="description" content="Få fler kunder till din cykelverkstad i Linköping. Registrera dig gratis och betala bara för svaren du faktiskt skickar — femtio kronor exklusive moms per offert." />
+        <title>Anslut din cykelverkstad | Cykelhjälpen</title>
+        <meta name="description" content="Få fler kunder till din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Gratis registrering och betalning endast per skickad offert." />
         <link rel="canonical" href="https://cykelhjalpen.se/registrera/verkstad" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Anslut din cykelverkstad — Linköping | Cykelhjälpen" />
+        <meta property="og:title" content="Anslut din cykelverkstad | Cykelhjälpen" />
         <meta property="og:description" content="Registrera din cykelverkstad gratis. Betala bara per skickad offert." />
         <meta property="og:url" content="https://cykelhjalpen.se/registrera/verkstad" />
         <meta property="og:image" content="https://cykelhjalpen.se/og/registrera-verkstad.jpg" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Anslut din cykelverkstad — Linköping" />
-        <meta name="twitter:description" content="Registrera din cykelverkstad gratis. Betala bara per skickad offert." />
-        <meta name="twitter:image" content="https://cykelhjalpen.se/og/registrera-verkstad.jpg" />
       </Helmet>
 
       <CykelNavbar />
-
       <main className="container mx-auto px-4 py-10 md:py-14 max-w-2xl">
         <div className="flex items-center gap-3 mb-3">
           <div className="sticker bg-accent p-2"><Wrench className="h-5 w-5 text-accent-foreground" /></div>
           <h1 className="font-display text-3xl font-bold">Anslut din verkstad</h1>
         </div>
         <p className="text-muted-foreground mb-5">
-          Skapa ett kostnadsfritt konto och få förfrågningar från cyklister i Linköping. Du väljer själv vilka jobb du vill svara på.
+          Skapa ett kostnadsfritt konto och få relevanta förfrågningar från cyklister i din stad. Du väljer själv vilka jobb du vill svara på.
         </p>
 
         <div className="grid sm:grid-cols-3 gap-2 mb-8 text-sm">
@@ -155,6 +138,23 @@ const RegisterWorkshopPage = () => {
           <div>
             <Label htmlFor="cn">Verkstadens namn</Label>
             <Input id="cn" autoComplete="organization" required value={form.company_name} onChange={(event) => update('company_name', event.target.value)} />
+          </div>
+
+          <div>
+            <Label>Vilken stad arbetar ni i?</Label>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {CYKEL_CITIES.map((city) => (
+                <button
+                  key={city.name}
+                  type="button"
+                  onClick={() => update('city', city.name)}
+                  aria-pressed={form.city === city.name}
+                  className={`flex items-center gap-2 text-left px-4 py-3 border-2 border-foreground rounded-md transition ${form.city === city.name ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                >
+                  <MapPin className="h-4 w-4" /> {city.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -181,7 +181,7 @@ const RegisterWorkshopPage = () => {
           </div>
 
           <div>
-            <Label htmlFor="ad">Adress i Linköping <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+            <Label htmlFor="ad">Adress i {form.city} <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
             <Input id="ad" autoComplete="street-address" value={form.address} onChange={(event) => update('address', event.target.value)} />
           </div>
 
@@ -190,13 +190,7 @@ const RegisterWorkshopPage = () => {
             <p className="text-sm text-muted-foreground mt-1 mb-3">Det hjälper oss att skicka mer relevanta förfrågningar.</p>
             <div className="flex flex-wrap gap-2">
               {SERVICES.map((service) => (
-                <button
-                  key={service}
-                  type="button"
-                  onClick={() => toggleService(service)}
-                  aria-pressed={form.services.includes(service)}
-                  className={`px-3 py-2 rounded-full border-2 border-foreground text-sm transition ${form.services.includes(service) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-                >
+                <button key={service} type="button" onClick={() => toggleService(service)} aria-pressed={form.services.includes(service)} className={`px-3 py-2 rounded-full border-2 border-foreground text-sm transition ${form.services.includes(service) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>
                   {service}
                 </button>
               ))}
@@ -204,13 +198,7 @@ const RegisterWorkshopPage = () => {
           </div>
 
           <label className="flex items-start gap-3 text-sm cursor-pointer pt-4 border-t">
-            <input
-              type="checkbox"
-              checked={form.terms_accepted}
-              onChange={(event) => update('terms_accepted', event.target.checked)}
-              className="mt-1 h-4 w-4"
-              required
-            />
+            <input type="checkbox" checked={form.terms_accepted} onChange={(event) => update('terms_accepted', event.target.checked)} className="mt-1 h-4 w-4" required />
             <span className="text-muted-foreground leading-relaxed">
               Jag godkänner <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>. Jag förstår att <strong className="text-foreground">{LEAD_FEE_KR} kr exkl. moms (62,50 kr inkl. moms)</strong> debiteras via Stripe först när jag väljer att skicka en offert.
             </span>
@@ -221,12 +209,9 @@ const RegisterWorkshopPage = () => {
             {loading ? 'Skapar verkstad…' : 'Registrera verkstaden gratis'}
           </Button>
 
-          <p className="text-xs text-center text-muted-foreground">
-            Har du redan ett konto? <Link to="/logga-in" className="underline">Logga in</Link>
-          </p>
+          <p className="text-xs text-center text-muted-foreground">Har du redan ett konto? <Link to="/logga-in" className="underline">Logga in</Link></p>
         </form>
       </main>
-
       <CykelFooter />
     </div>
   )
