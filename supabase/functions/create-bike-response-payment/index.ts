@@ -7,9 +7,7 @@ import { corsFor } from '../_shared/cors.ts'
 const BodySchema = z.object({ response_id: z.string().uuid() })
 
 const allowedOrigin = (origin: string | null) => {
-  if (origin && /^(https:\/\/(www\.)?cykelhjalpen\.se|https:\/\/[a-z0-9-]+\.lovable\.app|http:\/\/localhost(:\d+)?)$/i.test(origin)) {
-    return origin
-  }
+  if (origin && /^(https:\/\/(www\.)?cykelhjalpen\.se|https:\/\/[a-z0-9-]+\.lovable\.app|http:\/\/localhost(:\d+)?)$/i.test(origin)) return origin
   return 'https://cykelhjalpen.se'
 }
 
@@ -122,20 +120,11 @@ Deno.serve(async (req) => {
         const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token || '')}`
         const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${serviceRoleKey}`,
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
           body: JSON.stringify({
             to: requestRow.customer_email,
             subject: `Nytt prisförslag på din cykel – ${requestRow.repair_category}`,
-            html: `
-              <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-                <h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2>
-                <p><strong>${escapeHtml(workshop.company_name)}</strong> har lämnat ett prisförslag på ditt cykelärende.</p>
-                <p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p>
-              </div>
-            `,
+            html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111"><h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2><p><strong>${escapeHtml(workshop.company_name)}</strong> har lämnat ett prisförslag på ditt cykelärende.</p><p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p></div>`,
           }),
         }).catch((emailError) => console.error('Free lead customer notification failed', emailError))
 
@@ -144,10 +133,7 @@ Deno.serve(async (req) => {
         else await emailTask
       }
 
-      return new Response(JSON.stringify({
-        url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1`,
-        free_lead: true,
-      }), {
+      return new Response(JSON.stringify({ url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1`, free_lead: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
@@ -156,14 +142,50 @@ Deno.serve(async (req) => {
     if (!stripeSecret) throw new Error('Stripe är inte konfigurerat')
     const stripe = new Stripe(stripeSecret, { apiVersion: '2025-08-27.basil' })
 
+    const { data: pendingCharges, error: pendingError } = await admin
+      .from('lead_charges')
+      .select('id, stripe_session_id')
+      .eq('response_id', response.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(10)
+    if (pendingError) throw pendingError
+
+    let reusableUrl: string | null = null
+    for (const charge of pendingCharges || []) {
+      if (!charge.stripe_session_id) {
+        await admin.from('lead_charges').update({ status: 'expired' }).eq('id', charge.id)
+        continue
+      }
+
+      try {
+        const previousSession = await stripe.checkout.sessions.retrieve(charge.stripe_session_id)
+        if (previousSession.status === 'complete' && previousSession.payment_status === 'paid') {
+          throw new Error('Betalningen behandlas redan. Uppdatera sidan om några sekunder.')
+        }
+        if (previousSession.status === 'open' && previousSession.url && !reusableUrl) {
+          reusableUrl = previousSession.url
+          continue
+        }
+        if (previousSession.status === 'open') await stripe.checkout.sessions.expire(previousSession.id)
+        await admin.from('lead_charges').update({ status: 'expired' }).eq('id', charge.id)
+      } catch (sessionError) {
+        if (sessionError instanceof Error && sessionError.message.includes('behandlas redan')) throw sessionError
+        await admin.from('lead_charges').update({ status: 'expired' }).eq('id', charge.id)
+      }
+    }
+
+    if (reusableUrl) {
+      return new Response(JSON.stringify({ url: reusableUrl, reused: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     let customerId = workshop.stripe_customer_id
     if (!customerId) {
       const customer = await stripe.customers.create({ email: workshop.email, name: workshop.company_name })
       customerId = customer.id
-      const { error: customerSaveError } = await admin
-        .from('workshops')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', workshop.id)
+      const { error: customerSaveError } = await admin.from('workshops').update({ stripe_customer_id: customerId }).eq('id', workshop.id)
       if (customerSaveError) console.error('Could not save Stripe customer id', customerSaveError)
     }
 
@@ -176,10 +198,7 @@ Deno.serve(async (req) => {
       line_items: [{
         price_data: {
           currency: 'sek',
-          product_data: {
-            name: 'Cykelhjälpen – offert till kund',
-            description: `Lead-avgift för ärende ${response.request_id.slice(0, 8)}`,
-          },
+          product_data: { name: 'Cykelhjälpen – offert till kund', description: `Lead-avgift för ärende ${response.request_id.slice(0, 8)}` },
           unit_amount: LEAD_FEE_ORE,
           tax_behavior: 'exclusive',
         },
@@ -187,11 +206,7 @@ Deno.serve(async (req) => {
       }],
       success_url: `${origin}/dashboard/verkstad/arenden?paid=true`,
       cancel_url: `${origin}/dashboard/verkstad/arenden?canceled=true`,
-      metadata: {
-        response_id: response.id,
-        request_id: response.request_id,
-        workshop_id: workshop.id,
-      },
+      metadata: { response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
     })
 
     const { error: chargeError } = await admin.from('lead_charges').insert({
