@@ -1,6 +1,5 @@
-import type { ChangeEvent } from 'react'
+import type { ChangeEvent, ReactNode } from 'react'
 import { Camera, MapPin, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,7 +23,7 @@ interface Props {
   onTurnstileExpire: () => void
 }
 
-const ChoiceButton = ({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) => (
+const ChoiceButton = ({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: ReactNode }) => (
   <button
     type="button"
     onClick={onClick}
@@ -119,7 +118,7 @@ const BikeRequestStepContent = ({
       <div className="space-y-5">
         <div>
           <Label className="text-base">Vilken stad finns cykeln i?</Label>
-          <p className="text-sm text-muted-foreground mt-1">Ärendet visas bara för verkstäder i den valda staden.</p>
+          <p className="text-sm text-muted-foreground mt-1">Ärendet matchas med verkstäder i den valda staden.</p>
           <div className="grid grid-cols-2 gap-2 mt-3">
             {CYKEL_CITIES.map((city) => (
               <ChoiceButton key={city.name} selected={form.city === city.name} onClick={() => update('city', city.name)}>
@@ -198,7 +197,6 @@ const BikeRequestStepContent = ({
         <p className="text-sm font-medium mb-2">Säkerhetskontroll</p>
         <Turnstile onVerify={onTurnstileVerify} onExpire={onTurnstileExpire} resetKey={turnstileResetKey} />
       </div>
-
       <p className="text-xs text-center text-muted-foreground">Det kostar ingenting och du förbinder dig inte att välja någon verkstad.</p>
     </div>
   )
