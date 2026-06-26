@@ -25,6 +25,7 @@ const CykelhjalpenIndexV2 = () => {
       <Helmet>
         <title>Cykelhjälpen – jämför lokala cykelverkstäder</title>
         <meta name="description" content="Beskriv felet på din cykel och få prisförslag från lokala cykelverkstäder i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto." />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <link rel="canonical" href="https://cykelhjalpen.se/" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Cykelhjälpen – jämför lokala cykelverkstäder" />
