@@ -2,6 +2,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 
+const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
+
 const BodySchema = z.object({
   bike_type: z.string().min(1).max(80),
   repair_category: z.string().min(1).max(80),
@@ -14,7 +16,7 @@ const BodySchema = z.object({
   customer_name: z.string().trim().min(2).max(80),
   customer_email: z.string().trim().email().max(160),
   customer_phone: z.string().trim().max(40).optional().nullable(),
-  city: z.string().trim().max(80).optional().default('Linköping'),
+  city: z.enum(CITIES),
   turnstile_token: z.string().min(10).max(4096),
 })
 
@@ -92,7 +94,7 @@ Deno.serve(async (req) => {
       p_customer_name: body.customer_name,
       p_customer_email: body.customer_email,
       p_customer_phone: body.customer_phone ?? null,
-      p_city: body.city ?? 'Linköping',
+      p_city: body.city,
     })
     if (error) throw error
 
@@ -108,12 +110,12 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         to: body.customer_email,
-        subject: `Vi har tagit emot ditt cykelärende – ${body.repair_category}`,
+        subject: `Vi har tagit emot ditt cykelärende i ${body.city} – ${body.repair_category}`,
         html: `
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
             <h2 style="margin:0 0 16px">Tack ${escapeHtml(body.customer_name)}!</h2>
-            <p>Vi har tagit emot din förfrågan om <strong>${escapeHtml(body.repair_category)}</strong> för din ${escapeHtml(body.bike_type)}.</p>
-            <p>Ärendet granskas innan det skickas vidare till anslutna verkstäder. Du får besked när granskningen är klar.</p>
+            <p>Vi har tagit emot din förfrågan om <strong>${escapeHtml(body.repair_category)}</strong> för din ${escapeHtml(body.bike_type)} i <strong>${escapeHtml(body.city)}</strong>.</p>
+            <p>Ärendet granskas innan det skickas vidare till anslutna verkstäder i den valda staden. Du får besked när granskningen är klar.</p>
             <p style="margin-top:24px">
               <a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">
                 Följ ditt ärende
