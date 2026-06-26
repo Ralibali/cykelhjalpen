@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import CykelLogo from './CykelLogo'
-import { CYKEL_CITIES, cityQuery } from '@/lib/cykelCities'
+import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 
 const homeSectionLink = '/#sa-fungerar-det'
 
@@ -20,7 +20,7 @@ const CykelFooter = () => (
           <li><Link to="/skicka-arende" className="hover:text-primary">Skicka cykelärende</Link></li>
           <li><Link to={homeSectionLink} className="hover:text-primary">Så fungerar det</Link></li>
           {CYKEL_CITIES.map((city) => (
-            <li key={city.name}><Link to={cityQuery(city.name)} className="hover:text-primary">Cykelhjälpen {city.name}</Link></li>
+            <li key={city.name}><Link to={cityLandingPath(city.name)} className="hover:text-primary">Cykelverkstad {city.name}</Link></li>
           ))}
         </ul>
       </div>
