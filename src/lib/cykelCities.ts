@@ -1,5 +1,32 @@
 export const CYKEL_CITIES = [
-  { name: 'Linköping', slug: 'linkoping', exampleArea: 'Ryd, Vasastaden eller Vallastaden' },
+  {
+    name: 'Linköping',
+    slug: 'linkoping',
+    exampleArea: 'Ryd, Vasastaden eller Vallastaden',
+    areas: 'Innerstaden, Ryd, Vallastaden, Lambohov och Ekholmen',
+    localIntro: 'Campus Valla, stora arbetsplatser och tydliga cykelstråk gör cykeln viktig för både studenter och pendlare.',
+  },
+  {
+    name: 'Norrköping',
+    slug: 'norrkoping',
+    exampleArea: 'Centrum, Hageby eller Kneippen',
+    areas: 'Centrum, Hageby, Kneippen, Vilbergen och Ingelsta',
+    localIntro: 'Campus Norrköping, Resecentrum och de täta stadsdelarna gör cykeln till ett naturligt transportmedel.',
+  },
+  {
+    name: 'Uppsala',
+    slug: 'uppsala',
+    exampleArea: 'Flogsta, Luthagen eller Sala backe',
+    areas: 'Flogsta, Luthagen, Sala backe, Kåbo och Årsta',
+    localIntro: 'Uppsala är en av Sveriges största cykel- och studentstäder, där många är beroende av en fungerande vardagscykel.',
+  },
+  {
+    name: 'Lund',
+    slug: 'lund',
+    exampleArea: 'Delphi, Vildanden eller Klostergården',
+    areas: 'Delphi, Vildanden, Klostergården, Norra Fäladen och Centrum',
+    localIntro: 'Lunds kompakta centrum och stora studentliv gör cykeln central för resor mellan bostad, universitet och station.',
+  },
 ] as const
 
 export type CykelCity = typeof CYKEL_CITIES[number]
