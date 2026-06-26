@@ -196,7 +196,7 @@ const BikeRequestWizard = () => {
       })
       trackGoogleEvent('generate_lead', { currency: 'SEK', value: 0, lead_type: 'bike_repair_request', city: parsed.data.city })
 
-      toast.success('Tack! Ärendet är mottaget och granskas innan det skickas till verkstäder.')
+      toast.success(`Tack! Ärendet i ${parsed.data.city} är mottaget och granskas innan det skickas till verkstäder.`)
       if (uploadErrors.length > 0) toast.error(`${uploadErrors.length} bilder kunde inte laddas upp. Själva ärendet är ändå mottaget.`)
       navigate(`/mitt-arende/${request.view_token}`)
     } catch (error) {
@@ -212,13 +212,13 @@ const BikeRequestWizard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Få pris på cykelreparation i Linköping | Cykelhjälpen</title>
-        <meta name="description" content="Beskriv ditt cykelproblem och jämför lokala prisförslag i Linköping. Gratis, utan konto och utan köpkrav." />
+        <title>Få pris på cykelreparation | Cykelhjälpen</title>
+        <meta name="description" content="Beskriv ditt cykelproblem och jämför lokala prisförslag i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto." />
         <meta name="robots" content="noindex, follow" />
         <link rel="canonical" href="https://cykelhjalpen.se/skicka-arende" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="sv_SE" />
-        <meta property="og:title" content="Få pris på cykelreparation i Linköping | Cykelhjälpen" />
+        <meta property="og:title" content="Få pris på cykelreparation | Cykelhjälpen" />
         <meta property="og:description" content="Beskriv cykelproblemet och jämför lokala prisförslag. Gratis och utan konto." />
         <meta property="og:url" content="https://cykelhjalpen.se/skicka-arende" />
         <meta property="og:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
@@ -231,7 +231,7 @@ const BikeRequestWizard = () => {
           <div className="flex items-center gap-3 mb-3">
             <div className="sticker bg-brand-sun p-2"><Bike className="h-5 w-5" /></div>
             <div>
-              <h1 className="font-display text-3xl font-bold">Få pris på cykelreparation i Linköping</h1>
+              <h1 className="font-display text-3xl font-bold">Få pris på cykelreparation</h1>
               <p className="text-sm text-muted-foreground">Steg {step + 1} av {BIKE_REQUEST_STEPS.length}: {BIKE_REQUEST_STEPS[step]}</p>
             </div>
           </div>
