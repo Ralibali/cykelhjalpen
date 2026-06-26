@@ -19,3 +19,8 @@ export const getCykelCity = (value: unknown): CykelCity => (
 )
 
 export const cityQuery = (city: CykelCityName) => `/skicka-arende?stad=${encodeURIComponent(city)}`
+
+export const cityLandingPath = (city: CykelCityName) => {
+  const match = getCykelCity(city)
+  return `/cykelverkstad-${match.slug}`
+}
