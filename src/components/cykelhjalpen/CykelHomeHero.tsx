@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, CheckCircle2, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import heroImg from '@/assets/cykel-hero.jpg'
-import { CYKEL_CITIES, cityQuery } from '@/lib/cykelCities'
+import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 
 const CykelHomeHero = () => (
   <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28">
@@ -22,11 +22,11 @@ const CykelHomeHero = () => (
             Beskriv problemet en gång och få pris, tid och kontaktuppgifter från godkända verkstäder i din stad. <strong className="text-foreground">Gratis för dig som cyklist.</strong>
           </p>
 
-          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-2xl">
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-2xl" aria-label="Välj lokal stadssida">
             {CYKEL_CITIES.map((city) => (
               <Link
                 key={city.name}
-                to={cityQuery(city.name)}
+                to={cityLandingPath(city.name)}
                 className="rounded-xl border-2 border-foreground bg-card px-3 py-3 text-sm font-semibold hover:-translate-y-0.5 hover:bg-primary hover:text-primary-foreground transition"
               >
                 <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{city.name}</span>
