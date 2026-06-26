@@ -157,6 +157,13 @@ const BikeRequestWizard = () => {
     }
 
     setSubmitting(true)
+    trackClick('bike_request_submit_clicked', 'Skicka gratis', {
+      bike_type: parsed.data.bike_type,
+      repair_category: parsed.data.repair_category,
+      city: parsed.data.city,
+      has_images: files.length > 0,
+    })
+
     try {
       const { data: request, error } = await supabase.functions.invoke('submit-bike-request', {
         body: {
@@ -195,6 +202,7 @@ const BikeRequestWizard = () => {
     } catch (error) {
       setTurnstileToken(null)
       setTurnstileResetKey((current) => current + 1)
+      trackClick('bike_request_submission_failed', 'Skicka gratis', { step: step + 1, city: form.city })
       toast.error((error as Error)?.message || 'Något gick fel. Försök igen.')
     } finally {
       setSubmitting(false)
@@ -204,12 +212,14 @@ const BikeRequestWizard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Få pris på cykelreparation | Cykelhjälpen</title>
-        <meta name="description" content="Beskriv ditt cykelproblem och få lokala prisförslag i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto." />
+        <title>Få pris på cykelreparation i Linköping | Cykelhjälpen</title>
+        <meta name="description" content="Beskriv ditt cykelproblem och jämför lokala prisförslag i Linköping. Gratis, utan konto och utan köpkrav." />
+        <meta name="robots" content="noindex, follow" />
         <link rel="canonical" href="https://cykelhjalpen.se/skicka-arende" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Få pris på cykelreparation | Cykelhjälpen" />
-        <meta property="og:description" content="Beskriv cykelproblemet och få lokala prisförslag. Gratis och utan konto." />
+        <meta property="og:locale" content="sv_SE" />
+        <meta property="og:title" content="Få pris på cykelreparation i Linköping | Cykelhjälpen" />
+        <meta property="og:description" content="Beskriv cykelproblemet och jämför lokala prisförslag. Gratis och utan konto." />
         <meta property="og:url" content="https://cykelhjalpen.se/skicka-arende" />
         <meta property="og:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -221,7 +231,7 @@ const BikeRequestWizard = () => {
           <div className="flex items-center gap-3 mb-3">
             <div className="sticker bg-brand-sun p-2"><Bike className="h-5 w-5" /></div>
             <div>
-              <h1 className="font-display text-3xl font-bold">Få pris på cykelreparation</h1>
+              <h1 className="font-display text-3xl font-bold">Få pris på cykelreparation i Linköping</h1>
               <p className="text-sm text-muted-foreground">Steg {step + 1} av {BIKE_REQUEST_STEPS.length}: {BIKE_REQUEST_STEPS[step]}</p>
             </div>
           </div>
