@@ -1,4 +1,5 @@
 import { CYKEL_SEO_PAGES } from './cykelSeoPages'
+import { CYKEL_CITIES, cityLandingPath } from './cykelCities'
 import type { SiteHost } from './hostConfig'
 
 export const SITE_URL = 'https://cykelhjalpen.se'
@@ -15,6 +16,7 @@ export interface StaticSeoRoute {
   changefreq: 'daily' | 'weekly' | 'monthly' | 'yearly'
   lastmod?: string
   noindex?: boolean
+  city?: string
   links?: { label: string; href: string }[]
   sections?: { h2: string; body: string }[]
   faq?: { q: string; a: string }[]
@@ -29,74 +31,108 @@ const trunc = (value: string, max = 155) => clean(value).length <= max ? clean(v
 const esc = (value = '') => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 const imageFor = (host: SiteHost, image = '/og/default.jpg') => image.startsWith('http') ? image : `${siteUrlFor(host)}${image}`
 
-const KEY_CYKEL_LINKS = [
-  { label: 'Cykelverkstad i Linköping', href: '/cykelverkstad-linkoping' },
-  { label: 'Cykelreparation i Linköping', href: '/cykelreparation-linkoping' },
-  { label: 'Cykelservice i Linköping', href: '/cykelservice-linkoping' },
-  { label: 'Punktering i Linköping', href: '/punktering-linkoping' },
-  { label: 'Reparation av elcykel i Linköping', href: '/elcykel-reparation-linkoping' },
-  { label: 'Vad kostar cykelreparation?', href: '/vad-kostar-cykelreparation-linkoping' },
-]
+const cityLinks = CYKEL_CITIES.map((city) => ({
+  label: `Cykelverkstad i ${city.name}`,
+  href: cityLandingPath(city.name),
+}))
+
+const cityRoutes = (): StaticSeoRoute[] => CYKEL_CITIES.map((city) => ({
+  path: cityLandingPath(city.name),
+  title: `Cykelverkstad ${city.name} – jämför lokala prisförslag`,
+  description: `Hitta cykelverkstad i ${city.name}. Beskriv problemet gratis och jämför pris och tid från anslutna verkstäder utan konto.`,
+  h1: `Cykelverkstad i ${city.name}`,
+  city: city.name,
+  priority: 0.95,
+  changefreq: 'weekly',
+  lastmod: today(),
+  ogImage: '/og/hem.jpg',
+  sections: [
+    {
+      h2: `Lokal cykelhjälp i ${city.name}`,
+      body: `Cykelhjälpen täcker bland annat ${city.areas}. Ange område eller postnummer så att verkstäderna kan bedöma avstånd och eventuell hämtning.`,
+    },
+    {
+      h2: 'Vanliga cykeljobb',
+      body: 'Anslutna verkstäder kan hjälpa till med punktering, däck, bromsar, växlar, kedja, hjul, service och elcykelproblem.',
+    },
+    {
+      h2: 'Gratis och utan konto',
+      body: 'Det kostar inget att skicka en förfrågan och du väljer själv om du vill gå vidare med något av svaren.',
+    },
+  ],
+  links: [
+    { label: `Skicka cykelärende i ${city.name}`, href: `/skicka-arende?stad=${encodeURIComponent(city.name)}` },
+    ...cityLinks.filter((link) => link.href !== cityLandingPath(city.name)),
+    { label: 'För cykelverkstäder', href: '/for-cykelverkstader' },
+  ],
+  faq: [
+    { q: `Vad kostar det att skicka ett cykelärende i ${city.name}?`, a: 'Det är kostnadsfritt för cyklisten och det finns ingen köpplikt.' },
+    { q: 'Behöver jag skapa konto?', a: 'Nej. Du skickar ärendet och får en personlig länk via e-post.' },
+  ],
+}))
+
+const detailedCykelPages = CYKEL_SEO_PAGES.filter((page) => page.slug !== 'cykelverkstad-linkoping')
 
 const cykelIndexableRoutes = (): StaticSeoRoute[] => [
   {
     path: '/',
-    title: 'Cykelhjälpen Linköping – jämför lokala cykelverkstäder',
-    description: 'Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping. Gratis, utan konto och utan köpkrav.',
-    h1: 'Jämför cykelverkstäder i Linköping',
+    title: 'Cykelhjälpen – jämför lokala cykelverkstäder',
+    description: 'Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping, Norrköping, Uppsala eller Lund.',
+    h1: 'Jämför lokala cykelverkstäder',
     priority: 1,
     changefreq: 'weekly',
     lastmod: today(),
     ogImage: '/og/hem.jpg',
     sections: [
-      { h2: 'Så fungerar Cykelhjälpen', body: 'Beskriv cykeln och problemet i ett kort formulär. Godkända verkstäder i Linköping kan därefter lämna pris, tid och kontaktuppgifter. Du väljer själv om du vill gå vidare.' },
-      { h2: 'Gratis för dig som cyklist', body: 'Det kostar inget att skicka ett ärende och du behöver inte skapa konto. Det finns ingen skyldighet att välja någon av verkstäderna som svarar.' },
+      { h2: 'Så fungerar Cykelhjälpen', body: 'Välj stad, beskriv cykeln och problemet och jämför sedan svar från anslutna verkstäder i den valda staden.' },
+      { h2: 'Gratis för dig som cyklist', body: 'Det kostar inget att skicka ett ärende och du behöver inte skapa konto. Du väljer själv om du vill gå vidare.' },
     ],
     links: [
-      { label: 'Skicka cykelärende gratis', href: '/skicka-arende?stad=Link%C3%B6ping' },
-      ...KEY_CYKEL_LINKS,
+      { label: 'Skicka cykelärende gratis', href: '/skicka-arende' },
+      ...cityLinks,
       { label: 'För cykelverkstäder', href: '/for-cykelverkstader' },
     ],
   },
   {
     path: '/for-cykelverkstader',
-    title: 'Få fler kunder till din cykelverkstad i Linköping | Cykelhjälpen',
-    description: 'Anslut din cykelverkstad i Linköping. Ingen månadsavgift, välj själv vilka lokala ärenden ni vill svara på och betala endast per skickad offert.',
+    title: 'Få fler kunder till din cykelverkstad | Cykelhjälpen',
+    description: 'Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift och betalning endast per skickad offert.',
     h1: 'Få fler lokala kunder till din cykelverkstad',
     priority: 0.8,
     changefreq: 'monthly',
     lastmod: today(),
     ogImage: '/og/for-cykelverkstader.jpg',
     sections: [
-      { h2: 'Lokala och granskade förfrågningar', body: 'Cykelhjälpen förmedlar cykelärenden från personer i Linköpingsområdet. Ni väljer själva vilka jobb som passar verkstadens kompetens och kapacitet.' },
-      { h2: 'Ingen månadsavgift', body: 'Registreringen är kostnadsfri. En leadavgift tas ut först när ni aktivt väljer att betala och skicka ett prisförslag till kunden.' },
-      { h2: 'Ni behåller kundrelationen', body: 'När offerten skickats får kunden verkstadens kontaktuppgifter. Bokning, betalning för reparationen och fortsatt kontakt sker direkt mellan kunden och verkstaden.' },
+      { h2: 'Lokala och granskade förfrågningar', body: 'Cykelhjälpen förmedlar cykelärenden från personer i den stad där verkstaden arbetar.' },
+      { h2: 'Ingen månadsavgift', body: 'Registreringen är kostnadsfri. En leadavgift tas ut först när verkstaden aktivt väljer att skicka en offert.' },
+      { h2: 'Ni behåller kundrelationen', body: 'När offerten skickats får kunden verkstadens kontaktuppgifter och fortsatt bokning sker direkt med verkstaden.' },
     ],
     links: [
       { label: 'Registrera verkstaden gratis', href: '/registrera/verkstad' },
-      { label: 'Se kundsidan', href: '/' },
-      { label: 'Läs allmänna villkor', href: '/villkor' },
+      ...cityLinks,
     ],
     faq: [
-      { q: 'Kostar det att registrera verkstaden?', a: 'Nej. Registreringen har ingen månadsavgift. Kostnaden uppstår först när ni själva väljer att skicka en offert.' },
-      { q: 'Måste vi svara på alla ärenden?', a: 'Nej. Ni väljer själva vilka förfrågningar som passar er kapacitet, kompetens och geografiska område.' },
-      { q: 'Hur blir verkstaden godkänd?', a: 'Varje verkstad granskas manuellt innan den får tillgång till lokala kundärenden.' },
+      { q: 'Kostar det att registrera verkstaden?', a: 'Nej. Registreringen har ingen månadsavgift.' },
+      { q: 'Måste vi svara på alla ärenden?', a: 'Nej. Verkstaden väljer själv vilka förfrågningar den vill svara på.' },
     ],
   },
-  ...CYKEL_SEO_PAGES.map<StaticSeoRoute>((page) => ({
+  ...cityRoutes(),
+  ...detailedCykelPages.map<StaticSeoRoute>((page) => ({
     path: `/${page.slug}`,
     title: page.title,
     description: trunc(page.description),
     h1: page.h1,
-    priority: page.variant === 'price-stats' || page.slug === 'cykelverkstad-linkoping' ? 0.95 : 0.82,
+    city: 'Linköping',
+    priority: page.variant === 'price-stats' ? 0.9 : 0.78,
     changefreq: page.variant === 'price-stats' ? 'weekly' : 'monthly',
     lastmod: today(),
     sections: page.sections,
     faq: page.faq,
     ogImage: page.ogImage,
     links: [
-      { label: 'Skicka cykelärende gratis', href: '/skicka-arende?stad=Link%C3%B6ping' },
-      ...KEY_CYKEL_LINKS.filter((link) => link.href !== `/${page.slug}`).slice(0, 5),
+      { label: 'Skicka cykelärende i Linköping', href: '/skicka-arende?stad=Link%C3%B6ping' },
+      { label: 'Cykelverkstad i Linköping', href: '/cykelverkstad-linkoping' },
+      ...cityLinks.filter((link) => link.href !== '/cykelverkstad-linkoping'),
     ],
   })),
 ]
@@ -135,6 +171,7 @@ const updroIndexableRoutes = (): StaticSeoRoute[] => UPDRO_INDEXABLE_PATHS.map((
 const UPDRO_NOINDEX_PATHS = [
   '/skicka-arende', '/registrera/verkstad', '/for-cykelverkstader', '/mitt-arende',
   ...CYKEL_SEO_PAGES.map((page) => `/${page.slug}`),
+  ...CYKEL_CITIES.map((city) => cityLandingPath(city.name)),
   '/dashboard', '/admin', '/logga-in', '/registrera', '/aterstall-losenord',
 ]
 
@@ -174,10 +211,14 @@ const jsonLd = (host: SiteHost, route: StaticSeoRoute) => {
   const siteUrl = siteUrlFor(host)
   const url = absFor(host, route.path)
   const brandName = host === 'updro' ? 'Updro' : 'Cykelhjälpen'
+  const areaServed = route.city
+    ? { '@type': 'City', name: route.city }
+    : CYKEL_CITIES.map((city) => ({ '@type': 'City', name: city.name }))
+
   const graph: Record<string, unknown>[] = [
     { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: brandName, legalName: 'Aurora Media AB', url: siteUrl },
     { '@type': 'WebSite', '@id': `${siteUrl}/#website`, url: siteUrl, name: brandName, publisher: { '@id': `${siteUrl}/#organization` }, inLanguage: 'sv-SE' },
-    { '@type': 'WebPage', '@id': `${url}#webpage`, url, name: route.title, headline: route.h1, description: route.description, isPartOf: { '@id': `${siteUrl}/#website` }, about: { '@id': `${siteUrl}/#organization` }, inLanguage: 'sv-SE' },
+    { '@type': 'WebPage', '@id': `${url}#webpage`, url, name: route.title, headline: route.h1, description: route.description, isPartOf: { '@id': `${siteUrl}/#website` }, inLanguage: 'sv-SE' },
   ]
 
   if (host === 'cykelhjalpen') {
@@ -186,7 +227,7 @@ const jsonLd = (host: SiteHost, route: StaticSeoRoute) => {
       '@id': `${url}#service`,
       name: route.path === '/for-cykelverkstader' ? 'Förmedling av kundförfrågningar till cykelverkstäder' : 'Jämför prisförslag på cykelreparation',
       provider: { '@id': `${siteUrl}/#organization` },
-      areaServed: { '@type': 'City', name: 'Linköping' },
+      areaServed,
       serviceType: route.path === '/for-cykelverkstader' ? 'Leadförmedling för cykelverkstäder' : 'Förmedling av cykelreparation och cykelservice',
     })
   }
@@ -236,9 +277,13 @@ const head = (host: SiteHost, route: StaticSeoRoute) => {
 }
 
 const body = (route: StaticSeoRoute) => {
-  const primaryHref = route.path === '/for-cykelverkstader' ? '/registrera/verkstad' : '/skicka-arende?stad=Link%C3%B6ping'
+  const primaryHref = route.path === '/for-cykelverkstader'
+    ? '/registrera/verkstad'
+    : route.city
+      ? `/skicka-arende?stad=${encodeURIComponent(route.city)}`
+      : '/skicka-arende'
   const primaryLabel = route.path === '/for-cykelverkstader' ? 'Registrera verkstaden gratis' : 'Få prisförslag gratis'
-  return `<main id="static-seo-content" data-static-route="${esc(route.path)}" class="container mx-auto max-w-3xl px-4 py-12"><nav aria-label="Brödsmulor"><a href="/">Cykelhjälpen</a></nav><article><header class="my-8"><h1>${esc(route.h1)}</h1><p>${esc(route.description)}</p><p><a href="${primaryHref}">${primaryLabel}</a></p></header>${
+  return `<main id="static-seo-content" data-static-route="${esc(route.path)}"><nav><a href="/">Cykelhjälpen</a></nav><article><h1>${esc(route.h1)}</h1><p>${esc(route.description)}</p><p><a href="${primaryHref}">${primaryLabel}</a></p>${
     route.sections?.map((section) => `<section><h2>${esc(section.h2)}</h2><p>${esc(section.body)}</p></section>`).join('') || ''
   }${
     route.links?.length ? `<section><h2>Relaterade sidor</h2><ul>${route.links.map((link) => `<li><a href="${esc(link.href)}">${esc(link.label)}</a></li>`).join('')}</ul></section>` : ''
