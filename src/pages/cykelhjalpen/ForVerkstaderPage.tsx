@@ -26,6 +26,7 @@ const ForVerkstaderPage = () => (
     <Helmet>
       <title>Få fler kunder till din cykelverkstad | Cykelhjälpen</title>
       <meta name="description" content="Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Gratis registrering och betalning endast per skickad offert." />
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <link rel="canonical" href="https://cykelhjalpen.se/for-cykelverkstader" />
       <meta property="og:type" content="website" />
       <meta property="og:title" content="För cykelverkstäder | Cykelhjälpen" />
