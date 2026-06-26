@@ -8,8 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { trackClick } from '@/hooks/usePageTracking'
 
 const howItWorksLink = '/#sa-fungerar-det'
-const localServicesLink = '/#lokal-hjalp'
-const requestLink = '/skicka-arende?stad=Link%C3%B6ping'
+const citiesLink = '/#stader'
 
 const CykelNavbar = () => {
   const [open, setOpen] = useState(false)
@@ -26,7 +25,7 @@ const CykelNavbar = () => {
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `text-sm font-medium transition-colors ${isActive ? 'text-primary' : 'text-foreground/80 hover:text-foreground'}`
 
-  const trackRequest = (placement: string) => trackClick('navbar_request_cta_clicked', 'Få prisförslag', { placement, city: 'Linköping' })
+  const trackRequest = (placement: string) => trackClick('navbar_request_cta_clicked', 'Få prisförslag', { placement })
 
   return (
     <header className={`sticky top-0 z-50 w-full backdrop-blur-md transition-all ${scrolled ? 'bg-background/80 border-b border-border/50 shadow-sm' : 'bg-background/60'}`}>
@@ -34,7 +33,7 @@ const CykelNavbar = () => {
         <CykelLogo />
 
         <nav className="hidden md:flex items-center gap-6" aria-label="Huvudmeny">
-          <NavLink to={localServicesLink} className={navLinkClass}>Tjänster i Linköping</NavLink>
+          <NavLink to={citiesLink} className={navLinkClass}>Städer</NavLink>
           <NavLink to={howItWorksLink} className={navLinkClass}>Så fungerar det</NavLink>
           <NavLink to="/for-cykelverkstader" className={navLinkClass}>För verkstäder</NavLink>
         </nav>
@@ -46,7 +45,7 @@ const CykelNavbar = () => {
           ) : (
             <Button asChild variant="outline" size="sm"><Link to="/logga-in">Logga in</Link></Button>
           )}
-          <Button asChild size="sm"><Link to={requestLink} onClick={() => trackRequest('desktop')}>Få prisförslag</Link></Button>
+          <Button asChild size="sm"><Link to="/skicka-arende" onClick={() => trackRequest('desktop')}>Få prisförslag</Link></Button>
         </div>
 
         <div className="md:hidden flex items-center gap-2">
@@ -60,7 +59,7 @@ const CykelNavbar = () => {
       {open && (
         <div className="md:hidden border-t border-border bg-background">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
-            <NavLink to={localServicesLink} onClick={() => setOpen(false)} className={navLinkClass}>Tjänster i Linköping</NavLink>
+            <NavLink to={citiesLink} onClick={() => setOpen(false)} className={navLinkClass}>Städer</NavLink>
             <NavLink to={howItWorksLink} onClick={() => setOpen(false)} className={navLinkClass}>Så fungerar det</NavLink>
             <NavLink to="/for-cykelverkstader" onClick={() => setOpen(false)} className={navLinkClass}>För verkstäder</NavLink>
             <div className="flex flex-col gap-2 pt-3 border-t border-border">
@@ -69,7 +68,7 @@ const CykelNavbar = () => {
               ) : (
                 <Button asChild variant="outline" size="sm" onClick={() => setOpen(false)}><Link to="/logga-in">Logga in</Link></Button>
               )}
-              <Button asChild size="sm" onClick={() => setOpen(false)}><Link to={requestLink} onClick={() => trackRequest('mobile')}>Få prisförslag</Link></Button>
+              <Button asChild size="sm" onClick={() => setOpen(false)}><Link to="/skicka-arende" onClick={() => trackRequest('mobile')}>Få prisförslag</Link></Button>
             </div>
           </div>
         </div>
