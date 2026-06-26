@@ -23,21 +23,21 @@ const CykelhjalpenIndexV2 = () => {
   return (
     <div className="min-h-screen flex flex-col bg-hero-gradient">
       <Helmet>
-        <title>Cykelhjälpen Linköping – jämför lokala cykelverkstäder</title>
-        <meta name="description" content="Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping. Gratis, utan konto och utan köpkrav." />
+        <title>Cykelhjälpen – jämför lokala cykelverkstäder</title>
+        <meta name="description" content="Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto." />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <link rel="canonical" href="https://cykelhjalpen.se/" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="sv_SE" />
         <meta property="og:site_name" content="Cykelhjälpen" />
-        <meta property="og:title" content="Cykelhjälpen Linköping – jämför lokala cykelverkstäder" />
-        <meta property="og:description" content="Få lokala prisförslag på cykelreparation i Linköping. Gratis och utan konto." />
+        <meta property="og:title" content="Cykelhjälpen – jämför lokala cykelverkstäder" />
+        <meta property="og:description" content="Få lokala prisförslag på cykelreparation i fyra svenska cykelstäder. Gratis och utan konto." />
         <meta property="og:url" content="https://cykelhjalpen.se/" />
         <meta property="og:image" content="https://cykelhjalpen.se/og/hem.jpg" />
-        <meta property="og:image:alt" content="Cykelhjälpen i Linköping" />
+        <meta property="og:image:alt" content="Cykelhjälpen – lokala cykelverkstäder" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Cykelhjälpen Linköping – jämför lokala cykelverkstäder" />
-        <meta name="twitter:description" content="Få lokala prisförslag på cykelreparation i Linköping. Gratis och utan konto." />
+        <meta name="twitter:title" content="Cykelhjälpen – jämför lokala cykelverkstäder" />
+        <meta name="twitter:description" content="Få lokala prisförslag på cykelreparation. Gratis och utan konto." />
         <meta name="twitter:image" content="https://cykelhjalpen.se/og/hem.jpg" />
       </Helmet>
 
