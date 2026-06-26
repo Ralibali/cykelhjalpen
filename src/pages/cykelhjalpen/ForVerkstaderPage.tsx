@@ -4,47 +4,45 @@ import { Wrench, TrendingUp, Users, Bell, CheckCircle2, ArrowRight, MapPin } fro
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { Button } from '@/components/ui/button'
+import { CYKEL_CITIES } from '@/lib/cykelCities'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
 
 const benefits = [
-  { icon: Users, title: 'Lokala kunder i Linköping', text: 'Ta emot relevanta förfrågningar från cyklister i Linköpingsområdet.' },
-  { icon: Bell, title: 'Notiser direkt', text: 'Få mejl och valfria SMS när ett godkänt lokalt ärende publiceras.' },
+  { icon: Users, title: 'Lokala kunder', text: 'Ta emot relevanta förfrågningar från cyklister i den stad där ni arbetar.' },
+  { icon: Bell, title: 'Notiser direkt', text: 'Få mejl och valfria SMS när ett godkänt ärende matchar er stad.' },
   { icon: TrendingUp, title: 'Fyll luckor i kalendern', text: 'Välj själv vilka jobb som passar er kapacitet, kompetens och säsong.' },
   { icon: Wrench, title: 'En enkel verkstadsvy', text: 'Hantera ärenden, offerter, betalningar och kontaktuppgifter på ett ställe.' },
 ]
 
 const steps = [
-  'Registrera verkstaden kostnadsfritt med era kontaktuppgifter och tjänster.',
-  'Efter manuell granskning får ni tillgång till godkända ärenden i Linköping.',
+  'Registrera verkstaden kostnadsfritt och välj vilken stad ni arbetar i.',
+  'Efter manuell granskning får ni tillgång till godkända ärenden i er stad.',
   `Skriv pris och möjlig tid. ${LEAD_FEE_KR} kr exkl. moms debiteras via Stripe först när ni väljer att skicka offerten.`,
   'Kunden får prisförslaget och era kontaktuppgifter. Fortsatt bokning sker direkt med er.',
 ]
 
 const trackWorkshopCta = (placement: string) => {
-  trackClick('workshop_acquisition_cta_clicked', 'Registrera verkstaden', { placement, city: 'Linköping' })
+  trackClick('workshop_acquisition_cta_clicked', 'Registrera verkstaden', { placement })
   const gtag = (window as any).gtag
-  if (typeof gtag === 'function') gtag('event', 'workshop_registration_started', { placement, city: 'Linköping' })
+  if (typeof gtag === 'function') gtag('event', 'workshop_registration_started', { placement })
 }
 
 const ForVerkstaderPage = () => (
   <div className="min-h-screen bg-background">
     <Helmet>
-      <title>Få fler kunder till din cykelverkstad i Linköping | Cykelhjälpen</title>
-      <meta name="description" content="Anslut din cykelverkstad i Linköping. Ingen månadsavgift, välj själv vilka lokala ärenden ni vill svara på och betala endast per skickad offert." />
+      <title>Få fler kunder till din cykelverkstad | Cykelhjälpen</title>
+      <meta name="description" content="Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift, välj själv vilka lokala ärenden ni vill svara på." />
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <link rel="canonical" href="https://cykelhjalpen.se/for-cykelverkstader" />
       <meta property="og:type" content="website" />
       <meta property="og:locale" content="sv_SE" />
       <meta property="og:site_name" content="Cykelhjälpen" />
-      <meta property="og:title" content="Få fler kunder till din cykelverkstad i Linköping" />
+      <meta property="og:title" content="Få fler lokala kunder till din cykelverkstad" />
       <meta property="og:description" content="Ingen månadsavgift. Välj själv vilka lokala ärenden ni vill svara på." />
       <meta property="og:url" content="https://cykelhjalpen.se/for-cykelverkstader" />
       <meta property="og:image" content="https://cykelhjalpen.se/og/for-cykelverkstader.jpg" />
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content="Få fler kunder till din cykelverkstad i Linköping" />
-      <meta name="twitter:description" content="Ingen månadsavgift. Betala bara när ni väljer att skicka en offert." />
-      <meta name="twitter:image" content="https://cykelhjalpen.se/og/for-cykelverkstader.jpg" />
     </Helmet>
 
     <CykelNavbar />
@@ -53,13 +51,13 @@ const ForVerkstaderPage = () => (
         <div className="grid lg:grid-cols-[1fr_.75fr] gap-10 items-center max-w-6xl mx-auto">
           <div>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/15 text-accent text-sm font-semibold mb-6">
-              <Wrench className="h-4 w-4" /> För cykelverkstäder i Linköping
+              <Wrench className="h-4 w-4" /> För cykelverkstäder
             </span>
             <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight mb-6">
               Få fler lokala cykelkunder – utan månadsavgift
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl">
-              Cykelhjälpen skickar relevanta, manuellt granskade ärenden från cyklister i Linköping. Ni väljer själva om och när ni vill lämna offert.
+              Cykelhjälpen skickar relevanta, manuellt granskade ärenden från cyklister i er stad. Ni väljer själva om och när ni vill lämna offert.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="cta-playful">
@@ -73,9 +71,13 @@ const ForVerkstaderPage = () => (
           </div>
 
           <div className="sticker bg-card rounded-3xl p-7">
-            <p className="text-sm font-semibold mb-4">Aktivt lanseringsområde</p>
-            <div className="rounded-xl bg-muted/60 p-4 flex items-center gap-3 font-medium">
-              <MapPin className="h-5 w-5 text-primary" /> Linköping med närliggande områden
+            <p className="text-sm font-semibold mb-4">Tillgängliga städer</p>
+            <div className="grid grid-cols-2 gap-3">
+              {CYKEL_CITIES.map((city) => (
+                <div key={city.name} className="rounded-xl bg-muted/60 p-3 flex items-center gap-2 text-sm font-medium">
+                  <MapPin className="h-4 w-4 text-primary" /> {city.name}
+                </div>
+              ))}
             </div>
             <div className="mt-6 border-t pt-5">
               <p className="font-display text-3xl font-bold">{LEAD_FEE_KR} kr</p>
