@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Bike, Building2, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { trackClick } from '@/hooks/usePageTracking'
 
 export const CYKEL_HOME_FAQS = [
   { q: 'Vad kostar det att skicka en förfrågan?', a: 'Det är helt gratis för dig som cyklist. Du förbinder dig inte att välja någon av verkstäderna som svarar.' },
-  { q: 'Vilka städer finns Cykelhjälpen i?', a: 'Cykelhjälpen finns i Linköping, Norrköping, Uppsala och Lund.' },
-  { q: 'Hur snabbt får jag svar?', a: 'Många verkstäder svarar samma vardag. Tiden beror på stad, säsong och typ av reparation.' },
-  { q: 'Måste jag lämna in cykeln själv?', a: 'Nej. En del verkstäder erbjuder hämtning. Markera önskemålet i formuläret.' },
+  { q: 'Var finns Cykelhjälpen?', a: 'Cykelhjälpen lanseras först i Linköping. När flödet fungerar bra lokalt öppnar vi successivt fler städer.' },
+  { q: 'Hur snabbt får jag svar?', a: 'Svarstiden beror på säsong, typ av reparation och vilka verkstäder som har kapacitet. Du får ett mejl när ett nytt prisförslag finns.' },
+  { q: 'Måste jag lämna in cykeln själv?', a: 'Inte alltid. En del verkstäder kan erbjuda hämtning. Markera önskemålet i formuläret så ser verkstäderna det.' },
   { q: 'Hur väljs verkstäderna ut?', a: 'Verkstäder granskas manuellt innan de kan ta emot ärenden och lämna prisförslag.' },
 ]
 
@@ -23,15 +24,19 @@ const CykelHomeTrust = ({ stats }: Props) => (
           <h2 className="font-display text-4xl md:text-5xl">Tryggt för cyklisten. Relevant för verkstaden.</h2>
           <p className="mt-5 text-background/70 leading-relaxed">Vi granskar kundärenden och verkstäder. Verkstäder betalar först när de själva väljer att skicka ett prisförslag.</p>
           {stats && stats.workshops > 0 && (
-            <p className="mt-6 text-sm text-background/70">{stats.workshops} godkända verkstäder · {stats.requests} mottagna ärenden</p>
+            <p className="mt-6 text-sm text-background/70">{stats.workshops} godkända verkstäder · {stats.requests} mottagna ärenden · {stats.responses} skickade prisförslag</p>
           )}
         </div>
 
         <div className="sticker bg-card rounded-[2rem] p-8">
           <Building2 className="h-9 w-9 text-accent mb-5" />
-          <h2 className="font-display text-3xl">Driver du cykelverkstad?</h2>
-          <p className="text-muted-foreground mt-3">Registrera gratis, välj din stad och svara bara på ärenden som passar er.</p>
-          <Button asChild className="mt-6"><Link to="/for-cykelverkstader">Se hur det fungerar <ArrowRight className="h-4 w-4 ml-2" /></Link></Button>
+          <h2 className="font-display text-3xl">Driver du cykelverkstad i Linköping?</h2>
+          <p className="text-muted-foreground mt-3">Registrera gratis och svara bara på lokala ärenden som passar er verkstad.</p>
+          <Button asChild className="mt-6">
+            <Link to="/for-cykelverkstader" onClick={() => trackClick('home_workshop_cta_clicked', 'Se hur det fungerar')}>
+              Se hur det fungerar <ArrowRight className="h-4 w-4 ml-2" />
+            </Link>
+          </Button>
         </div>
       </div>
     </section>
@@ -56,7 +61,14 @@ const CykelHomeTrust = ({ stats }: Props) => (
           <Bike className="h-10 w-10 mx-auto text-primary mb-5" />
           <h2 className="font-display text-4xl md:text-5xl">Redo att få cykeln körbar igen?</h2>
           <p className="mt-4 text-muted-foreground">Formuläret tar omkring två minuter och är helt gratis.</p>
-          <Button asChild size="lg" className="mt-8 rounded-full h-14 px-8"><Link to="/skicka-arende">Få prisförslag <ArrowRight className="h-4 w-4 ml-2" /></Link></Button>
+          <Button asChild size="lg" className="mt-8 rounded-full h-14 px-8">
+            <Link
+              to="/skicka-arende?stad=Link%C3%B6ping"
+              onClick={() => trackClick('home_bottom_cta_clicked', 'Få prisförslag', { city: 'Linköping' })}
+            >
+              Få prisförslag <ArrowRight className="h-4 w-4 ml-2" />
+            </Link>
+          </Button>
         </div>
       </div>
     </section>
