@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, CheckCircle2, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import heroImg from '@/assets/cykel-hero.jpg'
+import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 import { trackClick } from '@/hooks/usePageTracking'
 
 const CykelHomeHero = () => (
@@ -10,27 +11,36 @@ const CykelHomeHero = () => (
     <div className="container mx-auto px-4">
       <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-12 items-center max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <Link
-            to="/cykelverkstad-linkoping"
-            onClick={() => trackClick('home_local_page_clicked', 'Cykelverkstad i Linköping')}
-            className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1.5 text-xs font-medium mb-6 hover:bg-card transition-colors"
-          >
-            <MapPin className="h-3.5 w-3.5 text-primary" /> Lanseras lokalt i Linköping
-          </Link>
+          <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1.5 text-xs font-medium mb-6">
+            <MapPin className="h-3.5 w-3.5 text-primary" /> Linköping · Norrköping · Uppsala · Lund
+          </div>
 
           <h1 className="font-display text-5xl md:text-7xl font-medium leading-[.96] tracking-tight">
             Trasig cykel? <span className="italic text-accent">Jämför innan du väljer.</span>
           </h1>
 
           <p className="mt-7 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-            Beskriv problemet en gång och få pris, tid och kontaktuppgifter från anslutna cykelverkstäder i Linköping. <strong className="text-foreground">Gratis för dig som cyklist.</strong>
+            Beskriv problemet en gång och jämför pris, möjlig tid och kontaktuppgifter från anslutna cykelverkstäder i din stad. <strong className="text-foreground">Gratis för dig som cyklist.</strong>
           </p>
+
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-2xl" aria-label="Välj stad">
+            {CYKEL_CITIES.map((city) => (
+              <Link
+                key={city.name}
+                to={cityLandingPath(city.name)}
+                onClick={() => trackClick('home_city_clicked', city.name, { city: city.name })}
+                className="rounded-xl border-2 border-foreground bg-card px-3 py-3 text-sm font-semibold hover:-translate-y-0.5 hover:bg-primary hover:text-primary-foreground transition"
+              >
+                <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{city.name}</span>
+              </Link>
+            ))}
+          </div>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <Button asChild size="lg" className="cta-playful h-14 px-7 rounded-full shadow-brand">
               <Link
-                to="/skicka-arende?stad=Link%C3%B6ping"
-                onClick={() => trackClick('home_primary_cta_clicked', 'Få prisförslag gratis', { city: 'Linköping' })}
+                to="/skicka-arende"
+                onClick={() => trackClick('home_primary_cta_clicked', 'Få prisförslag gratis')}
               >
                 Få prisförslag gratis <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
@@ -49,7 +59,7 @@ const CykelHomeHero = () => (
 
         <motion.div initial={{ opacity: 0, scale: .96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .7, delay: .15 }} className="relative">
           <div className="rounded-[2rem] overflow-hidden sticker bg-card">
-            <img src={heroImg} alt="Cykel redo för reparation hos lokal verkstad i Linköping" width={1920} height={1080} fetchPriority="high" className="w-full aspect-[4/3] object-cover" />
+            <img src={heroImg} alt="Cykel redo för reparation hos lokal verkstad" width={1920} height={1080} fetchPriority="high" className="w-full aspect-[4/3] object-cover" />
           </div>
           <div className="absolute -bottom-5 left-4 right-4 sm:left-8 sm:right-auto sm:w-80 rounded-2xl bg-background/95 backdrop-blur border-2 border-foreground p-4 sticker">
             <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Så enkelt är det</p>
