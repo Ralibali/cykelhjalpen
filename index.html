@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <title>Cykelhjälpen Linköping – jämför lokala cykelverkstäder</title>
-    <meta name="description" content="Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping. Gratis, utan konto och utan köpkrav." />
+    <title>Cykelhjälpen – jämför lokala cykelverkstäder</title>
+    <meta name="description" content="Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto." />
     <meta name="author" content="Cykelhjälpen" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href="https://cykelhjalpen.se/" />
@@ -20,16 +20,16 @@
     <meta property="og:url" content="https://cykelhjalpen.se/" />
     <meta property="og:site_name" content="Cykelhjälpen" />
     <meta property="og:locale" content="sv_SE" />
-    <meta property="og:title" content="Cykelhjälpen Linköping – jämför lokala cykelverkstäder" />
-    <meta property="og:description" content="Få lokala prisförslag på cykelreparation i Linköping. Gratis och utan konto." />
+    <meta property="og:title" content="Cykelhjälpen – jämför lokala cykelverkstäder" />
+    <meta property="og:description" content="Få lokala prisförslag på cykelreparation i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto." />
     <meta property="og:image" content="https://cykelhjalpen.se/og/hem.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Cykelhjälpen i Linköping" />
+    <meta property="og:image:alt" content="Cykelhjälpen – jämför lokala cykelverkstäder" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Cykelhjälpen Linköping – jämför lokala cykelverkstäder" />
-    <meta name="twitter:description" content="Få lokala prisförslag på cykelreparation i Linköping. Gratis och utan konto." />
+    <meta name="twitter:title" content="Cykelhjälpen – jämför lokala cykelverkstäder" />
+    <meta name="twitter:description" content="Få lokala prisförslag på cykelreparation. Gratis och utan konto." />
     <meta name="twitter:image" content="https://cykelhjalpen.se/og/hem.jpg" />
 
     <link rel="dns-prefetch" href="https://xmwsumzujqdttphhzxyq.supabase.co" />
@@ -53,8 +53,13 @@
             "legalName": "Aurora Media AB",
             "url": "https://cykelhjalpen.se/",
             "logo": "https://cykelhjalpen.se/favicon.png",
-            "description": "Digital plattform där cyklister jämför prisförslag från anslutna cykelverkstäder i Linköping.",
-            "areaServed": { "@type": "City", "name": "Linköping" },
+            "description": "Digital plattform där cyklister jämför prisförslag från anslutna cykelverkstäder.",
+            "areaServed": [
+              { "@type": "City", "name": "Linköping" },
+              { "@type": "City", "name": "Norrköping" },
+              { "@type": "City", "name": "Uppsala" },
+              { "@type": "City", "name": "Lund" }
+            ],
             "contactPoint": {
               "@type": "ContactPoint",
               "contactType": "customer service",
@@ -73,12 +78,17 @@
           {
             "@type": "Service",
             "@id": "https://cykelhjalpen.se/#service",
-            "name": "Jämför prisförslag på cykelreparation i Linköping",
+            "name": "Jämför prisförslag på cykelreparation",
             "url": "https://cykelhjalpen.se/",
-            "description": "Beskriv cykelproblemet och jämför svar från anslutna verkstäder i Linköping.",
+            "description": "Beskriv cykelproblemet och jämför svar från anslutna verkstäder i din stad.",
             "provider": { "@id": "https://cykelhjalpen.se/#organization" },
             "serviceType": "Förmedling av cykelreparation och cykelservice",
-            "areaServed": { "@type": "City", "name": "Linköping" },
+            "areaServed": [
+              { "@type": "City", "name": "Linköping" },
+              { "@type": "City", "name": "Norrköping" },
+              { "@type": "City", "name": "Uppsala" },
+              { "@type": "City", "name": "Lund" }
+            ],
             "offers": {
               "@type": "Offer",
               "price": "0",
@@ -108,13 +118,14 @@
     <div id="root"></div>
     <noscript>
       <main style="padding:2rem;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-        <h1>Cykelhjälpen – jämför cykelverkstäder i Linköping</h1>
-        <p>Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping. Gratis och utan konto.</p>
+        <h1>Cykelhjälpen – jämför lokala cykelverkstäder</h1>
+        <p>Beskriv felet på din cykel och jämför pris och tid från anslutna verkstäder. Gratis och utan konto.</p>
         <p>
-          <a href="/skicka-arende?stad=Link%C3%B6ping">Skicka cykelärende</a> ·
-          <a href="/cykelverkstad-linkoping">Cykelverkstad Linköping</a> ·
-          <a href="/cykelservice-linkoping">Cykelservice Linköping</a> ·
-          <a href="/punktering-linkoping">Punktering Linköping</a> ·
+          <a href="/skicka-arende">Skicka cykelärende</a> ·
+          <a href="/cykelverkstad-linkoping">Linköping</a> ·
+          <a href="/cykelverkstad-norrkoping">Norrköping</a> ·
+          <a href="/cykelverkstad-uppsala">Uppsala</a> ·
+          <a href="/cykelverkstad-lund">Lund</a> ·
           <a href="/for-cykelverkstader">För verkstäder</a>
         </p>
       </main>
