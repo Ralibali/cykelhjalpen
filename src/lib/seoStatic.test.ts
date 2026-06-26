@@ -1,18 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { CYKEL_SEO_PAGES } from './cykelSeoPages'
+import { CYKEL_CITIES, cityLandingPath } from './cykelCities'
 import { generateSitemapXml, getIndexableSeoRoutes, getNoindexSeoRoutes } from './seoStatic'
 
 describe('Cykelhjälpen SEO-konfiguration', () => {
-  it('har unika lokala landningssidors sluggar', () => {
+  it('har unika detaljerade SEO-sluggar', () => {
     const slugs = CYKEL_SEO_PAGES.map((page) => page.slug)
     expect(new Set(slugs).size).toBe(slugs.length)
   })
 
-  it('lanserar bara lokala SEO-sidor för Linköping', () => {
-    for (const page of CYKEL_SEO_PAGES) {
-      expect(page.slug).toContain('linkoping')
-      expect(`${page.title} ${page.description} ${page.h1}`.toLowerCase()).toContain('linköping')
-    }
+  it('har exakt fyra aktiva städer med unika sluggar', () => {
+    expect(CYKEL_CITIES.map((city) => city.name)).toEqual(['Linköping', 'Norrköping', 'Uppsala', 'Lund'])
+    expect(new Set(CYKEL_CITIES.map((city) => city.slug)).size).toBe(CYKEL_CITIES.length)
   })
 
   it('inkluderar alla indexerbara sidor i sitemap', () => {
@@ -27,6 +26,14 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     }
   })
 
+  it('indexerar en unik landningssida för varje stad', () => {
+    const indexablePaths = getIndexableSeoRoutes('cykelhjalpen').map((route) => route.path)
+
+    for (const city of CYKEL_CITIES) {
+      expect(indexablePaths).toContain(cityLandingPath(city.name))
+    }
+  })
+
   it('indexerar verkstadssidan men inte formulär eller privata kundsidor', () => {
     const indexablePaths = getIndexableSeoRoutes('cykelhjalpen').map((route) => route.path)
     const noindexPaths = getNoindexSeoRoutes('cykelhjalpen').map((route) => route.path)
@@ -37,11 +44,9 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     expect(noindexPaths).toContain('/mitt-arende')
   })
 
-  it('läcker inte gamla, inaktiva stads-URL:er till sitemap', () => {
+  it('har inga dubbla URL:er i sitemap', () => {
     const sitemap = generateSitemapXml('cykelhjalpen')
-
-    expect(sitemap).not.toContain('cykelverkstad-norrkoping')
-    expect(sitemap).not.toContain('cykelverkstad-uppsala')
-    expect(sitemap).not.toContain('cykelverkstad-lund')
+    const urls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1])
+    expect(new Set(urls).size).toBe(urls.length)
   })
 })
