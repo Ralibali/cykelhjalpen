@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import Turnstile from './Turnstile'
-import { getCykelCity } from '@/lib/cykelCities'
+import { CYKEL_CITIES, getCykelCity } from '@/lib/cykelCities'
 import { BIKE_TYPES, REPAIR_CATEGORIES, URGENCY_OPTIONS, type BikeRequestFormState } from '@/lib/bikeRequestForm'
 
 interface Props {
@@ -116,11 +116,15 @@ const BikeRequestStepContent = ({
   if (step === 2) {
     return (
       <div className="space-y-5">
-        <div className="rounded-xl border bg-muted/40 p-4 flex items-start gap-3">
-          <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-          <div>
-            <p className="font-semibold">Ärendet skickas till verkstäder i Linköping</p>
-            <p className="text-sm text-muted-foreground mt-1">Ange gärna område eller postnummer så att verkstäderna kan bedöma avstånd och eventuell hämtning.</p>
+        <div>
+          <Label className="text-base">Vilken stad finns cykeln i?</Label>
+          <p className="text-sm text-muted-foreground mt-1">Ärendet matchas endast med verkstäder i den valda staden.</p>
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            {CYKEL_CITIES.map((city) => (
+              <ChoiceButton key={city.name} selected={form.city === city.name} onClick={() => update('city', city.name)}>
+                <span className="flex items-center gap-2"><MapPin className="h-4 w-4" />{city.name}</span>
+              </ChoiceButton>
+            ))}
           </div>
         </div>
 
@@ -169,7 +173,7 @@ const BikeRequestStepContent = ({
         <div className="grid sm:grid-cols-2 gap-2 text-muted-foreground">
           <button type="button" onClick={() => setStep(0)} className="text-left hover:text-foreground">Cykel: <span className="text-foreground font-medium">{form.bike_type}</span></button>
           <button type="button" onClick={() => setStep(1)} className="text-left hover:text-foreground">Problem: <span className="text-foreground font-medium">{form.repair_category}</span></button>
-          <button type="button" onClick={() => setStep(2)} className="text-left hover:text-foreground">Ort: <span className="text-foreground font-medium">Linköping</span></button>
+          <button type="button" onClick={() => setStep(2)} className="text-left hover:text-foreground">Stad: <span className="text-foreground font-medium">{form.city}</span></button>
         </div>
       </div>
 
@@ -184,7 +188,7 @@ const BikeRequestStepContent = ({
       <div className="flex items-start gap-3 rounded-md border p-3">
         <Checkbox id="consent" checked={form.consent} onCheckedChange={(value) => update('consent', value === true)} />
         <Label htmlFor="consent" className="text-sm leading-relaxed cursor-pointer">
-          Jag godkänner att uppgifterna delas med anslutna cykelverkstäder i Linköping som vill lämna offert, enligt{' '}
+          Jag godkänner att uppgifterna delas med anslutna cykelverkstäder i {form.city} som vill lämna offert, enligt{' '}
           <a href="/integritetspolicy" target="_blank" rel="noreferrer" className="underline">integritetspolicyn</a>.
         </Label>
       </div>
