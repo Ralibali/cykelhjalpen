@@ -1,8 +1,5 @@
 export const CYKEL_CITIES = [
   { name: 'Linköping', slug: 'linkoping', exampleArea: 'Ryd, Vasastaden eller Vallastaden' },
-  { name: 'Norrköping', slug: 'norrkoping', exampleArea: 'Centrum, Hageby eller Kneippen' },
-  { name: 'Uppsala', slug: 'uppsala', exampleArea: 'Flogsta, Luthagen eller Sala backe' },
-  { name: 'Lund', slug: 'lund', exampleArea: 'Delphi, Vildanden eller Klostergården' },
 ] as const
 
 export type CykelCity = typeof CYKEL_CITIES[number]
