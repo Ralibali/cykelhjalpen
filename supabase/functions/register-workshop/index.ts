@@ -12,6 +12,8 @@ const SERVICES = [
   'Mobil reparation',
 ] as const
 
+const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
+
 const BodySchema = z.object({
   company_name: z.string().trim().min(2).max(160),
   email: z.string().trim().email().max(254),
@@ -19,6 +21,7 @@ const BodySchema = z.object({
   phone: z.string().trim().max(40).optional().nullable(),
   address: z.string().trim().max(240).optional().nullable(),
   website: z.string().trim().max(300).optional().nullable(),
+  city: z.enum(CITIES),
   services: z.array(z.enum(SERVICES)).max(SERVICES.length).default([]),
   terms_accepted: z.literal(true),
 })
@@ -68,6 +71,7 @@ Deno.serve(async (req) => {
           full_name: body.company_name,
           company_name: body.company_name,
           account_type: 'workshop',
+          city: body.city,
         },
       },
     })
@@ -98,7 +102,7 @@ Deno.serve(async (req) => {
       full_name: body.company_name,
       email,
       company_name: body.company_name,
-      city: 'Linköping',
+      city: body.city,
       phone: body.phone || null,
     })
 
@@ -116,7 +120,7 @@ Deno.serve(async (req) => {
       address: body.address || null,
       website: normalizedWebsite,
       services: body.services,
-      city: 'Linköping',
+      city: body.city,
     })
 
     if (workshopError) {
@@ -129,6 +133,7 @@ Deno.serve(async (req) => {
       userId: user.id,
       session: authData.session,
       needsEmailConfirmation: !authData.session,
+      city: body.city,
     }, 200, corsHeaders)
   } catch (error) {
     console.error('register-workshop error', error)
