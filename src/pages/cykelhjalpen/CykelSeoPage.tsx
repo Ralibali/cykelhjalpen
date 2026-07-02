@@ -136,7 +136,8 @@ const CykelSeoPage = () => {
 
   const canonical = `https://cykelhjalpen.se/${page.slug}`
   const ogImage = page.ogImage ?? '/og/default.jpg'
-  const requestHref = '/skicka-arende?stad=Link%C3%B6ping'
+  const city = page.city
+  const requestHref = cityQuery(city)
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -157,14 +158,15 @@ const CykelSeoPage = () => {
         name: page.h1,
         serviceType: 'Cykelreparation och cykelservice',
         provider: { '@id': 'https://cykelhjalpen.se/#organization' },
-        areaServed: { '@type': 'City', name: 'Linköping' },
+        areaServed: { '@type': 'City', name: city },
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'SEK', description: 'Kostnadsfri offertförfrågan för cyklister' },
       },
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Cykelhjälpen', item: 'https://cykelhjalpen.se/' },
-          { '@type': 'ListItem', position: 2, name: page.h1, item: canonical },
+          { '@type': 'ListItem', position: 2, name: `Cykelverkstad ${city}`, item: `https://cykelhjalpen.se${cityLandingPath(city)}` },
+          { '@type': 'ListItem', position: 3, name: page.h1, item: canonical },
         ],
       },
       {
@@ -179,7 +181,7 @@ const CykelSeoPage = () => {
   }
 
   const trackCta = (placement: string) => {
-    trackClick('seo_request_cta_clicked', 'Få prisförslag gratis', { page: page.slug, placement, city: 'Linköping' })
+    trackClick('seo_request_cta_clicked', 'Få prisförslag gratis', { page: page.slug, placement, city })
     const gtag = (window as any).gtag
     if (typeof gtag === 'function') gtag('event', 'select_content', { content_type: 'seo_cta', item_id: page.slug, placement })
   }
@@ -218,7 +220,7 @@ const CykelSeoPage = () => {
           <header className="mb-8">
             <div className="flex items-center gap-2 mb-3">
               <div className="sticker bg-brand-sun p-2"><Bike className="h-5 w-5" /></div>
-              <span className="text-sm font-mono text-muted-foreground inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Linköping</span>
+              <span className="text-sm font-mono text-muted-foreground inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {city}</span>
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">{page.h1}</h1>
             <p className="text-lg text-muted-foreground">{page.intro}</p>
@@ -247,7 +249,7 @@ const CykelSeoPage = () => {
             </section>
           ))}
 
-          {page.variant === 'price-stats' && <PriceStatsTable />}
+          {page.variant === 'price-stats' && <PriceStatsTable city={city} />}
 
           <section className="mt-12">
             <h2 className="font-display text-2xl font-bold mb-4">Vanliga frågor</h2>
@@ -261,7 +263,7 @@ const CykelSeoPage = () => {
             </div>
           </section>
 
-          <RelatedPages currentSlug={page.slug} />
+          <RelatedPages currentSlug={page.slug} city={city} />
 
           <div className="mt-12 sticker bg-card p-6 text-center">
             <p className="font-display font-bold text-xl mb-2">Beskriv problemet och jämför alternativen</p>
