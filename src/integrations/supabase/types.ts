@@ -1521,6 +1521,17 @@ export type Database = {
       }
     }
     Functions: {
+      get_cykel_open_requests_teaser: {
+        Args: never
+        Returns: {
+          area: string
+          bike_type: string
+          city: string
+          created_at: string
+          repair_category: string
+          urgency: string
+        }[]
+      }
       get_cykel_price_stats: {
         Args: never
         Returns: {
