@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, CheckCircle2, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import heroImg from '@/assets/cykel-hero.jpg'
+import hero640 from '@/assets/cykel-hero-640.webp'
+import hero960 from '@/assets/cykel-hero-960.webp'
+import hero1440 from '@/assets/cykel-hero-1440.webp'
 import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 import { trackClick } from '@/hooks/usePageTracking'
 
@@ -59,7 +61,16 @@ const CykelHomeHero = () => (
 
         <motion.div initial={{ opacity: 0, scale: .96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .7, delay: .15 }} className="relative">
           <div className="rounded-[2rem] overflow-hidden sticker bg-card">
-            <img src={heroImg} alt="Cykel redo för reparation hos lokal verkstad" width={1920} height={1080} fetchPriority="high" className="w-full aspect-[4/3] object-cover" />
+            <img
+              src={hero960}
+              srcSet={`${hero640} 640w, ${hero960} 960w, ${hero1440} 1440w`}
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              alt="Cykel redo för reparation hos lokal verkstad"
+              width={1920}
+              height={1080}
+              fetchPriority="high"
+              className="w-full aspect-[4/3] object-cover"
+            />
           </div>
           <div className="absolute -bottom-5 left-4 right-4 sm:left-8 sm:right-auto sm:w-80 rounded-2xl bg-background/95 backdrop-blur border-2 border-foreground p-4 sticker">
             <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Så enkelt är det</p>
