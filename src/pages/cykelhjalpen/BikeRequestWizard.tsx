@@ -56,15 +56,26 @@ const BikeRequestWizard = () => {
     const defaults = makeDefaultBikeRequest(requestedCity || DEFAULT_CYKEL_CITY)
     if (typeof window === 'undefined') return defaults
     try {
-      const stored = sessionStorage.getItem(DRAFT_KEY)
+      const stored = localStorage.getItem(DRAFT_KEY)
       if (!stored) return defaults
       const draft = JSON.parse(stored)
       const city = requestedCity || (isCykelCity(draft?.city) ? draft.city : DEFAULT_CYKEL_CITY)
       return { ...defaults, ...draft, city, consent: false }
     } catch {
-      sessionStorage.removeItem(DRAFT_KEY)
+      localStorage.removeItem(DRAFT_KEY)
       return defaults
     }
+  })
+
+  const { data: stats } = useQuery({
+    queryKey: ['cykel-public-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_cykel_public_stats')
+      if (error) throw error
+      return data as unknown as { workshops: number; requests: number; responses: number }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   })
 
   const imagePreviews = useMemo(
