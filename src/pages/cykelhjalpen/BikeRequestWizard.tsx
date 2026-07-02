@@ -95,7 +95,7 @@ const BikeRequestWizard = () => {
   }, [])
 
   useEffect(() => {
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, consent: false }))
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, consent: false }))
   }, [form])
 
   useEffect(() => () => imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url)), [imagePreviews])
