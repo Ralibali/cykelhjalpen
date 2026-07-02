@@ -273,6 +273,15 @@ const BikeRequestWizard = () => {
             />
           </div>
 
+          {step === BIKE_REQUEST_STEPS.length - 1 && stats && Number(stats.workshops) > 0 && (
+            <div className="mt-5 flex items-start gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+              <p>
+                {stats.workshops} godkända verkstäder · svar brukar komma inom 1–2 dagar · ingen köpplikt
+              </p>
+            </div>
+          )}
+
           <div className="flex justify-between gap-3 mt-6 sticky bottom-3 rounded-2xl bg-background/95 backdrop-blur p-2 border shadow-sm md:static md:bg-transparent md:border-0 md:shadow-none md:p-0">
             <Button variant="outline" onClick={() => setStep((current) => Math.max(0, current - 1))} disabled={step === 0 || submitting}>
               <ArrowLeft className="h-4 w-4 mr-1" /> Tillbaka
