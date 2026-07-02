@@ -183,9 +183,8 @@ const AppRoutes = () => {
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
               <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
-
-              {/* Google Ads landing pages per stad × verkstad (noindex) */}
-              <Route path="/annons/:citySlug/:workshopSlug" element={<WorkshopAdLandingPage />} />
+              {/* Google Ads: rekryteringssida per stad för verkstäder (noindex) */}
+              <Route path="/annons/verkstad/:citySlug" element={<WorkshopAdCityPage />} />
 
               {/* Workshop dashboard — now protected */}
               <Route
