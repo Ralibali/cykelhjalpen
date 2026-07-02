@@ -32,6 +32,7 @@ const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/Worksho
 const WorkshopSettings = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopSettings"));
 const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
 const CykelCityLandingPage = lazy(() => import("./pages/cykelhjalpen/CykelCityLandingPage"));
+const WorkshopAdLandingPage = lazy(() => import("./pages/cykelhjalpen/WorkshopAdLandingPage"));
 import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
@@ -182,6 +183,9 @@ const AppRoutes = () => {
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
               <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
+
+              {/* Google Ads landing pages per stad × verkstad (noindex) */}
+              <Route path="/annons/:citySlug/:workshopSlug" element={<WorkshopAdLandingPage />} />
 
               {/* Workshop dashboard — now protected */}
               <Route
