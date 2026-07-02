@@ -7,8 +7,10 @@ import {
   generateSectionSitemapXml,
   generateSitemapIndexXml,
   generateSitemapXml,
+  getAllStaticSeoRoutes,
   getIndexableSeoRoutes,
   getNoindexSeoRoutes,
+  renderStaticHtml,
   SITEMAP_SECTIONS,
 } from "./src/lib/seoStatic";
 
