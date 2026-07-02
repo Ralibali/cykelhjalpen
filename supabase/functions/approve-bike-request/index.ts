@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
 
     const { data: requestRow, error: requestError } = await admin
       .from('bike_repair_requests')
-      .select('id, view_token, customer_name, customer_email, bike_type, repair_category, description, area, city, urgency, admin_status')
+      .select('id, view_token, customer_name, customer_email, bike_type, repair_category, description, area, city, urgency, admin_status, preferred_workshop_id')
       .eq('id', request_id)
       .maybeSingle()
     if (requestError) throw requestError
