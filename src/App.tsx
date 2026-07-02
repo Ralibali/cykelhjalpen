@@ -31,7 +31,9 @@ const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/Worksh
 const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopBilling"));
 const WorkshopSettings = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopSettings"));
 const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
+const CykelCityLandingPage = lazy(() => import("./pages/cykelhjalpen/CykelCityLandingPage"));
 import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
+import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
 const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
 const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
@@ -205,6 +207,13 @@ const AppRoutes = () => {
               {CYKEL_SEO_PAGES.map((p) => (
                 <Route key={p.slug} path={`/${p.slug}`} element={<CykelSeoPage />} />
               ))}
+
+              {/* City landing pages — skip Linköping (owned by CYKEL_SEO_PAGES 'cykelverkstad-linkoping') */}
+              {CYKEL_CITIES
+                .filter((c) => !CYKEL_SEO_PAGES.some((p) => `/${p.slug}` === cityLandingPath(c.name)))
+                .map((c) => (
+                  <Route key={c.name} path={cityLandingPath(c.name)} element={<CykelCityLandingPage city={c.name} />} />
+                ))}
             </>
           )}
 

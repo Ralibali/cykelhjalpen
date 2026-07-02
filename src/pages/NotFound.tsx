@@ -3,16 +3,9 @@ import { useEffect } from 'react'
 import { setSEOMeta } from '@/lib/seoHelpers'
 import { useNoindex } from '@/hooks/useNoindex'
 import { getCurrentHost } from '@/lib/hostConfig'
-import CykelCityLandingPage from '@/pages/cykelhjalpen/CykelCityLandingPage'
-import type { CykelCityName } from '@/lib/cykelCities'
 
-const CITY_ROUTES: Record<string, CykelCityName> = {
-  '/cykelverkstad-norrkoping': 'Norrköping',
-  '/cykelverkstad-uppsala': 'Uppsala',
-  '/cykelverkstad-lund': 'Lund',
-}
-
-const ActualNotFound = ({ pathname }: { pathname: string }) => {
+const NotFound = () => {
+  const { pathname } = useLocation()
   useNoindex()
   const host = getCurrentHost()
   const isCykel = host === 'cykelhjalpen'
@@ -58,14 +51,6 @@ const ActualNotFound = ({ pathname }: { pathname: string }) => {
       </div>
     </div>
   )
-}
-
-const NotFound = () => {
-  const location = useLocation()
-  const city = getCurrentHost() === 'cykelhjalpen' ? CITY_ROUTES[location.pathname.replace(/\/$/, '') || '/'] : undefined
-
-  if (city) return <CykelCityLandingPage city={city} />
-  return <ActualNotFound pathname={location.pathname} />
 }
 
 export default NotFound
