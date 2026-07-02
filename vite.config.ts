@@ -63,6 +63,22 @@ function seoBuildPlugin(host: 'cykelhjalpen' | 'updro'): Plugin {
       const noindexCount = getNoindexSeoRoutes(host).length;
       const routeCount = getIndexableSeoRoutes(host).length + noindexCount;
       console.log(`✅ SEO build [host=${host}]: sitemap generated for ${flatCount} indexable URLs, ${sectionUrlCount} section URLs, ${noindexCount} noindex programmatic URLs, ${routeCount} registered routes`);
+
+      const indexHtmlPath = path.join(distDir, 'index.html');
+      const template = await fs.readFile(indexHtmlPath, 'utf8');
+      let prerenderedCount = 0;
+      for (const route of getAllStaticSeoRoutes(host)) {
+        const html = renderStaticHtml(template, route, host);
+        if (route.path === '/') {
+          await fs.writeFile(indexHtmlPath, html, 'utf8');
+        } else {
+          const outDir = path.join(distDir, route.path.replace(/^\//, ''));
+          await fs.mkdir(outDir, { recursive: true });
+          await fs.writeFile(path.join(outDir, 'index.html'), html, 'utf8');
+        }
+        prerenderedCount++;
+      }
+      console.log(`✅ Prerendered ${prerenderedCount} routes`);
     },
   };
 }
