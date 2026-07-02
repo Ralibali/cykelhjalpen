@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Bike, ArrowRight, ArrowLeft, Check, Loader2, ShieldCheck, Clock3 } from 'lucide-react'
+import { Bike, ArrowRight, ArrowLeft, Check, Loader2, ShieldCheck, Clock3, Users } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import BikeRequestStepContent from '@/components/cykelhjalpen/BikeRequestStepContent'
@@ -55,15 +56,26 @@ const BikeRequestWizard = () => {
     const defaults = makeDefaultBikeRequest(requestedCity || DEFAULT_CYKEL_CITY)
     if (typeof window === 'undefined') return defaults
     try {
-      const stored = sessionStorage.getItem(DRAFT_KEY)
+      const stored = localStorage.getItem(DRAFT_KEY)
       if (!stored) return defaults
       const draft = JSON.parse(stored)
       const city = requestedCity || (isCykelCity(draft?.city) ? draft.city : DEFAULT_CYKEL_CITY)
       return { ...defaults, ...draft, city, consent: false }
     } catch {
-      sessionStorage.removeItem(DRAFT_KEY)
+      localStorage.removeItem(DRAFT_KEY)
       return defaults
     }
+  })
+
+  const { data: stats } = useQuery({
+    queryKey: ['cykel-public-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_cykel_public_stats')
+      if (error) throw error
+      return data as unknown as { workshops: number; requests: number; responses: number }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   })
 
   const imagePreviews = useMemo(
@@ -83,7 +95,7 @@ const BikeRequestWizard = () => {
   }, [])
 
   useEffect(() => {
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, consent: false }))
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, consent: false }))
   }, [form])
 
   useEffect(() => () => imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url)), [imagePreviews])
@@ -187,7 +199,7 @@ const BikeRequestWizard = () => {
       if (!request?.id || !request?.view_token) throw new Error(request?.error || 'Kunde inte skapa ärendet')
 
       const uploadErrors = files.length > 0 ? await uploadImages(request.id) : []
-      sessionStorage.removeItem(DRAFT_KEY)
+      localStorage.removeItem(DRAFT_KEY)
       trackClick('bike_request_submitted', 'Skicka ärende', {
         bike_type: parsed.data.bike_type,
         repair_category: parsed.data.repair_category,
@@ -260,6 +272,15 @@ const BikeRequestWizard = () => {
               onTurnstileExpire={handleTurnstileExpire}
             />
           </div>
+
+          {step === BIKE_REQUEST_STEPS.length - 1 && stats && Number(stats.workshops) > 0 && (
+            <div className="mt-5 flex items-start gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+              <p>
+                {stats.workshops} godkända verkstäder · svar brukar komma inom 1–2 dagar · ingen köpplikt
+              </p>
+            </div>
+          )}
 
           <div className="flex justify-between gap-3 mt-6 sticky bottom-3 rounded-2xl bg-background/95 backdrop-blur p-2 border shadow-sm md:static md:bg-transparent md:border-0 md:shadow-none md:p-0">
             <Button variant="outline" onClick={() => setStep((current) => Math.max(0, current - 1))} disabled={step === 0 || submitting}>
