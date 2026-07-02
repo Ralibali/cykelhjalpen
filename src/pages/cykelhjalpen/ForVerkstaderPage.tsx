@@ -88,6 +88,9 @@ const ForVerkstaderPage = () => (
         </div>
       </section>
 
+      <CykelOpenRequestsTeaser trackCta={trackWorkshopCta} />
+
+
       <section className="container mx-auto px-4 py-16 max-w-6xl">
         <h2 className="font-display text-3xl md:text-4xl font-bold mb-10 text-center">Därför ansluter verkstäder sig</h2>
         <div className="grid md:grid-cols-2 gap-6">
