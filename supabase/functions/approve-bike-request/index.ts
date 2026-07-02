@@ -145,11 +145,16 @@ Deno.serve(async (req) => {
 
     if (action === 'approve') {
       const city = requestRow.city || 'Linköping'
-      const { data: workshops, error: workshopsError } = await admin
+      let workshopsQuery = admin
         .from('workshops')
         .select('email, company_name, phone, sms_notifications')
         .eq('approved', true)
-        .eq('city', city)
+      if (requestRow.preferred_workshop_id) {
+        workshopsQuery = workshopsQuery.eq('id', requestRow.preferred_workshop_id)
+      } else {
+        workshopsQuery = workshopsQuery.eq('city', city)
+      }
+      const { data: workshops, error: workshopsError } = await workshopsQuery
       if (workshopsError) throw workshopsError
 
       notifiedWorkshops = workshops?.length || 0
