@@ -106,6 +106,16 @@ export default defineConfig(({ mode }) => {
       cssCodeSplit: true,
       sourcemap: false,
       chunkSizeWarningLimit: 1500,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'supabase': ['@supabase/supabase-js'],
+            'motion': ['framer-motion'],
+            'query': ['@tanstack/react-query'],
+          },
+        },
+      },
     },
     plugins: [
       react(),

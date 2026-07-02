@@ -1,12 +1,16 @@
+import { lazy, Suspense } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useQuery } from '@tanstack/react-query'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import CykelHomeHero from '@/components/cykelhjalpen/CykelHomeHero'
-import CykelHowItWorks from '@/components/cykelhjalpen/CykelHowItWorks'
-import CykelCitiesSection from '@/components/cykelhjalpen/CykelCitiesSection'
-import CykelHomeTrust, { CYKEL_HOME_FAQS } from '@/components/cykelhjalpen/CykelHomeTrust'
+import { CYKEL_HOME_FAQS } from '@/components/cykelhjalpen/CykelHomeTrust'
 import { supabase } from '@/integrations/supabase/client'
+
+const CykelHowItWorks = lazy(() => import('@/components/cykelhjalpen/CykelHowItWorks'))
+const CykelCitiesSection = lazy(() => import('@/components/cykelhjalpen/CykelCitiesSection'))
+const CykelHomeTrust = lazy(() => import('@/components/cykelhjalpen/CykelHomeTrust'))
+const SectionFallback = () => <div aria-hidden className="min-h-[240px]" />
 
 const CykelhjalpenIndexV2 = () => {
   const { data: stats } = useQuery({
@@ -44,9 +48,11 @@ const CykelhjalpenIndexV2 = () => {
       <CykelNavbar />
       <main>
         <CykelHomeHero />
-        <CykelHowItWorks />
-        <CykelCitiesSection />
-        <CykelHomeTrust stats={stats} />
+        <Suspense fallback={<SectionFallback />}>
+          <CykelHowItWorks />
+          <CykelCitiesSection />
+          <CykelHomeTrust stats={stats} />
+        </Suspense>
       </main>
       <CykelFooter />
 
