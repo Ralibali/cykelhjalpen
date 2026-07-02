@@ -32,7 +32,7 @@ const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/Worksho
 const WorkshopSettings = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopSettings"));
 const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
 const CykelCityLandingPage = lazy(() => import("./pages/cykelhjalpen/CykelCityLandingPage"));
-const WorkshopAdLandingPage = lazy(() => import("./pages/cykelhjalpen/WorkshopAdLandingPage"));
+const WorkshopAdCityPage = lazy(() => import("./pages/cykelhjalpen/WorkshopAdCityPage"));
 import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
