@@ -35,6 +35,9 @@ const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
 
 const RegisterWorkshopPage = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const cityParam = searchParams.get('stad')
+  const initialCity = (CYKEL_CITIES.find((c) => c.name.toLowerCase() === (cityParam || '').toLowerCase() || c.slug === (cityParam || '').toLowerCase())?.name || DEFAULT_CYKEL_CITY) as CykelCityName
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     company_name: '',
@@ -43,10 +46,16 @@ const RegisterWorkshopPage = () => {
     phone: '',
     address: '',
     website: '',
-    city: DEFAULT_CYKEL_CITY as CykelCityName,
+    city: initialCity,
     services: [] as string[],
     terms_accepted: false,
   })
+  useEffect(() => {
+    if (cityParam) {
+      const match = CYKEL_CITIES.find((c) => c.name.toLowerCase() === cityParam.toLowerCase() || c.slug === cityParam.toLowerCase())
+      if (match) setForm((current) => ({ ...current, city: match.name as CykelCityName }))
+    }
+  }, [cityParam])
 
   const update = (key: string, value: unknown) => setForm((current) => ({ ...current, [key]: value }))
   const toggleService = (service: string) => {
