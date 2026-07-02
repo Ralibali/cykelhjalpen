@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { ArrowRight, Bike, CheckCircle2, MapPin, ShieldCheck, Wrench } from 'lucide-react'
@@ -11,10 +10,6 @@ import { trackClick } from '@/hooks/usePageTracking'
 const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
   const cityData = getCykelCity(city)
   const canonical = `https://cykelhjalpen.se${cityLandingPath(city)}`
-
-  useEffect(() => {
-    document.querySelector('meta[name="prerender-status-code"]')?.remove()
-  }, [])
 
   const trackCta = (placement: string) => {
     trackClick('city_request_cta_clicked', `Få prisförslag i ${city}`, { city, placement })
