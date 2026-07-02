@@ -184,6 +184,9 @@ const AppRoutes = () => {
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
               <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
 
+              {/* Google Ads landing pages per stad × verkstad (noindex) */}
+              <Route path="/annons/:citySlug/:workshopSlug" element={<WorkshopAdLandingPage />} />
+
               {/* Workshop dashboard — now protected */}
               <Route
                 path="/dashboard/verkstad"
