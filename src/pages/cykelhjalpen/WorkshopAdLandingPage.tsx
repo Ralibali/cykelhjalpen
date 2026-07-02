@@ -54,7 +54,10 @@ const WorkshopAdLandingPage = () => {
   useEffect(() => {
     if (!workshopSlug) return
     setLoading(true)
-    supabase.rpc('get_workshop_public_by_slug', { _slug: workshopSlug }).then(({ data, error }) => {
+    ;(supabase.rpc as unknown as (fn: string, args: unknown) => Promise<{ data: unknown; error: unknown }>)(
+      'get_workshop_public_by_slug',
+      { _slug: workshopSlug },
+    ).then(({ data, error }) => {
       if (error || !data || (Array.isArray(data) && data.length === 0)) {
         setNotFound(true)
       } else {
