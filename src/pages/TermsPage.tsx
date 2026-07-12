@@ -47,7 +47,8 @@ const TermsPage = () => {
           <section className="space-y-6 text-sm leading-relaxed text-foreground/80">
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">1. Om tjänsten</h2>
-              <p>Cykelhjälpen.se (”Tjänsten”) drivs under namnet Cykelhjälpen, med säte i Linköping. Tjänsten är en leadplattform där cyklister i Linköping, Norrköping, Uppsala och Lund kan beskriva ett cykelproblem och få upp till fem prisförslag från anslutna cykelverkstäder.</p>
+              <p>Cykelhjälpen.se (”Tjänsten”) drivs av <strong>Aurora Media AB</strong>, organisationsnummer 559272-0220, under namnet Cykelhjälpen. Bolagets registrerade postadress är Gustafstorpsvägen 42, 585 74 Ljungsbro.</p>
+              <p className="mt-2">Tjänsten är en leadplattform där cyklister i Linköping, Norrköping, Uppsala och Lund kan beskriva ett cykelproblem och få upp till fem prisförslag från anslutna cykelverkstäder.</p>
               <p className="mt-2">Cykelhjälpen är en förmedlingsplattform och är inte part i avtalet mellan cyklist och verkstad. Ansvaret för utfört arbete, garanti och betalning ligger hos respektive part.</p>
             </div>
 
@@ -133,8 +134,10 @@ const TermsPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">11. Kontakt</h2>
-              <p>Cykelhjälpen<br />
-              Säte: Linköping<br />
+              <p>Aurora Media AB<br />
+              Organisationsnummer: 559272-0220<br />
+              Gustafstorpsvägen 42<br />
+              585 74 Ljungsbro<br />
               E-post: <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a></p>
             </div>
           </section>
