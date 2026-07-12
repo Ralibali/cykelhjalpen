@@ -1521,6 +1521,14 @@ export type Database = {
       }
     }
     Functions: {
+      consume_free_lead_for_response: {
+        Args: { p_response_id: string; p_workshop_id: string }
+        Returns: {
+          already_processed: boolean
+          remaining_free_leads: number
+          request_id: string
+        }[]
+      }
       get_cykel_open_requests_teaser: {
         Args: never
         Returns: {
