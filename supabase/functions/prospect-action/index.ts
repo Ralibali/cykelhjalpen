@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
           direction: 'outbound',
           status: 'draft',
           subject: draft.subject,
-          message: draft.message,
+          message: channel === 'email' ? (draft as { text: string }).text : (draft as { message: string }).message,
           recipient,
           performed_by: userData.user.id,
         })
