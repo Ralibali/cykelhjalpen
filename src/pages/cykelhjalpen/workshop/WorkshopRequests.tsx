@@ -133,6 +133,30 @@ const WorkshopRequests = () => {
     }
   }, [location.search])
 
+  const toggleOffer = (requestId: string) => {
+    setActive((current) => current === requestId ? null : requestId)
+    setForm(emptyForm)
+  }
+
+  const validateOffer = () => {
+    if (form.message.trim().length < 20) {
+      toast.error('Beskriv ditt svar lite mer, minst tjugo tecken.')
+      return false
+    }
+    const min = form.estimated_price_min ? Number(form.estimated_price_min) : null
+    const max = form.estimated_price_max ? Number(form.estimated_price_max) : null
+    if ((min !== null && min < 0) || (max !== null && max < 0)) {
+      toast.error('Priset kan inte vara negativt.')
+      return false
+    }
+    if (min !== null && max !== null && max < min) {
+      toast.error('Pris till måste vara samma som eller högre än pris från.')
+      return false
+    }
+    return true
+  }
+
+
   const openPayment = async (responseId: string, requestId: string) => {
     setSubmitting(requestId)
     const { data: payment, error } = await supabase.functions.invoke('create-bike-response-payment', {
