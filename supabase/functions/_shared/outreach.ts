@@ -49,6 +49,62 @@ const buildVerifiedDetail = (prospect: ProspectForDraft): string | null => {
 export const unsubscribeUrl = (token: string) =>
   `${OUTREACH_SITE_URL}/avregistrera/${encodeURIComponent(token)}`
 
+// Publik URL som Gmail/Yahoo POST:ar till för RFC 8058 one-click unsubscribe.
+// Måste svara på POST utan JWT och peka på edge-functionen (SPA:n kan inte servera POST).
+export const oneClickUnsubscribeUrl = (supabaseUrl: string, token: string) =>
+  `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/prospect-unsubscribe?token=${encodeURIComponent(token)}`
+
+// Renderar admin-godkänd brödtext till säker HTML + textbundle. Brödtexten
+// escapas och nyrader blir <br>/paragraf. Avregistreringsfot läggs alltid till
+// server-side så att admin inte kan råka ta bort den.
+export const buildEditedEmail = (
+  prospect: Pick<ProspectForDraft, 'unsubscribe_token'>,
+  approvedMessage: string,
+): { text: string; html: string } => {
+  const unsub = unsubscribeUrl(prospect.unsubscribe_token)
+  const trimmed = approvedMessage.replace(/\s+$/g, '')
+  const includesUnsub = trimmed.includes(unsub)
+
+  const footerText = includesUnsub
+    ? ''
+    : `\n\n---\nVill ni inte få fler mejl från oss? Avregistrera er här: ${unsub}\nNi får detta mejl som offentlig cykelverkstad i vårt lokala nätverk. Rättelse eller radering: info@cykelhjalpen.se.`
+
+  const text = trimmed + footerText
+
+  const paragraphs = trimmed
+    .split(/\n{2,}/)
+    .map((para) => {
+      const safe = escapeHtml(para).replace(/\n/g, '<br>')
+      return `<p style="margin:0 0 16px;font-size:15px;line-height:1.6">${safe}</p>`
+    })
+    .join('')
+
+  const safeUnsub = escapeHtml(unsub)
+  const footerHtml = includesUnsub
+    ? ''
+    : `<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+<p style="margin:0 0 8px;font-size:12px;color:#6b7280;">
+  Vill ni inte få fler mejl från oss? <a href="${safeUnsub}" style="color:#6b7280;text-decoration:underline;">Avregistrera er här</a>.
+</p>
+<p style="margin:0;font-size:12px;color:#6b7280;">
+  Ni får detta mejl som offentlig cykelverkstad i vårt lokala nätverk. Rättelse eller radering: info@cykelhjalpen.se.
+</p>`
+
+  const html = `<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f6f7f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f7f9;padding:32px 16px;">
+<tr><td align="center">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;padding:32px;box-shadow:0 4px 12px rgba(15,23,42,0.05);">
+<tr><td>
+${paragraphs}
+${footerHtml}
+</td></tr></table>
+</td></tr></table>
+</body></html>`
+
+  return { text, html }
+}
+
 interface DraftBundle {
   subject: string
   text: string
