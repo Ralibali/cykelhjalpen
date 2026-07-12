@@ -70,6 +70,9 @@ const CykelAdminOverview = () => {
   const [busy, setBusy] = useState<string | null>(null)
   const [rejectTarget, setRejectTarget] = useState<RequestRow | null>(null)
   const [rejectReason, setRejectReason] = useState('')
+  const [incomingPending, setIncomingPending] = useState(0)
+  const knownRequestIds = useRef<Set<string>>(new Set())
+
 
   const load = useCallback(async () => {
     setLoading(true)
