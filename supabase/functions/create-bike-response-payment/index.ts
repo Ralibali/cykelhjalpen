@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     if (responseError) throw responseError
     if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
     if (response.paid) throw new Error('Offerten är redan skickad')
-    if (response.status === 'full') throw new Error('Ärendet är fullt – fem verkstäder har redan svarat.')
+    if (response.status === 'closed_for_responses' || (response as any).status === 'full') throw new Error('Ärendet är fullt – fem verkstäder har redan svarat.')
 
     const { count, error: countError } = await admin
       .from('workshop_responses')
