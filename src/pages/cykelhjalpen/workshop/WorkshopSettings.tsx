@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
-import { Loader2, MapPin } from 'lucide-react'
+import { Loader2, Lock, MapPin } from 'lucide-react'
 import { CYKEL_CITIES, isCykelCity } from '@/lib/cykelCities'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { useAuth } from '@/hooks/useAuth'
@@ -22,36 +22,46 @@ const WorkshopSettings = () => {
   const save = async () => {
     if (form.company_name.trim().length < 2) return toast.error('Ange verkstadens namn')
     if (!isCykelCity(form.city)) return toast.error('Välj en giltig stad')
+    if (workshop.approved && form.city !== workshop.city) {
+      setForm((current) => ({ ...current, city: workshop.city }))
+      return toast.error('En godkänd verkstads serviceort ändras av Cykelhjälpen efter kontroll. Kontakta info@cykelhjalpen.se.')
+    }
 
     setSaving(true)
     const normalizedWebsite = form.website
       ? (/^https?:\/\//i.test(form.website) ? form.website : `https://${form.website}`)
       : null
 
+    const workshopUpdate = {
+      company_name: form.company_name.trim(),
+      phone: form.phone?.trim() || null,
+      address: form.address?.trim() || null,
+      website: normalizedWebsite,
+      city: workshop.approved ? workshop.city : form.city,
+      sms_notifications: Boolean(form.sms_notifications && form.phone),
+    }
+
     const [{ error: workshopError }, { error: profileError }] = await Promise.all([
-      supabase
-        .from('workshops')
-        .update({
-          company_name: form.company_name.trim(),
-          phone: form.phone || null,
-          address: form.address || null,
-          website: normalizedWebsite,
-          city: form.city,
-          sms_notifications: Boolean(form.sms_notifications),
-        })
-        .eq('id', workshop.id),
+      supabase.from('workshops').update(workshopUpdate).eq('id', workshop.id),
       user
-        ? supabase.from('profiles').update({ company_name: form.company_name.trim(), phone: form.phone || null, city: form.city }).eq('id', user.id)
+        ? supabase.from('profiles').update({
+            company_name: form.company_name.trim(),
+            phone: form.phone?.trim() || null,
+            city: workshop.approved ? workshop.city : form.city,
+          }).eq('id', user.id)
         : Promise.resolve({ error: null }),
     ])
     setSaving(false)
 
     if (workshopError || profileError) {
-      toast.error(workshopError?.message || profileError?.message || 'Kunde inte spara')
+      const message = workshopError?.message?.includes('approved_workshop_city_locked')
+        ? 'Serviceorten är låst för godkända verkstäder. Kontakta info@cykelhjalpen.se.'
+        : workshopError?.message || profileError?.message || 'Kunde inte spara'
+      toast.error(message)
       return
     }
 
-    setForm((current) => ({ ...current, website: normalizedWebsite }))
+    setForm((current) => ({ ...current, ...workshopUpdate }))
     toast.success('Inställningarna är sparade')
   }
 
@@ -70,30 +80,43 @@ const WorkshopSettings = () => {
 
         <div>
           <Label>Stad</Label>
-          <p className="text-xs text-muted-foreground mt-1 mb-2">Ni får bara ärenden från den valda staden.</p>
+          <p className="text-xs text-muted-foreground mt-1 mb-2">
+            {workshop.approved
+              ? 'Serviceorten är låst efter godkännandet. Kontakta info@cykelhjalpen.se om verksamheten flyttar.'
+              : 'Ni får bara ärenden från den valda staden. Orten låses när verkstaden godkänns.'}
+          </p>
           <div className="grid grid-cols-2 gap-2">
-            {CYKEL_CITIES.map((city) => (
-              <button
-                key={city.name}
-                type="button"
-                onClick={() => setForm({ ...form, city: city.name })}
-                aria-pressed={form.city === city.name}
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-md border-2 text-sm ${form.city === city.name ? 'bg-primary text-primary-foreground border-primary' : 'border-foreground hover:bg-muted'}`}
-              >
-                <MapPin className="h-4 w-4" /> {city.name}
-              </button>
-            ))}
+            {CYKEL_CITIES.map((city) => {
+              const disabled = workshop.approved
+              return (
+                <button
+                  key={city.name}
+                  type="button"
+                  onClick={() => !disabled && setForm({ ...form, city: city.name })}
+                  disabled={disabled}
+                  aria-pressed={form.city === city.name}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-md border-2 text-sm ${
+                    form.city === city.name
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'border-foreground hover:bg-muted'
+                  } ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+                >
+                  {disabled && form.city === city.name ? <Lock className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
+                  {city.name}
+                </button>
+              )
+            })}
           </div>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="phone">Telefon</Label>
-            <Input id="phone" type="tel" inputMode="tel" value={form.phone || ''} onChange={(event) => setForm({ ...form, phone: event.target.value })} />
+            <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" value={form.phone || ''} onChange={(event) => setForm({ ...form, phone: event.target.value })} />
           </div>
           <div>
             <Label htmlFor="website">Webbplats</Label>
-            <Input id="website" inputMode="url" value={form.website || ''} onChange={(event) => setForm({ ...form, website: event.target.value })} placeholder="https://verkstad.se" />
+            <Input id="website" inputMode="url" autoComplete="url" value={form.website || ''} onChange={(event) => setForm({ ...form, website: event.target.value })} placeholder="https://verkstad.se" />
           </div>
         </div>
 
