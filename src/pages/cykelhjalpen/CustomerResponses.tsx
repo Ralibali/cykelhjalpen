@@ -19,6 +19,11 @@ interface Response {
   workshop: { id?: string; company_name: string; phone: string | null; email: string; website: string | null } | null
 }
 
+interface RequestImage {
+  id: string
+  url: string
+}
+
 const POLL_MS = 30_000
 
 const CustomerResponses = () => {
@@ -27,6 +32,7 @@ const CustomerResponses = () => {
   const [refreshing, setRefreshing] = useState(false)
   const [request, setRequest] = useState<any>(null)
   const [responses, setResponses] = useState<Response[]>([])
+  const [images, setImages] = useState<RequestImage[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const knownIdsRef = useRef<Set<string>>(new Set())
   const firstLoadRef = useRef(true)
@@ -43,6 +49,7 @@ const CustomerResponses = () => {
       if (error) throw error
       const nextResponses: Response[] = data?.responses || []
       setRequest(data?.request || null)
+      setImages(data?.images || [])
 
       if (firstLoadRef.current) {
         knownIdsRef.current = new Set(nextResponses.map((r) => r.id))
@@ -124,6 +131,19 @@ const CustomerResponses = () => {
                 Ditt ärende är mottaget och granskas innan det publiceras för verkstäderna. Nya prisförslag dyker upp här automatiskt.
               </p>
             </div>
+
+            {images.length > 0 && (
+              <section className="mb-8" aria-labelledby="request-images-heading">
+                <h2 id="request-images-heading" className="font-display text-xl font-bold mb-3">Dina bilder</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {images.map((image) => (
+                    <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-xl border bg-muted">
+                      <img src={image.url} alt="Uppladdad bild på cykelproblemet" className="h-full w-full object-cover" loading="lazy" />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <div className="flex items-center justify-between gap-3 mb-4">
               <h2 className="font-display text-xl font-bold">Prisförslag ({responses.length})</h2>
