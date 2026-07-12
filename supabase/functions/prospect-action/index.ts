@@ -164,9 +164,13 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Okänt fel'
+    const err = error as { message?: string; details?: string; hint?: string; code?: string }
+    const message = err?.message || err?.details || err?.hint || 'Okänt fel'
+    console.error('prospect-action failed:', JSON.stringify({
+      message: err?.message, details: err?.details, hint: err?.hint, code: err?.code,
+    }))
     const status = message === 'unauthenticated' ? 401 : message === 'forbidden' ? 403 : 400
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: message, code: err?.code, details: err?.details }), {
       status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
