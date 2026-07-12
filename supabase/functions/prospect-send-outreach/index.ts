@@ -94,18 +94,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Global dagskvot (UTC)
-    const startOfDay = new Date()
-    startOfDay.setUTCHours(0, 0, 0, 0)
-    const { count: sentToday } = await admin
-      .from('outreach_activities')
-      .select('id', { count: 'exact', head: true })
-      .eq('channel', 'email')
-      .in('status', ['sent', 'sending'])
-      .gte('sent_at', startOfDay.toISOString())
-    if ((sentToday || 0) >= OUTREACH_DAILY_CAP) {
-      throw new Error(`Dagskvoten på ${OUTREACH_DAILY_CAP} rekryteringsmejl per dygn är nådd.`)
-    }
+    // (Dagskvot + atomiskt lås görs i RPC:n nedan.)
 
     // Atomiskt reservera plats: RPC håller advisory lock, kontrollerar dagskvot
     // och byter status approved/failed -> sending. Retry efter failed hanteras här.
