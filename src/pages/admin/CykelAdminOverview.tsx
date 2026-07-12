@@ -332,12 +332,25 @@ const CykelAdminOverview = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Avvisa cykelärendet?</DialogTitle>
-            <DialogDescription>Anledningen skickas till kunden. Skriv kort och konkret.</DialogDescription>
+            <DialogDescription>Anledningen skickas till kunden. Skriv minst tio tecken – kort och konkret.</DialogDescription>
           </DialogHeader>
-          <Textarea value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} rows={4} placeholder="Exempel: Vi behöver en tydligare problembeskrivning eller en giltig kontaktadress." />
+          <Textarea
+            value={rejectReason}
+            onChange={(event) => setRejectReason(event.target.value)}
+            rows={4}
+            placeholder="Exempel: Vi behöver en tydligare problembeskrivning eller en giltig kontaktadress."
+            aria-label="Anledning till avvisning"
+          />
+          <p className={`text-xs ${rejectReason.trim().length < 10 ? 'text-muted-foreground' : 'text-emerald-700'}`}>
+            {rejectReason.trim().length}/10 tecken (minimum)
+          </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectTarget(null)}>Avbryt</Button>
-            <Button variant="destructive" onClick={rejectRequest} disabled={!rejectTarget || busy === rejectTarget.id}>
+            <Button
+              variant="destructive"
+              onClick={rejectRequest}
+              disabled={!rejectTarget || busy === rejectTarget.id || rejectReason.trim().length < 10}
+            >
               {busy === rejectTarget?.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Avvisa och meddela kunden
             </Button>
