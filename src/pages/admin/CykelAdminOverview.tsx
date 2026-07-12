@@ -95,9 +95,26 @@ const CykelAdminOverview = () => {
     setWorkshops((workshopResult.data as WorkshopRow[]) || [])
     setCharges((chargeResult.data as ChargeRow[]) || [])
     setLoading(false)
+    setIncomingPending(0)
+    knownRequestIds.current = new Set(((requestResult.data as RequestRow[]) || []).map((row) => row.id))
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  // Realtidsräknare på "Uppdatera"-knappen så admin ser att nya pending ärenden trillar in.
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-bike-requests')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bike_repair_requests' }, (payload) => {
+        const row = payload.new as { id?: string } | null
+        if (!row?.id) return
+        if (knownRequestIds.current.has(row.id)) return
+        knownRequestIds.current.add(row.id)
+        setIncomingPending((count) => count + 1)
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   const approveRequest = async (request: RequestRow) => {
     setBusy(request.id)
@@ -107,7 +124,9 @@ const CykelAdminOverview = () => {
     setBusy(null)
 
     if (error || data?.error) {
-      toast.error(data?.error || error?.message || 'Kunde inte godkänna ärendet')
+      toast.error('Kunde inte godkänna ärendet.', {
+        description: data?.error || error?.message || 'Försök igen om en stund.',
+      })
       return
     }
 
@@ -118,18 +137,27 @@ const CykelAdminOverview = () => {
 
   const rejectRequest = async () => {
     if (!rejectTarget) return
+    const trimmed = rejectReason.trim()
+    if (trimmed.length < 10) {
+      toast.error('Anledningen är för kort.', {
+        description: 'Skriv minst tio tecken. Meddelandet skickas till kunden.',
+      })
+      return
+    }
     setBusy(rejectTarget.id)
     const { data, error } = await supabase.functions.invoke('approve-bike-request', {
       body: {
         request_id: rejectTarget.id,
         action: 'reject',
-        reason: rejectReason.trim() || null,
+        reason: trimmed,
       },
     })
     setBusy(null)
 
     if (error || data?.error) {
-      toast.error(data?.error || error?.message || 'Kunde inte avvisa ärendet')
+      toast.error('Kunde inte avvisa ärendet.', {
+        description: data?.error || error?.message || 'Försök igen om en stund.',
+      })
       return
     }
 
@@ -137,6 +165,20 @@ const CykelAdminOverview = () => {
     setRejectTarget(null)
     setRejectReason('')
     load()
+  }
+
+  const copyContact = async (request: RequestRow) => {
+    const parts = [
+      request.customer_name,
+      request.customer_email,
+      request.customer_phone,
+    ].filter(Boolean).join(' · ')
+    try {
+      await navigator.clipboard.writeText(parts)
+      toast.success('Kontaktuppgifter kopierade.')
+    } catch {
+      toast.error('Kunde inte kopiera. Markera texten manuellt.')
+    }
   }
 
   const setWorkshopApproved = async (workshop: WorkshopRow, approved: boolean) => {
