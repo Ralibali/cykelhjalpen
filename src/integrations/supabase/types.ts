@@ -357,6 +357,33 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_suppression: {
+        Row: {
+          added_by: string | null
+          contact_type: string
+          created_at: string
+          id: string
+          reason: string | null
+          value: string
+        }
+        Insert: {
+          added_by?: string | null
+          contact_type: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          value: string
+        }
+        Update: {
+          added_by?: string | null
+          contact_type?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       free_lead_grants: {
         Row: {
           admin_id: string
@@ -735,6 +762,68 @@ export type Database = {
           },
         ]
       }
+      outreach_activities: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          channel: string
+          created_at: string
+          direction: string
+          error: string | null
+          id: string
+          message: string
+          performed_by: string | null
+          prospect_id: string
+          recipient: string
+          sent_at: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          channel: string
+          created_at?: string
+          direction?: string
+          error?: string | null
+          id?: string
+          message: string
+          performed_by?: string | null
+          prospect_id: string
+          recipient: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          channel?: string
+          created_at?: string
+          direction?: string
+          error?: string | null
+          id?: string
+          message?: string
+          performed_by?: string | null
+          prospect_id?: string
+          recipient?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_activities_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "workshop_prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_views: {
         Row: {
           created_at: string
@@ -872,6 +961,53 @@ export type Database = {
             columns: ["buyer_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prospect_sources: {
+        Row: {
+          city: string | null
+          created_at: string
+          fetched_at: string
+          id: string
+          prospect_id: string
+          raw_excerpt: string | null
+          raw_payload: Json
+          search_term: string | null
+          source_type: string
+          source_url: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          prospect_id: string
+          raw_excerpt?: string | null
+          raw_payload?: Json
+          search_term?: string | null
+          source_type: string
+          source_url?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          prospect_id?: string
+          raw_excerpt?: string | null
+          raw_payload?: Json
+          search_term?: string | null
+          source_type?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_sources_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "workshop_prospects"
             referencedColumns: ["id"]
           },
         ]
@@ -1205,6 +1341,92 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshop_prospects: {
+        Row: {
+          address: string | null
+          ai_summary: string | null
+          assigned_admin_id: string | null
+          city: string
+          company_name: string
+          converted_workshop_id: string | null
+          created_at: string
+          do_not_contact: boolean
+          email: string | null
+          id: string
+          last_checked_at: string | null
+          normalized_domain: string | null
+          normalized_email: string | null
+          normalized_name: string
+          normalized_phone: string | null
+          notes: string | null
+          opening_hours: string | null
+          phone: string | null
+          score: number
+          services: string[]
+          status: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          ai_summary?: string | null
+          assigned_admin_id?: string | null
+          city: string
+          company_name: string
+          converted_workshop_id?: string | null
+          created_at?: string
+          do_not_contact?: boolean
+          email?: string | null
+          id?: string
+          last_checked_at?: string | null
+          normalized_domain?: string | null
+          normalized_email?: string | null
+          normalized_name: string
+          normalized_phone?: string | null
+          notes?: string | null
+          opening_hours?: string | null
+          phone?: string | null
+          score?: number
+          services?: string[]
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          ai_summary?: string | null
+          assigned_admin_id?: string | null
+          city?: string
+          company_name?: string
+          converted_workshop_id?: string | null
+          created_at?: string
+          do_not_contact?: boolean
+          email?: string | null
+          id?: string
+          last_checked_at?: string | null
+          normalized_domain?: string | null
+          normalized_email?: string | null
+          normalized_name?: string
+          normalized_phone?: string | null
+          notes?: string | null
+          opening_hours?: string | null
+          phone?: string | null
+          score?: number
+          services?: string[]
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_prospects_converted_workshop_id_fkey"
+            columns: ["converted_workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
             referencedColumns: ["id"]
           },
         ]
