@@ -23,13 +23,6 @@ const urgencyLabel = (value: string | null) => ({
   flexible: 'Flexibel',
 }[value || ''] || value || 'Ej angivet')
 
-const toE164 = (raw: string) => {
-  const digits = raw.replace(/[^\d+]/g, '')
-  if (digits.startsWith('+')) return digits
-  if (digits.startsWith('00')) return `+${digits.slice(2)}`
-  if (digits.startsWith('0')) return `+46${digits.slice(1)}`
-  return digits
-}
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
