@@ -11,27 +11,40 @@ const storagePath = (value: string) => {
 serve(async (req) => {
   const corsHeaders = corsFor(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("no auth");
 
-    const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: u } = await userClient.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (!u.user) throw new Error("unauthenticated");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    if (!supabaseUrl || !anonKey || !serviceRoleKey) throw new Error("backend configuration missing");
 
-    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data: ws } = await admin
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+    const { data: u, error: userError } = await userClient.auth.getUser(authHeader.replace(/^Bearer\s+/i, ""));
+    if (userError || !u.user) throw new Error("unauthenticated");
+
+    const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+    const { data: ws, error: workshopError } = await admin
       .from("workshops")
       .select("id, approved, city")
       .eq("user_id", u.user.id)
       .maybeSingle();
+    if (workshopError) throw workshopError;
     if (!ws || !ws.approved) throw new Error("not approved");
     if (!ws.city) throw new Error("workshop city missing");
 
-    // City filtering must happen before returning data. Client-side filtering is not an access control.
+    // City filtering must happen before returning data. Client-side filtering is not access control.
     const { data, error } = await admin
       .from("bike_repair_requests")
       .select("id, bike_type, repair_category, description, area, postcode, urgency, can_drop_off, wants_pickup, status, created_at")
@@ -42,7 +55,26 @@ serve(async (req) => {
       .limit(100);
     if (error) throw error;
 
-    const requests = data || [];
+    const initialRequests = data || [];
+    const initialIds = initialRequests.map((row) => row.id);
+    const paidCounts = new Map<string, number>();
+
+    if (initialIds.length > 0) {
+      const { data: paidRows, error: paidError } = await admin
+        .from("workshop_responses")
+        .select("request_id")
+        .in("request_id", initialIds)
+        .eq("paid", true);
+      if (paidError) throw paidError;
+
+      for (const row of paidRows || []) {
+        paidCounts.set(row.request_id, (paidCounts.get(row.request_id) || 0) + 1);
+      }
+    }
+
+    // The database trigger is the final guard, but full requests should disappear
+    // from the product before a workshop spends time writing an offer.
+    const requests = initialRequests.filter((row) => (paidCounts.get(row.id) || 0) < 5);
     const requestIds = requests.map((row) => row.id);
     const imagesByRequest = new Map<string, { id: string; url: string }[]>();
 
@@ -75,11 +107,13 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       requests: requests.map((row) => ({ ...row, images: imagesByRequest.get(row.id) || [] })),
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
     });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "unknown" }), {
-      status: 400,
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown";
+    const status = message === "unauthenticated" || message === "no auth" ? 401 : message === "not approved" ? 403 : 400;
+    return new Response(JSON.stringify({ error: message }), {
+      status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
