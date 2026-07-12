@@ -4,11 +4,13 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import {
+  buildEditedEmail,
   buildEmailDraft,
   OUTREACH_DAILY_CAP,
   OUTREACH_FROM,
   OUTREACH_MIN_DAYS_BETWEEN_CONTACT,
   OUTREACH_REPLY_TO,
+  oneClickUnsubscribeUrl,
   unsubscribeUrl,
 } from '../_shared/outreach.ts'
 import { looksLikeBusinessEmail } from '../_shared/prospect.ts'
