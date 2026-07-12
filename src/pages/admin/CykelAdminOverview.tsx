@@ -225,8 +225,13 @@ const CykelAdminOverview = () => {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Granska ärenden och verkstäder innan de publiceras.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={load} disabled={loading} aria-label="Uppdatera admin-översikten">
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Uppdatera
+          {incomingPending > 0 && (
+            <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+              +{incomingPending}
+            </span>
+          )}
         </Button>
       </div>
 
