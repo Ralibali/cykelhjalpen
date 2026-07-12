@@ -189,6 +189,8 @@ const AppRoutes = () => {
               <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
               {/* Google Ads: rekryteringssida per stad för verkstäder (noindex) */}
               <Route path="/annons/verkstad/:citySlug" element={<WorkshopAdCityPage />} />
+              <Route path="/avregistrera/:token" element={<UnsubscribePage />} />
+
 
               {/* Workshop dashboard — now protected */}
               <Route
