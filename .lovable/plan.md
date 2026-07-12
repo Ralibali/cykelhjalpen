@@ -1,126 +1,66 @@
-## Översikt
+# Cykelhjälpen – förbättringsplan
 
-Bygga om Updro till **Cykelhjälpen.se** – en lokal leadplattform för cykelreparation i Linköping. Återanvänder befintlig arkitektur (React, Supabase, Stripe, admin- och dashboardflöden) men inför nytt domänspråk, nya tabeller, nytt formulär och ny SEO.
+Fokus: säkerställa att koden och backend är i synk, stärka notifieringar, snygga till adminflöden och putsa verkstads‑ och kund‑UX. Inga externa utskick eller Stripe‑anrop görs som del av planen.
 
-**Viktigt:** Detta är en stor MVP. Jag föreslår att vi bygger den i **fyra etapper** så att vi kan validera varje steg innan nästa. Att försöka göra allt i en enda runda riskerar buildfel, halvfärdiga flöden och svår felsökning.
+## 1. Kritiskt: aktivera väntande backend-ändringar
 
----
+Två migrationsfiler ligger i repot men är **inte körda** i databasen. Koden anropar redan det som saknas, så delar av flödet är brutet i produktion.
 
-## Etapp 1 – Grund: databas, branding, startsida, formulär
+**Saknas i DB (finns i filer):**
+- `enforce_bike_response_paid_limit` trigger (fil `20260712152000_...`) – ska hindra att fler än fem verkstäder blir betalda på samma ärende parallellt. Koden fångar redan felet `bike_request_full` i `stripe-webhook-bike` och `create-bike-response-payment`.
+- RPC `consume_free_lead_for_response(uuid, uuid)` (fil `20260712160000_...`) – anropas i `create-bike-response-payment/index.ts:89`. Utan den kraschar gratis‑lead‑flödet.
+- Unika index: `stripe_events_stripe_event_id_unique`, `lead_charges_one_pending_per_response` (idempotens för Stripe‑webhooks och en pending Checkout per svar).
+- Trigger `protect_workshop_sensitive_fields_trigger` (låser `approved`, `free_leads_remaining`, `stripe_customer_id`, `email`, `user_id` och stad efter godkännande).
 
-1. **Databasmigration** (ny separat schema, rör inte updro-tabellerna):
-   - `bike_repair_requests`, `bike_request_images`, `workshops`, `workshop_responses`, `lead_charges` enligt spec
-   - RLS:
-     - Anonyma kan `INSERT` på `bike_repair_requests` och `bike_request_images`
-     - Endast admin kan `SELECT` kontaktuppgifter (separat vy `public_bike_requests` utan email/telefon för approved workshops)
-     - Workshops ser bara egna `responses` och `charges`
-     - Trigger som stänger ärende efter 5 paid responses (`status = closed_for_responses`)
-   - Storage bucket `bike-images` (publik läsning, anon insert)
+**Åtgärd:** kör om båda migrationsfilerna som en samlad migration via migrationsverktyget så att triggers, index och RPC blir aktiva. Ingen SQL‑ändring behövs — endast omkörning av befintliga statements idempotent (`CREATE OR REPLACE`, `IF NOT EXISTS`, `DROP TRIGGER IF EXISTS`).
 
-2. **Branding-byte**:
-   - Logo, favicon, sidtitel, navbar → "Cykelhjälpen"
-   - Färgpalett behålls (Indigo) men accent kan justeras lätt
-   - Footer: nytt företagsnamn placeholder, behåll Aurora Media om inget annat anges
+## 2. Notifieringar (in‑app + befintliga mailmallar)
 
-3. **Ny startsida** (`/`):
-   - Hero: H1 "Få prisförslag från cykelverkstäder i Linköping", CTA "Beskriv ditt cykelproblem"
-   - Tre-stegs-sektion
-   - "Gratis för dig som cyklar"-block
-   - Trust-sektion (antal anslutna verkstäder, snittsvarstid)
-   - FAQ
-   - Behåller framer-motion-animationerna från befintlig hero
+Fyll luckor i `notifications`-tabellen så både verkstad och kund får realtidsuppdateringar i klockikonen. Ingen ny mail skickas i denna plan – endast rader i `notifications` (som redan har realtidskanal via `NotificationBell`).
 
-4. **Reparationsformulär** (`/skicka-arende`):
-   - Bygger om `ProjectWizard` till `BikeRequestWizard`
-   - Steg 1: cykeltyp + reparationskategori
-   - Steg 2: beskrivning + bilduppladdning (max 5, till `bike-images` bucket)
-   - Steg 3: postnr, område, urgency, hämtning/inlämning
-   - Steg 4: kontaktuppgifter + GDPR-consent
-   - Ingen inloggning krävs
-   - Tackskärm med ärendenr
+- **Verkstad:** ny notis när ett ärende godkänts i deras stad (skapas i `approve-bike-request` bredvid befintlig mailfunktion, men bara `notifications`‑insert).
+- **Verkstad:** ny notis när ärendet blir fullt (`closed_for_responses`) så de vet att slotsen är slut.
+- **Kund:** notis när första verkstadssvaret kommer in (via `stripe-webhook-bike` efter lyckad betalning eller efter gratis‑lead‑förbrukning). Länk till `/mitt-arende/<token>`.
+- **Admin:** notis till alla `profiles.role = 'admin'` när nytt ärende skapas som `pending_approval` (nu missas dessa om admin inte pollar).
 
----
+## 3. Adminflöden
 
-## Etapp 2 – Verkstadsflöde + admin
+- **`CykelAdminOverview`:** lägg till badge på "Uppdatera"-knappen som visar antal nya pending sedan senaste refresh (via realtid på `bike_repair_requests`).
+- **Ärendekort:** visa telefonnummer/e-post och `city` konsekvent, samt en "Kopiera kontakt"‑knapp.
+- **Avvisa‑dialog:** kräv minst 10 tecken i `rejectReason` (skickas till kund och behöver vara meningsfullt).
+- **Verkstadslista:** visa `city` och antal levererade offerter per verkstad i sidopanelen (join på `workshop_responses` med `paid=true`).
+- **Länk till marketplace health** direkt från overview‑sidan för snabb felsökning.
+- **Stripe‑logg (`AdminStripeLog`):** filter för `type = checkout.session.completed` och färgad status så retries syns direkt.
 
-1. **Auth för verkstäder** (`/registrera/verkstad`, `/logga-in`):
-   - Email + lösenord (behåller befintligt auth-email-hook, byter copy)
-   - Vid signup: skapa `workshops`-rad med `approved=false`
-   - Maila admin om ny ansökan
+## 4. Verkstads-UX (`WorkshopRequests.tsx`)
 
-2. **Verkstadsdashboard** (ersätter supplier-dashboard):
-   - `/dashboard/verkstad` – översikt (öppna ärenden, mina svar, intäkter)
-   - `/dashboard/verkstad/arenden` – lista relevanta ärenden, kontaktuppgifter maskerade
-   - `/dashboard/verkstad/arenden/:id` – detalj + "Skapa svar"-CTA
-   - `/dashboard/verkstad/svar` – mina prisförslag
-   - `/dashboard/verkstad/fakturering` – Stripe-historik (lead_charges)
-   - `/dashboard/verkstad/profil` – företagsinfo, områden, tjänster
+- Visa tydlig **"Ärendet är fullt"**-state när `bike_request_full` returneras från edge function, med länk tillbaka till listan.
+- Kort med **"Gratis-leads kvar"** överst, samt räknare "X av 5 slots kvar" per ärende innan man öppnar checkout.
+- När polling efter `?paid=true` misslyckas efter 15 s, erbjud knapp "Kontrollera igen" i stället för endast varningstoast.
+- Disabla "Skicka"-knappen medan formuläret valideras för att undvika dubbla submits.
 
-3. **Admin** (utöka befintlig admin):
-   - `/admin/arenden`, `/admin/verkstader`, `/admin/svar`, `/admin/betalningar`
-   - Godkänn/neka verkstad
-   - Stäng spam-ärenden
-   - Intäktsöversikt (antal paid × 50 kr)
-   - Behåller befintlig admin-layout
+## 5. Kund-UX (`CustomerResponses.tsx`, `BikeRequestWizard.tsx`)
 
----
+- Wizard: visa progress‑stapel (steg X av Y) och behåll ifyllda värden i `sessionStorage` så att en oavsiktlig refresh inte tömmer formuläret.
+- Efter submit: visa tydlig "vi granskar inom 24 h"-panel med kontakt till `info@cykelhjalpen.se` (i stället för vag success‑text).
+- `CustomerResponses`: sortera svar med lägst pris först och markera "Bästa pris" / "Snabbast leverans" som semantiska badges.
+- Lägg till `noindex` på token‑sidorna (`/mitt-arende/:token`) om det inte redan är satt.
 
-## Etapp 3 – Betalflöde
+## 6. Produktkvalitet / mindre
 
-1. **Edge Function `create-workshop-response-payment`**:
-   - Tar `request_id` + draft-data
-   - Validerar: workshop approved, < 5 paid responses, inte redan svarat
-   - Skapar `workshop_responses` (status=draft) + `lead_charges` (pending)
-   - Stripe Checkout Session 50 kr (engångsbetalning)
-   - Returnerar `checkout_url`
-
-2. **Edge Function `stripe-webhook-bike`** (separat från updros webhook):
-   - På `checkout.session.completed`:
-     - `lead_charges.status = paid`
-     - `workshop_responses.paid = true, status = sent`
-     - Om 5 sent → `bike_repair_requests.status = closed_for_responses`
-     - Skicka mail till kund via `send-transactional-email` (Resend)
-
-3. **Kundens vy** (`/arende/:token`):
-   - Token-baserad länk (skickas via mail)
-   - Visar alla mottagna prisförslag
-   - Verkstadens kontaktuppgifter visas här
-
----
-
-## Etapp 4 – SEO + GDPR + polish
-
-1. **SEO-sidor** via befintlig SEO-generator i `vite.config.ts`:
-   - 9 lokala sidor enligt spec (cykelverkstad-linkoping etc.) + `/for-cykelverkstader` (B2B-landningssida)
-   - Unik title/desc, lokal text, FAQ, LocalBusiness JSON-LD, intern länkning
-   - Uppdatera `seoStatic.ts` och `sitemap.xml`
-
-2. **GDPR**:
-   - Consent-checkbox i formuläret
-   - Uppdatera `/integritet` och `/villkor` med Cykelhjälpen-specifik text
-
-3. **Mobilkvalitet**:
-   - Verifiera formulärsteg på mobil
-   - Verifiera dashboard-tabeller (befintlig horizontal scroll-pattern)
-
-4. **Build & lint**:
-   - `bun run build`, fix alla TS-fel
-
----
+- Byt slumpade `toast.error(error.message)` mot översatta meddelanden i verkstads‑ och kundflöden (svensk copy, "Något gick fel. Försök igen." som fallback).
+- Lägg till `<title>` och `<meta description>` per cykelhjälpen‑sida där det saknas (kolla `CykelhjalpenIndex`, `ForVerkstaderPage`, `RegisterWorkshopPage`).
+- Sätt `aria-label` på klockan i `NotificationBell` (a11y‑CI klagar annars).
 
 ## Tekniska detaljer
 
-- **Updro-koden behålls**: Inga befintliga tabeller/rutter raderas. Cykelhjälpen körs på samma kodbas men med nya routes och egen domänlogik. Startsidan `/` byts dock ut – om båda produkterna ska samexistera långsiktigt behöver vi diskutera multi-brand-setup separat.
-- **Pris i öre**: `lead_charges.amount = 5000` (= 50 kr). Stripe-belopp i öre.
-- **Anonym insert**: Använder `anon`-rollen + RLS `WITH CHECK (true)` på `bike_repair_requests`. Token genereras server-side och returneras till kunden.
-- **Maskning av kontaktuppgifter**: Skapa SECURITY DEFINER-vy `bike_requests_for_workshops` som exkluderar `customer_email`/`customer_phone` tills workshop har en `paid` response på det ärendet.
-- **Edge Functions**: Befintliga Stripe-funktioner (`create-checkout`, webhook) lämnas orörda. Nya funktioner skapas med `-bike`-suffix.
+- Alla nya `notifications`‑rader använder befintligt schema: `user_id, type, title, message, link, is_read=false`.
+- Realtid finns redan i `NotificationBell` via `postgres_changes INSERT`.
+- Ingen ändring av Stripe‑nycklar, webhook‑endpoint eller mailtemplates.
+- Migration i steg 1 använder endast idempotenta statements – säker att köra om.
 
----
+## Utanför scope
 
-## Frågor innan vi börjar
-
-1. **Git-branch/PR**: Lovable arbetar inte med branches/PRs på samma sätt som GitHub. Jag bygger direkt på huvudprojektet och du kan publicera när du är nöjd. Är det OK?
-2. **Ska Updro-startsidan finnas kvar någonstans** (t.ex. `/updro`) eller ersätts den helt?
-3. **Stripe**: Du har redan Stripe inkopplat för Updro. Jag återanvänder samma Stripe-konto med en ny produkt/pris för 50 kr-leaden. OK?
-4. **Bekräftar du Etapp 1 som första leverans?** Jag levererar databas + startsida + formulär först, vi verifierar att det fungerar end-to-end, sedan kör vi Etapp 2.
+- Inga faktiska mail eller SMS skickas.
+- Ingen ändring av prissättning eller `LEAD_FEE_ORE`.
+- Ingen ändring av Stripe‑konfiguration (redan hanterad av användaren).
