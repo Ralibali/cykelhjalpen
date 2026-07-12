@@ -54,7 +54,7 @@ const CykelAdminLayout = ({ children }: { children: ReactNode }) => {
         </main>
       </div>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t grid grid-cols-4 py-2 z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t grid grid-cols-6 py-2 z-50">
         {navItems.map((item) => {
           const active = isActivePath(location.pathname, item.href)
           return (
