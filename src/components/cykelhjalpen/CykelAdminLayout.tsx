@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Bike, CreditCard, Home, Wrench } from 'lucide-react'
+import { Bell, Bike, CreditCard, Home, Search, Wrench } from 'lucide-react'
 import CykelNavbar from './CykelNavbar'
 import { cn } from '@/lib/utils'
 
@@ -8,6 +8,8 @@ const navItems = [
   { label: 'Översikt', href: '/admin', icon: Home },
   { label: 'Cykelärenden', href: '/admin/cykelarenden', icon: Bike },
   { label: 'Verkstäder', href: '/admin/verkstader', icon: Wrench },
+  { label: 'Prospekt', href: '/admin/prospekt', icon: Search },
+  { label: 'Notiser', href: '/admin/notifieringar-logg', icon: Bell },
   { label: 'Betalningar', href: '/admin/cykelbetalningar', icon: CreditCard },
 ]
 
