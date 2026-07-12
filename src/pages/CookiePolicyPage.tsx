@@ -47,7 +47,7 @@ const CookiePolicyPage = () => {
       <main className="flex-1 py-16 px-4">
         <article className="max-w-3xl mx-auto prose prose-slate">
           <h1 className="font-display text-3xl font-bold mb-2">Cookiepolicy</h1>
-          <p className="text-muted-foreground text-sm mb-8">Senast uppdaterad: 2026-05-03</p>
+          <p className="text-muted-foreground text-sm mb-8">Senast uppdaterad: 13 juli 2026</p>
 
           <section className="space-y-6 text-sm leading-relaxed text-foreground/80">
             <div>
@@ -57,8 +57,9 @@ const CookiePolicyPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">2. Vem ansvarar?</h2>
-              <p><strong>Cykelhjälpen</strong> ansvarar för användningen av cookies på Cykelhjälpen.se.</p>
-              <p className="mt-1">Kontakt: <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
+              <p><strong>Aurora Media AB</strong>, organisationsnummer 559272-0220, ansvarar för användningen av cookies på Cykelhjälpen.se och driver tjänsten under namnet Cykelhjälpen.</p>
+              <p className="mt-1">Postadress: Gustafstorpsvägen 42, 585 74 Ljungsbro.</p>
+              <p className="mt-1">Kontakt: <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a></p>
             </div>
 
             <div>
@@ -110,7 +111,7 @@ const CookiePolicyPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">8. Kontakt</h2>
-              <p>Har du frågor om cookies eller personuppgifter? Kontakta oss på <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a>.</p>
+              <p>Har du frågor om cookies eller personuppgifter? Kontakta Aurora Media AB på <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a> eller per post till Gustafstorpsvägen 42, 585 74 Ljungsbro.</p>
               <p className="mt-2">Se även vår <a href="/integritetspolicy" className="text-primary hover:underline">integritetspolicy</a> för mer information om hur vi behandlar personuppgifter.</p>
             </div>
           </section>
