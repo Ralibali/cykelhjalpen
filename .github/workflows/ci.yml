@@ -35,10 +35,27 @@ jobs:
         run: bun run typecheck
 
       - name: Lint
-        run: bun run lint
+        id: lint
+        continue-on-error: true
+        run: bunx eslint . --format json --output-file eslint-report.json
 
       - name: Test
         run: bun run test
 
       - name: Build
         run: bun run build
+
+      - name: Upload lint diagnostics
+        if: always() && steps.lint.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint-report.json
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Enforce lint result
+        if: steps.lint.outcome == 'failure'
+        run: |
+          echo 'ESLint reported errors. See the eslint-report artifact.'
+          exit 1
