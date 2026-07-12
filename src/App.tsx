@@ -113,6 +113,7 @@ const AdminProjects = lazy(() => import("./pages/admin/AdminProjects"));
 const AdminSuppliers = lazy(() => import("./pages/admin/AdminSuppliers"));
 const AdminOffers = lazy(() => import("./pages/admin/AdminOffers"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
+const AdminNotificationEvents = lazy(() => import("./pages/admin/AdminNotificationEvents"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminGuides = lazy(() => import("./pages/admin/AdminGuides"));
