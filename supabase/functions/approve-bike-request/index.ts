@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
       const city = requestRow.city || 'Linköping'
       let workshopsQuery = admin
         .from('workshops')
-        .select('email, company_name, phone, sms_notifications')
+        .select('email, company_name, phone, sms_notifications, user_id')
         .eq('approved', true)
       if (requestRow.preferred_workshop_id) {
         workshopsQuery = workshopsQuery.eq('id', requestRow.preferred_workshop_id)
@@ -177,26 +177,27 @@ Deno.serve(async (req) => {
         `,
       )))
 
-      const elksUser = Deno.env.get('ELKS_API_USERNAME')
-      const elksPassword = Deno.env.get('ELKS_API_PASSWORD')
-      if (elksUser && elksPassword) {
+      // In-app-notiser via klockan för alla mottagande verkstäder.
+      await notifyWorkshopsOfApprovedRequest(admin, workshops || [], {
+        city,
+        repair_category: requestRow.repair_category,
+        bike_type: requestRow.bike_type,
+      }).catch((notifyError) => console.error('Workshop in-app notification failed', notifyError))
+
+      // Neutralt SMS-lager: väljer 46elks eller GatewayAPI baserat på secrets.
+      // Utan konfigurerad leverantör hoppar vi tyst över SMS – ingen extern anrop.
+      const smsProvider = resolveSmsProvider()
+      if (smsProvider) {
         const recipients = (workshops || []).filter((workshop) => workshop.sms_notifications && workshop.phone)
-        const auth = btoa(`${elksUser}:${elksPassword}`)
         const message = `Nytt godkänt cykelärende i ${city}: ${requestRow.repair_category}. Svara i verkstadsvyn: cykelhjalpen.se/dashboard/verkstad/arenden`
         const smsResults = await Promise.allSettled(recipients.map(async (workshop) => {
-          const response = await fetch('https://api.46elks.com/a1/sms', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Basic ${auth}`,
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-              from: 'CykelHjalp',
-              to: toE164(workshop.phone || ''),
-              message,
-            }),
+          const request = smsProvider.buildRequest({ to: workshop.phone || '', message })
+          const response = await fetch(request.url, {
+            method: request.method,
+            headers: request.headers,
+            body: request.body,
           })
-          if (!response.ok) throw new Error(`SMS-fel ${response.status}`)
+          if (!response.ok) throw new Error(`SMS-fel (${smsProvider.name}) ${response.status}`)
         }))
         smsSent = smsResults.filter((result) => result.status === 'fulfilled').length
       }
