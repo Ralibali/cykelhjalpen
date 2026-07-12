@@ -5,6 +5,7 @@
     <meta name="google-site-verification" content="zkcjQq1SaPpbmrWl2XpYFLev6Qk-jZy-xW2g-67iSDw" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <title>Cykelhjälpen – jämför lokala cykelverkstäder</title>
     <meta name="description" content="Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto." />
@@ -102,7 +103,24 @@
 
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      window.__cykelAnalyticsGranted = false;
+      function gtag(){
+        var command = arguments[0];
+        var action = arguments[1];
+        var settings = arguments[2] || {};
+
+        if (command === 'consent') {
+          window.dataLayer.push(arguments);
+          if (action === 'update') {
+            window.__cykelAnalyticsGranted = settings.analytics_storage === 'granted';
+          }
+          return;
+        }
+
+        if (window.__cykelAnalyticsGranted) {
+          window.dataLayer.push(arguments);
+        }
+      }
       window.gtag = gtag;
       gtag('consent', 'default', {
         analytics_storage: 'denied',
