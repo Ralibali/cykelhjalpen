@@ -771,11 +771,17 @@ export type Database = {
           direction: string
           error: string | null
           id: string
+          idempotency_key: string | null
           message: string
           performed_by: string | null
           prospect_id: string
+          provider: string | null
+          provider_message_id: string | null
           recipient: string
+          retry_count: number
+          send_lock_at: string | null
           sent_at: string | null
+          sent_by: string | null
           status: string
           subject: string | null
           updated_at: string
@@ -788,11 +794,17 @@ export type Database = {
           direction?: string
           error?: string | null
           id?: string
+          idempotency_key?: string | null
           message: string
           performed_by?: string | null
           prospect_id: string
+          provider?: string | null
+          provider_message_id?: string | null
           recipient: string
+          retry_count?: number
+          send_lock_at?: string | null
           sent_at?: string | null
+          sent_by?: string | null
           status?: string
           subject?: string | null
           updated_at?: string
@@ -805,11 +817,17 @@ export type Database = {
           direction?: string
           error?: string | null
           id?: string
+          idempotency_key?: string | null
           message?: string
           performed_by?: string | null
           prospect_id?: string
+          provider?: string | null
+          provider_message_id?: string | null
           recipient?: string
+          retry_count?: number
+          send_lock_at?: string | null
           sent_at?: string | null
+          sent_by?: string | null
           status?: string
           subject?: string | null
           updated_at?: string
@@ -1352,12 +1370,14 @@ export type Database = {
           assigned_admin_id: string | null
           city: string
           company_name: string
+          contact_count: number
           converted_workshop_id: string | null
           created_at: string
           do_not_contact: boolean
           email: string | null
           id: string
           last_checked_at: string | null
+          last_contacted_at: string | null
           normalized_domain: string | null
           normalized_email: string | null
           normalized_name: string
@@ -1368,6 +1388,7 @@ export type Database = {
           score: number
           services: string[]
           status: string
+          unsubscribe_token: string
           updated_at: string
           website: string | null
         }
@@ -1377,12 +1398,14 @@ export type Database = {
           assigned_admin_id?: string | null
           city: string
           company_name: string
+          contact_count?: number
           converted_workshop_id?: string | null
           created_at?: string
           do_not_contact?: boolean
           email?: string | null
           id?: string
           last_checked_at?: string | null
+          last_contacted_at?: string | null
           normalized_domain?: string | null
           normalized_email?: string | null
           normalized_name: string
@@ -1393,6 +1416,7 @@ export type Database = {
           score?: number
           services?: string[]
           status?: string
+          unsubscribe_token?: string
           updated_at?: string
           website?: string | null
         }
@@ -1402,12 +1426,14 @@ export type Database = {
           assigned_admin_id?: string | null
           city?: string
           company_name?: string
+          contact_count?: number
           converted_workshop_id?: string | null
           created_at?: string
           do_not_contact?: boolean
           email?: string | null
           id?: string
           last_checked_at?: string | null
+          last_contacted_at?: string | null
           normalized_domain?: string | null
           normalized_email?: string | null
           normalized_name?: string
@@ -1418,6 +1444,7 @@ export type Database = {
           score?: number
           services?: string[]
           status?: string
+          unsubscribe_token?: string
           updated_at?: string
           website?: string | null
         }
