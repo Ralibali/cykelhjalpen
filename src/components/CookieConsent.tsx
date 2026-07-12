@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 const COOKIE_KEY = 'cykelhjalpen_cookie_consent'
 const GA_ID = 'G-C0XMZG0KDQ'
@@ -20,6 +20,12 @@ const ensureDataLayer = () => {
   }
   return (window as any).gtag as (...args: any[]) => void
 }
+
+const safePath = (pathname: string) =>
+  /^\/mitt-arende\/[^/]+/i.test(pathname) ? '/mitt-arende/[redacted]' : pathname
+
+const safePageLocation = (pathname: string) =>
+  `${window.location.origin}${safePath(pathname)}`
 
 const injectGtagScript = () => {
   if (gtagScriptInjected || typeof document === 'undefined') return
@@ -48,8 +54,9 @@ const applyConsent = (level: ConsentLevel) => {
     })
     injectGtagScript()
     gtag('js', new Date())
-    gtag('config', GA_ID, { anonymize_ip: true })
-    gtag('config', ADS_ID)
+    // Disable automatic page views so personal token URLs can never be sent.
+    gtag('config', GA_ID, { anonymize_ip: true, send_page_view: false })
+    gtag('config', ADS_ID, { send_page_view: false })
   } else {
     gtag('consent', 'update', {
       analytics_storage: 'denied',
@@ -61,7 +68,9 @@ const applyConsent = (level: ConsentLevel) => {
 }
 
 const CookieConsent = () => {
+  const location = useLocation()
   const [visible, setVisible] = useState(false)
+  const [level, setLevel] = useState<ConsentLevel | null>(null)
 
   useEffect(() => {
     const gtag = ensureDataLayer()
@@ -78,6 +87,7 @@ const CookieConsent = () => {
       try {
         const parsed = JSON.parse(raw) as { level?: ConsentLevel }
         if (parsed.level === 'all' || parsed.level === 'necessary') {
+          setLevel(parsed.level)
           applyConsent(parsed.level)
           return
         }
@@ -90,23 +100,36 @@ const CookieConsent = () => {
   }, [])
 
   useEffect(() => {
+    if (level !== 'all') return
+    const gtag = ensureDataLayer()
+    const pathname = safePath(location.pathname)
+    gtag?.('event', 'page_view', {
+      page_location: safePageLocation(location.pathname),
+      page_path: pathname,
+      page_title: document.title,
+    })
+  }, [level, location.pathname])
+
+  useEffect(() => {
     const openSettings = () => setVisible(true)
     window.addEventListener('cookie-settings:open', openSettings)
     return () => window.removeEventListener('cookie-settings:open', openSettings)
   }, [])
 
-  const accept = (level: ConsentLevel) => {
+  const accept = (nextLevel: ConsentLevel) => {
     localStorage.setItem(COOKIE_KEY, JSON.stringify({
-      level,
+      level: nextLevel,
       date: new Date().toISOString(),
-      version: '2026-05-03',
+      version: '2026-07-12',
     }))
-    applyConsent(level)
+    setLevel(nextLevel)
+    applyConsent(nextLevel)
     setVisible(false)
   }
 
   const resetConsent = () => {
     localStorage.removeItem(COOKIE_KEY)
+    setLevel('necessary')
     applyConsent('necessary')
     setVisible(true)
   }
