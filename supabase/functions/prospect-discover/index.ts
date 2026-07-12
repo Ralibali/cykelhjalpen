@@ -44,11 +44,13 @@ async function firecrawlSearch(query: string, limit: number): Promise<FirecrawlS
     },
     body: JSON.stringify({ query, limit, lang: 'sv', country: 'se' }),
   })
-  const data = await response.json().catch(() => null) as { data?: FirecrawlSearchResult[]; web?: FirecrawlSearchResult[]; error?: string } | null
+  const data = await response.json().catch(() => null) as any
   if (!response.ok) {
     throw new Error(`Firecrawl search misslyckades (${response.status}): ${data?.error || response.statusText}`)
   }
-  return data?.data || data?.web || []
+  // Firecrawl v2 kan svara med { data: { web: [...] } }, { data: [...] }, eller { web: [...] }
+  const raw = data?.data?.web ?? data?.web ?? data?.data ?? []
+  return Array.isArray(raw) ? raw : []
 }
 
 interface FirecrawlScrape {
