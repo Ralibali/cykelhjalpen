@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -7,10 +7,11 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Bike, CheckCircle2, Clock, CreditCard, ExternalLink, Loader2, RefreshCw, Wrench, XCircle,
+  Bike, CheckCircle2, Clock, Copy, CreditCard, ExternalLink, Loader2, RefreshCw, Wrench, XCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
+
 
 interface RequestRow {
   id: string
