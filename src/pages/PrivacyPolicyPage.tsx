@@ -47,7 +47,8 @@ const PrivacyPolicyPage = () => {
           <section className="space-y-6 text-sm leading-relaxed text-foreground/80">
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">1. Personuppgiftsansvarig</h2>
-              <p><strong>Cykelhjälpen</strong> är personuppgiftsansvarig för behandlingen av personuppgifter på Cykelhjälpen.se.</p>
+              <p><strong>Aurora Media AB</strong>, organisationsnummer 559272-0220, är personuppgiftsansvarig för behandlingen av personuppgifter på Cykelhjälpen.se och driver tjänsten under namnet Cykelhjälpen.</p>
+              <p className="mt-1">Postadress: Gustafstorpsvägen 42, 585 74 Ljungsbro.</p>
               <p className="mt-1">Kontakt: <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a></p>
             </div>
 
