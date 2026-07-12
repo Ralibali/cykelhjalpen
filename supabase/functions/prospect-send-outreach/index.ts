@@ -211,17 +211,29 @@ Deno.serve(async (req) => {
       contact_count: (prospect.contact_count || 0) + 1,
     }).eq('id', prospect.id)
 
-    // Logga i notification_events för spårbarhet
-    await admin.from('notification_events').insert({
-      channel: 'email',
-      provider: 'resend',
-      recipient: activity.recipient,
-      status: 'sent',
-      idempotency_key: idempotencyKey,
-      attempts: 1,
-      payload: { activity_id: locked.id, prospect_id: prospect.id, subject },
-      sent_at: sentAt,
-    }).select().maybeSingle().catch(() => null)
+    // Logga i notification_events för spårbarhet. Fältmatch mot schemat:
+    // last_attempt_at (inte sent_at), attempts, korrekt status. Fel här får inte
+    // rulla tillbaka utskicket – Resend har redan tagit emot mejlet.
+    try {
+      const { error: logErr } = await admin.from('notification_events').insert({
+        channel: 'email',
+        provider: 'resend',
+        recipient: activity.recipient,
+        status: 'sent',
+        idempotency_key: idempotencyKey,
+        attempts: 1,
+        payload: {
+          activity_id: locked.id,
+          prospect_id: prospect.id,
+          subject,
+          provider_message_id: providerMessageId,
+        },
+        last_attempt_at: sentAt,
+      })
+      if (logErr) console.error('notification_events insert failed:', logErr.message)
+    } catch (logCatch) {
+      console.error('notification_events insert threw:', (logCatch as Error).message)
+    }
 
     return new Response(JSON.stringify({ ok: true, provider_message_id: providerMessageId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
