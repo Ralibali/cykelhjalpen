@@ -80,9 +80,10 @@ const WorkshopRequests = () => {
 
   useEffect(() => { load() }, [workshop.id, workshop.city])
 
-  const confirmWebhookPaid = async () => {
-    // Poll the database to verify Stripe webhook has flipped paid=true.
-    // If it hasn't after ~15s, warn the user so they know something's off with the webhook.
+  const confirmWebhookPaid = async (responseId: string) => {
+    // Poll ENDAST den response som betalningen avsåg – aldrig acceptera en annan
+    // nyligen betald offert. response_id kommer från success_url:en som Stripe
+    // omdirigerar tillbaka till (skickad av create-bike-response-payment).
     const toastId = toast.loading('Väntar på bekräftelse från Stripe…')
     const started = Date.now()
     const timeoutMs = 15000
@@ -90,18 +91,13 @@ const WorkshopRequests = () => {
       const { data } = await supabase
         .from('workshop_responses')
         .select('id, paid')
+        .eq('id', responseId)
         .eq('workshop_id', workshop.id)
-        .eq('paid', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-      if (data && data.length > 0) {
-        // Find the most recently paid one that wasn't paid before.
-        const alreadyPaid = responses.some((r) => r.id === data[0].id && r.paid)
-        if (!alreadyPaid) {
-          toast.success('Betalning bekräftad – offerten är skickad till kunden. ✅', { id: toastId })
-          await load()
-          return
-        }
+        .maybeSingle()
+      if (data?.paid) {
+        toast.success('Betalning bekräftad – offerten är skickad till kunden. ✅', { id: toastId })
+        await load()
+        return
       }
       await new Promise((resolve) => setTimeout(resolve, 1500))
     }
@@ -115,6 +111,7 @@ const WorkshopRequests = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
+    const responseId = params.get('response_id')
     if (params.get('paid') === 'true') {
       navigate(location.pathname, { replace: true })
       if (params.get('free') === '1') {
@@ -122,8 +119,12 @@ const WorkshopRequests = () => {
           description: 'Kunden har fått ett mejl med ditt prisförslag.',
         })
         load()
+      } else if (responseId) {
+        confirmWebhookPaid(responseId)
       } else {
-        confirmWebhookPaid()
+        // Bakåtkompatibelt fallback för äldre success_url utan response_id.
+        toast.info('Betalningen registrerades. Uppdaterar listan…')
+        load()
       }
     } else if (params.get('canceled') === 'true') {
       toast.info('Betalningen avbröts.', {
