@@ -1,49 +1,40 @@
 // Admin-only: åtgärder på prospects.
-// action: 'approve' | 'reject' | 'do_not_contact' | 'convert' | 'prepare_draft'
-// SKICKAR INTE något externt – förbereder endast utkast i outreach_activities som status='draft'.
+// action: 'approve' | 'reject' | 'do_not_contact' | 'convert' | 'prepare_draft' | 'update_draft' | 'approve_draft'
+// SKICKAR INGET externt. Alla utkast är inaktiva tills admin uttryckligen anropar prospect-send-outreach.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
+import { buildEmailDraft, unsubscribeUrl } from '../_shared/outreach.ts'
+import { looksLikeBusinessEmail } from '../_shared/prospect.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
 
-type Action = 'approve' | 'reject' | 'do_not_contact' | 'convert' | 'prepare_draft'
+type Action =
+  | 'approve'
+  | 'reject'
+  | 'do_not_contact'
+  | 'convert'
+  | 'prepare_draft'
+  | 'update_draft'
+  | 'approve_draft'
 
 interface Body {
-  prospect_id: string
+  prospect_id?: string
+  activity_id?: string
   action: Action
   channel?: 'email' | 'sms'
   note?: string
+  subject?: string
+  message?: string
 }
 
-const buildDraft = (channel: 'email' | 'sms', prospect: {
-  company_name: string
-  city: string
-  ai_summary?: string | null
-}) => {
+const buildSmsDraft = (prospect: { company_name: string; city: string; unsubscribe_token: string }) => {
   const first = prospect.company_name.split(/\s+/)[0] || 'ni'
-  if (channel === 'sms') {
-    return {
-      subject: null as string | null,
-      message: `Hej ${first}! Cykelhjälpen kopplar cykelägare i ${prospect.city} med lokala verkstäder. Vill ni ha en gratis introduktion? Läs mer på cykelhjalpen.se/for-verkstader eller svara på detta SMS.`,
-    }
-  }
-  const summary = prospect.ai_summary ? `\n\nVi såg att ni ${prospect.ai_summary.slice(0, 220).trim()}.` : ''
   return {
-    subject: `Nya cykelkunder i ${prospect.city} via Cykelhjälpen`,
-    message: `Hej ${first},
-
-Jag heter [DITT NAMN] från Cykelhjälpen – vi hjälper cykelägare i ${prospect.city} att hitta lokala verkstäder som er.${summary}
-
-Vi tar inga fasta månadsavgifter – ni betalar enbart för ledtrådar ni väljer att svara på. De första fem är gratis så att ni kan testa flödet utan risk.
-
-Hör gärna av er om ni vill veta mer eller boka en kort demo. All info finns även på https://cykelhjalpen.se/for-verkstader
-
-Vänliga hälsningar,
-Cykelhjälpen
-info@cykelhjalpen.se`,
+    subject: null as string | null,
+    message: `Hej ${first}! Christoffer på Cykelhjalpen.se – vi kopplar cykelägare i ${prospect.city} med lokala verkstäder. Vill ni testa? Fem första kundförfrågningarna är gratis. Läs mer: https://cykelhjalpen.se/for-verkstader. Avreg: ${unsubscribeUrl(prospect.unsubscribe_token)}`,
   }
 }
 
@@ -66,8 +57,42 @@ Deno.serve(async (req) => {
     if (profile?.role !== 'admin') throw new Error('forbidden')
 
     const body = await req.json() as Body
-    if (!body?.prospect_id || !body?.action) throw new Error('prospect_id och action krävs')
+    if (!body?.action) throw new Error('action krävs')
 
+    // Åtgärder som verkar direkt på ett utkast
+    if (body.action === 'update_draft' || body.action === 'approve_draft') {
+      if (!body.activity_id) throw new Error('activity_id krävs')
+      const { data: activity, error: actErr } = await admin
+        .from('outreach_activities').select('*').eq('id', body.activity_id).maybeSingle()
+      if (actErr) throw actErr
+      if (!activity) throw new Error('Utkastet hittades inte')
+      if (!['draft', 'pending_approval', 'approved', 'failed'].includes(activity.status)) {
+        throw new Error(`Utkastet är låst (status: ${activity.status})`)
+      }
+      if (body.action === 'update_draft') {
+        const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
+        if (typeof body.subject === 'string') patch.subject = body.subject
+        if (typeof body.message === 'string') patch.message = body.message
+        // Redigering återställer till draft så det tydligt måste godkännas igen
+        patch.status = 'draft'
+        patch.approved_at = null
+        patch.approved_by = null
+        const { error } = await admin.from('outreach_activities').update(patch).eq('id', activity.id)
+        if (error) throw error
+      } else {
+        const { error } = await admin.from('outreach_activities').update({
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          approved_by: userData.user.id,
+        }).eq('id', activity.id)
+        if (error) throw error
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (!body.prospect_id) throw new Error('prospect_id krävs')
     const { data: prospect, error: prospectError } = await admin
       .from('workshop_prospects')
       .select('*')
@@ -75,23 +100,25 @@ Deno.serve(async (req) => {
       .maybeSingle()
     if (prospectError) throw prospectError
     if (!prospect) throw new Error('Prospekt hittades inte')
+    if (prospect.do_not_contact && body.action !== 'do_not_contact') {
+      throw new Error('Prospektet är markerat som do-not-contact.')
+    }
 
     if (body.action === 'approve') {
       await admin.from('workshop_prospects').update({ status: 'approved_for_contact' }).eq('id', prospect.id)
     } else if (body.action === 'reject') {
       await admin.from('workshop_prospects').update({ status: 'rejected', notes: body.note ?? prospect.notes }).eq('id', prospect.id)
     } else if (body.action === 'do_not_contact') {
-      // Triggern sync_prospect_suppression sätter status och skriver till suppression.
       await admin.from('workshop_prospects').update({ do_not_contact: true, notes: body.note ?? prospect.notes }).eq('id', prospect.id)
     } else if (body.action === 'convert') {
-      // Skapa endast en notis + markera – vi bjuder aldrig in externt automatiskt.
       await admin.from('workshop_prospects').update({ status: 'converted' }).eq('id', prospect.id)
     } else if (body.action === 'prepare_draft') {
       const channel = body.channel || 'email'
-      if (prospect.do_not_contact) throw new Error('Prospekt är markerat som do-not-contact')
       const recipient = channel === 'email' ? prospect.email : prospect.phone
       if (!recipient) throw new Error(`Saknar ${channel === 'email' ? 'e-post' : 'telefonnummer'} för utkast`)
-      // Kontrollera suppression
+      if (channel === 'email' && !looksLikeBusinessEmail(prospect.normalized_email)) {
+        throw new Error('E-postadressen ser inte ut som ett publikt företagsmejl – utkast blockerat.')
+      }
       const { data: blocked } = await admin
         .from('contact_suppression')
         .select('id')
@@ -100,7 +127,17 @@ Deno.serve(async (req) => {
         .maybeSingle()
       if (blocked) throw new Error('Kontakten finns i suppression-listan')
 
-      const draft = buildDraft(channel, prospect)
+      const draft = channel === 'email'
+        ? buildEmailDraft({
+            company_name: prospect.company_name,
+            city: prospect.city,
+            website: prospect.website,
+            ai_summary: prospect.ai_summary,
+            services: prospect.services,
+            unsubscribe_token: prospect.unsubscribe_token,
+          })
+        : buildSmsDraft({ company_name: prospect.company_name, city: prospect.city, unsubscribe_token: prospect.unsubscribe_token })
+
       const { data: activity, error: activityError } = await admin
         .from('outreach_activities')
         .insert({
