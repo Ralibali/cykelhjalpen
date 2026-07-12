@@ -21,6 +21,13 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // The combined legacy Updro/Cykelhjälpen codebase still contains broad
+      // response shapes. Keep them visible without making every release red.
+      "@typescript-eslint/no-explicit-any": "warn",
+      // shadcn/ui uses empty extension interfaces intentionally.
+      "@typescript-eslint/no-empty-object-type": "off",
+      // Tailwind's plugin API still commonly uses require() in config files.
+      "@typescript-eslint/no-require-imports": "warn",
     },
   },
 );
