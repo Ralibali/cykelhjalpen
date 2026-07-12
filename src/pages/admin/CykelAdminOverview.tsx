@@ -280,7 +280,10 @@ const CykelAdminOverview = () => {
                         </Button>
                       )}
                     </div>
-                    <div className="flex justify-end gap-2 mt-4">
+                    <div className="flex flex-wrap justify-end gap-2 mt-4">
+                      <Button size="sm" variant="ghost" onClick={() => copyContact(request)} aria-label="Kopiera kontaktuppgifter">
+                        <Copy className="h-4 w-4 mr-1" /> Kopiera kontakt
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => setRejectTarget(request)} disabled={busy === request.id}>
                         <XCircle className="h-4 w-4 mr-1" /> Avvisa
                       </Button>
