@@ -97,6 +97,25 @@ export function usePageTracking() {
       device_type: getDeviceType(),
     }).then(() => {})
   }, [location.pathname, location.search])
+
+  useEffect(() => {
+    const pathname = location.pathname.replace(/\/$/, '') || '/'
+    const stillPrivate = pathname.startsWith('/admin')
+      || pathname.startsWith('/dashboard')
+      || pathname.startsWith('/mitt-arende/')
+      || ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/landing', '/landing/byra'].includes(pathname)
+
+    if (stillPrivate) return
+
+    const timer = window.setTimeout(() => {
+      const robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null
+      if (robots?.content.replace(/\s/g, '').toLowerCase() === 'noindex,nofollow') {
+        robots.content = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+      }
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [location.pathname])
 }
 
 /** Track a conversion or meaningful interaction with first-touch attribution attached. */
