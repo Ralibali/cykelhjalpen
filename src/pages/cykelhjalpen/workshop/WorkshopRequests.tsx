@@ -10,6 +10,11 @@ import { toast } from 'sonner'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 
+interface RequestImage {
+  id: string
+  url: string
+}
+
 interface RequestRow {
   id: string
   bike_type: string
@@ -22,6 +27,7 @@ interface RequestRow {
   wants_pickup: boolean
   status: string
   created_at: string
+  images?: RequestImage[]
 }
 
 interface ExistingResponse {
@@ -63,27 +69,8 @@ const WorkshopRequests = () => {
       setRequests([])
       setLoadError(openData?.error || openError?.message || 'Kunde inte läsa öppna ärenden.')
     } else {
-      const rawRequests = (openData?.requests || []) as RequestRow[]
-      const requestIds = rawRequests.map((request) => request.id)
-
-      if (requestIds.length === 0) {
-        setRequests([])
-      } else {
-        const { data: cityRows, error: cityError } = await supabase
-          .from('bike_repair_requests')
-          .select('id, city')
-          .in('id', requestIds)
-          .eq('city', workshop.city)
-
-        if (cityError) {
-          console.error('Could not verify request cities', cityError)
-          setRequests([])
-          setLoadError('Ärendena kunde inte avgränsas till din stad. Försök igen senare.')
-        } else {
-          const allowedIds = new Set((cityRows || []).map((row) => row.id))
-          setRequests(rawRequests.filter((request) => allowedIds.has(request.id)))
-        }
-      }
+      // The Edge Function now enforces the workshop city before returning any request details.
+      setRequests((openData?.requests || []) as RequestRow[])
     }
 
     if (mineError) toast.error('Kunde inte läsa dina tidigare offerter.')
@@ -96,7 +83,7 @@ const WorkshopRequests = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     if (params.get('paid') === 'true') {
-      toast.success(params.get('free') === '1' ? 'Offerten är skickad med en gratis-lead.' : 'Betalningen lyckades och offerten är skickad.')
+      toast.success(params.get('free') === '1' ? 'Offerten är skickad med en gratis-lead.' : 'Betalningen är registrerad. Offerten skickas när Stripe-bekräftelsen är klar.')
       navigate(location.pathname, { replace: true })
       load()
     } else if (params.get('canceled') === 'true') {
@@ -105,6 +92,11 @@ const WorkshopRequests = () => {
     }
   }, [location.search])
 
+  const toggleOffer = (requestId: string) => {
+    setActive((current) => current === requestId ? null : requestId)
+    setForm(emptyForm)
+  }
+
   const validateOffer = () => {
     if (form.message.trim().length < 20) {
       toast.error('Beskriv ditt svar lite mer, minst tjugo tecken.')
@@ -112,7 +104,7 @@ const WorkshopRequests = () => {
     }
     const min = form.estimated_price_min ? Number(form.estimated_price_min) : null
     const max = form.estimated_price_max ? Number(form.estimated_price_max) : null
-    if (min !== null && min < 0 || max !== null && max < 0) {
+    if ((min !== null && min < 0) || (max !== null && max < 0)) {
       toast.error('Priset kan inte vara negativt.')
       return false
     }
@@ -225,6 +217,15 @@ const WorkshopRequests = () => {
                       {request.urgency && <span>⏱ {request.urgency}</span>}
                       {request.wants_pickup && <span>🚐 Önskar hämtning</span>}
                     </div>
+                    {request.images && request.images.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+                        {request.images.map((image) => (
+                          <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-lg border bg-muted">
+                            <img src={image.url} alt="Bild på cykelproblemet" className="h-full w-full object-cover" loading="lazy" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {paid ? (
@@ -235,7 +236,7 @@ const WorkshopRequests = () => {
                       Fortsätt till betalning
                     </Button>
                   ) : (
-                    <Button size="sm" onClick={() => setActive(active === request.id ? null : request.id)}>
+                    <Button size="sm" onClick={() => toggleOffer(request.id)}>
                       {active === request.id ? 'Stäng' : 'Lämna offert'}
                     </Button>
                   )}
