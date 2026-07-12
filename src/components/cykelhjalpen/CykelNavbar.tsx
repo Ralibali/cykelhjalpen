@@ -41,6 +41,7 @@ const CykelNavbar = () => {
 
         <div className="hidden md:flex items-center gap-3">
           <ThemeToggle />
+          {isAuthenticated && <NotificationBell />}
           {isAuthenticated ? (
             <Button asChild variant="outline" size="sm"><Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>Mitt konto</Link></Button>
           ) : (
