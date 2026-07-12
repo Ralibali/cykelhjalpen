@@ -245,6 +245,7 @@ const AppRoutes = () => {
           <Route path="/admin/installningar" element={<ProtectedRoute role="admin"><AdminSettings /></ProtectedRoute>} />
           <Route path="/admin/notifikationer" element={<ProtectedRoute role="admin"><AdminNotifications /></ProtectedRoute>} />
           <Route path="/admin/notifieringar-logg" element={<ProtectedRoute role="admin"><AdminNotificationEvents /></ProtectedRoute>} />
+          <Route path="/admin/prospekt" element={<ProtectedRoute role="admin"><AdminProspects /></ProtectedRoute>} />
 
           {/* ============ Updro-only routes ============ */}
           {host === 'updro' && (
