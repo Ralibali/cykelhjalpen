@@ -1,6 +1,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
+import { notifyAdminsOfPendingRequest } from '../_shared/notifications.ts'
+
 
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
 const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
