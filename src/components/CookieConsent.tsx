@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Link, useLocation } from 'react-router-dom'
+import {
+  COOKIE_CONSENT_EVENT,
+  COOKIE_CONSENT_KEY,
+  clearAnalyticsCookies,
+  notifyConsentChanged,
+  readConsentLevel,
+  type ConsentLevel,
+} from '@/lib/analyticsConsent'
 
-const COOKIE_KEY = 'cykelhjalpen_cookie_consent'
 const GA_ID = 'G-C0XMZG0KDQ'
 const ADS_ID = 'AW-10941540384'
-
-type ConsentLevel = 'all' | 'necessary'
 
 let gtagScriptInjected = false
 
@@ -54,7 +59,7 @@ const applyConsent = (level: ConsentLevel) => {
     })
     injectGtagScript()
     gtag('js', new Date())
-    // Disable automatic page views so personal token URLs can never be sent.
+    // Automatic page views stay disabled so personal token URLs are never sent.
     gtag('config', GA_ID, { anonymize_ip: true, send_page_view: false })
     gtag('config', ADS_ID, { send_page_view: false })
   } else {
@@ -64,6 +69,7 @@ const applyConsent = (level: ConsentLevel) => {
       ad_user_data: 'denied',
       ad_personalization: 'denied',
     })
+    clearAnalyticsCookies()
   }
 }
 
@@ -82,21 +88,29 @@ const CookieConsent = () => {
       wait_for_update: 500,
     })
 
-    const raw = localStorage.getItem(COOKIE_KEY)
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as { level?: ConsentLevel }
-        if (parsed.level === 'all' || parsed.level === 'necessary') {
-          setLevel(parsed.level)
-          applyConsent(parsed.level)
-          return
-        }
-      } catch {
-        localStorage.removeItem(COOKIE_KEY)
+    const storedLevel = readConsentLevel()
+    if (storedLevel) {
+      setLevel(storedLevel)
+      applyConsent(storedLevel)
+    } else {
+      setVisible(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== COOKIE_CONSENT_KEY) return
+      const nextLevel = readConsentLevel()
+      setLevel(nextLevel)
+      if (nextLevel) applyConsent(nextLevel)
+      else {
+        applyConsent('necessary')
+        setVisible(true)
       }
     }
 
-    setVisible(true)
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   useEffect(() => {
@@ -117,28 +131,22 @@ const CookieConsent = () => {
   }, [])
 
   const accept = (nextLevel: ConsentLevel) => {
-    localStorage.setItem(COOKIE_KEY, JSON.stringify({
+    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({
       level: nextLevel,
       date: new Date().toISOString(),
       version: '2026-07-12',
     }))
     setLevel(nextLevel)
     applyConsent(nextLevel)
+    notifyConsentChanged(nextLevel)
     setVisible(false)
-  }
-
-  const resetConsent = () => {
-    localStorage.removeItem(COOKIE_KEY)
-    setLevel('necessary')
-    applyConsent('necessary')
-    setVisible(true)
   }
 
   if (!visible) {
     return (
       <button
         type="button"
-        onClick={resetConsent}
+        onClick={() => setVisible(true)}
         className="fixed bottom-3 left-3 z-40 rounded-full border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur hover:text-foreground"
         aria-label="Ändra cookieinställningar"
       >
@@ -148,22 +156,23 @@ const CookieConsent = () => {
   }
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-50 p-4">
+    <div className="fixed bottom-0 inset-x-0 z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="cookie-heading">
       <div className="max-w-3xl mx-auto bg-card border rounded-2xl shadow-lg p-5 flex flex-col gap-4">
         <div className="text-sm text-foreground/80">
-          <p className="font-semibold text-foreground mb-1">🍪 Vi använder cookies</p>
+          <p id="cookie-heading" className="font-semibold text-foreground mb-1">🍪 Dina cookieinställningar</p>
           <p>
-            Vi använder nödvändiga cookies för att webbplatsen och tjänsten ska fungera. Med ditt aktiva samtycke använder vi även Google Analytics och Google Ads för statistik, konverteringsmätning och förbättring av marknadsföring. Du kan neka utan att det påverkar grundläggande funktioner. Läs mer i vår{' '}
+            Vi använder nödvändiga lagringsfunktioner för att webbplatsen och tjänsten ska fungera. Med ditt aktiva samtycke använder vi även Google Analytics, Google Ads och vår egen anonymiserade produktstatistik för att förbättra tjänsten och mäta marknadsföring. Du kan neka utan att grundfunktionerna påverkas. Läs mer i vår{' '}
             <Link to="/integritetspolicy" className="text-primary hover:underline">integritetspolicy</Link> och{' '}
             <Link to="/cookies" className="text-primary hover:underline">cookiepolicy</Link>.
           </p>
+          {level && <p className="mt-2 text-xs text-muted-foreground">Nuvarande val: {level === 'all' ? 'statistik och marknadsföring tillåts' : 'endast nödvändiga funktioner'}.</p>}
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
           <Button variant="outline" size="sm" className="rounded-xl" onClick={() => accept('necessary')}>
-            Neka icke-nödvändiga
+            Endast nödvändiga
           </Button>
           <Button size="sm" className="rounded-xl bg-primary text-primary-foreground" onClick={() => accept('all')}>
-            Acceptera statistik och marknadsföring
+            Tillåt statistik och marknadsföring
           </Button>
         </div>
       </div>
