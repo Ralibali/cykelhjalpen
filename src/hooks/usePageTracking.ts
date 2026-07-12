@@ -28,6 +28,24 @@ function getDeviceType(): string {
   return 'desktop'
 }
 
+function sanitizePath(pathname: string): string {
+  if (/^\/mitt-arende\/[^/]+/i.test(pathname)) return '/mitt-arende/[redacted]'
+  return pathname.slice(0, 1000)
+}
+
+function sanitizeReferrer(value: string): string | undefined {
+  if (!value) return undefined
+  try {
+    const url = new URL(value)
+    if (url.origin === window.location.origin) {
+      return `${url.origin}${sanitizePath(url.pathname)}`
+    }
+    return url.origin
+  } catch {
+    return undefined
+  }
+}
+
 function readAttribution(): Attribution {
   try {
     return JSON.parse(sessionStorage.getItem(ATTRIBUTION_KEY) || '{}') as Attribution
@@ -43,8 +61,8 @@ function captureAttribution(search: string, pathname: string): Attribution {
 
   const params = new URLSearchParams(search)
   const attribution: Attribution = {
-    landing_path: `${pathname}${search}`,
-    first_referrer: document.referrer || undefined,
+    landing_path: sanitizePath(pathname),
+    first_referrer: sanitizeReferrer(document.referrer),
     captured_at: new Date().toISOString(),
   }
 
@@ -65,17 +83,17 @@ export function usePageTracking() {
     const pathname = location.pathname
     if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) return
 
-    const pathWithQuery = `${pathname}${location.search}`
-    if (pathWithQuery === lastLocation.current) return
-    lastLocation.current = pathWithQuery
+    const safePath = sanitizePath(pathname)
+    if (safePath === lastLocation.current) return
+    lastLocation.current = safePath
 
     const sessionId = getSessionId()
     captureAttribution(location.search, pathname)
 
     supabase.from('page_views').insert({
       session_id: sessionId,
-      path: pathWithQuery.slice(0, 1000),
-      referrer: document.referrer || null,
+      path: safePath,
+      referrer: sanitizeReferrer(document.referrer) || null,
       device_type: getDeviceType(),
     }).then(() => {})
   }, [location.pathname, location.search])
@@ -90,7 +108,7 @@ export function trackClick(eventName: string, elementText?: string, metadata?: R
     session_id: sessionId,
     event_name: eventName,
     element_text: elementText || null,
-    path: `${window.location.pathname}${window.location.search}`.slice(0, 1000),
+    path: sanitizePath(window.location.pathname),
     metadata: {
       ...metadata,
       attribution,
