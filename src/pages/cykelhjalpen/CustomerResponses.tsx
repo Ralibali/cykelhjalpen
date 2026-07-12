@@ -166,7 +166,7 @@ const CustomerResponses = () => {
           <h1 className="font-display text-2xl font-bold">Ärendet är publicerat</h1>
         </div>
         <p className="text-sm">
-          {request.status === 'full'
+          {(request.status === 'closed_for_responses' || request.status === 'full')
             ? 'Du har fått maximalt fem prisförslag. Jämför dem nedan och kontakta den verkstad som passar dig bäst.'
             : responses.length > 0
               ? 'Du har fått prisförslag. Fler kan tillkomma tills fem verkstäder har svarat.'
