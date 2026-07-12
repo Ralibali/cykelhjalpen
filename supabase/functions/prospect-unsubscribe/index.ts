@@ -1,6 +1,13 @@
 // Publik edge function för avregistrering. verify_jwt = false.
-// GET /?token=... => returnerar { company_name, city } (för att sidan ska kunna visa något)
-// POST { token } => markerar prospektet do-not-contact + lägger e-post/domän i suppression.
+//
+// - GET  ?token=UUID  => returnerar { company_name, city, already_unsubscribed }
+//                        (för frontend-sidan /avregistrera/:token att visa detaljer)
+// - POST                => markerar prospekt do-not-contact + skriver suppression.
+//   Tokenet kan komma från:
+//     • URL query string (?token=UUID)  [används av Gmail/Yahoo one-click, RFC 8058]
+//     • x-www-form-urlencoded body      [samma one-click, om provider POST:ar body]
+//     • application/json body {token}   [används av vår egen frontend]
+//
 // Tokenet är ogenomskinligt och avslöjar inte prospect-id.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -11,56 +18,91 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-Deno.serve(async (req) => {
+// Exporterad för enhetstester.
+export const extractToken = async (req: Request): Promise<string | null> => {
+  const url = new URL(req.url)
+  const qToken = url.searchParams.get('token')
+  if (qToken) return qToken
+
+  if (req.method !== 'POST') return null
+
+  const contentType = (req.headers.get('content-type') || '').toLowerCase()
+
+  if (contentType.includes('application/json')) {
+    try {
+      const body = await req.json() as { token?: string }
+      return body?.token ?? null
+    } catch {
+      return null
+    }
+  }
+
+  if (
+    contentType.includes('application/x-www-form-urlencoded') ||
+    contentType.includes('multipart/form-data')
+  ) {
+    try {
+      const form = await req.formData()
+      const token = form.get('token')
+      return typeof token === 'string' ? token : null
+    } catch {
+      return null
+    }
+  }
+
+  // Fallback: körs t.ex. när Gmail POST:ar body `List-Unsubscribe=One-Click`
+  // utan Content-Type. Tokenet ska då sitta i query, men vi försöker läsa body
+  // som text ifall någon leverantör bifogar den.
+  try {
+    const text = await req.text()
+    if (!text) return null
+    const params = new URLSearchParams(text)
+    return params.get('token')
+  } catch {
+    return null
+  }
+}
+
+const jsonResponse = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+
+export const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return jsonResponse({ error: 'method not allowed' }, 405)
+  }
 
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
-    let token: string | null = null
-
-    if (req.method === 'GET') {
-      const url = new URL(req.url)
-      token = url.searchParams.get('token')
-    } else if (req.method === 'POST') {
-      const body = await req.json().catch(() => ({})) as { token?: string }
-      token = body?.token ?? null
-    } else {
-      return new Response(JSON.stringify({ error: 'method not allowed' }), {
-        status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    const token = await extractToken(req)
 
     if (!token || !UUID_RE.test(token)) {
-      return new Response(JSON.stringify({ error: 'ogiltig_token' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return jsonResponse({ error: 'ogiltig_token' }, 400)
     }
 
     const { data: prospect } = await admin
       .from('workshop_prospects')
-      .select('id, company_name, city, do_not_contact, normalized_email, normalized_domain, normalized_phone')
+      .select('id, company_name, city, do_not_contact')
       .eq('unsubscribe_token', token)
       .maybeSingle()
 
-    if (!prospect) {
-      return new Response(JSON.stringify({ error: 'okänd_lank' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    if (!prospect) return jsonResponse({ error: 'okänd_lank' }, 404)
 
     if (req.method === 'GET') {
-      return new Response(JSON.stringify({
+      return jsonResponse({
         ok: true,
         company_name: prospect.company_name,
         city: prospect.city,
         already_unsubscribed: prospect.do_not_contact,
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      })
     }
 
     if (prospect.do_not_contact) {
-      return new Response(JSON.stringify({ ok: true, already_unsubscribed: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return jsonResponse({ ok: true, already_unsubscribed: true })
     }
 
     // Triggern sync_prospect_suppression sätter status + skriver till suppression för alla normaliserade värden.
@@ -70,14 +112,12 @@ Deno.serve(async (req) => {
       .eq('id', prospect.id)
     if (updErr) throw updErr
 
-    return new Response(JSON.stringify({ ok: true, already_unsubscribed: false }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return jsonResponse({ ok: true, already_unsubscribed: false })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Okänt fel'
     console.error('prospect-unsubscribe', message)
-    return new Response(JSON.stringify({ error: message }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return jsonResponse({ error: message }, 400)
   }
-})
+}
+
+Deno.serve(handler)
