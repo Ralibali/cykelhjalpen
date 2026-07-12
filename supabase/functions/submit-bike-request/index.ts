@@ -162,6 +162,7 @@ Deno.serve(async (req) => {
     const adminNotifyTask = notifyAdminsOfPendingRequest(supabase, {
       city: body.city,
       repair_category: body.repair_category,
+      request_id: (row as { id?: string } | null)?.id,
     }).catch((notifyError) => console.error('Admin notification insert failed', notifyError))
 
     const edgeRuntime = (globalThis as any).EdgeRuntime
