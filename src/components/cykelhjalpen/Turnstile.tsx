@@ -59,9 +59,14 @@ interface Props {
   onVerify: (token: string) => void
   onExpire?: () => void
   resetKey?: number
+  /**
+   * Action-namn skickas till Cloudflare Turnstile och kontrolleras server-side
+   * så att ett token utfärdat för ett formulär inte kan återanvändas i ett annat.
+   */
+  action?: string
 }
 
-const Turnstile = ({ onVerify, onExpire, resetKey = 0 }: Props) => {
+const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_request' }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetIdRef = useRef<string | null>(null)
   const onVerifyRef = useRef(onVerify)
@@ -135,7 +140,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0 }: Props) => {
       if (cancelled || !containerRef.current || !window.turnstile) return
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey: siteKey,
-        action: 'submit_bike_request',
+        action,
         callback: (token: string) => {
           setError(null)
           onVerifyRef.current(token)
@@ -156,7 +161,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0 }: Props) => {
       cancelled = true
       removeWidget()
     }
-  }, [siteKey, resetKey, retryVersion])
+  }, [siteKey, resetKey, retryVersion, action])
 
   const retry = () => {
     setError(null)

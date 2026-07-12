@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Wrench, Loader2, CheckCircle2, ShieldCheck, MapPin } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
+import Turnstile from '@/components/cykelhjalpen/Turnstile'
 import { Helmet } from 'react-helmet-async'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
@@ -39,6 +40,8 @@ const RegisterWorkshopPage = () => {
   const cityParam = searchParams.get('stad')
   const initialCity = (CYKEL_CITIES.find((c) => c.name.toLowerCase() === (cityParam || '').toLowerCase() || c.slug === (cityParam || '').toLowerCase())?.name || DEFAULT_CYKEL_CITY) as CykelCityName
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [form, setForm] = useState({
     company_name: '',
     email: '',
@@ -50,6 +53,8 @@ const RegisterWorkshopPage = () => {
     services: [] as string[],
     terms_accepted: false,
   })
+  const handleTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), [])
+  const handleTurnstileExpire = useCallback(() => setTurnstileToken(null), [])
   useEffect(() => {
     if (cityParam) {
       const match = CYKEL_CITIES.find((c) => c.name.toLowerCase() === cityParam.toLowerCase() || c.slug === cityParam.toLowerCase())
@@ -66,7 +71,8 @@ const RegisterWorkshopPage = () => {
     event.preventDefault()
     if (!form.terms_accepted) return toast.error('Du måste godkänna villkoren')
     if (form.company_name.trim().length < 2) return toast.error('Ange verkstadens namn')
-    if (form.password.length < 6) return toast.error('Lösenordet måste vara minst sex tecken')
+    if (form.password.length < 8) return toast.error('Lösenordet måste vara minst åtta tecken')
+    if (!turnstileToken) return toast.error('Bekräfta säkerhetskontrollen innan du registrerar verkstaden.')
 
     setLoading(true)
     trackClick('workshop_registration_submit_clicked', 'Skicka ansökan', { services_count: form.services.length, city: form.city })
@@ -83,6 +89,7 @@ const RegisterWorkshopPage = () => {
           city: form.city,
           services: form.services,
           terms_accepted: form.terms_accepted,
+          turnstile_token: turnstileToken,
         },
       })
 
@@ -108,6 +115,9 @@ const RegisterWorkshopPage = () => {
       navigate('/logga-in?registrerad=verkstad')
     } catch (error) {
       trackClick('workshop_registration_failed', 'Skicka ansökan', { city: form.city })
+      // Vid backend-fel behöver Turnstile-token förnyas – det är single-use.
+      setTurnstileToken(null)
+      setTurnstileResetKey((current) => current + 1)
       toast.error((error as Error)?.message || 'Registreringen misslyckades')
     } finally {
       setLoading(false)
@@ -175,8 +185,8 @@ const RegisterWorkshopPage = () => {
             </div>
             <div>
               <Label htmlFor="pw">Lösenord</Label>
-              <Input id="pw" type="password" autoComplete="new-password" required minLength={6} value={form.password} onChange={(event) => update('password', event.target.value)} />
-              <p className="text-xs text-muted-foreground mt-1">Minst sex tecken.</p>
+              <Input id="pw" type="password" autoComplete="new-password" required minLength={8} value={form.password} onChange={(event) => update('password', event.target.value)} />
+              <p className="text-xs text-muted-foreground mt-1">Minst åtta tecken.</p>
             </div>
           </div>
 
@@ -215,7 +225,16 @@ const RegisterWorkshopPage = () => {
             </span>
           </label>
 
-          <Button type="submit" disabled={loading || !form.terms_accepted} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-12">
+          <div>
+            <Turnstile
+              action="register_workshop"
+              onVerify={handleTurnstileVerify}
+              onExpire={handleTurnstileExpire}
+              resetKey={turnstileResetKey}
+            />
+          </div>
+
+          <Button type="submit" disabled={loading || !form.terms_accepted || !turnstileToken} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-12">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {loading ? 'Skapar verkstad…' : 'Registrera verkstaden kostnadsfritt'}
           </Button>
