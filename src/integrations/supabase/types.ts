@@ -1848,6 +1848,38 @@ export type Database = {
       get_workshop_id: { Args: { _user_id: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_workshop: { Args: { _user_id: string }; Returns: boolean }
+      reserve_outreach_send_slot: {
+        Args: { _activity_id: string; _cap: number; _sender: string }
+        Returns: {
+          approved_at: string | null
+          approved_by: string | null
+          channel: string
+          created_at: string
+          direction: string
+          error: string | null
+          id: string
+          idempotency_key: string | null
+          message: string
+          performed_by: string | null
+          prospect_id: string
+          provider: string | null
+          provider_message_id: string | null
+          recipient: string
+          retry_count: number
+          send_lock_at: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "outreach_activities"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       submit_bike_repair_request: {
         Args: {
           p_area: string
