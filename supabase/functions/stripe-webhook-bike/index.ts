@@ -133,7 +133,7 @@ serve(async (req) => {
               }).eq("stripe_session_id", session.id),
               admin.from("workshop_responses").update({
                 paid: false,
-                status: "full",
+                status: "closed_for_responses",
                 stripe_payment_intent_id: paymentIntentId,
               }).eq("id", responseId),
             ]);
