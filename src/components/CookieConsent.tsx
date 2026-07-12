@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  COOKIE_CONSENT_EVENT,
   COOKIE_CONSENT_KEY,
   clearAnalyticsCookies,
   notifyConsentChanged,
@@ -13,17 +12,25 @@ import {
 const GA_ID = 'G-C0XMZG0KDQ'
 const ADS_ID = 'AW-10941540384'
 
+type Gtag = (...args: unknown[]) => void
+type AnalyticsWindow = Window & {
+  dataLayer?: unknown[][]
+  gtag?: Gtag
+}
+
 let gtagScriptInjected = false
 
-const ensureDataLayer = () => {
+const ensureDataLayer = (): Gtag | null => {
   if (typeof window === 'undefined') return null
-  ;(window as any).dataLayer = (window as any).dataLayer || []
-  if (!(window as any).gtag) {
-    ;(window as any).gtag = function gtag(){
-      ;(window as any).dataLayer.push(arguments)
+
+  const analyticsWindow = window as AnalyticsWindow
+  analyticsWindow.dataLayer = analyticsWindow.dataLayer || []
+  if (!analyticsWindow.gtag) {
+    analyticsWindow.gtag = (...args: unknown[]) => {
+      analyticsWindow.dataLayer?.push(args)
     }
   }
-  return (window as any).gtag as (...args: any[]) => void
+  return analyticsWindow.gtag
 }
 
 const safePath = (pathname: string) =>
