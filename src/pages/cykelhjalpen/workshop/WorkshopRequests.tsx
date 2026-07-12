@@ -80,40 +80,58 @@ const WorkshopRequests = () => {
 
   useEffect(() => { load() }, [workshop.id, workshop.city])
 
+  const confirmWebhookPaid = async () => {
+    // Poll the database to verify Stripe webhook has flipped paid=true.
+    // If it hasn't after ~15s, warn the user so they know something's off with the webhook.
+    const toastId = toast.loading('Väntar på bekräftelse från Stripe…')
+    const started = Date.now()
+    const timeoutMs = 15000
+    while (Date.now() - started < timeoutMs) {
+      const { data } = await supabase
+        .from('workshop_responses')
+        .select('id, paid')
+        .eq('workshop_id', workshop.id)
+        .eq('paid', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+      if (data && data.length > 0) {
+        // Find the most recently paid one that wasn't paid before.
+        const alreadyPaid = responses.some((r) => r.id === data[0].id && r.paid)
+        if (!alreadyPaid) {
+          toast.success('Betalning bekräftad – offerten är skickad till kunden. ✅', { id: toastId })
+          await load()
+          return
+        }
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+    }
+    toast.warning('Betalningen registrerades men Stripe-webhooken har inte bekräftat den ännu.', {
+      id: toastId,
+      description: 'Kolla att STRIPE_WEBHOOK_SECRET_BIKE och endpointen i Stripe Dashboard är korrekt konfigurerade. Offerten skickas så snart webhook når fram.',
+      duration: 12000,
+    })
+    await load()
+  }
+
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     if (params.get('paid') === 'true') {
-      toast.success(params.get('free') === '1' ? 'Offerten är skickad med en gratis-lead.' : 'Betalningen är registrerad. Offerten skickas när Stripe-bekräftelsen är klar.')
       navigate(location.pathname, { replace: true })
-      load()
+      if (params.get('free') === '1') {
+        toast.success('Offerten är skickad med en gratis-lead. ✅', {
+          description: 'Kunden har fått ett mejl med ditt prisförslag.',
+        })
+        load()
+      } else {
+        confirmWebhookPaid()
+      }
     } else if (params.get('canceled') === 'true') {
-      toast.info('Betalningen avbröts. Offerten är sparad och kan skickas senare.')
+      toast.info('Betalningen avbröts.', {
+        description: 'Din offert är sparad som utkast och kan skickas när du är redo.',
+      })
       navigate(location.pathname, { replace: true })
     }
   }, [location.search])
-
-  const toggleOffer = (requestId: string) => {
-    setActive((current) => current === requestId ? null : requestId)
-    setForm(emptyForm)
-  }
-
-  const validateOffer = () => {
-    if (form.message.trim().length < 20) {
-      toast.error('Beskriv ditt svar lite mer, minst tjugo tecken.')
-      return false
-    }
-    const min = form.estimated_price_min ? Number(form.estimated_price_min) : null
-    const max = form.estimated_price_max ? Number(form.estimated_price_max) : null
-    if ((min !== null && min < 0) || (max !== null && max < 0)) {
-      toast.error('Priset kan inte vara negativt.')
-      return false
-    }
-    if (min !== null && max !== null && max < min) {
-      toast.error('Pris till måste vara samma som eller högre än pris från.')
-      return false
-    }
-    return true
-  }
 
   const openPayment = async (responseId: string, requestId: string) => {
     setSubmitting(requestId)
@@ -123,12 +141,23 @@ const WorkshopRequests = () => {
     setSubmitting(null)
 
     if (error || payment?.error) {
-      toast.error(payment?.error || error?.message || 'Det gick inte att öppna betalningen. Offerten är sparad.')
+      const msg = payment?.error || error?.message || 'Det gick inte att öppna betalningen.'
+      const isStripeConfig = /stripe/i.test(msg) && /konfig|configuration|not set/i.test(msg)
+      toast.error(isStripeConfig ? 'Stripe är inte korrekt konfigurerat.' : 'Kunde inte starta betalningen.', {
+        description: msg + (isStripeConfig ? ' Kontrollera att STRIPE_SECRET_KEY är sparad som secret.' : ' Offerten är sparad och kan skickas senare.'),
+        duration: 10000,
+      })
       await load()
       return
     }
-    if (payment?.url) window.location.assign(payment.url)
-    else toast.error('Ingen betalningslänk skapades. Försök igen.')
+    if (payment?.url) {
+      toast.success('Öppnar Stripe-checkout…')
+      window.location.assign(payment.url)
+    } else {
+      toast.error('Ingen betalningslänk skapades.', {
+        description: 'Stripe returnerade inget URL. Försök igen eller kontakta support om felet återkommer.',
+      })
+    }
   }
 
   const submitOffer = async (requestId: string) => {
