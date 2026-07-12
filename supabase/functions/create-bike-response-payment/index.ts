@@ -204,8 +204,8 @@ Deno.serve(async (req) => {
         },
         quantity: 1,
       }],
-      success_url: `${origin}/dashboard/verkstad/arenden?paid=true`,
-      cancel_url: `${origin}/dashboard/verkstad/arenden?canceled=true`,
+      success_url: `${origin}/dashboard/verkstad/arenden?paid=true&response_id=${response.id}`,
+      cancel_url: `${origin}/dashboard/verkstad/arenden?canceled=true&response_id=${response.id}`,
       metadata: { response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
       payment_intent_data: {
         metadata: { response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
