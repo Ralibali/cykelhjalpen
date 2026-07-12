@@ -17,6 +17,7 @@ const statusLabel: Record<string, string> = {
   pending: 'Väntar',
   free_lead: 'Gratis-lead',
   expired: 'Utgången',
+  refunded: 'Återbetald',
 }
 
 const WorkshopBilling = () => {
@@ -38,7 +39,7 @@ const WorkshopBilling = () => {
   }, [workshop.id])
 
   const totals = useMemo(() => ({
-    paid: charges.filter((charge) => charge.status === 'paid').reduce((sum, charge) => sum + charge.amount, 0) / 100,
+    paidExVat: charges.filter((charge) => charge.status === 'paid').reduce((sum, charge) => sum + charge.amount, 0) / 100,
     paidCount: charges.filter((charge) => charge.status === 'paid').length,
     freeCount: charges.filter((charge) => charge.status === 'free_lead').length,
   }), [charges])
@@ -47,11 +48,11 @@ const WorkshopBilling = () => {
     <div>
       <div className="mb-6">
         <h1 className="font-display text-2xl font-bold">Betalningar</h1>
-        <p className="text-sm text-muted-foreground mt-1">Historik för skickade offerter från {workshop.company_name}.</p>
+        <p className="text-sm text-muted-foreground mt-1">Historik för skickade offerter från {workshop.company_name}. Beloppen visas exklusive moms.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        <div className="sticker bg-card p-4"><p className="text-xs text-muted-foreground">Totalt betalt</p><p className="font-display text-2xl font-bold mt-1">{totals.paid.toLocaleString('sv-SE')} kr</p></div>
+        <div className="sticker bg-card p-4"><p className="text-xs text-muted-foreground">Debiterat exkl. moms</p><p className="font-display text-2xl font-bold mt-1">{totals.paidExVat.toLocaleString('sv-SE')} kr</p></div>
         <div className="sticker bg-card p-4"><p className="text-xs text-muted-foreground">Betalda offerter</p><p className="font-display text-2xl font-bold mt-1">{totals.paidCount}</p></div>
         <div className="sticker bg-card p-4"><p className="text-xs text-muted-foreground">Gratis-leads</p><p className="font-display text-2xl font-bold mt-1">{totals.freeCount}</p></div>
       </div>
@@ -66,7 +67,7 @@ const WorkshopBilling = () => {
             <thead className="bg-muted/40">
               <tr>
                 <th className="text-left p-3">Datum</th>
-                <th className="text-left p-3">Belopp</th>
+                <th className="text-left p-3">Belopp exkl. moms</th>
                 <th className="text-left p-3">Status</th>
                 <th className="text-left p-3">Stripe-id</th>
               </tr>
@@ -77,7 +78,7 @@ const WorkshopBilling = () => {
                   <td className="p-3 whitespace-nowrap">{new Date(charge.created_at).toLocaleString('sv-SE')}</td>
                   <td className="p-3 font-medium">{charge.amount === 0 ? '0 kr' : `${(charge.amount / 100).toLocaleString('sv-SE')} kr`}</td>
                   <td className="p-3">
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${charge.status === 'paid' ? 'bg-green-100 text-green-700' : charge.status === 'free_lead' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${charge.status === 'paid' ? 'bg-green-100 text-green-700' : charge.status === 'free_lead' ? 'bg-primary/10 text-primary' : charge.status === 'refunded' ? 'bg-amber-100 text-amber-700' : 'bg-muted text-muted-foreground'}`}>
                       {statusLabel[charge.status] || charge.status}
                     </span>
                   </td>
