@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Bike, ListChecks, Receipt, Settings, LogOut, Loader2, Clock, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
+import NotificationBell from '@/components/NotificationBell'
 import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { toast } from 'sonner'
 
