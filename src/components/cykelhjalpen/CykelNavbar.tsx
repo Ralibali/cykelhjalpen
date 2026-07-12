@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
 import ThemeToggle from './ThemeToggle'
+import NotificationBell from '@/components/NotificationBell'
 import { useAuth } from '@/hooks/useAuth'
 import { trackClick } from '@/hooks/usePageTracking'
 
