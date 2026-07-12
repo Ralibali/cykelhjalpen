@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Wrench, Loader2, CheckCircle2, ShieldCheck, MapPin } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
+import Turnstile from '@/components/cykelhjalpen/Turnstile'
 import { Helmet } from 'react-helmet-async'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
@@ -39,6 +40,8 @@ const RegisterWorkshopPage = () => {
   const cityParam = searchParams.get('stad')
   const initialCity = (CYKEL_CITIES.find((c) => c.name.toLowerCase() === (cityParam || '').toLowerCase() || c.slug === (cityParam || '').toLowerCase())?.name || DEFAULT_CYKEL_CITY) as CykelCityName
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [form, setForm] = useState({
     company_name: '',
     email: '',
@@ -50,6 +53,8 @@ const RegisterWorkshopPage = () => {
     services: [] as string[],
     terms_accepted: false,
   })
+  const handleTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), [])
+  const handleTurnstileExpire = useCallback(() => setTurnstileToken(null), [])
   useEffect(() => {
     if (cityParam) {
       const match = CYKEL_CITIES.find((c) => c.name.toLowerCase() === cityParam.toLowerCase() || c.slug === cityParam.toLowerCase())
@@ -66,7 +71,8 @@ const RegisterWorkshopPage = () => {
     event.preventDefault()
     if (!form.terms_accepted) return toast.error('Du måste godkänna villkoren')
     if (form.company_name.trim().length < 2) return toast.error('Ange verkstadens namn')
-    if (form.password.length < 6) return toast.error('Lösenordet måste vara minst sex tecken')
+    if (form.password.length < 8) return toast.error('Lösenordet måste vara minst åtta tecken')
+    if (!turnstileToken) return toast.error('Bekräfta säkerhetskontrollen innan du registrerar verkstaden.')
 
     setLoading(true)
     trackClick('workshop_registration_submit_clicked', 'Skicka ansökan', { services_count: form.services.length, city: form.city })
@@ -83,6 +89,7 @@ const RegisterWorkshopPage = () => {
           city: form.city,
           services: form.services,
           terms_accepted: form.terms_accepted,
+          turnstile_token: turnstileToken,
         },
       })
 
