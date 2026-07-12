@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
+import { verifyTurnstile } from '../_shared/turnstile.ts'
 
 const SERVICES = [
   'Punktering',
@@ -17,13 +18,14 @@ const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
 const BodySchema = z.object({
   company_name: z.string().trim().min(2).max(160),
   email: z.string().trim().email().max(254),
-  password: z.string().min(6).max(128),
+  password: z.string().min(8, 'Lösenordet måste vara minst åtta tecken.').max(128),
   phone: z.string().trim().max(40).optional().nullable(),
   address: z.string().trim().max(240).optional().nullable(),
   website: z.string().trim().max(300).optional().nullable(),
   city: z.enum(CITIES),
   services: z.array(z.enum(SERVICES)).max(SERVICES.length).default([]),
   terms_accepted: z.literal(true),
+  turnstile_token: z.string().min(10, 'Bekräfta säkerhetskontrollen innan du registrerar verkstaden.').max(4096),
 })
 
 const json = (body: unknown, status: number, headers: Record<string, string>) => new Response(
@@ -52,6 +54,25 @@ Deno.serve(async (req) => {
     }
 
     const body = parsed.data
+
+    const turnstileSecret = Deno.env.get('TURNSTILE_SECRET_KEY')
+    if (!turnstileSecret) {
+      console.error('register-workshop: TURNSTILE_SECRET_KEY is missing')
+      return json({ error: 'Säkerhetskontrollen är inte konfigurerad just nu.' }, 500, corsHeaders)
+    }
+    const remoteip = req.headers.get('cf-connecting-ip')
+      || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || ''
+    const turnstileResult = await verifyTurnstile({
+      secret: turnstileSecret,
+      token: body.turnstile_token,
+      expectedAction: 'register_workshop',
+      remoteip,
+    })
+    if (!turnstileResult.ok) {
+      return json({ error: turnstileResult.error }, turnstileResult.status, corsHeaders)
+    }
+
     const email = body.email.toLowerCase()
     const publicClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false } })
     const adminClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
