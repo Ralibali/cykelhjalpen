@@ -3,21 +3,36 @@ import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
+const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
+const REPAIR_CATEGORIES = [
+  'Punktering / däckbyte',
+  'Bromsar',
+  'Växlar / kedja',
+  'Service / genomgång',
+  'Elcykel-problem',
+  'Hjul / ekrar',
+  'Lyse / elektronik',
+  'Annat',
+] as const
+const URGENCIES = ['asap', 'this_week', 'flexible'] as const
 
 const BodySchema = z.object({
-  bike_type: z.string().min(1).max(80),
-  repair_category: z.string().min(1).max(80),
+  bike_type: z.enum(BIKE_TYPES),
+  repair_category: z.enum(REPAIR_CATEGORIES),
   description: z.string().trim().min(10).max(2000),
   area: z.string().trim().max(80).optional().nullable(),
-  postcode: z.string().trim().max(10).optional().nullable(),
-  urgency: z.string().min(1).max(40),
+  postcode: z.string().trim().max(10).refine((value) => !value || /^\d{3}\s?\d{2}$/.test(value), 'invalid postcode').optional().nullable(),
+  urgency: z.enum(URGENCIES),
   can_drop_off: z.boolean(),
   wants_pickup: z.boolean(),
   customer_name: z.string().trim().min(2).max(80),
-  customer_email: z.string().trim().email().max(160),
+  customer_email: z.string().trim().toLowerCase().email().max(160),
   customer_phone: z.string().trim().max(40).optional().nullable(),
   city: z.enum(CITIES),
   turnstile_token: z.string().min(10).max(4096),
+}).refine((value) => value.can_drop_off || value.wants_pickup, {
+  message: 'dropoff_or_pickup_required',
+  path: ['can_drop_off'],
 })
 
 const escapeHtml = (value: unknown) => String(value ?? '')
@@ -26,6 +41,15 @@ const escapeHtml = (value: unknown) => String(value ?? '')
   .replaceAll('>', '&gt;')
   .replaceAll('"', '&quot;')
   .replaceAll("'", '&#39;')
+
+const allowedTurnstileHostname = (hostname: unknown) => {
+  if (typeof hostname !== 'string' || !hostname) return true
+  const normalized = hostname.toLowerCase()
+  return normalized === 'cykelhjalpen.se'
+    || normalized === 'www.cykelhjalpen.se'
+    || normalized === 'localhost'
+    || normalized.endsWith('.lovable.app')
+}
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
@@ -68,9 +92,12 @@ Deno.serve(async (req) => {
         remoteip: ip,
       }),
     })
+    if (!verifyResponse.ok) throw new Error('Turnstile verification service unavailable')
     const verification = await verifyResponse.json()
 
-    if (!verification.success || (verification.action && verification.action !== 'submit_bike_request')) {
+    if (!verification.success
+      || (verification.action && verification.action !== 'submit_bike_request')
+      || !allowedTurnstileHostname(verification.hostname)) {
       return new Response(JSON.stringify({ error: 'Säkerhetskontrollen gick ut eller misslyckades. Bekräfta den igen och försök på nytt.' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -81,19 +108,19 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     if (!supabaseUrl || !serviceRoleKey) throw new Error('Backend configuration is missing')
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey)
+    const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
     const { data, error } = await supabase.rpc('submit_bike_repair_request', {
       p_bike_type: body.bike_type,
       p_repair_category: body.repair_category,
       p_description: body.description,
-      p_area: body.area ?? null,
-      p_postcode: body.postcode ?? null,
+      p_area: body.area || null,
+      p_postcode: body.postcode ? body.postcode.replace(/\s/g, '') : null,
       p_urgency: body.urgency,
       p_can_drop_off: body.can_drop_off,
       p_wants_pickup: body.wants_pickup,
       p_customer_name: body.customer_name,
       p_customer_email: body.customer_email,
-      p_customer_phone: body.customer_phone ?? null,
+      p_customer_phone: body.customer_phone || null,
       p_city: body.city,
     })
     if (error) throw error
@@ -135,7 +162,11 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify(row), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+      },
     })
   } catch (error) {
     console.error('submit-bike-request error', error)

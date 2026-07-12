@@ -18,7 +18,21 @@ interface BikeRequestRow {
   city: string
   status: string
   admin_status: string
+  rejected_reason?: string | null
   workshop_responses?: { id: string; paid: boolean; workshop_id: string }[]
+}
+
+const functionError = async (error: unknown, fallback: string) => {
+  const response = (error as any)?.context
+  if (response instanceof Response) {
+    try {
+      const payload = await response.clone().json()
+      if (typeof payload?.error === 'string') return payload.error
+    } catch {
+      // Fall through to the standard message.
+    }
+  }
+  return (error as any)?.message || fallback
 }
 
 const AdminBikeRequests = () => {
@@ -30,7 +44,7 @@ const AdminBikeRequests = () => {
     setLoading(true)
     const { data, error } = await supabase
       .from('bike_repair_requests')
-      .select('id, view_token, created_at, customer_name, customer_email, bike_type, repair_category, description, city, status, admin_status, workshop_responses(id, paid, workshop_id)')
+      .select('id, view_token, created_at, customer_name, customer_email, bike_type, repair_category, description, city, status, admin_status, rejected_reason, workshop_responses(id, paid, workshop_id)')
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -44,25 +58,35 @@ const AdminBikeRequests = () => {
 
   useEffect(() => { load() }, [load])
 
-  const review = async (item: BikeRequestRow, nextStatus: 'approved' | 'rejected') => {
+  const review = async (item: BikeRequestRow, decision: 'approved' | 'rejected') => {
+    let reason: string | null = null
+    if (decision === 'rejected') {
+      reason = window.prompt(
+        'Skriv en kort och tydlig anledning som kunden får se:',
+        item.rejected_reason || 'Beskrivningen behöver kompletteras innan ärendet kan publiceras.',
+      )
+      if (reason === null) return
+      if (reason.trim().length < 5) {
+        toast.error('Skriv en tydligare anledning innan ärendet avvisas.')
+        return
+      }
+    }
+
     setBusy(item.id)
-    const { error } = await supabase
-      .from('bike_repair_requests')
-      .update({
-        admin_status: nextStatus,
-        approved_at: nextStatus === 'approved' ? new Date().toISOString() : null,
-        rejected_reason: nextStatus === 'rejected' ? 'Avvisat av administratör' : null,
-      })
-      .eq('id', item.id)
+    const { data, error } = await supabase.functions.invoke('review-bike-request', {
+      body: { request_id: item.id, decision, reason },
+    })
     setBusy(null)
 
-    if (error) {
-      toast.error(`Kunde inte uppdatera ärendet: ${error.message}`)
+    if (error || data?.error) {
+      toast.error(data?.error || await functionError(error, 'Kunde inte uppdatera ärendet.'))
       return
     }
 
-    toast.success(nextStatus === 'approved' ? 'Ärendet är godkänt och synligt för lokala verkstäder.' : 'Ärendet är avvisat.')
-    load()
+    toast.success(decision === 'approved'
+      ? 'Ärendet är godkänt. Kunden och lokala verkstäder har meddelats.'
+      : 'Ärendet är avvisat och kunden har fått anledningen.')
+    await load()
   }
 
   return (
@@ -110,6 +134,9 @@ const AdminBikeRequests = () => {
                     <td className="p-3 max-w-sm">
                       <div className="font-medium">{item.bike_type} · {item.repair_category}</div>
                       <div className="text-xs text-muted-foreground mt-1 line-clamp-3">{item.description}</div>
+                      {item.admin_status === 'rejected' && item.rejected_reason && (
+                        <div className="text-xs text-destructive mt-2">Anledning: {item.rejected_reason}</div>
+                      )}
                     </td>
                     <td className="p-3 whitespace-nowrap">{item.city}</td>
                     <td className="p-3">

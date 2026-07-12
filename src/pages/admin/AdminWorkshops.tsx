@@ -15,6 +15,19 @@ interface WorkshopRow {
   created_at: string
 }
 
+const functionError = async (error: unknown, fallback: string) => {
+  const response = (error as any)?.context
+  if (response instanceof Response) {
+    try {
+      const payload = await response.clone().json()
+      if (typeof payload?.error === 'string') return payload.error
+    } catch {
+      // Fall through to the standard message.
+    }
+  }
+  return (error as any)?.message || fallback
+}
+
 const AdminWorkshops = () => {
   const [items, setItems] = useState<WorkshopRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,17 +52,23 @@ const AdminWorkshops = () => {
   useEffect(() => { load() }, [load])
 
   const setApproved = async (workshop: WorkshopRow, approved: boolean) => {
+    if (!approved && !window.confirm(`Pausa åtkomsten för ${workshop.company_name}? Verkstaden kan inte svara på nya ärenden förrän den godkänns igen.`)) return
+
     setBusy(workshop.id)
-    const { error } = await supabase.from('workshops').update({ approved }).eq('id', workshop.id)
+    const { data, error } = await supabase.functions.invoke('review-workshop', {
+      body: { workshop_id: workshop.id, approved },
+    })
     setBusy(null)
 
-    if (error) {
-      toast.error(error.message)
+    if (error || data?.error) {
+      toast.error(data?.error || await functionError(error, 'Kunde inte uppdatera verkstaden.'))
       return
     }
 
-    toast.success(approved ? `${workshop.company_name} är godkänd` : `${workshop.company_name} är avaktiverad`)
-    load()
+    toast.success(approved
+      ? `${workshop.company_name} är godkänd och har meddelats.`
+      : `${workshop.company_name} är pausad och har meddelats.`)
+    await load()
   }
 
   return (
@@ -85,7 +104,7 @@ const AdminWorkshops = () => {
                 <tr key={workshop.id} className="border-t align-top">
                   <td className="p-3">
                     <div className="font-medium">{workshop.company_name}</div>
-                    <div className="text-xs text-muted-foreground">{workshop.city || 'Linköping'}</div>
+                    <div className="text-xs text-muted-foreground">{workshop.city || 'Stad saknas'}</div>
                   </td>
                   <td className="p-3">
                     <div>{workshop.email}</div>
@@ -94,16 +113,16 @@ const AdminWorkshops = () => {
                   <td className="p-3 whitespace-nowrap">{new Date(workshop.created_at).toLocaleDateString('sv-SE')}</td>
                   <td className="p-3">
                     <span className={`text-xs rounded-full px-2 py-1 font-medium ${workshop.approved ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                      {workshop.approved ? 'Godkänd' : 'Väntar'}
+                      {workshop.approved ? 'Godkänd' : 'Väntar/pausad'}
                     </span>
                   </td>
                   <td className="p-3 text-right">
                     {workshop.approved ? (
                       <Button size="sm" variant="outline" onClick={() => setApproved(workshop, false)} disabled={busy === workshop.id}>
-                        {busy === workshop.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><X className="h-4 w-4 mr-1" /> Avaktivera</>}
+                        {busy === workshop.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><X className="h-4 w-4 mr-1" /> Pausa</>}
                       </Button>
                     ) : (
-                      <Button size="sm" onClick={() => setApproved(workshop, true)} disabled={busy === workshop.id}>
+                      <Button size="sm" onClick={() => setApproved(workshop, true)} disabled={busy === workshop.id || !workshop.city}>
                         {busy === workshop.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4 mr-1" /> Godkänn</>}
                       </Button>
                     )}

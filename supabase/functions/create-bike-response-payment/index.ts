@@ -18,6 +18,14 @@ const escapeHtml = (value: unknown) => String(value ?? '')
   .replaceAll('"', '&quot;')
   .replaceAll("'", '&#39;')
 
+const friendlyDatabaseError = (message: string) => {
+  if (message.includes('bike_request_full')) return 'Ärendet är fullt – fem verkstäder har redan svarat.'
+  if (message.includes('response_already_paid')) return 'Offerten är redan skickad.'
+  if (message.includes('response_not_found')) return 'Offerten hittades inte.'
+  if (message.includes('workshop_not_approved')) return 'Verkstaden är inte godkänd ännu.'
+  return message
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
@@ -65,6 +73,7 @@ Deno.serve(async (req) => {
     if (responseError) throw responseError
     if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
     if (response.paid) throw new Error('Offerten är redan skickad')
+    if (response.status === 'full') throw new Error('Ärendet är fullt – fem verkstäder har redan svarat.')
 
     const { count, error: countError } = await admin
       .from('workshop_responses')
@@ -77,65 +86,53 @@ Deno.serve(async (req) => {
     const origin = allowedOrigin(req.headers.get('origin'))
 
     if ((workshop.free_leads_remaining || 0) > 0) {
-      const previousBalance = workshop.free_leads_remaining || 0
-      const { data: balanceUpdate, error: balanceError } = await admin
-        .from('workshops')
-        .update({ free_leads_remaining: previousBalance - 1 })
-        .eq('id', workshop.id)
-        .eq('free_leads_remaining', previousBalance)
-        .select('id')
-        .maybeSingle()
-      if (balanceError) throw balanceError
-      if (!balanceUpdate) throw new Error('Gratis-leaden hann användas av en annan offert. Försök igen.')
+      const { data: consumeRows, error: consumeError } = await admin.rpc('consume_free_lead_for_response', {
+        p_response_id: response.id,
+        p_workshop_id: workshop.id,
+      })
 
-      const { error: paidError } = await admin
-        .from('workshop_responses')
-        .update({ paid: true, used_free_lead: true, status: 'sent' })
-        .eq('id', response.id)
-        .eq('paid', false)
-      if (paidError) {
-        await admin.from('workshops').update({ free_leads_remaining: previousBalance }).eq('id', workshop.id)
-        throw paidError
+      if (consumeError && !consumeError.message.includes('no_free_leads')) {
+        throw new Error(friendlyDatabaseError(consumeError.message))
       }
 
-      const { error: chargeError } = await admin.from('lead_charges').insert({
-        response_id: response.id,
-        request_id: response.request_id,
-        workshop_id: workshop.id,
-        amount: 0,
-        currency: 'sek',
-        status: 'free_lead',
-      })
-      if (chargeError) console.error('Could not record free lead charge', chargeError)
+      const consumed = Array.isArray(consumeRows) ? consumeRows[0] : consumeRows
+      if (!consumeError && consumed?.request_id) {
+        if (!consumed.already_processed) {
+          const { data: requestRow } = await admin
+            .from('bike_repair_requests')
+            .select('customer_name, customer_email, repair_category, view_token')
+            .eq('id', consumed.request_id)
+            .maybeSingle()
 
-      await admin.from('bike_repair_requests').update({ status: 'has_offers' }).eq('id', response.request_id)
+          if (requestRow?.customer_email && requestRow.view_token) {
+            const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`
+            const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+              body: JSON.stringify({
+                to: requestRow.customer_email,
+                subject: `Nytt prisförslag på din cykel – ${requestRow.repair_category}`,
+                html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111"><h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2><p><strong>${escapeHtml(workshop.company_name)}</strong> har lämnat ett prisförslag på ditt cykelärende.</p><p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p></div>`,
+              }),
+            }).then(async (emailResponse) => {
+              if (!emailResponse.ok) console.error('Free lead customer notification failed', emailResponse.status)
+            }).catch((emailError) => console.error('Free lead customer notification failed', emailError))
 
-      const { data: requestRow } = await admin
-        .from('bike_repair_requests')
-        .select('customer_name, customer_email, repair_category, view_token')
-        .eq('id', response.request_id)
-        .maybeSingle()
+            const edgeRuntime = (globalThis as any).EdgeRuntime
+            if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(emailTask)
+            else await emailTask
+          }
+        }
 
-      if (requestRow?.customer_email) {
-        const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token || '')}`
-        const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
-          body: JSON.stringify({
-            to: requestRow.customer_email,
-            subject: `Nytt prisförslag på din cykel – ${requestRow.repair_category}`,
-            html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111"><h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2><p><strong>${escapeHtml(workshop.company_name)}</strong> har lämnat ett prisförslag på ditt cykelärende.</p><p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p></div>`,
-          }),
-        }).catch((emailError) => console.error('Free lead customer notification failed', emailError))
-
-        const edgeRuntime = (globalThis as any).EdgeRuntime
-        if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(emailTask)
-        else await emailTask
+        return new Response(JSON.stringify({
+          url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1`,
+          free_lead: true,
+          remaining_free_leads: consumed.remaining_free_leads,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        })
       }
-
-      return new Response(JSON.stringify({ url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1`, free_lead: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      // If another request used the final free lead, continue to the normal paid Checkout flow.
     }
 
     const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')
@@ -177,7 +174,7 @@ Deno.serve(async (req) => {
 
     if (reusableUrl) {
       return new Response(JSON.stringify({ url: reusableUrl, reused: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
       })
     }
 
@@ -191,10 +188,13 @@ Deno.serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
+      client_reference_id: response.id,
       mode: 'payment',
+      locale: 'sv',
       automatic_tax: { enabled: true },
       customer_update: { address: 'auto', name: 'auto' },
       billing_address_collection: 'required',
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
       line_items: [{
         price_data: {
           currency: 'sek',
@@ -207,6 +207,9 @@ Deno.serve(async (req) => {
       success_url: `${origin}/dashboard/verkstad/arenden?paid=true`,
       cancel_url: `${origin}/dashboard/verkstad/arenden?canceled=true`,
       metadata: { response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
+      payment_intent_data: {
+        metadata: { response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
+      },
     })
 
     const { error: chargeError } = await admin.from('lead_charges').insert({
@@ -218,17 +221,38 @@ Deno.serve(async (req) => {
       currency: 'sek',
       status: 'pending',
     })
+
     if (chargeError) {
       await stripe.checkout.sessions.expire(session.id).catch(() => undefined)
+
+      if (chargeError.code === '23505') {
+        const { data: existingCharge } = await admin
+          .from('lead_charges')
+          .select('stripe_session_id')
+          .eq('response_id', response.id)
+          .eq('status', 'pending')
+          .maybeSingle()
+
+        if (existingCharge?.stripe_session_id) {
+          const existingSession = await stripe.checkout.sessions.retrieve(existingCharge.stripe_session_id)
+          if (existingSession.status === 'open' && existingSession.url) {
+            return new Response(JSON.stringify({ url: existingSession.url, reused: true }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+            })
+          }
+        }
+      }
+
       throw chargeError
     }
 
     return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Okänt fel'
-    console.error('create-bike-response-payment', message)
+    const rawMessage = error instanceof Error ? error.message : 'Okänt fel'
+    const message = friendlyDatabaseError(rawMessage)
+    console.error('create-bike-response-payment', rawMessage)
     return new Response(JSON.stringify({ error: message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

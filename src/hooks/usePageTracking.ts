@@ -1,6 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
+import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, hasAnalyticsConsent } from '@/lib/analyticsConsent'
+import { getNoindexSeoRoutes } from '@/lib/seoStatic'
+import { getCurrentHost } from '@/lib/hostConfig'
 
 const SESSION_ID_KEY = '_sid'
 const ATTRIBUTION_KEY = '_cykel_attribution'
@@ -15,7 +18,9 @@ type Attribution = Partial<Record<typeof ATTRIBUTION_PARAMS[number], string>> & 
 function getSessionId() {
   let id = sessionStorage.getItem(SESSION_ID_KEY)
   if (!id) {
-    id = crypto.randomUUID()
+    id = typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
     sessionStorage.setItem(SESSION_ID_KEY, id)
   }
   return id
@@ -28,9 +33,9 @@ function getDeviceType(): string {
   return 'desktop'
 }
 
-function sanitizePath(pathname: string): string {
+export function sanitizeTrackingPath(pathname: string): string {
   if (/^\/mitt-arende\/[^/]+/i.test(pathname)) return '/mitt-arende/[redacted]'
-  return pathname.slice(0, 1000)
+  return (pathname || '/').slice(0, 1000)
 }
 
 function sanitizeReferrer(value: string): string | undefined {
@@ -38,7 +43,7 @@ function sanitizeReferrer(value: string): string | undefined {
   try {
     const url = new URL(value)
     if (url.origin === window.location.origin) {
-      return `${url.origin}${sanitizePath(url.pathname)}`
+      return `${url.origin}${sanitizeTrackingPath(url.pathname)}`
     }
     return url.origin
   } catch {
@@ -61,7 +66,7 @@ function captureAttribution(search: string, pathname: string): Attribution {
 
   const params = new URLSearchParams(search)
   const attribution: Attribution = {
-    landing_path: sanitizePath(pathname),
+    landing_path: sanitizeTrackingPath(pathname),
     first_referrer: sanitizeReferrer(document.referrer),
     captured_at: new Date().toISOString(),
   }
@@ -75,15 +80,49 @@ function captureAttribution(search: string, pathname: string): Attribution {
   return attribution
 }
 
+function routeShouldRemainNoindex(pathname: string): boolean {
+  const path = pathname.replace(/\/$/, '') || '/'
+  const host = getCurrentHost()
+  const noindexPaths = new Set(getNoindexSeoRoutes(host).map((route) => route.path))
+  const privatePrefixes = ['/admin', '/dashboard']
+  const privateExact = ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/landing', '/landing/byra']
+
+  return noindexPaths.has(path)
+    || privateExact.includes(path)
+    || privatePrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+}
+
 export function usePageTracking() {
   const location = useLocation()
   const lastLocation = useRef('')
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(hasAnalyticsConsent)
 
   useEffect(() => {
+    const updateConsent = () => {
+      const enabled = hasAnalyticsConsent()
+      setAnalyticsEnabled(enabled)
+      if (!enabled) lastLocation.current = ''
+    }
+
+    window.addEventListener(COOKIE_CONSENT_EVENT, updateConsent)
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === COOKIE_CONSENT_KEY) updateConsent()
+    }
+    window.addEventListener('storage', onStorage)
+
+    return () => {
+      window.removeEventListener(COOKIE_CONSENT_EVENT, updateConsent)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!analyticsEnabled) return
+
     const pathname = location.pathname
     if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) return
 
-    const safePath = sanitizePath(pathname)
+    const safePath = sanitizeTrackingPath(pathname)
     if (safePath === lastLocation.current) return
     lastLocation.current = safePath
 
@@ -96,16 +135,11 @@ export function usePageTracking() {
       referrer: sanitizeReferrer(document.referrer) || null,
       device_type: getDeviceType(),
     }).then(() => {})
-  }, [location.pathname, location.search])
+  }, [analyticsEnabled, location.pathname, location.search])
 
+  // Restore indexability only when leaving a route that is intentionally noindex.
   useEffect(() => {
-    const pathname = location.pathname.replace(/\/$/, '') || '/'
-    const stillPrivate = pathname.startsWith('/admin')
-      || pathname.startsWith('/dashboard')
-      || pathname.startsWith('/mitt-arende/')
-      || ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/landing', '/landing/byra'].includes(pathname)
-
-    if (stillPrivate) return
+    if (routeShouldRemainNoindex(location.pathname)) return
 
     const timer = window.setTimeout(() => {
       const robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null
@@ -120,14 +154,16 @@ export function usePageTracking() {
 
 /** Track a conversion or meaningful interaction with first-touch attribution attached. */
 export function trackClick(eventName: string, elementText?: string, metadata?: Record<string, unknown>) {
+  if (!hasAnalyticsConsent()) return
+
   const sessionId = sessionStorage.getItem(SESSION_ID_KEY) || getSessionId()
   const attribution = readAttribution()
 
   supabase.from('click_events').insert({
     session_id: sessionId,
-    event_name: eventName,
-    element_text: elementText || null,
-    path: sanitizePath(window.location.pathname),
+    event_name: eventName.slice(0, 120),
+    element_text: elementText?.slice(0, 500) || null,
+    path: sanitizeTrackingPath(window.location.pathname),
     metadata: {
       ...metadata,
       attribution,
