@@ -29,10 +29,15 @@ const ShareButtons = ({ url, title }: ShareButtonsProps) => {
   ]
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url })
-      } catch {}
+    if (!navigator.share) return
+
+    try {
+      await navigator.share({ title, url })
+    } catch (error) {
+      // Closing the native share sheet is expected and should not surface as an error.
+      if (!(error instanceof DOMException) || error.name !== 'AbortError') {
+        console.warn('Native sharing failed', error)
+      }
     }
   }
 
