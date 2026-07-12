@@ -11,3 +11,7 @@ verify_jwt = false
 
 [functions.get-turnstile-key]
 verify_jwt = false
+
+[functions.prospect-unsubscribe]
+verify_jwt = false
+
