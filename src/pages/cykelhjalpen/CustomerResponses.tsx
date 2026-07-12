@@ -230,7 +230,7 @@ const CustomerResponses = () => {
 
             <div className="flex items-center justify-between gap-3 mb-4">
               <h2 className="font-display text-xl font-bold">Prisförslag ({responses.length})</h2>
-              {request.admin_status === 'approved' && request.status !== 'full' && <span className="text-xs text-muted-foreground">Uppdateras automatiskt</span>}
+              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && <span className="text-xs text-muted-foreground">Uppdateras automatiskt</span>}
             </div>
 
             {responses.length === 0 ? (
