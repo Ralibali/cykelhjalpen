@@ -43,6 +43,7 @@ AS $$
 DECLARE
   response_row public.workshop_responses%ROWTYPE;
   workshop_row public.workshops%ROWTYPE;
+  paid_count integer;
 BEGIN
   SELECT *
     INTO workshop_row
@@ -106,8 +107,14 @@ BEGIN
     'free_lead'
   );
 
+  SELECT count(*)
+    INTO paid_count
+    FROM public.workshop_responses
+   WHERE request_id = response_row.request_id
+     AND paid IS TRUE;
+
   UPDATE public.bike_repair_requests
-     SET status = 'has_offers',
+     SET status = CASE WHEN paid_count >= 5 THEN 'full' ELSE 'has_offers' END,
          updated_at = now()
    WHERE id = response_row.request_id;
 
