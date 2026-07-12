@@ -2,6 +2,13 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
+const BIKE_SESSION_EVENTS = new Set([
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
+  "checkout.session.expired",
+]);
+
 const escapeHtml = (value: unknown) => String(value ?? "")
   .replaceAll("&", "&amp;")
   .replaceAll("<", "&lt;")
@@ -40,6 +47,18 @@ serve(async (req) => {
     return new Response("bad signature", { status: 400 });
   }
 
+  // The Stripe account may serve several products. Only reserve and process
+  // Checkout sessions that explicitly belong to a Cykelhjälpen response.
+  if (!BIKE_SESSION_EVENTS.has(event.type)) {
+    return jsonResponse({ received: true, ignored: true });
+  }
+
+  const session = event.data.object as Stripe.Checkout.Session;
+  const bikeResponseId = session.metadata?.response_id || session.client_reference_id;
+  if (!bikeResponseId) {
+    return jsonResponse({ received: true, ignored: true });
+  }
+
   const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
   // Reserve the event before doing any side effects. The unique index makes
@@ -63,19 +82,15 @@ serve(async (req) => {
       || event.type === "checkout.session.async_payment_succeeded";
 
     if (isSuccessfulCheckout) {
-      const session = event.data.object as Stripe.Checkout.Session;
-
       // Some payment methods complete Checkout before the actual payment succeeds.
       // The async_payment_succeeded event will finalize those later.
       if (session.payment_status !== "paid") {
         console.log("checkout completed without paid status", session.id, session.payment_status);
       } else {
-        const responseId = session.metadata?.response_id || session.client_reference_id;
+        const responseId = bikeResponseId;
         const metadataRequestId = session.metadata?.request_id;
         const metadataWorkshopId = session.metadata?.workshop_id;
         const paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : null;
-
-        if (!responseId) throw new Error(`Checkout ${session.id} is missing response_id`);
 
         const { data: existingResponse, error: existingResponseError } = await admin
           .from("workshop_responses")
@@ -146,9 +161,19 @@ serve(async (req) => {
         const workshopId = responseRow.workshop_id || metadataWorkshopId;
 
         if (requestId) {
+          const { count: paidCount, error: paidCountError } = await admin
+            .from("workshop_responses")
+            .select("*", { head: true, count: "exact" })
+            .eq("request_id", requestId)
+            .eq("paid", true);
+          if (paidCountError) throw paidCountError;
+
           const { error: requestStatusError } = await admin
             .from("bike_repair_requests")
-            .update({ status: "has_offers", updated_at: new Date().toISOString() })
+            .update({
+              status: (paidCount || 0) >= 5 ? "full" : "has_offers",
+              updated_at: new Date().toISOString(),
+            })
             .eq("id", requestId);
           if (requestStatusError) throw requestStatusError;
         }
@@ -194,21 +219,17 @@ serve(async (req) => {
         }
       }
     } else if (event.type === "checkout.session.expired") {
-      const session = event.data.object as Stripe.Checkout.Session;
       const { error } = await admin.from("lead_charges")
         .update({ status: "expired" })
         .eq("stripe_session_id", session.id)
         .eq("status", "pending");
       if (error) throw error;
     } else if (event.type === "checkout.session.async_payment_failed") {
-      const session = event.data.object as Stripe.Checkout.Session;
       const { error } = await admin.from("lead_charges")
         .update({ status: "failed" })
         .eq("stripe_session_id", session.id)
         .eq("status", "pending");
       if (error) throw error;
-    } else {
-      console.log("unhandled stripe event type", event.type, event.id);
     }
 
     return jsonResponse({ received: true });
