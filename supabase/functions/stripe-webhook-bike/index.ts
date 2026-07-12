@@ -171,7 +171,7 @@ serve(async (req) => {
           const { error: requestStatusError } = await admin
             .from("bike_repair_requests")
             .update({
-              status: (paidCount || 0) >= 5 ? "full" : "has_offers",
+              status: (paidCount || 0) >= 5 ? "closed_for_responses" : "has_offers",
               updated_at: new Date().toISOString(),
             })
             .eq("id", requestId);
