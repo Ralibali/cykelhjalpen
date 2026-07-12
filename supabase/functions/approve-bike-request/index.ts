@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
       const city = requestRow.city || 'Linköping'
       let workshopsQuery = admin
         .from('workshops')
-        .select('email, company_name, phone, sms_notifications, user_id')
+        .select('id, email, company_name, phone, sms_notifications, user_id')
         .eq('approved', true)
       if (requestRow.preferred_workshop_id) {
         workshopsQuery = workshopsQuery.eq('id', requestRow.preferred_workshop_id)
