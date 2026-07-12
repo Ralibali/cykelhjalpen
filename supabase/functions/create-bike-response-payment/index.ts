@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
         }
 
         return new Response(JSON.stringify({
-          url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1`,
+          url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1&response_id=${response.id}`,
           free_lead: true,
           remaining_free_leads: consumed.remaining_free_leads,
         }), {
