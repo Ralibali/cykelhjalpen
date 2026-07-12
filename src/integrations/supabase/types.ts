@@ -578,6 +578,51 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_events: {
+        Row: {
+          attempts: number
+          channel: string
+          created_at: string
+          error: string | null
+          id: string
+          idempotency_key: string
+          last_attempt_at: string | null
+          payload: Json
+          provider: string | null
+          recipient: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          channel: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          idempotency_key: string
+          last_attempt_at?: string | null
+          payload?: Json
+          provider?: string | null
+          recipient: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          idempotency_key?: string
+          last_attempt_at?: string | null
+          payload?: Json
+          provider?: string | null
+          recipient?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null

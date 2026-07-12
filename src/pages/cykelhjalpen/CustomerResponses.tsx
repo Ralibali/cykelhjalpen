@@ -108,7 +108,7 @@ const CustomerResponses = () => {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    if (!token || request?.admin_status === 'rejected' || request?.status === 'full') return
+    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full') return
     const id = window.setInterval(() => { load() }, POLL_MS)
     const onVisible = () => { if (document.visibilityState === 'visible') load() }
     document.addEventListener('visibilitychange', onVisible)
@@ -166,7 +166,7 @@ const CustomerResponses = () => {
           <h1 className="font-display text-2xl font-bold">Ärendet är publicerat</h1>
         </div>
         <p className="text-sm">
-          {request.status === 'full'
+          {(request.status === 'closed_for_responses' || request.status === 'full')
             ? 'Du har fått maximalt fem prisförslag. Jämför dem nedan och kontakta den verkstad som passar dig bäst.'
             : responses.length > 0
               ? 'Du har fått prisförslag. Fler kan tillkomma tills fem verkstäder har svarat.'
@@ -230,7 +230,7 @@ const CustomerResponses = () => {
 
             <div className="flex items-center justify-between gap-3 mb-4">
               <h2 className="font-display text-xl font-bold">Prisförslag ({responses.length})</h2>
-              {request.admin_status === 'approved' && request.status !== 'full' && <span className="text-xs text-muted-foreground">Uppdateras automatiskt</span>}
+              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && <span className="text-xs text-muted-foreground">Uppdateras automatiskt</span>}
             </div>
 
             {responses.length === 0 ? (

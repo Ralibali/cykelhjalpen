@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
-import { notifyWorkshopsOfApprovedRequest, resolveSmsProvider } from '../_shared/notifications.ts'
+import { notifyWorkshopsOfApprovedRequest, logSmsAttempt } from '../_shared/notifications.ts'
 
 
 const ActionSchema = z.object({
@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
       const city = requestRow.city || 'Linköping'
       let workshopsQuery = admin
         .from('workshops')
-        .select('email, company_name, phone, sms_notifications, user_id')
+        .select('id, email, company_name, phone, sms_notifications, user_id')
         .eq('approved', true)
       if (requestRow.preferred_workshop_id) {
         workshopsQuery = workshopsQuery.eq('id', requestRow.preferred_workshop_id)
@@ -182,25 +182,20 @@ Deno.serve(async (req) => {
         city,
         repair_category: requestRow.repair_category,
         bike_type: requestRow.bike_type,
+        request_id,
       }).catch((notifyError) => console.error('Workshop in-app notification failed', notifyError))
 
-      // Neutralt SMS-lager: väljer 46elks eller GatewayAPI baserat på secrets.
-      // Utan konfigurerad leverantör hoppar vi tyst över SMS – ingen extern anrop.
-      const smsProvider = resolveSmsProvider()
-      if (smsProvider) {
-        const recipients = (workshops || []).filter((workshop) => workshop.sms_notifications && workshop.phone)
-        const message = `Nytt godkänt cykelärende i ${city}: ${requestRow.repair_category}. Svara i verkstadsvyn: cykelhjalpen.se/dashboard/verkstad/arenden`
-        const smsResults = await Promise.allSettled(recipients.map(async (workshop) => {
-          const request = smsProvider.buildRequest({ to: workshop.phone || '', message })
-          const response = await fetch(request.url, {
-            method: request.method,
-            headers: request.headers,
-            body: request.body,
-          })
-          if (!response.ok) throw new Error(`SMS-fel (${smsProvider.name}) ${response.status}`)
-        }))
-        smsSent = smsResults.filter((result) => result.status === 'fulfilled').length
-      }
+      // Loggar alla SMS-avsikter i notification_events. Skickar inget riktigt SMS
+      // härifrån – utan konfigurerad leverantör markeras försöket som 'skipped'.
+      const recipients = (workshops || []).filter((workshop) => workshop.sms_notifications && workshop.phone)
+      const message = `Nytt godkänt cykelärende i ${city}: ${requestRow.repair_category}. Svara i verkstadsvyn: cykelhjalpen.se/dashboard/verkstad/arenden`
+      const smsResults = await Promise.allSettled(recipients.map((workshop) => logSmsAttempt(admin, {
+        to: workshop.phone || '',
+        message,
+        idempotencyKey: `bike_request_approved_sms:${request_id}:${workshop.id}`,
+        reason: 'bike_request_approved',
+      })))
+      smsSent = smsResults.filter((result) => result.status === 'fulfilled' && (result.value as { status: string }).status === 'pending').length
     }
 
     await customerEmail

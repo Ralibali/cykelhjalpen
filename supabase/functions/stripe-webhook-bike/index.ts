@@ -133,7 +133,7 @@ serve(async (req) => {
               }).eq("stripe_session_id", session.id),
               admin.from("workshop_responses").update({
                 paid: false,
-                status: "full",
+                status: "closed_for_responses",
                 stripe_payment_intent_id: paymentIntentId,
               }).eq("id", responseId),
             ]);
@@ -171,7 +171,7 @@ serve(async (req) => {
           const { error: requestStatusError } = await admin
             .from("bike_repair_requests")
             .update({
-              status: (paidCount || 0) >= 5 ? "full" : "has_offers",
+              status: (paidCount || 0) >= 5 ? "closed_for_responses" : "has_offers",
               updated_at: new Date().toISOString(),
             })
             .eq("id", requestId);
