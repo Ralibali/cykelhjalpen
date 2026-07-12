@@ -196,6 +196,7 @@ Deno.serve(async (req) => {
         reason: 'bike_request_approved',
       })))
       smsSent = smsResults.filter((result) => result.status === 'fulfilled' && (result.value as { status: string }).status === 'pending').length
+    }
 
     await customerEmail
 
