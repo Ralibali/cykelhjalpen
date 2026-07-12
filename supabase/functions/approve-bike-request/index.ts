@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
-import { notifyWorkshopsOfApprovedRequest, resolveSmsProvider } from '../_shared/notifications.ts'
+import { notifyWorkshopsOfApprovedRequest, logSmsAttempt } from '../_shared/notifications.ts'
 
 
 const ActionSchema = z.object({
