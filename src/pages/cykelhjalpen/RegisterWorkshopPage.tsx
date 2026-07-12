@@ -115,6 +115,9 @@ const RegisterWorkshopPage = () => {
       navigate('/logga-in?registrerad=verkstad')
     } catch (error) {
       trackClick('workshop_registration_failed', 'Skicka ansökan', { city: form.city })
+      // Vid backend-fel behöver Turnstile-token förnyas – det är single-use.
+      setTurnstileToken(null)
+      setTurnstileResetKey((current) => current + 1)
       toast.error((error as Error)?.message || 'Registreringen misslyckades')
     } finally {
       setLoading(false)
