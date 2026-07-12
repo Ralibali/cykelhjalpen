@@ -185,8 +185,8 @@ const RegisterWorkshopPage = () => {
             </div>
             <div>
               <Label htmlFor="pw">Lösenord</Label>
-              <Input id="pw" type="password" autoComplete="new-password" required minLength={6} value={form.password} onChange={(event) => update('password', event.target.value)} />
-              <p className="text-xs text-muted-foreground mt-1">Minst sex tecken.</p>
+              <Input id="pw" type="password" autoComplete="new-password" required minLength={8} value={form.password} onChange={(event) => update('password', event.target.value)} />
+              <p className="text-xs text-muted-foreground mt-1">Minst åtta tecken.</p>
             </div>
           </div>
 
@@ -225,7 +225,16 @@ const RegisterWorkshopPage = () => {
             </span>
           </label>
 
-          <Button type="submit" disabled={loading || !form.terms_accepted} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-12">
+          <div>
+            <Turnstile
+              action="register_workshop"
+              onVerify={handleTurnstileVerify}
+              onExpire={handleTurnstileExpire}
+              resetKey={turnstileResetKey}
+            />
+          </div>
+
+          <Button type="submit" disabled={loading || !form.terms_accepted || !turnstileToken} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-12">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {loading ? 'Skapar verkstad…' : 'Registrera verkstaden kostnadsfritt'}
           </Button>
