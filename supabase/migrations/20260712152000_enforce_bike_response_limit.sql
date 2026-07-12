@@ -8,8 +8,17 @@ SET search_path = public
 AS $$
 DECLARE
   paid_count integer;
+  should_check boolean := FALSE;
 BEGIN
-  IF NEW.paid IS TRUE AND (TG_OP = 'INSERT' OR COALESCE(OLD.paid, FALSE) IS FALSE) THEN
+  IF NEW.paid IS TRUE THEN
+    IF TG_OP = 'INSERT' THEN
+      should_check := TRUE;
+    ELSIF COALESCE(OLD.paid, FALSE) IS FALSE THEN
+      should_check := TRUE;
+    END IF;
+  END IF;
+
+  IF should_check THEN
     -- Serialize paid responses for the same request for the duration of this transaction.
     PERFORM pg_advisory_xact_lock(hashtextextended(NEW.request_id::text, 0));
 
