@@ -1,66 +1,65 @@
-# Cykelhjälpen – förbättringsplan
+# Lanseringsrevision Cykelhjälpen
 
-Fokus: säkerställa att koden och backend är i synk, stärka notifieringar, snygga till adminflöden och putsa verkstads‑ och kund‑UX. Inga externa utskick eller Stripe‑anrop görs som del av planen.
+## 1. Redo att ta emot betalande kunder idag?
+**Nej – inte för verkstadsrekrytering.** Kundflödet (bokning/Stripe/orderbekräftelse) ser produktionsklart ut på ytan, men outreach-modulen som just byggts har flera hårda buggar som gör den olämplig att köra skarpt. Se blockerare nedan.
 
-## 1. Kritiskt: aktivera väntande backend-ändringar
+## 2. Betyg: **6 / 10**
+Kundresa + Stripe + RLS ser solid ut. Outreach-modulen drar ner betyget kraftigt: den lovar funktioner som inte fungerar (edit av body, retry, one-click unsubscribe) och kan orsaka juridiska/deliverability-problem.
 
-Två migrationsfiler ligger i repot men är **inte körda** i databasen. Koden anropar redan det som saknas, så delar av flödet är brutet i produktion.
+## 3. Blockerare (måste fixas före första skarpa mejl)
 
-**Saknas i DB (finns i filer):**
-- `enforce_bike_response_paid_limit` trigger (fil `20260712152000_...`) – ska hindra att fler än fem verkstäder blir betalda på samma ärende parallellt. Koden fångar redan felet `bike_request_full` i `stripe-webhook-bike` och `create-bike-response-payment`.
-- RPC `consume_free_lead_for_response(uuid, uuid)` (fil `20260712160000_...`) – anropas i `create-bike-response-payment/index.ts:89`. Utan den kraschar gratis‑lead‑flödet.
-- Unika index: `stripe_events_stripe_event_id_unique`, `lead_charges_one_pending_per_response` (idempotens för Stripe‑webhooks och en pending Checkout per svar).
-- Trigger `protect_workshop_sensitive_fields_trigger` (låser `approved`, `free_leads_remaining`, `stripe_customer_id`, `email`, `user_id` och stad efter godkännande).
+### B1. Redigerad brödtext skickas ALDRIG
+`prospect-send-outreach/index.ts` bygger alltid `draft = buildEmailDraft(prospect)` och skickar `draft.text` / `draft.html`. Endast `activity.subject` respekteras. Adminens `update_draft` som skriver till `activity.message` är därför en kosmetisk illusion — det som går ut är alltid AI-mallens standardtext. Antingen: skicka `activity.message` (och rendera egen HTML från den), eller ta bort redigeringsmöjligheten i UI.
 
-**Åtgärd:** kör om båda migrationsfilerna som en samlad migration via migrationsverktyget så att triggers, index och RPC blir aktiva. Ingen SQL‑ändring behövs — endast omkörning av befintliga statements idempotent (`CREATE OR REPLACE`, `IF NOT EXISTS`, `DROP TRIGGER IF EXISTS`).
+### B2. Retry efter "failed" är omöjligt
+Låsuppdateringen kräver `.eq('status','approved')`. När ett utskick har satts till `failed` går det inte att prova igen utan att manuellt sätta status tillbaka till `approved` i DB. Antingen tillåt `.in('status', ['approved','failed'])` i låset, eller lägg till en "återuppta"-action.
 
-## 2. Notifieringar (in‑app + befintliga mailmallar)
+### B3. Daglig sändgräns är race-känslig
+`OUTREACH_DAILY_CAP=20` kontrolleras med SELECT COUNT följt av UPDATE. Vid två parallella admin-klick kan båda passera. Behöver antingen `SELECT ... FOR UPDATE` mot en counter-rad, en dedikerad `daily_send_counters`-tabell med unique constraint, eller en advisory lock (`pg_advisory_xact_lock`) runt kontroll+insert.
 
-Fyll luckor i `notifications`-tabellen så både verkstad och kund får realtidsuppdateringar i klockikonen. Ingen ny mail skickas i denna plan – endast rader i `notifications` (som redan har realtidskanal via `NotificationBell`).
+### B4. notification_events-insert är brutet
+Koden skriver `sent_at` men kolumnen heter `last_attempt_at` (schemat har inte `sent_at`). Insertet sväljs av `.catch(() => null)` så sändning fungerar, men spårbarheten är noll. Behöver fältmatch + `last_attempt_at: sentAt, attempts: 1`.
 
-- **Verkstad:** ny notis när ett ärende godkänts i deras stad (skapas i `approve-bike-request` bredvid befintlig mailfunktion, men bara `notifications`‑insert).
-- **Verkstad:** ny notis när ärendet blir fullt (`closed_for_responses`) så de vet att slotsen är slut.
-- **Kund:** notis när första verkstadssvaret kommer in (via `stripe-webhook-bike` efter lyckad betalning eller efter gratis‑lead‑förbrukning). Länk till `/mitt-arende/<token>`.
-- **Admin:** notis till alla `profiles.role = 'admin'` när nytt ärende skapas som `pending_approval` (nu missas dessa om admin inte pollar).
+### B5. One-click unsubscribe är INTE RFC 8058-kompatibel
+Headern `List-Unsubscribe-Post: List-Unsubscribe=One-Click` sätts, men `prospect-unsubscribe` accepterar bara `application/json`-body `{token}`. RFC 8058 kräver att endpointen tar en `POST` med `Content-Type: application/x-www-form-urlencoded` och body `List-Unsubscribe=One-Click`, utan token i body — tokenen sitter i URL:en. Nuvarande implementering läser bara `?token=` på GET, inte på POST. Gmail/Yahoo one-click kommer misslyckas → risk för spam-klassning.
 
-## 3. Adminflöden
+### B6. Unsubscribe-endpoint är JWT-skyddad
+Frontenden skickar `apikey` + `Authorization: Bearer <ANON>`. RFC 8058 skickar INGEN nyckel. `supabase/config.toml` måste ha `verify_jwt = false` för `prospect-unsubscribe`. Verifiera; annars blockerar Supabase-gatewayen mejlklienters POST.
 
-- **`CykelAdminOverview`:** lägg till badge på "Uppdatera"-knappen som visar antal nya pending sedan senaste refresh (via realtid på `bike_repair_requests`).
-- **Ärendekort:** visa telefonnummer/e-post och `city` konsekvent, samt en "Kopiera kontakt"‑knapp.
-- **Avvisa‑dialog:** kräv minst 10 tecken i `rejectReason` (skickas till kund och behöver vara meningsfullt).
-- **Verkstadslista:** visa `city` och antal levererade offerter per verkstad i sidopanelen (join på `workshop_responses` med `paid=true`).
-- **Länk till marketplace health** direkt från overview‑sidan för snabb felsökning.
-- **Stripe‑logg (`AdminStripeLog`):** filter för `type = checkout.session.completed` och färgad status så retries syns direkt.
+### B7. Prospekt-URL i unsubscribe-mejl vs. edge function URL
+`unsubscribeUrl` pekar på `https://cykelhjalpen.se/avregistrera/<token>` (frontend-sida) medan `List-Unsubscribe`-headern måste peka på en URL som svarar direkt på POST utan mänsklig interaktion. Frontend-SPA kan inte servera POST → posthanterare behöver peka på edge function-URL i headern.
 
-## 4. Verkstads-UX (`WorkshopRequests.tsx`)
+## 4. Viktiga icke-blockerande förbättringar
+- **Reply-To:** verifiera att `info@cykelhjalpen.se` verkligen tar emot inkommande hos Simply (inte bara Resend-sending). Ingen kod-check möjlig; kräver manuellt sändningstest till egen adress.
+- Lägg `Precedence: bulk` och `Auto-Submitted: auto-generated` bara om det verkligen är bulk — här är det 1-till-1, låt bli.
+- Dagskvot 20/dygn är hårt kodad — flytta till admin-inställning.
+- `notification_events` visas i /admin men får aldrig outreach-rader eftersom insertet är brutet (B4).
+- Lägg `bounced`/`complained`-status i outreach_activities + webhook från Resend för suppression-lista.
+- Publik cache av `resend-domain-status` (nu queras varje gång admin öppnar sidan).
+- Test-täckning: inga tester finns för outreach-funktionerna.
+- Turnstile finns på bokning — verifiera att `TURNSTILE_SECRET_KEY` faktiskt valideras server-side (inte bara token skickas).
+- CookieConsent-gate för GA4/Ads: verifiera att script inte laddas före consent.
 
-- Visa tydlig **"Ärendet är fullt"**-state när `bike_request_full` returneras från edge function, med länk tillbaka till listan.
-- Kort med **"Gratis-leads kvar"** överst, samt räknare "X av 5 slots kvar" per ärende innan man öppnar checkout.
-- När polling efter `?paid=true` misslyckas efter 15 s, erbjud knapp "Kontrollera igen" i stället för endast varningstoast.
-- Disabla "Skicka"-knappen medan formuläret valideras för att undvika dubbla submits.
+## 5. Verifierat vs. antaget
 
-## 5. Kund-UX (`CustomerResponses.tsx`, `BikeRequestWizard.tsx`)
+**Verifierat via kod/DB:**
+- Resend-domän `cykelhjalpen.se` = verified, sending enabled (curl-check tidigare tur).
+- B1–B4 verifierade genom att läsa `prospect-send-outreach/index.ts`, `_shared/outreach.ts`, `prospect-action/index.ts` och migration `20260712214212`.
+- RLS/GRANTs finns på `notification_events`, `outreach_activities`, `workshop_prospects`.
+- Unsubscribe-route registrerad på `/avregistrera/:token` i `App.tsx`.
+- Suppression-triggern `sync_prospect_suppression` skriver till `contact_suppression`.
 
-- Wizard: visa progress‑stapel (steg X av Y) och behåll ifyllda värden i `sessionStorage` så att en oavsiktlig refresh inte tömmer formuläret.
-- Efter submit: visa tydlig "vi granskar inom 24 h"-panel med kontakt till `info@cykelhjalpen.se` (i stället för vag success‑text).
-- `CustomerResponses`: sortera svar med lägst pris först och markera "Bästa pris" / "Snabbast leverans" som semantiska badges.
-- Lägg till `noindex` på token‑sidorna (`/mitt-arende/:token`) om det inte redan är satt.
+**Ej verifierat (antaget):**
+- Att Simply-mejlkorgen `info@cykelhjalpen.se` faktiskt tar emot (kräver skarpt test).
+- Att Stripe-webhook-signaturer valideras korrekt i `stripe-webhook-bike` (inte läst i denna revision).
+- End-to-end kundresa: startsida → bokning → Stripe → orderbekräftelse (inte klickad igenom i preview).
+- Att build/typecheck/vitest passerar (inte körda — endast läskontroll enligt uppgift).
+- Mobil-layout av kundflödet (inga screenshots tagna).
+- Att `verify_jwt = false` är satt för `prospect-unsubscribe` i config.toml.
+- Att auth-email-hook faktiskt levererar bekräftelsemejl via Resend (domän verifierad, men flöde ej testat).
+- SEO-sidor / juridiska sidor / kontaktflöde granskades inte i djup.
 
-## 6. Produktkvalitet / mindre
+## Rekommendation
+Håll skarpa outreach-utskick pausade tills B1, B5, B6, B7 är åtgärdade. B2–B4 kan gå ut samma release. Kundflödet (bokning/betalning) kan sannolikt köras skarpt men bör verifieras end-to-end med ett riktigt testköp innan lansering.
 
-- Byt slumpade `toast.error(error.message)` mot översatta meddelanden i verkstads‑ och kundflöden (svensk copy, "Något gick fel. Försök igen." som fallback).
-- Lägg till `<title>` och `<meta description>` per cykelhjälpen‑sida där det saknas (kolla `CykelhjalpenIndex`, `ForVerkstaderPage`, `RegisterWorkshopPage`).
-- Sätt `aria-label` på klockan i `NotificationBell` (a11y‑CI klagar annars).
-
-## Tekniska detaljer
-
-- Alla nya `notifications`‑rader använder befintligt schema: `user_id, type, title, message, link, is_read=false`.
-- Realtid finns redan i `NotificationBell` via `postgres_changes INSERT`.
-- Ingen ändring av Stripe‑nycklar, webhook‑endpoint eller mailtemplates.
-- Migration i steg 1 använder endast idempotenta statements – säker att köra om.
-
-## Utanför scope
-
-- Inga faktiska mail eller SMS skickas.
-- Ingen ändring av prissättning eller `LEAD_FEE_ORE`.
-- Ingen ändring av Stripe‑konfiguration (redan hanterad av användaren).
+Vill du att jag går vidare och åtgärdar B1–B7 i build mode?
