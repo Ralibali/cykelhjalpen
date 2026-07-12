@@ -9,146 +9,219 @@ const escapeHtml = (value: unknown) => String(value ?? "")
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#39;");
 
+const jsonResponse = (body: Record<string, unknown>, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { "Content-Type": "application/json" },
+});
+
 serve(async (req) => {
+  if (req.method !== "POST") return new Response("method not allowed", { status: 405 });
+
   const sig = req.headers.get("stripe-signature");
   if (!sig) return new Response("no signature", { status: 400 });
 
-  const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
+  const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY");
+  const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET_BIKE");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!stripeSecret || !webhookSecret || !supabaseUrl || !serviceRoleKey) {
+    console.error("stripe webhook configuration missing");
+    return jsonResponse({ error: "configuration missing" }, 500);
+  }
+
+  const stripe = new Stripe(stripeSecret, { apiVersion: "2025-08-27.basil" });
   const body = await req.text();
 
   let event: Stripe.Event;
   try {
-    event = await stripe.webhooks.constructEventAsync(body, sig, Deno.env.get("STRIPE_WEBHOOK_SECRET_BIKE")!);
-  } catch (e) {
-    console.error("webhook signature failed", e);
+    event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
+  } catch (error) {
+    console.error("webhook signature failed", error);
     return new Response("bad signature", { status: 400 });
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const admin = createClient(supabaseUrl, serviceRoleKey);
+  const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
-  const { data: existing } = await admin
-    .from("stripe_events")
-    .select("id")
-    .eq("stripe_event_id", event.id)
-    .maybeSingle();
-  if (existing) {
+  // Reserve the event before doing any side effects. The unique index makes
+  // concurrent deliveries safe, not only sequential retries.
+  const { error: reservationError } = await admin.from("stripe_events").insert({
+    stripe_event_id: event.id,
+    event_type: event.type,
+  });
+
+  if (reservationError?.code === "23505") {
     console.log("duplicate stripe event ignored", event.id);
-    return new Response(JSON.stringify({ received: true, duplicate: true }), { headers: { "Content-Type": "application/json" } });
+    return jsonResponse({ received: true, duplicate: true });
+  }
+  if (reservationError) {
+    console.error("could not reserve stripe event", reservationError);
+    return jsonResponse({ error: "event reservation failed" }, 500);
   }
 
-  const isSuccessfulCheckout = event.type === "checkout.session.completed"
-    || event.type === "checkout.session.async_payment_succeeded";
+  try {
+    const isSuccessfulCheckout = event.type === "checkout.session.completed"
+      || event.type === "checkout.session.async_payment_succeeded";
 
-  if (isSuccessfulCheckout) {
-    const session = event.data.object as Stripe.Checkout.Session;
+    if (isSuccessfulCheckout) {
+      const session = event.data.object as Stripe.Checkout.Session;
 
-    // Some payment methods complete Checkout before the actual payment succeeds.
-    // The async_payment_succeeded event will finalize those later.
-    if (session.payment_status !== "paid") {
-      console.log("checkout completed without paid status", session.id, session.payment_status);
-    } else {
-      const responseId = session.metadata?.response_id;
-      const metadataRequestId = session.metadata?.request_id;
-      const metadataWorkshopId = session.metadata?.workshop_id;
-      const paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : null;
+      // Some payment methods complete Checkout before the actual payment succeeds.
+      // The async_payment_succeeded event will finalize those later.
+      if (session.payment_status !== "paid") {
+        console.log("checkout completed without paid status", session.id, session.payment_status);
+      } else {
+        const responseId = session.metadata?.response_id || session.client_reference_id;
+        const metadataRequestId = session.metadata?.request_id;
+        const metadataWorkshopId = session.metadata?.workshop_id;
+        const paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : null;
 
-      if (responseId) {
-        // The database trigger serializes all paid responses for this request and
-        // rejects the sixth one even if several payments finish simultaneously.
-        const { data: responseRow, error: responseError } = await admin
+        if (!responseId) throw new Error(`Checkout ${session.id} is missing response_id`);
+
+        const { data: existingResponse, error: existingResponseError } = await admin
           .from("workshop_responses")
-          .update({
-            paid: true,
-            status: "sent",
-            stripe_payment_intent_id: paymentIntentId,
-          })
+          .select("id, request_id, workshop_id, paid, status")
           .eq("id", responseId)
-          .select("request_id, workshop_id")
           .maybeSingle();
+        if (existingResponseError) throw existingResponseError;
+        if (!existingResponse) throw new Error(`Response ${responseId} was not found`);
 
-        if (responseError?.message?.includes("bike_request_full")) {
-          if (!paymentIntentId) throw new Error("Full request payment is missing payment intent");
+        let responseRow = existingResponse;
+        let newlyPaid = false;
 
-          await stripe.refunds.create(
-            { payment_intent: paymentIntentId, reason: "requested_by_customer" },
-            { idempotencyKey: `bike-request-full-${session.id}` },
-          );
-
-          await Promise.all([
-            admin.from("lead_charges").update({
-              status: "refunded",
+        if (!existingResponse.paid) {
+          // The database trigger serializes paid responses for this request and
+          // rejects the sixth one even if several payments finish simultaneously.
+          const { data: updatedResponse, error: responseError } = await admin
+            .from("workshop_responses")
+            .update({
+              paid: true,
+              status: "sent",
               stripe_payment_intent_id: paymentIntentId,
-            }).eq("stripe_session_id", session.id),
-            admin.from("workshop_responses").update({
-              paid: false,
-              status: "full",
-              stripe_payment_intent_id: paymentIntentId,
-            }).eq("id", responseId),
-          ]);
+            })
+            .eq("id", responseId)
+            .eq("paid", false)
+            .select("id, request_id, workshop_id, paid, status")
+            .maybeSingle();
 
-          console.log("response refunded because request already had five paid offers", responseId);
-        } else {
-          if (responseError) throw responseError;
+          if (responseError?.message?.includes("bike_request_full")) {
+            if (!paymentIntentId) throw new Error("Full request payment is missing payment intent");
 
-          const requestId = responseRow?.request_id || metadataRequestId;
-          const workshopId = responseRow?.workshop_id || metadataWorkshopId;
+            await stripe.refunds.create(
+              { payment_intent: paymentIntentId, reason: "requested_by_customer" },
+              { idempotencyKey: `bike-request-full-${session.id}` },
+            );
 
-          const { error: chargeError } = await admin.from("lead_charges").update({
-            status: "paid",
-            stripe_payment_intent_id: paymentIntentId,
-          }).eq("stripe_session_id", session.id);
-          if (chargeError) throw chargeError;
-
-          if (requestId) {
-            await admin.from("bike_repair_requests").update({ status: "has_offers" }).eq("id", requestId);
-
-            const [{ data: requestRow }, { data: workshopRow }] = await Promise.all([
-              admin.from("bike_repair_requests")
-                .select("customer_name, customer_email, repair_category, view_token")
-                .eq("id", requestId)
-                .maybeSingle(),
-              workshopId
-                ? admin.from("workshops").select("company_name").eq("id", workshopId).maybeSingle()
-                : Promise.resolve({ data: null }),
+            const [{ error: chargeRefundError }, { error: responseFullError }] = await Promise.all([
+              admin.from("lead_charges").update({
+                status: "refunded",
+                stripe_payment_intent_id: paymentIntentId,
+              }).eq("stripe_session_id", session.id),
+              admin.from("workshop_responses").update({
+                paid: false,
+                status: "full",
+                stripe_payment_intent_id: paymentIntentId,
+              }).eq("id", responseId),
             ]);
+            if (chargeRefundError) throw chargeRefundError;
+            if (responseFullError) throw responseFullError;
 
-            if (requestRow?.customer_email && requestRow?.view_token) {
-              const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`;
-              const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${serviceRoleKey}`,
-                },
-                body: JSON.stringify({
-                  to: requestRow.customer_email,
-                  subject: `Nytt prisförslag på din cykel – ${requestRow.repair_category}`,
-                  html: `
-                    <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-                      <h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2>
-                      <p><strong>${escapeHtml(workshopRow?.company_name || "En cykelverkstad")}</strong> har lämnat ett nytt prisförslag på ditt ärende.</p>
-                      <p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p>
-                    </div>
-                  `,
-                }),
-              });
-              if (!emailResponse.ok) console.error("customer offer email failed", emailResponse.status);
+            console.log("response refunded because request already had five paid offers", responseId);
+            return jsonResponse({ received: true, refunded: true });
+          }
+
+          if (responseError) throw responseError;
+          if (updatedResponse) {
+            responseRow = updatedResponse;
+            newlyPaid = true;
+          }
+        }
+
+        const { error: chargeError } = await admin.from("lead_charges").update({
+          status: "paid",
+          stripe_payment_intent_id: paymentIntentId,
+        }).eq("stripe_session_id", session.id);
+        if (chargeError) throw chargeError;
+
+        const requestId = responseRow.request_id || metadataRequestId;
+        const workshopId = responseRow.workshop_id || metadataWorkshopId;
+
+        if (requestId) {
+          const { error: requestStatusError } = await admin
+            .from("bike_repair_requests")
+            .update({ status: "has_offers", updated_at: new Date().toISOString() })
+            .eq("id", requestId);
+          if (requestStatusError) throw requestStatusError;
+        }
+
+        // Only the transition from unpaid to paid sends a customer notification.
+        if (newlyPaid && requestId) {
+          const [{ data: requestRow, error: requestError }, workshopResult] = await Promise.all([
+            admin.from("bike_repair_requests")
+              .select("customer_name, customer_email, repair_category, view_token")
+              .eq("id", requestId)
+              .maybeSingle(),
+            workshopId
+              ? admin.from("workshops").select("company_name").eq("id", workshopId).maybeSingle()
+              : Promise.resolve({ data: null, error: null }),
+          ]);
+          if (requestError) throw requestError;
+          if (workshopResult.error) throw workshopResult.error;
+
+          if (requestRow?.customer_email && requestRow?.view_token) {
+            const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`;
+            const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${serviceRoleKey}`,
+              },
+              body: JSON.stringify({
+                to: requestRow.customer_email,
+                subject: `Nytt prisförslag på din cykel – ${requestRow.repair_category}`,
+                html: `
+                  <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+                    <h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2>
+                    <p><strong>${escapeHtml(workshopResult.data?.company_name || "En cykelverkstad")}</strong> har lämnat ett nytt prisförslag på ditt ärende.</p>
+                    <p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p>
+                  </div>
+                `,
+              }),
+            });
+            if (!emailResponse.ok) {
+              console.error("customer offer email failed", emailResponse.status, await emailResponse.text().catch(() => ""));
             }
           }
         }
       }
+    } else if (event.type === "checkout.session.expired") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const { error } = await admin.from("lead_charges")
+        .update({ status: "expired" })
+        .eq("stripe_session_id", session.id)
+        .eq("status", "pending");
+      if (error) throw error;
+    } else if (event.type === "checkout.session.async_payment_failed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const { error } = await admin.from("lead_charges")
+        .update({ status: "failed" })
+        .eq("stripe_session_id", session.id)
+        .eq("status", "pending");
+      if (error) throw error;
+    } else {
+      console.log("unhandled stripe event type", event.type, event.id);
     }
-  } else {
-    console.log("unhandled stripe event type", event.type, event.id);
+
+    return jsonResponse({ received: true });
+  } catch (error) {
+    // Let Stripe retry genuine processing failures. Removing the reservation is
+    // safe because all external Stripe writes use idempotency keys where needed.
+    const { error: cleanupError } = await admin
+      .from("stripe_events")
+      .delete()
+      .eq("stripe_event_id", event.id);
+    if (cleanupError) console.error("could not release failed stripe event reservation", cleanupError);
+
+    console.error("stripe webhook processing failed", event.id, error);
+    return jsonResponse({ error: "processing failed" }, 500);
   }
-
-  const { error: eventError } = await admin.from("stripe_events").insert({
-    stripe_event_id: event.id,
-    event_type: event.type,
-  });
-  if (eventError) throw eventError;
-
-  return new Response(JSON.stringify({ received: true }), { headers: { "Content-Type": "application/json" } });
 });
