@@ -107,35 +107,54 @@ Deno.serve(async (req) => {
       throw new Error(`Dagskvoten på ${OUTREACH_DAILY_CAP} rekryteringsmejl per dygn är nådd.`)
     }
 
-    // Atomiskt lås – kräver att statusen fortfarande är approved
-    const idempotencyKey = `outreach:${activity.id}`
-    const { data: locked, error: lockErr } = await admin
-      .from('outreach_activities')
-      .update({
-        status: 'sending',
-        send_lock_at: new Date().toISOString(),
-        sent_by: userData.user.id,
-        provider: 'resend',
-        idempotency_key: idempotencyKey,
-        error: null,
-      })
-      .eq('id', activity.id)
-      .eq('status', 'approved')
-      .select('*')
-      .maybeSingle()
-    if (lockErr) throw lockErr
-    if (!locked) throw new Error('Utkastet är redan låst för sändning eller ändrat.')
-
-    // Bygg alltid färsk HTML/text för att garantera unsubscribe + escapning
-    const draft = buildEmailDraft({
-      company_name: prospect.company_name,
-      city: prospect.city,
-      website: prospect.website,
-      ai_summary: prospect.ai_summary,
-      services: prospect.services,
-      unsubscribe_token: prospect.unsubscribe_token,
+    // Atomiskt reservera plats: RPC håller advisory lock, kontrollerar dagskvot
+    // och byter status approved/failed -> sending. Retry efter failed hanteras här.
+    const { data: reserved, error: rpcErr } = await admin.rpc('reserve_outreach_send_slot', {
+      _activity_id: activity.id,
+      _cap: OUTREACH_DAILY_CAP,
+      _sender: userData.user.id,
     })
-    const subject = (activity.subject && activity.subject.trim().length > 0) ? activity.subject : draft.subject
+    if (rpcErr) {
+      const raw = (rpcErr as { message?: string })?.message || ''
+      if (raw.includes('daily_cap_reached')) {
+        throw new Error(`Dagskvoten på ${OUTREACH_DAILY_CAP} rekryteringsmejl per dygn är nådd.`)
+      }
+      throw new Error(`Kunde inte reservera utskicksplats: ${raw}`)
+    }
+    const locked = Array.isArray(reserved) ? reserved[0] : reserved
+    if (!locked) {
+      throw new Error('Utkastet är redan låst för sändning eller inte i status approved/failed.')
+    }
+    const idempotencyKey = locked.idempotency_key as string
+
+    // Bygg brödtext från admin-godkänd text; fall tillbaka till standardmall om saknas.
+    const approvedMessage = (locked.message ?? activity.message ?? '').toString().trim()
+    let subject = (locked.subject ?? activity.subject ?? '').toString().trim()
+    let text: string
+    let html: string
+    if (approvedMessage.length > 0) {
+      const rendered = buildEditedEmail({ unsubscribe_token: prospect.unsubscribe_token }, approvedMessage)
+      text = rendered.text
+      html = rendered.html
+      if (!subject) {
+        subject = `Kundförfrågningar från cykelägare i ${prospect.city}`
+      }
+    } else {
+      const draft = buildEmailDraft({
+        company_name: prospect.company_name,
+        city: prospect.city,
+        website: prospect.website,
+        ai_summary: prospect.ai_summary,
+        services: prospect.services,
+        unsubscribe_token: prospect.unsubscribe_token,
+      })
+      text = draft.text
+      html = draft.html
+      if (!subject) subject = draft.subject
+    }
+
+    const oneClickUrl = oneClickUnsubscribeUrl(SUPABASE_URL, prospect.unsubscribe_token)
+    const humanUnsubUrl = unsubscribeUrl(prospect.unsubscribe_token)
 
     // Skicka via Resend genom Lovable gateway
     let resendResponse: Response
