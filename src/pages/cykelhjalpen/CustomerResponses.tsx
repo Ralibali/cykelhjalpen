@@ -240,46 +240,65 @@ const CustomerResponses = () => {
                   : 'Prisförslag visas här efter att ärendet har godkänts och en verkstad har svarat.'}
               </div>
             ) : (
-              <div className="space-y-4">
-                {responses.map((response) => {
-                  const email = response.workshop?.email
-                  const phone = response.workshop?.phone
-                  const website = safeWebsite(response.workshop?.website)
-                  const company = response.workshop?.company_name
-                  return (
-                    <article key={response.id} className="sticker bg-card p-5">
-                      <div className="flex justify-between items-start gap-3 mb-2">
-                        <h3 className="font-display font-bold text-lg">{company || 'Cykelverkstad'}</h3>
-                        {response.estimated_price_min !== null && (
-                          <span className="font-bold text-accent whitespace-nowrap">
-                            {response.estimated_price_min}{response.estimated_price_max ? `–${response.estimated_price_max}` : ''} kr
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm mb-3 whitespace-pre-wrap">{response.message}</p>
-                      {response.estimated_time && <p className="text-xs text-muted-foreground mb-2">Beräknad tid: {response.estimated_time}</p>}
-                      {response.can_pickup && <p className="text-xs text-muted-foreground mb-2">Verkstaden kan erbjuda hämtning.</p>}
-                      <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
-                        {phone && (
-                          <Button asChild size="sm" variant="default" onClick={() => handleContact(response, 'phone')}>
-                            <a href={`tel:${phone}`}><Phone className="h-4 w-4 mr-1.5" /> Ring</a>
-                          </Button>
-                        )}
-                        {email && (
-                          <Button asChild size="sm" variant="outline" onClick={() => handleContact(response, 'email')}>
-                            <a href={`mailto:${email}?subject=${mailSubject(company)}`}><Mail className="h-4 w-4 mr-1.5" /> Mejla</a>
-                          </Button>
-                        )}
-                        {website && (
-                          <Button asChild size="sm" variant="outline" onClick={() => handleContact(response, 'website')}>
-                            <a href={website} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4 mr-1.5" /> Webbplats</a>
-                          </Button>
-                        )}
-                      </div>
-                    </article>
-                  )
-                })}
-              </div>
+              (() => {
+                const priceOf = (r: WorkshopResponse) => (
+                  r.estimated_price_min ?? r.estimated_price_max ?? Number.POSITIVE_INFINITY
+                )
+                const sorted = [...responses].sort((a, b) => priceOf(a) - priceOf(b))
+                const cheapestId = sorted.find((r) => priceOf(r) !== Number.POSITIVE_INFINITY)?.id
+                return (
+                  <ol className="space-y-4 list-none p-0">
+                    {sorted.map((response) => {
+                      const email = response.workshop?.email
+                      const phone = response.workshop?.phone
+                      const website = safeWebsite(response.workshop?.website)
+                      const company = response.workshop?.company_name
+                      const isCheapest = response.id === cheapestId && sorted.length > 1
+                      return (
+                        <li key={response.id}>
+                          <article className={`sticker bg-card p-5 ${isCheapest ? 'ring-2 ring-emerald-500' : ''}`}>
+                            <div className="flex justify-between items-start gap-3 mb-2">
+                              <div className="min-w-0">
+                                <h3 className="font-display font-bold text-lg">{company || 'Cykelverkstad'}</h3>
+                                {isCheapest && (
+                                  <span className="inline-block mt-1 text-xs font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                                    Bästa pris
+                                  </span>
+                                )}
+                              </div>
+                              {response.estimated_price_min !== null && (
+                                <span className="font-bold text-accent whitespace-nowrap">
+                                  {response.estimated_price_min}{response.estimated_price_max ? `–${response.estimated_price_max}` : ''} kr
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm mb-3 whitespace-pre-wrap">{response.message}</p>
+                            {response.estimated_time && <p className="text-xs text-muted-foreground mb-2">Beräknad tid: {response.estimated_time}</p>}
+                            {response.can_pickup && <p className="text-xs text-muted-foreground mb-2">Verkstaden kan erbjuda hämtning.</p>}
+                            <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
+                              {phone && (
+                                <Button asChild size="sm" variant="default" onClick={() => handleContact(response, 'phone')}>
+                                  <a href={`tel:${phone}`} aria-label={`Ring ${company || 'verkstaden'}`}><Phone className="h-4 w-4 mr-1.5" /> Ring</a>
+                                </Button>
+                              )}
+                              {email && (
+                                <Button asChild size="sm" variant="outline" onClick={() => handleContact(response, 'email')}>
+                                  <a href={`mailto:${email}?subject=${mailSubject(company)}`} aria-label={`Mejla ${company || 'verkstaden'}`}><Mail className="h-4 w-4 mr-1.5" /> Mejla</a>
+                                </Button>
+                              )}
+                              {website && (
+                                <Button asChild size="sm" variant="outline" onClick={() => handleContact(response, 'website')}>
+                                  <a href={website} target="_blank" rel="noreferrer" aria-label={`Öppna webbplatsen för ${company || 'verkstaden'}`}><ExternalLink className="h-4 w-4 mr-1.5" /> Webbplats</a>
+                                </Button>
+                              )}
+                            </div>
+                          </article>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                )
+              })()
             )}
           </>
         )}

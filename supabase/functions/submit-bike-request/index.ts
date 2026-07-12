@@ -1,6 +1,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
+import { notifyAdminsOfPendingRequest } from '../_shared/notifications.ts'
+
 
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
 const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
@@ -156,9 +158,19 @@ Deno.serve(async (req) => {
       if (!response.ok) console.error('Customer confirmation email failed', response.status, await response.text().catch(() => ''))
     }).catch((emailError) => console.error('Customer confirmation email failed', emailError))
 
+    // In-app notification till admins så nya ärenden syns i klockan utan polling.
+    const adminNotifyTask = notifyAdminsOfPendingRequest(supabase, {
+      city: body.city,
+      repair_category: body.repair_category,
+    }).catch((notifyError) => console.error('Admin notification insert failed', notifyError))
+
     const edgeRuntime = (globalThis as any).EdgeRuntime
-    if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(customerEmailTask)
-    else await customerEmailTask
+    if (edgeRuntime?.waitUntil) {
+      edgeRuntime.waitUntil(customerEmailTask)
+      edgeRuntime.waitUntil(adminNotifyTask)
+    } else {
+      await Promise.all([customerEmailTask, adminNotifyTask])
+    }
 
     return new Response(JSON.stringify(row), {
       status: 200,

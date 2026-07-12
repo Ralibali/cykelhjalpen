@@ -1,6 +1,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
+import { notifyWorkshopsOfApprovedRequest, resolveSmsProvider } from '../_shared/notifications.ts'
+
 
 const ActionSchema = z.object({
   request_id: z.string().uuid(),
@@ -21,13 +23,6 @@ const urgencyLabel = (value: string | null) => ({
   flexible: 'Flexibel',
 }[value || ''] || value || 'Ej angivet')
 
-const toE164 = (raw: string) => {
-  const digits = raw.replace(/[^\d+]/g, '')
-  if (digits.startsWith('+')) return digits
-  if (digits.startsWith('00')) return `+${digits.slice(2)}`
-  if (digits.startsWith('0')) return `+46${digits.slice(1)}`
-  return digits
-}
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
@@ -147,7 +142,7 @@ Deno.serve(async (req) => {
       const city = requestRow.city || 'Linköping'
       let workshopsQuery = admin
         .from('workshops')
-        .select('email, company_name, phone, sms_notifications')
+        .select('email, company_name, phone, sms_notifications, user_id')
         .eq('approved', true)
       if (requestRow.preferred_workshop_id) {
         workshopsQuery = workshopsQuery.eq('id', requestRow.preferred_workshop_id)
@@ -182,26 +177,27 @@ Deno.serve(async (req) => {
         `,
       )))
 
-      const elksUser = Deno.env.get('ELKS_API_USERNAME')
-      const elksPassword = Deno.env.get('ELKS_API_PASSWORD')
-      if (elksUser && elksPassword) {
+      // In-app-notiser via klockan för alla mottagande verkstäder.
+      await notifyWorkshopsOfApprovedRequest(admin, workshops || [], {
+        city,
+        repair_category: requestRow.repair_category,
+        bike_type: requestRow.bike_type,
+      }).catch((notifyError) => console.error('Workshop in-app notification failed', notifyError))
+
+      // Neutralt SMS-lager: väljer 46elks eller GatewayAPI baserat på secrets.
+      // Utan konfigurerad leverantör hoppar vi tyst över SMS – ingen extern anrop.
+      const smsProvider = resolveSmsProvider()
+      if (smsProvider) {
         const recipients = (workshops || []).filter((workshop) => workshop.sms_notifications && workshop.phone)
-        const auth = btoa(`${elksUser}:${elksPassword}`)
         const message = `Nytt godkänt cykelärende i ${city}: ${requestRow.repair_category}. Svara i verkstadsvyn: cykelhjalpen.se/dashboard/verkstad/arenden`
         const smsResults = await Promise.allSettled(recipients.map(async (workshop) => {
-          const response = await fetch('https://api.46elks.com/a1/sms', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Basic ${auth}`,
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-              from: 'CykelHjalp',
-              to: toE164(workshop.phone || ''),
-              message,
-            }),
+          const request = smsProvider.buildRequest({ to: workshop.phone || '', message })
+          const response = await fetch(request.url, {
+            method: request.method,
+            headers: request.headers,
+            body: request.body,
           })
-          if (!response.ok) throw new Error(`SMS-fel ${response.status}`)
+          if (!response.ok) throw new Error(`SMS-fel (${smsProvider.name}) ${response.status}`)
         }))
         smsSent = smsResults.filter((result) => result.status === 'fulfilled').length
       }

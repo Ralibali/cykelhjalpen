@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
 import ThemeToggle from './ThemeToggle'
+import NotificationBell from '@/components/NotificationBell'
 import { useAuth } from '@/hooks/useAuth'
 import { trackClick } from '@/hooks/usePageTracking'
 
@@ -40,6 +41,7 @@ const CykelNavbar = () => {
 
         <div className="hidden md:flex items-center gap-3">
           <ThemeToggle />
+          {isAuthenticated && <NotificationBell />}
           {isAuthenticated ? (
             <Button asChild variant="outline" size="sm"><Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>Mitt konto</Link></Button>
           ) : (

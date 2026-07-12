@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Bike, ListChecks, Receipt, Settings, LogOut, Loader2, Clock, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
+import NotificationBell from '@/components/NotificationBell'
 import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { toast } from 'sonner'
 
@@ -161,9 +162,10 @@ const WorkshopLayout = () => {
       <header className="border-b border-border bg-card sticky top-0 z-40">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <CykelLogo size="sm" />
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-2 text-sm">
             <span className="hidden sm:inline text-muted-foreground">{workshop.company_name}</span>
             <span className="hidden md:inline-flex items-center gap-1 text-muted-foreground"><MapPin className="h-3.5 w-3.5" />{workshop.city}</span>
+            <NotificationBell />
             <Button variant="ghost" size="sm" onClick={() => signOut()} aria-label="Logga ut"><LogOut className="h-4 w-4" /></Button>
           </div>
         </div>

@@ -165,11 +165,32 @@ const WorkshopRequests = () => {
     setSubmitting(null)
 
     if (error || payment?.error) {
-      const msg = payment?.error || error?.message || 'Det gick inte att öppna betalningen.'
+      const msg = String(payment?.error || error?.message || '')
+      const isFull = /bike_request_full|ärendet är fullt/i.test(msg)
       const isStripeConfig = /stripe/i.test(msg) && /konfig|configuration|not set/i.test(msg)
-      toast.error(isStripeConfig ? 'Stripe är inte korrekt konfigurerat.' : 'Kunde inte starta betalningen.', {
-        description: msg + (isStripeConfig ? ' Kontrollera att STRIPE_SECRET_KEY är sparad som secret.' : ' Offerten är sparad och kan skickas senare.'),
-        duration: 10000,
+
+      if (isFull) {
+        toast.error('Ärendet är fullt – fem verkstäder har redan svarat.', {
+          description: 'Ditt utkast är sparat men kan inte skickas. Vi tar bort ärendet från listan.',
+          duration: 10000,
+        })
+      } else if (isStripeConfig) {
+        toast.error('Stripe är inte korrekt konfigurerat.', {
+          description: 'Kontrollera att STRIPE_SECRET_KEY är sparad som secret.',
+          duration: 10000,
+        })
+      } else {
+        toast.error('Kunde inte starta betalningen.', {
+          description: msg || 'Något gick fel. Offerten är sparad och kan skickas senare.',
+          duration: 8000,
+        })
+      }
+      await load()
+      return
+    }
+    if (payment?.free) {
+      toast.success('Offerten skickades med en gratis-lead. ✅', {
+        description: 'Kunden ser ditt prisförslag direkt.',
       })
       await load()
       return
@@ -210,7 +231,9 @@ const WorkshopRequests = () => {
 
     if (error || !response) {
       setSubmitting(null)
-      toast.error(error?.message || 'Det gick inte att spara offerten.')
+      toast.error('Kunde inte spara offerten.', {
+        description: error?.message || 'Försök igen om en stund.',
+      })
       return
     }
 
