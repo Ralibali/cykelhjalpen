@@ -130,6 +130,32 @@
         wait_for_update: 500
       });
     </script>
+
+    <script>
+      // Plausible Analytics – load only on the production domain.
+      // On localhost, Lovable preview and any other host, `window.plausible`
+      // stays undefined so `trackEvent()` becomes a silent no-op.
+      (function () {
+        try {
+          var host = window.location.hostname;
+          var isProd = host === 'cykelhjalpen.se' || host === 'www.cykelhjalpen.se';
+          if (!isProd) return;
+          window.plausible = window.plausible || function () {
+            (window.plausible.q = window.plausible.q || []).push(arguments);
+          };
+          var s = document.createElement('script');
+          s.defer = true;
+          s.setAttribute('data-domain', 'cykelhjalpen.se');
+          // script.tagged-events.js includes automatic SPA pageview tracking
+          // via the History API (pushState/popstate), so no manual pageview
+          // calls are needed – this avoids duplicate pageviews.
+          s.src = 'https://plausible.io/js/script.tagged-events.js';
+          document.head.appendChild(s);
+        } catch (e) {
+          // Never let analytics loading break the app.
+        }
+      })();
+    </script>
   </head>
 
   <body>

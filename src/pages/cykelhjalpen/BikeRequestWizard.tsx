@@ -11,6 +11,7 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import BikeRequestStepContent from '@/components/cykelhjalpen/BikeRequestStepContent'
 import { Helmet } from 'react-helmet-async'
 import { trackClick } from '@/hooks/usePageTracking'
+import { trackEvent } from '@/lib/analytics'
 import { DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import {
   BIKE_REQUEST_STEPS,
@@ -92,6 +93,7 @@ const BikeRequestWizard = () => {
   useEffect(() => {
     trackClick('bike_request_started', 'Skicka cykelärende', { city: form.city })
     trackGoogleEvent('begin_checkout', { item_name: 'Cykelärende', city: form.city })
+    trackEvent('Repair Request Started', { city: form.city, source: 'wizard' })
   }, [])
 
   useEffect(() => {
@@ -207,6 +209,7 @@ const BikeRequestWizard = () => {
         has_images: files.length > 0,
       })
       trackGoogleEvent('generate_lead', { currency: 'SEK', value: 0, lead_type: 'bike_repair_request', city: parsed.data.city })
+      trackEvent('Repair Request Submitted', { city: parsed.data.city, bike_type: parsed.data.bike_type })
 
       toast.success(`Tack! Ärendet i ${parsed.data.city} är mottaget och granskas innan det skickas till verkstäder.`)
       if (uploadErrors.length > 0) toast.error(`${uploadErrors.length} bilder kunde inte laddas upp. Själva ärendet är ändå mottaget.`)

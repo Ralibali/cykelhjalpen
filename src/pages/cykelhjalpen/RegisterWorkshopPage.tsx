@@ -12,6 +12,7 @@ import Turnstile from '@/components/cykelhjalpen/Turnstile'
 import { Helmet } from 'react-helmet-async'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
+import { trackEvent } from '@/lib/analytics'
 import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, type CykelCityName } from '@/lib/cykelCities'
 
 const SERVICES = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Hjulbygge', 'Mobil reparation']
@@ -98,6 +99,8 @@ const RegisterWorkshopPage = () => {
 
       trackClick('workshop_registration_completed', 'Skicka ansökan', { services_count: form.services.length, city: form.city })
       trackGoogleEvent('sign_up', { method: 'workshop_registration', city: form.city })
+      trackEvent('Workshop Signup Completed', { city: form.city, user_type: 'workshop' })
+
 
       if (data?.session?.access_token && data?.session?.refresh_token) {
         const { error: sessionError } = await supabase.auth.setSession({

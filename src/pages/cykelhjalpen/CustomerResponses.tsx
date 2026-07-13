@@ -8,6 +8,7 @@ import { Helmet } from 'react-helmet-async'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { trackClick } from '@/hooks/usePageTracking'
+import { trackEvent } from '@/lib/analytics'
 
 interface WorkshopResponse {
   id: string
@@ -125,6 +126,10 @@ const CustomerResponses = () => {
       channel,
       response_id: response.id,
     })
+    // Buyer initiating contact with a workshop is our strongest client-side
+    // "offer accepted" signal. Only pass low-cardinality city – no IDs, names
+    // or free text – so this stays privacy-safe in Plausible.
+    if (request?.city) trackEvent('Offer Accepted', { city: request.city })
   }
 
   const mailSubject = (companyName?: string) =>
