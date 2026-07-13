@@ -11,6 +11,7 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import BikeRequestStepContent from '@/components/cykelhjalpen/BikeRequestStepContent'
 import { Helmet } from 'react-helmet-async'
 import { trackClick } from '@/hooks/usePageTracking'
+import { trackEvent } from '@/lib/analytics'
 import { DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import {
   BIKE_REQUEST_STEPS,
