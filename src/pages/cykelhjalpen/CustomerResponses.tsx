@@ -8,6 +8,7 @@ import { Helmet } from 'react-helmet-async'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { trackClick } from '@/hooks/usePageTracking'
+import { trackEvent } from '@/lib/analytics'
 
 interface WorkshopResponse {
   id: string
