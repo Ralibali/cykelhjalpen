@@ -12,6 +12,7 @@ import Turnstile from '@/components/cykelhjalpen/Turnstile'
 import { Helmet } from 'react-helmet-async'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
+import { trackEvent } from '@/lib/analytics'
 import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, type CykelCityName } from '@/lib/cykelCities'
 
 const SERVICES = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Hjulbygge', 'Mobil reparation']
