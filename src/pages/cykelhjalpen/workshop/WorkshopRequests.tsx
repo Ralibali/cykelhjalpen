@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { LEAD_FEE_KR } from '@/lib/pricing'
+import { trackEvent } from '@/lib/analytics'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 
 interface RequestImage {
