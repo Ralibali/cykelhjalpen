@@ -97,6 +97,7 @@ const WorkshopRequests = () => {
         .maybeSingle()
       if (data?.paid) {
         toast.success('Betalning bekräftad – offerten är skickad till kunden. ✅', { id: toastId })
+        trackEvent('Offer Submitted', { city: workshop.city, source: 'paid' })
         await load()
         return
       }
