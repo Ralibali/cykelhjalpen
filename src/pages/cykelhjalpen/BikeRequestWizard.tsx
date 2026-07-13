@@ -93,6 +93,7 @@ const BikeRequestWizard = () => {
   useEffect(() => {
     trackClick('bike_request_started', 'Skicka cykelärende', { city: form.city })
     trackGoogleEvent('begin_checkout', { item_name: 'Cykelärende', city: form.city })
+    trackEvent('Repair Request Started', { city: form.city, source: 'wizard' })
   }, [])
 
   useEffect(() => {
