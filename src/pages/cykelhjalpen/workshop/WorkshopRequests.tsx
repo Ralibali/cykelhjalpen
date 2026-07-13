@@ -120,6 +120,7 @@ const WorkshopRequests = () => {
         toast.success('Offerten är skickad med en gratis-lead. ✅', {
           description: 'Kunden har fått ett mejl med ditt prisförslag.',
         })
+        trackEvent('Offer Submitted', { city: workshop.city, source: 'free' })
         load()
       } else if (responseId) {
         confirmWebhookPaid(responseId)
