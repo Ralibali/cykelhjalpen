@@ -1,8 +1,10 @@
 import { useMemo, useEffect, useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { motion } from 'framer-motion'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
+import Reveal from '@/components/cykelhjalpen/Reveal'
 import { CYKEL_CITIES } from '@/lib/cykelCities'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import {
@@ -16,6 +18,8 @@ import {
   TrendingUp,
   ArrowRight,
 } from 'lucide-react'
+import verkstadHero1200 from '@/assets/cykel-verkstad-hero-1200.webp'
+import verkstadHero640 from '@/assets/cykel-verkstad-hero-640.webp'
 
 type Stats = { workshops: number; requests: number; responses: number }
 
@@ -52,6 +56,13 @@ const WorkshopAdCityPage = () => {
     { icon: BadgeCheck, title: 'Bli synlig i sökningar', body: `Godkända verkstäder listas på våra stadssidor som rankar högt för sökningar som "cykelreparation ${city.name}".` },
   ]
 
+  const steps = [
+    { title: 'Anslut din verkstad', body: `Fyll i uppgifterna om din verkstad i ${city.name}. Vi granskar och godkänner inom ett dygn.` },
+    { title: 'Få förfrågningar', body: 'Vi mejlar (och SMS:ar om du vill) så fort en cyklist i ditt område behöver hjälp.' },
+    { title: 'Svara på det som passar', body: `Lämna offert med ett klick. Första tre leads är gratis, därefter ${LEAD_FEE_KR} kr per lead du väljer att svara på.` },
+    { title: 'Ta jobbet', body: 'Kunden hör av sig direkt till dig – du fakturerar som vanligt, vi tar ingen provision.' },
+  ]
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -67,126 +78,165 @@ const WorkshopAdCityPage = () => {
       {/* Minimal top bar */}
       <header className="border-b bg-background/90 backdrop-blur sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="font-bold text-lg tracking-tight">Cykelhjälpen</Link>
-          <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Link to="/" className="font-display text-xl tracking-tight">Cykelhjälpen</Link>
+          <Button asChild size="sm" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-5">
             <Link to={registerHref}>Anslut din verkstad</Link>
           </Button>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-primary/5 to-background">
-        <div className="max-w-5xl mx-auto px-4 py-12 md:py-20 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold mb-5">
-            <MapPin className="w-3.5 h-3.5" /> För cykelverkstäder i {city.name}
-          </div>
-          <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4 max-w-3xl mx-auto">
-            Fyll kalendern med nya cykeljobb i {city.name}
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Vi skickar kvalificerade kundförfrågningar direkt till din verkstad. Du väljer vilka du svarar på – betalar bara <strong>{LEAD_FEE_KR} kr per lead</strong>, ingen månadskostnad, ingen bindning.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 h-12 px-8 text-base font-semibold">
-              <Link to={registerHref}>
-                Anslut din verkstad gratis <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="h-12 px-6">
-              <Link to="/for-cykelverkstader">Läs mer om upplägget</Link>
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-5">
-            Tre gratis leads när du blir godkänd · Godkännande sker inom ett dygn
-          </p>
-
-          {/* Trust stats */}
-          <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-2xl mx-auto mt-12">
-            {[
-              { label: 'Godkända verkstäder', value: stats?.workshops ?? '—' },
-              { label: 'Förfrågningar hittills', value: stats?.requests ?? '—' },
-              { label: `Öppna jobb i ${city.name}`, value: openCount ?? '—' },
-            ].map((s) => (
-              <div key={s.label} className="rounded-xl border bg-card p-4">
-                <div className="text-2xl md:text-3xl font-bold text-primary">{s.value}</div>
-                <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+      <section className="bg-hero-gradient">
+        <div className="max-w-6xl mx-auto px-4 py-14 md:py-20">
+          <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-10 items-center">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-1.5 text-sm font-semibold mb-6">
+                <MapPin className="w-4 h-4" /> För cykelverkstäder i {city.name}
               </div>
-            ))}
+              <h1 className="font-display text-4xl md:text-6xl tracking-tight mb-5">
+                Fyll kalendern med nya cykeljobb i {city.name}
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8">
+                Vi skickar kvalificerade kundförfrågningar direkt till din verkstad. Du väljer vilka du svarar på – betalar bara <strong className="text-foreground">{LEAD_FEE_KR} kr per lead</strong>. Ingen månadskostnad, ingen bindning.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-14 px-8 text-base shadow-brand">
+                  <Link to={registerHref}>
+                    Anslut din verkstad gratis <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="rounded-full h-14 px-7 border-2">
+                  <Link to="/for-cykelverkstader">Läs mer om upplägget</Link>
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-5">
+                Tre gratis leads när du blir godkänd · Godkännande sker inom ett dygn
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="relative hidden lg:block"
+            >
+              <div className="rounded-[2rem] overflow-hidden sticker bg-card">
+                <img
+                  src={verkstadHero1200}
+                  srcSet={`${verkstadHero640} 640w, ${verkstadHero1200} 1200w`}
+                  sizes="45vw"
+                  alt="Cykelmekaniker i sin verkstad"
+                  width={1200}
+                  height={725}
+                  className="w-full aspect-[4/3] object-cover"
+                  loading="eager"
+                />
+              </div>
+              <div className="absolute -bottom-5 left-6 sticker rounded-2xl bg-card px-5 py-4">
+                <p className="font-display text-3xl leading-none">{LEAD_FEE_KR} kr</p>
+                <p className="text-xs text-muted-foreground mt-1">per lead du själv väljer</p>
+              </div>
+            </motion.div>
           </div>
+
+          {/* Trust stats – visas först när siffrorna är trovärdiga */}
+          {stats && stats.workshops >= 3 && stats.requests >= 10 && (
+            <div className="grid grid-cols-3 gap-3 md:gap-5 max-w-2xl mt-14">
+              {[
+                { label: 'Godkända verkstäder', value: stats.workshops },
+                { label: 'Förfrågningar hittills', value: stats.requests },
+                ...(openCount && openCount > 0 ? [{ label: `Öppna jobb i ${city.name}`, value: openCount }] : []),
+              ].map((s) => (
+                <div key={s.label} className="sticker rounded-2xl bg-card p-4 md:p-5">
+                  <div className="font-display text-2xl md:text-3xl text-primary">{s.value}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Benefits grid */}
-      <section className="py-14 md:py-20">
-        <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Vad du vinner hos oss</h2>
-          <p className="text-muted-foreground text-center mb-10 max-w-2xl mx-auto">
-            Cykelhjälpen är gjort för verkstäder som vill växa i {city.name} utan att lägga tid och pengar på marknadsföring.
-          </p>
+      <section className="py-16 md:py-20">
+        <div className="max-w-6xl mx-auto px-4">
+          <Reveal>
+            <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">Fördelar</p>
+            <h2 className="font-display text-3xl md:text-5xl text-center mb-3">Vad du vinner hos oss</h2>
+            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+              Cykelhjälpen är gjort för verkstäder som vill växa i {city.name} utan att lägga tid och pengar på marknadsföring.
+            </p>
+          </Reveal>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {benefits.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="rounded-xl border bg-card p-6">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5" />
+            {benefits.map(({ icon: Icon, title, body }, index) => (
+              <Reveal key={title} delay={index * 0.06}>
+                <div className="sticker rounded-3xl bg-card p-6 h-full hover:-translate-y-1 transition-transform">
+                  <span className="inline-flex items-center justify-center rounded-2xl bg-primary/10 p-3 mb-4">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </span>
+                  <h3 className="font-display text-xl mb-2">{title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
                 </div>
-                <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* How it works */}
-      <section className="bg-muted/40 py-14 md:py-20">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">Så funkar det</h2>
-          <ol className="space-y-6">
-            {[
-              { n: '1', title: 'Anslut din verkstad', body: `Fyll i uppgifterna om din verkstad i ${city.name}. Vi granskar och godkänner inom ett dygn.` },
-              { n: '2', title: 'Få förfrågningar', body: 'Vi mejlar (och SMS:ar om du vill) så fort en cyklist i ditt område behöver hjälp.' },
-              { n: '3', title: 'Svara på det som passar', body: `Lämna offert med ett klick. Första tre leads är gratis, därefter ${LEAD_FEE_KR} kr per lead du väljer att svara på.` },
-              { n: '4', title: 'Ta jobbet', body: 'Kunden hör av sig direkt till dig – du fakturerar som vanligt, vi tar ingen provision.' },
-            ].map((step) => (
-              <li key={step.n} className="flex gap-4 items-start">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">{step.n}</div>
-                <div>
-                  <h3 className="font-semibold text-lg">{step.title}</h3>
-                  <p className="text-muted-foreground">{step.body}</p>
-                </div>
-              </li>
+      <section className="bg-muted/40 py-16 md:py-20">
+        <div className="max-w-3xl mx-auto px-4">
+          <Reveal>
+            <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">Kom igång</p>
+            <h2 className="font-display text-3xl md:text-5xl text-center mb-12">Så funkar det</h2>
+          </Reveal>
+          <ol className="relative space-y-6 before:absolute before:left-[27px] before:top-4 before:bottom-4 before:w-0.5 before:bg-border">
+            {steps.map((step, index) => (
+              <Reveal key={step.title} delay={index * 0.1}>
+                <li className="relative flex items-start gap-5">
+                  <span className="relative z-10 shrink-0 w-14 h-14 rounded-2xl bg-primary text-primary-foreground font-display text-xl flex items-center justify-center border-2 border-foreground shadow-[3px_3px_0_hsl(var(--ink))]">
+                    {index + 1}
+                  </span>
+                  <div className="sticker rounded-3xl bg-card p-5 flex-1">
+                    <h3 className="font-display text-xl mb-1">{step.title}</h3>
+                    <p className="text-muted-foreground">{step.body}</p>
+                  </div>
+                </li>
+              </Reveal>
             ))}
           </ol>
         </div>
       </section>
 
       {/* Pricing card */}
-      <section className="py-14 md:py-20">
+      <section className="py-16 md:py-20">
         <div className="max-w-2xl mx-auto px-4">
-          <div className="rounded-2xl border-2 border-primary bg-card p-8 md:p-10 text-center shadow-lg">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold mb-4">
-              <Sparkles className="w-3.5 h-3.5" /> Ingen bindning · Ingen månadskostnad
+          <Reveal>
+            <div className="sticker rounded-[2rem] bg-[hsl(var(--brand-dark))] p-8 md:p-12 text-center text-background">
+              <div className="inline-flex items-center gap-2 rounded-full bg-background/10 px-4 py-1.5 text-sm font-semibold mb-5">
+                <Sparkles className="w-4 h-4 text-[hsl(var(--brand-sun))]" /> Ingen bindning · Ingen månadskostnad
+              </div>
+              <div className="font-display text-6xl mb-2">{LEAD_FEE_KR} kr</div>
+              <div className="text-background/70 mb-8">per lead du väljer att svara på</div>
+              <ul className="text-left space-y-3 mb-9 max-w-sm mx-auto">
+                {[
+                  'Tre gratis leads när du blir godkänd',
+                  `Bara kunder i ${city.name} och närområdet`,
+                  'Full kontroll: du väljer vilka du svarar på',
+                  'Ingen provision på jobbet du utför',
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm">
+                    <CheckCircle2 className="w-5 h-5 text-[hsl(var(--brand-sun))] shrink-0 mt-0.5" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-14 px-10 w-full sm:w-auto text-base">
+                <Link to={registerHref}>
+                  Anslut din verkstad i {city.name} <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
             </div>
-            <div className="text-5xl font-bold mb-2">{LEAD_FEE_KR} kr</div>
-            <div className="text-muted-foreground mb-6">per lead du väljer att svara på</div>
-            <ul className="text-left space-y-2 mb-8 max-w-sm mx-auto">
-              {[
-                'Tre gratis leads när du blir godkänd',
-                `Bara kunder i ${city.name} och närområdet`,
-                'Full kontroll: du väljer vilka du svarar på',
-                'Ingen provision på jobbet du utför',
-              ].map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" /> {f}
-                </li>
-              ))}
-            </ul>
-            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 h-12 px-8 w-full sm:w-auto text-base font-semibold">
-              <Link to={registerHref}>
-                Anslut din verkstad i {city.name} <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </div>
+          </Reveal>
         </div>
       </section>
 

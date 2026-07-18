@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
-import { AlertTriangle, Bike, CheckCircle2, ExternalLink, Loader2, Mail, MapPin, Phone, RefreshCw } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { AlertTriangle, Bike, CheckCircle2, Clock3, Crown, ExternalLink, Loader2, Mail, MapPin, Phone, RefreshCw, Truck } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -140,24 +141,28 @@ const CustomerResponses = () => {
 
     if (request.admin_status === 'rejected') {
       return (
-        <div className="sticker border-destructive/30 bg-destructive/5 p-6 mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <AlertTriangle className="h-6 w-6 text-destructive" />
-            <h1 className="font-display text-2xl font-bold">Ärendet behöver hjälp</h1>
+        <div className="sticker rounded-3xl border-destructive/30 bg-destructive/5 p-6 md:p-7 mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="inline-flex items-center justify-center rounded-2xl bg-destructive/10 p-2.5">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+            </span>
+            <h1 className="font-display text-2xl">Ärendet behöver hjälp</h1>
           </div>
           <p className="text-sm">Vi kunde inte publicera ärendet i sin nuvarande form.</p>
           {request.rejected_reason && <p className="text-sm mt-2"><strong>Anledning:</strong> {request.rejected_reason}</p>}
-          <p className="text-sm mt-3">Kontakta <a className="underline" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a> så hjälper vi dig vidare.</p>
+          <p className="text-sm mt-3">Kontakta <a className="underline font-medium" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a> så hjälper vi dig vidare.</p>
         </div>
       )
     }
 
     if (request.admin_status !== 'approved') {
       return (
-        <div className="sticker bg-brand-sun/30 p-6 mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Bike className="h-6 w-6" />
-            <h1 className="font-display text-2xl font-bold">Tack {request.customer_name}!</h1>
+        <div className="sticker rounded-3xl bg-brand-sun/30 p-6 md:p-7 mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="inline-flex items-center justify-center rounded-2xl bg-background/60 p-2.5">
+              <Bike className="h-5 w-5" />
+            </span>
+            <h1 className="font-display text-2xl">Tack {request.customer_name}!</h1>
           </div>
           <p className="text-sm">Ditt ärende är mottaget och granskas innan det publiceras för verkstäder i {request.city}. Du får ett mejl när granskningen är klar.</p>
         </div>
@@ -165,10 +170,12 @@ const CustomerResponses = () => {
     }
 
     return (
-      <div className="sticker bg-emerald-50 p-6 mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <CheckCircle2 className="h-6 w-6 text-emerald-700" />
-          <h1 className="font-display text-2xl font-bold">Ärendet är publicerat</h1>
+      <div className="sticker rounded-3xl bg-[hsl(var(--brand-mint)/0.12)] p-6 md:p-7 mb-8">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="inline-flex items-center justify-center rounded-2xl bg-[hsl(var(--brand-mint)/0.2)] p-2.5">
+            <CheckCircle2 className="h-5 w-5 text-[hsl(var(--brand-mint))]" />
+          </span>
+          <h1 className="font-display text-2xl">Ärendet är publicerat</h1>
         </div>
         <p className="text-sm">
           {(request.status === 'closed_for_responses' || request.status === 'full')
@@ -210,22 +217,24 @@ const CustomerResponses = () => {
           <>
             {statusCard()}
 
-            <section className="sticker bg-card p-5 mb-8" aria-labelledby="request-summary-heading">
-              <h2 id="request-summary-heading" className="font-display font-bold text-lg mb-2">Ditt ärende</h2>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mb-3">
-                <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {request.city}</span>
-                <span>{request.bike_type}</span>
-                <span>{request.repair_category}</span>
+            <section className="sticker rounded-3xl bg-card p-6 mb-8" aria-labelledby="request-summary-heading">
+              <h2 id="request-summary-heading" className="font-display text-lg mb-3">Ditt ärende</h2>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium"><MapPin className="h-3.5 w-3.5 text-primary" /> {request.city}</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium"><Bike className="h-3.5 w-3.5 text-primary" /> {request.bike_type}</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium">{request.repair_category}</span>
+                {request.urgency && <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-sun/40 px-3 py-1.5 text-xs font-medium"><Clock3 className="h-3.5 w-3.5" /> {request.urgency}</span>}
+                {request.wants_pickup && <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"><Truck className="h-3.5 w-3.5" /> Önskar hämtning</span>}
               </div>
-              <p className="text-sm whitespace-pre-wrap">{request.description}</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{request.description}</p>
             </section>
 
             {images.length > 0 && (
               <section className="mb-8" aria-labelledby="request-images-heading">
-                <h2 id="request-images-heading" className="font-display text-xl font-bold mb-3">Dina bilder</h2>
+                <h2 id="request-images-heading" className="font-display text-xl mb-3">Dina bilder</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {images.map((image) => (
-                    <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-xl border bg-muted">
+                    <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-2xl border-2 border-foreground bg-muted hover:opacity-90 transition">
                       <img src={image.url} alt="Uppladdad bild på cykelproblemet" className="h-full w-full object-cover" loading="lazy" />
                     </a>
                   ))}
@@ -234,15 +243,25 @@ const CustomerResponses = () => {
             )}
 
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="font-display text-xl font-bold">Prisförslag ({responses.length})</h2>
-              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && <span className="text-xs text-muted-foreground">Uppdateras automatiskt</span>}
+              <h2 className="font-display text-xl">Prisförslag ({responses.length})</h2>
+              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--brand-mint))] opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--brand-mint))]" /></span>
+                  Uppdateras automatiskt
+                </span>
+              )}
             </div>
 
             {responses.length === 0 ? (
-              <div className="sticker bg-card p-6 text-center text-muted-foreground">
-                {request.admin_status === 'approved'
-                  ? 'Inga prisförslag ännu. Verkstäderna svarar utifrån kapacitet och typ av reparation.'
-                  : 'Prisförslag visas här efter att ärendet har godkänts och en verkstad har svarat.'}
+              <div className="sticker rounded-3xl bg-card p-8 text-center">
+                <span className="inline-flex items-center justify-center rounded-2xl bg-muted p-4 mb-3">
+                  <Clock3 className="h-6 w-6 text-muted-foreground" />
+                </span>
+                <p className="text-sm text-muted-foreground">
+                  {request.admin_status === 'approved'
+                    ? 'Inga prisförslag ännu. Verkstäderna svarar utifrån kapacitet och typ av reparation.'
+                    : 'Prisförslag visas här efter att ärendet har godkänts och en verkstad har svarat.'}
+                </p>
               </div>
             ) : (
               (() => {
@@ -253,52 +272,72 @@ const CustomerResponses = () => {
                 const cheapestId = sorted.find((r) => priceOf(r) !== Number.POSITIVE_INFINITY)?.id
                 return (
                   <ol className="space-y-4 list-none p-0">
-                    {sorted.map((response) => {
+                    {sorted.map((response, index) => {
                       const email = response.workshop?.email
                       const phone = response.workshop?.phone
                       const website = safeWebsite(response.workshop?.website)
                       const company = response.workshop?.company_name
                       const isCheapest = response.id === cheapestId && sorted.length > 1
                       return (
-                        <li key={response.id}>
-                          <article className={`sticker bg-card p-5 ${isCheapest ? 'ring-2 ring-emerald-500' : ''}`}>
-                            <div className="flex justify-between items-start gap-3 mb-2">
-                              <div className="min-w-0">
-                                <h3 className="font-display font-bold text-lg">{company || 'Cykelverkstad'}</h3>
-                                {isCheapest && (
-                                  <span className="inline-block mt-1 text-xs font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                                    Bästa pris
-                                  </span>
-                                )}
+                        <motion.li
+                          key={response.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                          <article className={`sticker rounded-3xl bg-card p-6 ${isCheapest ? 'ring-2 ring-[hsl(var(--brand-mint))] ring-offset-2 ring-offset-background' : ''}`}>
+                            <div className="flex justify-between items-start gap-3 mb-3">
+                              <div className="min-w-0 flex items-start gap-3">
+                                <span className="hidden sm:inline-flex shrink-0 items-center justify-center h-11 w-11 rounded-2xl bg-primary/10 font-display text-lg text-primary">
+                                  {(company || 'C').charAt(0).toUpperCase()}
+                                </span>
+                                <div className="min-w-0">
+                                  <h3 className="font-display text-xl leading-tight">{company || 'Cykelverkstad'}</h3>
+                                  {isCheapest && (
+                                    <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] px-2.5 py-1 rounded-full">
+                                      <Crown className="h-3 w-3" /> Bästa pris
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               {response.estimated_price_min !== null && (
-                                <span className="font-bold text-accent whitespace-nowrap">
+                                <span className="font-display text-2xl text-accent whitespace-nowrap">
                                   {response.estimated_price_min}{response.estimated_price_max ? `–${response.estimated_price_max}` : ''} kr
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm mb-3 whitespace-pre-wrap">{response.message}</p>
-                            {response.estimated_time && <p className="text-xs text-muted-foreground mb-2">Beräknad tid: {response.estimated_time}</p>}
-                            {response.can_pickup && <p className="text-xs text-muted-foreground mb-2">Verkstaden kan erbjuda hämtning.</p>}
-                            <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
+                            <p className="text-sm mb-3 whitespace-pre-wrap leading-relaxed">{response.message}</p>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {response.estimated_time && (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                                  <Clock3 className="h-3 w-3" /> {response.estimated_time}
+                                </span>
+                              )}
+                              {response.can_pickup && (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                                  <Truck className="h-3 w-3" /> Kan hämta cykeln
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
                               {phone && (
-                                <Button asChild size="sm" variant="default" onClick={() => handleContact(response, 'phone')}>
+                                <Button asChild size="sm" className="rounded-full shadow-brand" onClick={() => handleContact(response, 'phone')}>
                                   <a href={`tel:${phone}`} aria-label={`Ring ${company || 'verkstaden'}`}><Phone className="h-4 w-4 mr-1.5" /> Ring</a>
                                 </Button>
                               )}
                               {email && (
-                                <Button asChild size="sm" variant="outline" onClick={() => handleContact(response, 'email')}>
+                                <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'email')}>
                                   <a href={`mailto:${email}?subject=${mailSubject(company)}`} aria-label={`Mejla ${company || 'verkstaden'}`}><Mail className="h-4 w-4 mr-1.5" /> Mejla</a>
                                 </Button>
                               )}
                               {website && (
-                                <Button asChild size="sm" variant="outline" onClick={() => handleContact(response, 'website')}>
+                                <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'website')}>
                                   <a href={website} target="_blank" rel="noreferrer" aria-label={`Öppna webbplatsen för ${company || 'verkstaden'}`}><ExternalLink className="h-4 w-4 mr-1.5" /> Webbplats</a>
                                 </Button>
                               )}
                             </div>
                           </article>
-                        </li>
+                        </motion.li>
                       )
                     })}
                   </ol>
