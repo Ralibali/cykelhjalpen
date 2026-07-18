@@ -158,22 +158,22 @@ const RegisterWorkshopPage = () => {
           <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><ShieldCheck className="h-4 w-4 text-primary shrink-0" /> Manuell granskning</div>
         </div>
 
-        <form onSubmit={submit} className="sticker bg-card p-6 md:p-8 space-y-5">
+        <form onSubmit={submit} className="sticker rounded-3xl bg-card p-6 md:p-8 space-y-5">
           <div>
             <Label htmlFor="cn">Verkstadens namn</Label>
-            <Input id="cn" autoComplete="organization" required value={form.company_name} onChange={(event) => update('company_name', event.target.value)} />
+            <Input id="cn" autoComplete="organization" required value={form.company_name} onChange={(event) => update('company_name', event.target.value)} className="rounded-xl border-2" />
           </div>
 
           <div>
             <Label>Vilken stad arbetar ni i?</Label>
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="grid grid-cols-2 gap-3 mt-2">
               {CYKEL_CITIES.map((city) => (
                 <button
                   key={city.name}
                   type="button"
                   onClick={() => update('city', city.name)}
                   aria-pressed={form.city === city.name}
-                  className={`flex items-center gap-2 text-left px-4 py-3 border-2 border-foreground rounded-md transition ${form.city === city.name ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                  className={`flex items-center gap-2 text-left px-4 py-3.5 rounded-2xl border-2 transition-all ${form.city === city.name ? 'border-foreground bg-primary text-primary-foreground shadow-[3px_3px_0_hsl(var(--ink))]' : 'border-border hover:border-foreground'}`}
                 >
                   <MapPin className="h-4 w-4" /> {city.name}
                 </button>
@@ -184,11 +184,11 @@ const RegisterWorkshopPage = () => {
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="em">E-post</Label>
-              <Input id="em" type="email" inputMode="email" autoComplete="email" required value={form.email} onChange={(event) => update('email', event.target.value)} />
+              <Input id="em" type="email" inputMode="email" autoComplete="email" required value={form.email} onChange={(event) => update('email', event.target.value)} className="rounded-xl border-2" />
             </div>
             <div>
               <Label htmlFor="pw">Lösenord</Label>
-              <Input id="pw" type="password" autoComplete="new-password" required minLength={8} value={form.password} onChange={(event) => update('password', event.target.value)} />
+              <Input id="pw" type="password" autoComplete="new-password" required minLength={8} value={form.password} onChange={(event) => update('password', event.target.value)} className="rounded-xl border-2" />
               <p className="text-xs text-muted-foreground mt-1">Minst åtta tecken.</p>
             </div>
           </div>
@@ -196,17 +196,17 @@ const RegisterWorkshopPage = () => {
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="ph">Telefon <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
-              <Input id="ph" type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={(event) => update('phone', event.target.value)} />
+              <Input id="ph" type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={(event) => update('phone', event.target.value)} className="rounded-xl border-2" />
             </div>
             <div>
               <Label htmlFor="ws">Webbplats <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
-              <Input id="ws" inputMode="url" autoComplete="url" value={form.website} onChange={(event) => update('website', event.target.value)} placeholder="verkstad.se" />
+              <Input id="ws" inputMode="url" autoComplete="url" value={form.website} onChange={(event) => update('website', event.target.value)} placeholder="verkstad.se" className="rounded-xl border-2" />
             </div>
           </div>
 
           <div>
             <Label htmlFor="ad">Adress i {form.city} <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
-            <Input id="ad" autoComplete="street-address" value={form.address} onChange={(event) => update('address', event.target.value)} />
+            <Input id="ad" autoComplete="street-address" value={form.address} onChange={(event) => update('address', event.target.value)} className="rounded-xl border-2" />
           </div>
 
           <div>
@@ -214,7 +214,7 @@ const RegisterWorkshopPage = () => {
             <p className="text-sm text-muted-foreground mt-1 mb-3">Det hjälper oss att skicka mer relevanta förfrågningar.</p>
             <div className="flex flex-wrap gap-2">
               {SERVICES.map((service) => (
-                <button key={service} type="button" onClick={() => toggleService(service)} aria-pressed={form.services.includes(service)} className={`px-3 py-2 rounded-full border-2 border-foreground text-sm transition ${form.services.includes(service) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>
+                <button key={service} type="button" onClick={() => toggleService(service)} aria-pressed={form.services.includes(service)} className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition-all ${form.services.includes(service) ? 'border-foreground bg-primary text-primary-foreground shadow-[2px_2px_0_hsl(var(--ink))]' : 'border-border hover:border-foreground'}`}>
                   {service}
                 </button>
               ))}
@@ -237,7 +237,7 @@ const RegisterWorkshopPage = () => {
             />
           </div>
 
-          <Button type="submit" disabled={loading || !form.terms_accepted || !turnstileToken} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 h-12">
+          <Button type="submit" disabled={loading || !form.terms_accepted || !turnstileToken} className="w-full cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-12 text-base">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {loading ? 'Skapar verkstad…' : 'Registrera verkstaden kostnadsfritt'}
           </Button>
