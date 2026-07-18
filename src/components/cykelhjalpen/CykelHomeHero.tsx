@@ -65,11 +65,11 @@ const CykelHomeHero = () => (
               src={hero960}
               srcSet={`${hero640} 640w, ${hero960} 960w, ${hero1440} 1440w`}
               sizes="(min-width: 1024px) 50vw, 100vw"
-              alt="Cykel redo för reparation hos lokal verkstad"
-              width={1920}
-              height={1080}
+              alt="Tealfärgad cykel på reparationsstativ i en varm, solig cykelverkstad"
+              width={1536}
+              height={928}
               fetchPriority="high"
-              className="w-full aspect-[4/3] object-cover"
+              className="w-full aspect-[3/2] object-cover"
             />
           </div>
           <div className="absolute -bottom-5 left-4 right-4 sm:left-8 sm:right-auto sm:w-80 rounded-2xl bg-background/95 backdrop-blur border-2 border-foreground p-4 sticker">

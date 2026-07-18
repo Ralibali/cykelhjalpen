@@ -72,7 +72,7 @@ const WorkshopSettings = () => {
         <p className="text-sm text-muted-foreground mt-1">Håll kontaktuppgifter och serviceområde aktuella.</p>
       </div>
 
-      <div className="sticker bg-card p-6 space-y-5 max-w-xl">
+      <div className="sticker rounded-3xl bg-card p-6 space-y-5 max-w-xl">
         <div>
           <Label htmlFor="company-name">Verkstadens namn</Label>
           <Input id="company-name" value={form.company_name || ''} onChange={(event) => setForm({ ...form, company_name: event.target.value })} />
@@ -95,10 +95,10 @@ const WorkshopSettings = () => {
                   onClick={() => !disabled && setForm({ ...form, city: city.name })}
                   disabled={disabled}
                   aria-pressed={form.city === city.name}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-md border-2 text-sm ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border-2 text-sm font-medium transition ${
                     form.city === city.name
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'border-foreground hover:bg-muted'
+                      ? 'bg-primary text-primary-foreground border-foreground shadow-[3px_3px_0_hsl(var(--ink))]'
+                      : 'border-border hover:border-foreground'
                   } ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
                 >
                   {disabled && form.city === city.name ? <Lock className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}

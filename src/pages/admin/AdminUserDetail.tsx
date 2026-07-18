@@ -93,7 +93,10 @@ const AdminUserDetail = () => {
   const handleToggleVerification = async (field: 'is_bankid_verified' | 'is_phone_verified') => {
     if (!id || !profile) return
     const newValue = !profile[field]
-    const { error } = await supabase.from('profiles').update({ [field]: newValue }).eq('id', id)
+    const updates = field === 'is_bankid_verified'
+      ? { is_bankid_verified: newValue }
+      : { is_phone_verified: newValue }
+    const { error } = await supabase.from('profiles').update(updates).eq('id', id)
     if (error) toast.error('Kunde inte uppdatera')
     else {
       setProfile({ ...profile, [field]: newValue })

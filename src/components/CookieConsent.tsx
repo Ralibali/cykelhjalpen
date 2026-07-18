@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Cookie } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Link, useLocation } from 'react-router-dom'
 import {
@@ -154,9 +155,10 @@ const CookieConsent = () => {
       <button
         type="button"
         onClick={() => setVisible(true)}
-        className="fixed bottom-3 left-3 z-40 rounded-full border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur hover:text-foreground"
+        className="fixed bottom-3 left-3 z-40 inline-flex items-center gap-1.5 rounded-full border-2 border-border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur transition hover:border-foreground hover:text-foreground"
         aria-label="Ändra cookieinställningar"
       >
+        <Cookie className="h-3.5 w-3.5" />
         Cookieinställningar
       </button>
     )
@@ -164,9 +166,12 @@ const CookieConsent = () => {
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="cookie-heading">
-      <div className="max-w-3xl mx-auto bg-card border rounded-2xl shadow-lg p-5 flex flex-col gap-4">
+      <div className="max-w-3xl mx-auto bg-card border-2 border-foreground rounded-3xl shadow-[6px_6px_0_hsl(var(--ink))] p-5 md:p-6 flex flex-col gap-4">
         <div className="text-sm text-foreground/80">
-          <p id="cookie-heading" className="font-semibold text-foreground mb-1">🍪 Dina cookieinställningar</p>
+          <p id="cookie-heading" className="font-display text-lg text-foreground mb-1.5 flex items-center gap-2">
+            <span className="inline-flex items-center justify-center rounded-xl bg-muted p-1.5"><Cookie className="h-4 w-4 text-primary" /></span>
+            Dina cookieinställningar
+          </p>
           <p>
             Vi använder nödvändiga lagringsfunktioner för att webbplatsen och tjänsten ska fungera. Med ditt aktiva samtycke använder vi även Google Analytics, Google Ads och vår egen anonymiserade produktstatistik för att förbättra tjänsten och mäta marknadsföring. Du kan neka utan att grundfunktionerna påverkas. Läs mer i vår{' '}
             <Link to="/integritetspolicy" className="text-primary hover:underline">integritetspolicy</Link> och{' '}

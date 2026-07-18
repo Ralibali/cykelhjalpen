@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import CykelHomeHero from '@/components/cykelhjalpen/CykelHomeHero'
+import Reveal from '@/components/cykelhjalpen/Reveal'
 import { CYKEL_HOME_FAQS } from '@/components/cykelhjalpen/CykelHomeTrust'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -49,9 +50,9 @@ const CykelhjalpenIndexV2 = () => {
       <main>
         <CykelHomeHero />
         <Suspense fallback={<SectionFallback />}>
-          <CykelHowItWorks />
-          <CykelCitiesSection />
-          <CykelHomeTrust stats={stats} />
+          <Reveal><CykelHowItWorks /></Reveal>
+          <Reveal><CykelCitiesSection /></Reveal>
+          <Reveal><CykelHomeTrust stats={stats} /></Reveal>
         </Suspense>
       </main>
       <CykelFooter />

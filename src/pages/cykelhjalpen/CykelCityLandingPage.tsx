@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { motion } from 'framer-motion'
 import { ArrowRight, Bike, CheckCircle2, MapPin, ShieldCheck, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
+import { getCityImage } from '@/lib/cykelCityImages'
 import { trackClick } from '@/hooks/usePageTracking'
 
 const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
   const cityData = getCykelCity(city)
+  const cityImage = getCityImage(city)
   const canonical = `https://cykelhjalpen.se${cityLandingPath(city)}`
 
   const trackCta = (placement: string) => {
@@ -77,37 +80,63 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
         <meta property="og:title" content={`Cykelverkstad ${city} – jämför lokala prisförslag`} />
         <meta property="og:description" content={`Få lokala prisförslag på cykelreparation i ${city}. Gratis och utan konto.`} />
         <meta property="og:url" content={canonical} />
-        <meta property="og:image" content="https://cykelhjalpen.se/og/hem.jpg" />
+        <meta property="og:image" content={`https://cykelhjalpen.se/og/stad-${cityData.slug}.jpg`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content={`Cykelhjälpen i ${city}`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`Cykelverkstad ${city} – jämför lokala prisförslag`} />
         <meta name="twitter:description" content={`Få lokala prisförslag på cykelreparation i ${city}.`} />
-        <meta name="twitter:image" content="https://cykelhjalpen.se/og/hem.jpg" />
+        <meta name="twitter:image" content={`https://cykelhjalpen.se/og/stad-${cityData.slug}.jpg`} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       <CykelNavbar />
       <main>
-        <section className="container mx-auto px-4 py-14 md:py-24 max-w-5xl">
-          <nav aria-label="Brödsmulor" className="text-sm text-muted-foreground mb-6">
-            <Link to="/" className="hover:underline">Cykelhjälpen</Link> <span aria-hidden="true">/</span> <span>{city}</span>
-          </nav>
-          <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-sm font-medium mb-6">
-            <MapPin className="h-4 w-4 text-primary" /> {city}
-          </div>
-          <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight max-w-4xl">
-            Cykelverkstad i {city} – jämför innan du väljer
-          </h1>
-          <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl leading-relaxed">
-            Beskriv problemet en gång och jämför pris, möjlig tid och kontaktuppgifter från anslutna cykelverkstäder i {city}. Tjänsten är gratis för dig som cyklist.
-          </p>
-          <Button asChild size="lg" className="mt-8 rounded-full h-14 px-8">
-            <Link to={cityQuery(city)} onClick={() => trackCta('hero')}>Få prisförslag i {city} <ArrowRight className="h-4 w-4 ml-2" /></Link>
-          </Button>
-          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Inget konto</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Ingen köpplikt</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-primary" /> Lokala svar</span>
+        <section className="bg-hero-gradient">
+          <div className="container mx-auto px-4 py-14 md:py-20 max-w-6xl">
+            <nav aria-label="Brödsmulor" className="text-sm text-muted-foreground mb-8">
+              <Link to="/" className="hover:underline">Cykelhjälpen</Link> <span aria-hidden="true">/</span> <span>{city}</span>
+            </nav>
+            <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-10 items-center">
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
+                <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1.5 text-sm font-medium mb-6">
+                  <MapPin className="h-4 w-4 text-primary" /> {city}
+                </div>
+                <h1 className="font-display text-4xl md:text-6xl tracking-tight max-w-2xl">
+                  Cykelverkstad i {city} – <span className="italic text-accent">jämför innan du väljer</span>
+                </h1>
+                <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+                  Beskriv problemet en gång och jämför pris, möjlig tid och kontaktuppgifter från anslutna cykelverkstäder i {city}. Tjänsten är gratis för dig som cyklist.
+                </p>
+                <Button asChild size="lg" className="mt-8 rounded-full h-14 px-8 cta-playful shadow-brand">
+                  <Link to={cityQuery(city)} onClick={() => trackCta('hero')}>Få prisförslag i {city} <ArrowRight className="h-4 w-4 ml-2" /></Link>
+                </Button>
+                <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Inget konto</span>
+                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Ingen köpplikt</span>
+                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Lokala svar</span>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="rounded-[2rem] overflow-hidden sticker bg-card"
+              >
+                <img
+                  src={cityImage.large}
+                  srcSet={`${cityImage.small} 640w, ${cityImage.large} 1200w`}
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  alt={cityImage.alt}
+                  width={1200}
+                  height={725}
+                  className="w-full aspect-[3/2] object-cover"
+                  loading="eager"
+                />
+              </motion.div>
+            </div>
           </div>
         </section>
 
@@ -152,12 +181,32 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
 
           <section aria-labelledby="andra-stader">
             <h2 id="andra-stader" className="font-display text-2xl font-bold mb-4">Cykelhjälpen i fler städer</h2>
-            <div className="grid sm:grid-cols-3 gap-3">
-              {CYKEL_CITIES.filter((candidate) => candidate.name !== city).map((candidate) => (
-                <Link key={candidate.name} to={cityLandingPath(candidate.name)} className="rounded-xl border bg-card p-4 font-medium hover:border-primary transition-colors">
-                  Cykelverkstad {candidate.name}
-                </Link>
-              ))}
+            <div className="grid sm:grid-cols-3 gap-4">
+              {CYKEL_CITIES.filter((candidate) => candidate.name !== city).map((candidate) => {
+                const image = getCityImage(candidate.name)
+                return (
+                  <Link
+                    key={candidate.name}
+                    to={cityLandingPath(candidate.name)}
+                    className="group sticker rounded-2xl bg-card overflow-hidden hover:-translate-y-1 transition-transform"
+                  >
+                    <div className="aspect-[2/1] overflow-hidden">
+                      <img
+                        src={image.small}
+                        alt={image.alt}
+                        width={640}
+                        height={387}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <span className="flex items-center justify-between gap-2 p-4 font-medium">
+                      Cykelverkstad {candidate.name}
+                      <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </Link>
+                )
+              })}
             </div>
           </section>
         </section>

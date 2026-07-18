@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
-import { Bike, Loader2, Send, Check, CreditCard, MapPin, RefreshCw } from 'lucide-react'
+import { Bike, Loader2, Send, Check, CreditCard, MapPin, RefreshCw, Clock3, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -269,9 +269,12 @@ const WorkshopRequests = () => {
           <Button onClick={load} variant="outline">Försök igen</Button>
         </div>
       ) : requests.length === 0 ? (
-        <div className="sticker bg-card p-8 text-center text-muted-foreground">
-          <Bike className="h-8 w-8 mx-auto mb-3 opacity-50" />
-          Inga öppna ärenden i {workshop.city} just nu.
+        <div className="sticker rounded-3xl bg-card p-10 text-center">
+          <div className="inline-flex items-center justify-center rounded-2xl bg-muted p-4 mb-4">
+            <Bike className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="font-display text-xl mb-1">Inga öppna ärenden i {workshop.city} just nu</p>
+          <p className="text-sm text-muted-foreground">Nya ärenden dyker upp här så fort cyklister i din stad skickar in.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -282,20 +285,34 @@ const WorkshopRequests = () => {
             const isSubmitting = submitting === request.id
 
             return (
-              <div key={request.id} className="sticker bg-card p-5">
+              <div key={request.id} className="sticker rounded-3xl bg-card p-5 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Bike className="h-4 w-4" />
+                      <span className="inline-flex items-center justify-center rounded-xl bg-primary/10 p-1.5"><Bike className="h-4 w-4 text-primary" /></span>
                       <span className="font-display font-bold">{request.bike_type}</span>
                       <span className="text-muted-foreground text-sm">· {request.repair_category}</span>
                     </div>
                     <p className="text-sm mt-2 whitespace-pre-wrap">{request.description}</p>
-                    <div className="flex gap-3 mt-3 text-xs text-muted-foreground flex-wrap">
-                      {request.area && <span>📍 {request.area}</span>}
-                      {request.postcode && <span>{request.postcode}</span>}
-                      {request.urgency && <span>⏱ {request.urgency}</span>}
-                      {request.wants_pickup && <span>🚐 Önskar hämtning</span>}
+                    <div className="flex gap-2 mt-3 text-xs flex-wrap">
+                      {request.area && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-medium text-muted-foreground">
+                          <MapPin className="h-3 w-3" /> {request.area}
+                        </span>
+                      )}
+                      {request.postcode && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 font-medium text-muted-foreground">{request.postcode}</span>
+                      )}
+                      {request.urgency && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-sun/40 px-2.5 py-1 font-medium">
+                          <Clock3 className="h-3 w-3" /> {request.urgency}
+                        </span>
+                      )}
+                      {request.wants_pickup && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
+                          <Truck className="h-3 w-3" /> Önskar hämtning
+                        </span>
+                      )}
                     </div>
                     {request.images && request.images.length > 0 && (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
@@ -309,7 +326,7 @@ const WorkshopRequests = () => {
                   </div>
 
                   {paid ? (
-                    <span className="text-sm text-green-700 flex items-center gap-1 bg-green-50 rounded-full px-3 py-1"><Check className="h-4 w-4" /> Offert skickad</span>
+                    <span className="text-sm flex items-center gap-1.5 rounded-full bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] font-medium px-3 py-1.5"><Check className="h-4 w-4" /> Offert skickad</span>
                   ) : pendingPayment ? (
                     <Button size="sm" onClick={() => openPayment(existing!.id, request.id)} disabled={isSubmitting}>
                       {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
@@ -327,20 +344,20 @@ const WorkshopRequests = () => {
                 )}
 
                 {active === request.id && !existing && (
-                  <div className="border-t border-border mt-4 pt-4 space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div><Label htmlFor={`min-${request.id}`}>Pris från (kr)</Label><Input id={`min-${request.id}`} type="number" min="0" value={form.estimated_price_min} onChange={(event) => setForm({ ...form, estimated_price_min: event.target.value })} /></div>
-                      <div><Label htmlFor={`max-${request.id}`}>Pris till (kr)</Label><Input id={`max-${request.id}`} type="number" min="0" value={form.estimated_price_max} onChange={(event) => setForm({ ...form, estimated_price_max: event.target.value })} /></div>
+                  <div className="mt-5 space-y-4 rounded-2xl border-2 border-dashed border-border bg-muted/40 p-5">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5"><Label htmlFor={`min-${request.id}`}>Pris från (kr)</Label><Input id={`min-${request.id}`} type="number" min="0" value={form.estimated_price_min} onChange={(event) => setForm({ ...form, estimated_price_min: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
+                      <div className="space-y-1.5"><Label htmlFor={`max-${request.id}`}>Pris till (kr)</Label><Input id={`max-${request.id}`} type="number" min="0" value={form.estimated_price_max} onChange={(event) => setForm({ ...form, estimated_price_max: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
                     </div>
-                    <div><Label htmlFor={`time-${request.id}`}>Beräknad tid</Label><Input id={`time-${request.id}`} value={form.estimated_time} onChange={(event) => setForm({ ...form, estimated_time: event.target.value })} placeholder="Exempel: cirka en timme eller två arbetsdagar" /></div>
-                    <div><Label htmlFor={`message-${request.id}`}>Meddelande till kunden</Label><Textarea id={`message-${request.id}`} rows={4} value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} placeholder="Beskriv vad ni rekommenderar, vad priset omfattar och när ni kan ta emot cykeln." /></div>
-                    <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.can_pickup} onChange={(event) => setForm({ ...form, can_pickup: event.target.checked })} /> Vi kan hämta cykeln</label>
-                    <div className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
+                    <div className="space-y-1.5"><Label htmlFor={`time-${request.id}`}>Beräknad tid</Label><Input id={`time-${request.id}`} value={form.estimated_time} onChange={(event) => setForm({ ...form, estimated_time: event.target.value })} placeholder="Exempel: cirka en timme eller två arbetsdagar" className="rounded-xl border-2 bg-background" /></div>
+                    <div className="space-y-1.5"><Label htmlFor={`message-${request.id}`}>Meddelande till kunden</Label><Textarea id={`message-${request.id}`} rows={4} value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} placeholder="Beskriv vad ni rekommenderar, vad priset omfattar och när ni kan ta emot cykeln." className="rounded-xl border-2 bg-background" /></div>
+                    <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="h-4 w-4 rounded" checked={form.can_pickup} onChange={(event) => setForm({ ...form, can_pickup: event.target.checked })} /> Vi kan hämta cykeln</label>
+                    <div className="rounded-xl bg-background p-3.5 text-xs text-muted-foreground border">
                       {workshop.free_leads_remaining > 0
                         ? `En av era ${workshop.free_leads_remaining} gratis-leads används. Ingen Stripe-betalning behövs.`
                         : `${LEAD_FEE_KR} kr exkl. moms debiteras via Stripe först när du går vidare. Kunden ser offerten efter genomförd betalning.`}
                     </div>
-                    <Button onClick={() => submitOffer(request.id)} disabled={isSubmitting} className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Button onClick={() => submitOffer(request.id)} disabled={isSubmitting} className="w-full rounded-xl cta-playful bg-accent text-accent-foreground hover:bg-accent/90 h-11">
                       {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                       {workshop.free_leads_remaining > 0 ? 'Skicka med gratis-lead' : `Granska och betala ${LEAD_FEE_KR} kr`}
                     </Button>

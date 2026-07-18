@@ -22,7 +22,7 @@ const CykelHomeTrust = ({ stats }: Props) => (
           <ShieldCheck className="h-9 w-9 text-[hsl(var(--brand-sun))] mb-5" />
           <h2 className="font-display text-4xl md:text-5xl">Tryggt för cyklisten. Relevant för verkstaden.</h2>
           <p className="mt-5 text-background/70 leading-relaxed">Vi granskar kundärenden och verkstäder. Verkstäder betalar först när de själva väljer att skicka ett prisförslag.</p>
-          {stats && stats.workshops > 0 && (
+          {stats && stats.workshops >= 3 && stats.requests >= 10 && (
             <p className="mt-6 text-sm text-background/70">{stats.workshops} godkända verkstäder · {stats.requests} mottagna ärenden · {stats.responses} skickade prisförslag</p>
           )}
         </div>

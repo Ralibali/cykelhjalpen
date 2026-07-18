@@ -86,16 +86,19 @@ const LoginPage = () => {
   const PageFooter = isCykel ? CykelFooter : Footer
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-hero-gradient">
       <Header />
       <main className="flex-1 flex items-center justify-center py-16 px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="font-display text-3xl font-bold">Logga in</h1>
+            <div className="inline-flex items-center justify-center rounded-2xl bg-brand-sun p-3 sticker mb-4">
+              <Lock className="h-6 w-6" />
+            </div>
+            <h1 className="font-display text-4xl">Logga in</h1>
             <p className="text-muted-foreground mt-2">{copy.welcome}</p>
           </div>
 
-          <div className="bg-card rounded-2xl border p-6 shadow-sm">
+          <div className="bg-card rounded-3xl border-2 border-foreground p-7 sticker">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="email">E-post</Label>
@@ -132,7 +135,7 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full rounded-xl py-5">
+              <Button type="submit" disabled={loading} className="w-full rounded-full py-6 text-base shadow-brand cta-playful">
                 {loading ? 'Loggar in…' : 'Logga in'}
               </Button>
             </form>

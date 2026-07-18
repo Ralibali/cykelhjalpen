@@ -41,17 +41,17 @@ const WorkshopDashboard = () => {
         </div>
       )}
 
-      <div className="grid md:grid-cols-[1fr_auto] gap-5 items-center sticker bg-card p-6 mb-6">
+      <div className="grid md:grid-cols-[1fr_auto] gap-5 items-center sticker rounded-3xl bg-card p-6 mb-6">
         <div>
           <h2 className="font-display text-xl font-bold mb-1">Se nya ärenden i {workshop.city}</h2>
           <p className="text-sm text-muted-foreground">Välj bara de jobb som passar er kapacitet och kompetens.</p>
         </div>
-        <Link to="/dashboard/verkstad/arenden" className="inline-flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-5 py-3 font-medium hover:opacity-90">
+        <Link to="/dashboard/verkstad/arenden" className="inline-flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 font-medium shadow-brand cta-playful">
           <Bike className="h-4 w-4" /> Öppna ärenden
         </Link>
       </div>
 
-      <div className="sticker bg-card p-6">
+      <div className="sticker rounded-3xl bg-card p-6">
         <h2 className="font-display text-xl font-bold mb-2">Så fungerar det</h2>
         <ol className="list-decimal pl-5 space-y-2 text-sm text-foreground/85">
           <li>Välj bland ärenden från cyklister i {workshop.city}.</li>
@@ -66,8 +66,8 @@ const WorkshopDashboard = () => {
 
 const Stat = ({ icon, label, value, link }: any) => {
   const inner = (
-    <div className="sticker bg-card p-5 flex items-center gap-4 hover:bg-muted/30 transition h-full">
-      <div className="sticker bg-primary text-primary-foreground p-2">{icon}</div>
+    <div className="sticker rounded-3xl bg-card p-5 flex items-center gap-4 hover:-translate-y-0.5 transition-transform h-full">
+      <div className="rounded-2xl bg-primary text-primary-foreground p-2.5">{icon}</div>
       <div>
         <div className="text-xs text-muted-foreground uppercase tracking-wide">{label}</div>
         <div className="font-display text-2xl font-bold">{value}</div>

@@ -173,13 +173,16 @@ const WorkshopLayout = () => {
 
       {!workshop.approved && (
         <div className="bg-brand-sun/40 border-b border-foreground/10 text-sm">
-          <div className="container mx-auto px-4 py-3">⏳ Ditt konto i {workshop.city} väntar på godkännande. Du kan inte se ärenden eller skicka offerter än.</div>
+          <div className="container mx-auto px-4 py-3 flex items-center gap-2">
+            <Clock className="h-4 w-4 shrink-0" />
+            <span>Ditt konto i {workshop.city} väntar på godkännande. Du kan inte se ärenden eller skicka offerter än.</span>
+          </div>
         </div>
       )}
 
-      <div className="container mx-auto px-4 py-6 md:py-8 grid md:grid-cols-[220px_1fr] gap-6 md:gap-8">
+      <div className="container mx-auto px-4 py-6 md:py-8 grid md:grid-cols-[230px_1fr] gap-6 md:gap-8">
         <aside className="overflow-x-auto">
-          <nav className="flex md:block gap-1 md:space-y-1 text-sm min-w-max">
+          <nav className="flex md:block gap-2 md:space-y-2 text-sm min-w-max md:min-w-0 md:sticky md:top-24 md:rounded-3xl md:border-2 md:border-foreground md:bg-card md:p-3 md:shadow-[4px_4px_0_hsl(var(--ink))]">
             <NavItem to="/dashboard/verkstad" end icon={<Bike className="h-4 w-4" />} className={disabledNavCls}>Översikt</NavItem>
             <NavItem to="/dashboard/verkstad/arenden" icon={<ListChecks className="h-4 w-4" />} className={disabledNavCls}>Ärenden</NavItem>
             <NavItem to="/dashboard/verkstad/betalningar" icon={<Receipt className="h-4 w-4" />} className={disabledNavCls}>Betalningar</NavItem>
@@ -204,7 +207,17 @@ const WorkshopLayout = () => {
 }
 
 const NavItem = ({ to, end, icon, children, className = '' }: any) => (
-  <NavLink to={to} end={end} className={({ isActive }) => `flex items-center gap-2 px-3 py-2 rounded-md whitespace-nowrap ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'} ${className}`}>
+  <NavLink
+    to={to}
+    end={end}
+    className={({ isActive }) =>
+      `flex items-center gap-2.5 px-4 py-2.5 rounded-2xl whitespace-nowrap font-medium transition-all ${
+        isActive
+          ? 'bg-primary text-primary-foreground border-2 border-foreground shadow-[3px_3px_0_hsl(var(--ink))]'
+          : 'border-2 border-transparent hover:bg-muted'
+      } ${className}`
+    }
+  >
     {icon} {children}
   </NavLink>
 )

@@ -5,7 +5,8 @@ import { useMemo } from 'react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { CYKEL_SEO_PAGES, type CykelSeoPage as CykelSeoPageType } from '@/lib/cykelSeoPages'
-import { CYKEL_CITIES, cityLandingPath, cityQuery, type CykelCityName } from '@/lib/cykelCities'
+import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
+import { getCityImage } from '@/lib/cykelCityImages'
 import { Button } from '@/components/ui/button'
 import { Bike, CheckCircle2, MapPin } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
@@ -135,8 +136,9 @@ const CykelSeoPage = () => {
   if (!page) return <Navigate to="/" replace />
 
   const canonical = `https://cykelhjalpen.se/${page.slug}`
-  const ogImage = page.ogImage ?? '/og/default.jpg'
   const city = page.city
+  const ogImage = page.ogImage ?? `/og/stad-${getCykelCity(city).slug}.jpg`
+  const cityImage = getCityImage(city)
   const requestHref = cityQuery(city)
 
   const jsonLd = {
@@ -219,19 +221,31 @@ const CykelSeoPage = () => {
 
           <header className="mb-8">
             <div className="flex items-center gap-2 mb-3">
-              <div className="sticker bg-brand-sun p-2"><Bike className="h-5 w-5" /></div>
+              <div className="sticker bg-brand-sun p-2 rounded-xl"><Bike className="h-5 w-5" /></div>
               <span className="text-sm font-mono text-muted-foreground inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {city}</span>
             </div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">{page.h1}</h1>
+            <h1 className="font-display text-4xl md:text-5xl mb-4">{page.h1}</h1>
             <p className="text-lg text-muted-foreground">{page.intro}</p>
+            <div className="mt-6 rounded-3xl overflow-hidden sticker bg-card">
+              <img
+                src={cityImage.large}
+                srcSet={`${cityImage.small} 640w, ${cityImage.large} 1200w`}
+                sizes="(min-width: 768px) 768px, 100vw"
+                alt={cityImage.alt}
+                width={1200}
+                height={725}
+                className="w-full aspect-[2/1] object-cover"
+                loading="eager"
+              />
+            </div>
           </header>
 
-          <div className="sticker bg-brand-sun/30 p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="sticker rounded-3xl bg-brand-sun/30 p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="font-display font-bold text-xl">{page.variant === 'price-stats' ? 'Få pris för just din cykel' : 'Jämför lokala prisförslag'}</p>
+              <p className="font-display text-xl">{page.variant === 'price-stats' ? 'Få pris för just din cykel' : 'Jämför lokala prisförslag'}</p>
               <p className="text-sm">Gratis · Inget konto · Ingen köpplikt</p>
             </div>
-            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button asChild className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-6">
               <Link to={requestHref} onClick={() => trackCta('top')}>Få prisförslag gratis</Link>
             </Button>
           </div>
@@ -255,9 +269,9 @@ const CykelSeoPage = () => {
             <h2 className="font-display text-2xl font-bold mb-4">Vanliga frågor</h2>
             <div className="space-y-3">
               {page.faq.map((item) => (
-                <details key={item.q} className="sticker bg-card p-4">
-                  <summary className="font-semibold cursor-pointer">{item.q}</summary>
-                  <p className="mt-2 text-sm text-foreground/80">{item.a}</p>
+                <details key={item.q} className="group rounded-2xl bg-card p-5 sticker">
+                  <summary className="flex items-center justify-between cursor-pointer font-display text-lg">{item.q}<span className="text-accent group-open:rotate-45 transition-transform text-3xl leading-none">+</span></summary>
+                  <p className="mt-3 text-muted-foreground leading-relaxed">{item.a}</p>
                 </details>
               ))}
             </div>
@@ -265,10 +279,10 @@ const CykelSeoPage = () => {
 
           <RelatedPages currentSlug={page.slug} city={city} />
 
-          <div className="mt-12 sticker bg-card p-6 text-center">
-            <p className="font-display font-bold text-xl mb-2">Beskriv problemet och jämför alternativen</p>
-            <p className="text-sm text-muted-foreground mb-5">Det tar omkring två minuter att skicka ett kostnadsfritt ärende.</p>
-            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <div className="mt-12 sticker rounded-3xl bg-[hsl(var(--brand-dark))] p-8 text-center text-background">
+            <p className="font-display text-2xl mb-2">Beskriv problemet och jämför alternativen</p>
+            <p className="text-sm text-background/70 mb-6">Det tar omkring två minuter att skicka ett kostnadsfritt ärende.</p>
+            <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8">
               <Link to={requestHref} onClick={() => trackCta('bottom')}>Skicka cykelärende gratis</Link>
             </Button>
           </div>
