@@ -120,6 +120,22 @@ const SERVICES: ServiceDef[] = [
     ],
   },
   {
+    slugStem: 'elsparkcykel-reparation',
+    what: 'elsparkcykel-reparation',
+    h1: (c) => `Elsparkcykel-reparation i ${c.name}`,
+    title: (c) => `Elsparkcykel reparation ${c.name} — verkstäder som lagar din elscooter`,
+    description: (c) => `Elsparkcykel som krånglar i ${c.name}? Punktering, bromsar eller batteri — få offert från verkstäder som lagar elsparkcyklar. Gratis och utan konto.`,
+    sections: (c) => [
+      { h2: 'Vanliga problem', body: 'Punktering på små hjul, bromsar som slirar, batteri som laddar ur fort eller felkoder i displayen. Beskriv symptomen så får du rätt offert.' },
+      { h2: 'Vilka märken hanteras?', body: `Många verkstäder hjälper till med vanliga märken som Xiaomi, Ninebot Segway, Voi-modeller och fler. Ange märke och modell i ärendet så matchas du rätt. ${districtLine(c)}` },
+    ],
+    faq: (c) => [
+      { q: 'Kan alla cykelverkstäder laga elsparkcyklar?', a: 'Nej, det krävs ofta rätt verktyg och elkompetens. Genom Cykelhjälpen når du bara verkstäder som själva valt att ta elsparkcykeljobb.' },
+      { q: 'Vad kostar en lagning?', a: 'Enklare jobb som punktering ligger ofta på tre till fem hundra kronor. Batteri- och motorjobb kostar mer beroende på reservdelar.' },
+      ...commonFaq(c).slice(0, 1),
+    ],
+  },
+  {
     slugStem: 'mobil-cykelreparation',
     what: 'mobil cykelreparation',
     h1: (c) => `Mobil cykelreparation i ${c.name}`,

@@ -15,7 +15,7 @@ import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, type CykelCityName } from '@/lib/cykelCities'
 
-const SERVICES = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Hjulbygge', 'Mobil reparation']
+const SERVICES = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Elsparkcykelservice', 'Hjulbygge', 'Mobil reparation']
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
   const gtag = (window as any).gtag

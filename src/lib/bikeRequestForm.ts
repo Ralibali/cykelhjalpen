@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from './cykelCities'
 
-export const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
+export const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Elsparkcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
 
 export const REPAIR_CATEGORIES = [
   'Punktering / däckbyte',

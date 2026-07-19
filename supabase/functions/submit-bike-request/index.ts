@@ -5,7 +5,7 @@ import { notifyAdminsOfPendingRequest } from '../_shared/notifications.ts'
 
 
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
-const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
+const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Elsparkcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
 const REPAIR_CATEGORIES = [
   'Punktering / däckbyte',
   'Bromsar',

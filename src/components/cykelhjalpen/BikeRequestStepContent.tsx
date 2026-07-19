@@ -12,6 +12,7 @@ import {
   Cog,
   Disc3,
   Flame,
+  Gauge,
   HelpCircle,
   LifeBuoy,
   Lightbulb,
@@ -35,6 +36,7 @@ import { BIKE_TYPES, REPAIR_CATEGORIES, URGENCY_OPTIONS, type BikeRequestFormSta
 export const BIKE_TYPE_ICONS: Record<string, LucideIcon> = {
   'Vanlig cykel': Bike,
   'Elcykel': Zap,
+  'Elsparkcykel': Gauge,
   'Mountainbike': Mountain,
   'Racercykel': Route,
   'Lådcykel': Package,
@@ -158,7 +160,7 @@ const BikeRequestStepContent = ({
     return (
       <motion.div key="step-0" {...stepTransition} className="space-y-5">
         <StepLabel hint="Välj det alternativ som ligger närmast – verkstaden hjälper dig med resten.">
-          Vilken typ av cykel behöver hjälp?
+          Vilken typ av fordon behöver hjälp?
         </StepLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {BIKE_TYPES.map((type) => (

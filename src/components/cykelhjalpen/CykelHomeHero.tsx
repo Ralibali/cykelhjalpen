@@ -22,7 +22,7 @@ const CykelHomeHero = () => (
           </h1>
 
           <p className="mt-7 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-            Beskriv problemet en gång och jämför pris, möjlig tid och kontaktuppgifter från anslutna cykelverkstäder i din stad. <strong className="text-foreground">Gratis för dig som cyklist.</strong>
+            Beskriv problemet en gång och jämför pris, möjlig tid och kontaktuppgifter från anslutna cykelverkstäder i din stad — för cyklar <em>och</em> elsparkcyklar. <strong className="text-foreground">Gratis för dig som cyklist.</strong>
           </p>
 
           <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-2xl" aria-label="Välj stad">
