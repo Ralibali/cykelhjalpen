@@ -101,7 +101,7 @@ const CookiePolicyPage = () => {
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">6. Tredje parter</h2>
               <p>Om du accepterar statistik och marknadsföring kan uppgifter behandlas av Google. Google kan behandla information som IP-adress, enhetsinformation, sidvisningar, klick och kampanjinformation enligt sina villkor och dataskyddsregler.</p>
-              <p className="mt-2">Betalning, inloggning och drift kan även innebära tekniskt nödvändiga cookies eller lokal lagring från våra drift- och betalleverantörer, exempelvis Supabase/Lovable och Stripe.</p>
+              <p className="mt-2">Betalning, inloggning och drift kan även innebära tekniskt nödvändiga cookies eller lokal lagring från våra drift- och betalleverantörer, exempelvis Supabase och Stripe.</p>
             </div>
 
             <div>

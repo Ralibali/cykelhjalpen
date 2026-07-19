@@ -39,7 +39,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 const SITE_NAME = "updro"
 const ROOT_DOMAIN = "updro.se"
 
-const SAMPLE_PROJECT_URL = "https://updro.lovable.app"
+const SAMPLE_PROJECT_URL = "https://updro.se"
 const SAMPLE_EMAIL = "user@example.test"
 const SAMPLE_DATA: Record<string, object> = {
   signup: {

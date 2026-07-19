@@ -12,7 +12,7 @@ Linköpings marknadsplats för cykelreparationer. Beskriv ditt cykelproblem och 
 ## Tech stack
 
 - **Frontend:** React 18 + TypeScript, Vite 5, Tailwind CSS, shadcn/ui
-- **Backend:** Lovable Cloud (Supabase) – Postgres, Auth, Edge Functions, Storage
+- **Backend:** Supabase – Postgres, Auth, Edge Functions, Storage
 - **Betalningar:** Stripe Checkout (one-time lead-avgifter)
 - **E-post:** Resend via auth-email-hook Edge Function
 - **Pakethanterare:** Bun

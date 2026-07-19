@@ -88,7 +88,7 @@ const PrivacyPolicyPage = () => {
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 <li><strong>Anslutna cykelverkstäder:</strong> en verkstad ser ärendebeskrivning utan kundens kontaktuppgifter innan den skickar en betald offert. Maximalt fem verkstäder kan skicka en offert per ärende.</li>
                 <li><strong>Stripe:</strong> betalningshantering för verkstadens lead-avgifter.</li>
-                <li><strong>Lovable Cloud och Supabase:</strong> hosting, databas, autentisering och teknisk drift.</li>
+                <li><strong>Supabase:</strong> hosting, databas, autentisering och teknisk drift.</li>
                 <li><strong>Google:</strong> analys och annonsmätning endast efter samtycke.</li>
                 <li><strong>Resend:</strong> transaktionsmejl, servicemeddelanden och manuellt godkända verkstadsutskick.</li>
                 <li><strong>Firecrawl:</strong> sökning och sammanställning av offentligt publicerade verkstadsuppgifter.</li>

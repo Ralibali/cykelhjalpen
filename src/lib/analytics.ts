@@ -3,7 +3,7 @@
  *
  * Plausible is loaded via a small gate in `index.html` that only injects the
  * script on the production domain (cykelhjalpen.se / www.cykelhjalpen.se).
- * On localhost, Lovable preview, and any other host, `window.plausible` is
+ * On localhost, preview environments and any other host, `window.plausible` is
  * undefined and every call here becomes a silent no-op.
  *
  * IMPORTANT (privacy):

@@ -1,8 +1,8 @@
 name: Accessibility audit
 
-# Körs vid varje push till main (Lovable synkar hit vid varje accept/publicering)
-# samt manuellt via "Run workflow". Auditen körs mot den live publicerade sajten
-# updro.se så att resultaten speglar exakt det användarna ser efter deploy.
+# Körs vid varje push till main samt manuellt via "Run workflow".
+# Auditen körs mot den live publicerade sajten updro.se så att
+# resultaten speglar exakt det användarna ser efter deploy.
 
 on:
   push:
