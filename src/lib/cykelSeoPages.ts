@@ -33,6 +33,7 @@ interface ServiceDef {
   sections: (c: CykelCity) => { h2: string; body: string }[]
   faq: (c: CykelCity) => { q: string; a: string }[]
   variant?: 'price-stats'
+  ogImage?: string
 }
 
 const districtLine = (c: CykelCity) => {
@@ -134,6 +135,7 @@ const SERVICES: ServiceDef[] = [
       { q: 'Vad kostar en lagning?', a: 'Enklare jobb som punktering ligger ofta på tre till fem hundra kronor. Batteri- och motorjobb kostar mer beroende på reservdelar.' },
       ...commonFaq(c).slice(0, 1),
     ],
+    ogImage: '/og/elsparkcykel-reparation.jpg',
   },
   {
     slugStem: 'mobil-cykelreparation',
@@ -283,6 +285,7 @@ const buildService = (c: CykelCity, svc: ServiceDef): CykelSeoPage => ({
   sections: svc.sections(c),
   faq: svc.faq(c),
   variant: svc.variant,
+  ogImage: svc.ogImage,
 })
 
 const buildDistrict = (c: CykelCity, district: string): CykelSeoPage => ({

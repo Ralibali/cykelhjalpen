@@ -7,6 +7,8 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { CYKEL_SEO_PAGES, type CykelSeoPage as CykelSeoPageType } from '@/lib/cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { getCityImage } from '@/lib/cykelCityImages'
+import elsparkBanner1200 from '@/assets/cykel-elsparkcykel-1200.webp'
+import elsparkBanner640 from '@/assets/cykel-elsparkcykel-640.webp'
 import { Button } from '@/components/ui/button'
 import { Bike, CheckCircle2, MapPin } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
@@ -26,6 +28,7 @@ const FALLBACK_PRICES: PriceRow[] = [
   { repair_category: 'Komplett service', sample_count: 0, price_low: 1200, price_high: 1700, price_typical: 1450 },
   { repair_category: 'Växeljustering', sample_count: 0, price_low: 200, price_high: 400, price_typical: 300 },
   { repair_category: 'Bromsservice', sample_count: 0, price_low: 250, price_high: 500, price_typical: 375 },
+  { repair_category: 'Elsparkcykel-service', sample_count: 0, price_low: 350, price_high: 800, price_typical: 550 },
 ]
 
 const PriceStatsTable = ({ city }: { city: CykelCityName }) => {
@@ -86,6 +89,7 @@ const RelatedPages = ({ currentSlug, city }: { currentSlug: string; city: CykelC
       'cykelservice',
       'punktering',
       'elcykel-reparation',
+      'elsparkcykel-reparation',
       'vad-kostar-cykelreparation',
     ]
     const sameCity = CYKEL_SEO_PAGES
@@ -138,7 +142,11 @@ const CykelSeoPage = () => {
   const canonical = `https://cykelhjalpen.se/${page.slug}`
   const city = page.city
   const ogImage = page.ogImage ?? `/og/stad-${getCykelCity(city).slug}.jpg`
+  const isElspark = page.slug.startsWith('elsparkcykel-reparation-')
   const cityImage = getCityImage(city)
+  const bannerImage = isElspark
+    ? { large: elsparkBanner1200, small: elsparkBanner640, alt: 'Elsparkcykel på reparationsstativ i en varm cykelverkstad' }
+    : cityImage
   const requestHref = cityQuery(city)
 
   const jsonLd = {
@@ -228,10 +236,10 @@ const CykelSeoPage = () => {
             <p className="text-lg text-muted-foreground">{page.intro}</p>
             <div className="mt-6 rounded-3xl overflow-hidden sticker bg-card">
               <img
-                src={cityImage.large}
-                srcSet={`${cityImage.small} 640w, ${cityImage.large} 1200w`}
+                src={bannerImage.large}
+                srcSet={`${bannerImage.small} 640w, ${bannerImage.large} 1200w`}
                 sizes="(min-width: 768px) 768px, 100vw"
-                alt={cityImage.alt}
+                alt={bannerImage.alt}
                 width={1200}
                 height={725}
                 className="w-full aspect-[2/1] object-cover"
