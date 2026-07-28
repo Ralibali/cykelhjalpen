@@ -4,8 +4,14 @@ import { corsFor } from '../_shared/cors.ts'
 
 const BodySchema = z.object({
   workshop_id: z.string().uuid(),
-  approved: z.boolean(),
+  action: z.enum(['approve', 'reject']),
+  reason: z.string().max(500).optional().nullable(),
 })
+
+const json = (body: unknown, status: number, headers: Record<string, string>) => new Response(
+  JSON.stringify(body),
+  { status, headers: { ...headers, 'Content-Type': 'application/json' } },
+)
 
 const escapeHtml = (value: unknown) => String(value ?? '')
   .replaceAll('&', '&amp;')
@@ -16,106 +22,130 @@ const escapeHtml = (value: unknown) => String(value ?? '')
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Metoden stöds inte.' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (req.method !== 'POST') return json({ error: 'Metoden stöds inte.' }, 405, corsHeaders)
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return json({ error: 'Backend konfiguration saknas.' }, 500, corsHeaders)
   }
 
   try {
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) throw new Error('Du behöver logga in')
+    if (!authHeader) throw new Error('Ingen auktorisation')
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_PUBLISHABLE_KEY') ?? ''
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    if (!supabaseUrl || !anonKey || !serviceRoleKey) throw new Error('Backend configuration is missing')
-
-    const parsed = BodySchema.safeParse(await req.json())
-    if (!parsed.success) throw new Error('Ogiltigt verkstadsbeslut')
-
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-      auth: { persistSession: false },
-    })
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
     const token = authHeader.replace(/^Bearer\s+/i, '')
-    const { data: userData, error: userError } = await userClient.auth.getUser(token)
-    if (userError || !userData.user) throw new Error('Du behöver logga in igen')
+    const { data: userData, error: userError } = await adminClient.auth.getUser(token)
+    if (userError || !userData.user) throw new Error('Ogiltig token')
 
-    const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
-    const { data: isAdmin, error: roleError } = await admin.rpc('is_admin', { _user_id: userData.user.id })
-    if (roleError) throw roleError
-    if (!isAdmin) throw new Error('Du saknar administratörsbehörighet')
+    // Kontrollera att användaren är admin
+    const { data: profile } = await adminClient
+      .from('profiles')
+      .select('role')
+      .eq('id', userData.user.id)
+      .single()
 
-    const { data: workshop, error: workshopError } = await admin
-      .from('workshops')
-      .select('id, user_id, company_name, email, city, approved')
-      .eq('id', parsed.data.workshop_id)
-      .maybeSingle()
-    if (workshopError) throw workshopError
-    if (!workshop) throw new Error('Verkstaden hittades inte')
-
-    if (workshop.approved === parsed.data.approved) {
-      return new Response(JSON.stringify({ success: true, unchanged: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-      })
+    if (profile?.role !== 'admin') {
+      return json({ error: 'Endast admin kan granska verkstäder.' }, 403, corsHeaders)
     }
 
-    const { error: updateError } = await admin
+    const parsed = BodySchema.safeParse(await req.json())
+    if (!parsed.success) {
+      return json({ error: parsed.error.issues[0]?.message || 'Ogiltig data.' }, 400, corsHeaders)
+    }
+
+    const { workshop_id, action, reason } = parsed.data
+
+    const { data: workshop, error: workshopError } = await adminClient
       .from('workshops')
-      .update({ approved: parsed.data.approved })
-      .eq('id', workshop.id)
-    if (updateError) throw updateError
+      .select('id, company_name, email, user_id, approved, free_leads_remaining')
+      .eq('id', workshop_id)
+      .single()
 
-    const { error: auditError } = await admin.from('audit_log').insert({
-      admin_id: userData.user.id,
-      action: parsed.data.approved ? 'workshop_approved' : 'workshop_deactivated',
-      target_type: 'workshop',
-      target_id: workshop.id,
-      details: { company_name: workshop.company_name, city: workshop.city },
-    })
-    if (auditError) console.error('Could not write workshop audit log', auditError)
+    if (workshopError || !workshop) {
+      return json({ error: 'Verkstaden hittades inte.' }, 404, corsHeaders)
+    }
 
-    const { error: notificationError } = await admin.from('notifications').insert({
-      user_id: workshop.user_id,
-      title: parsed.data.approved ? 'Din verkstad är godkänd' : 'Din verkstad är pausad',
-      message: parsed.data.approved
-        ? `Ni kan nu svara på cykelärenden i ${workshop.city}.`
-        : 'Kontakta Cykelhjälpen om du vill återaktivera kontot.',
-      type: 'workshop_review',
-      link: '/dashboard/verkstad',
-    })
-    if (notificationError) console.error('Could not create workshop review notification', notificationError)
+    if (action === 'approve') {
+      const { error: updateError } = await adminClient
+        .from('workshops')
+        .update({ approved: true, reviewed_at: new Date().toISOString() })
+        .eq('id', workshop_id)
 
-    const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
-      body: JSON.stringify({
-        to: workshop.email,
-        subject: parsed.data.approved ? 'Din verkstad är godkänd på Cykelhjälpen' : 'Din verkstad är tillfälligt pausad',
-        html: parsed.data.approved
-          ? `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111"><h2>Välkommen ${escapeHtml(workshop.company_name)}!</h2><p>Er verkstad är nu godkänd och kan svara på cykelärenden i <strong>${escapeHtml(workshop.city)}</strong>.</p><p><a href="https://cykelhjalpen.se/dashboard/verkstad" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Öppna verkstadsvyn</a></p></div>`
-          : `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111"><h2>Hej ${escapeHtml(workshop.company_name)}</h2><p>Er åtkomst till nya cykelärenden har tillfälligt pausats.</p><p>Kontakta info@cykelhjalpen.se om du har frågor eller vill återaktivera kontot.</p></div>`,
-      }),
-    }).then(async (response) => {
-      if (!response.ok) console.error('Workshop review email failed', response.status, await response.text().catch(() => ''))
-    }).catch((error) => console.error('Workshop review email failed', error))
+      if (updateError) throw updateError
 
-    const edgeRuntime = (globalThis as any).EdgeRuntime
-    if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(emailTask)
-    else await emailTask
+      // NYTT: Skicka godkännandemailsom nämner gratis leads
+      try {
+        const freeLeads = workshop.free_leads_remaining ?? 5
+        const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+          body: JSON.stringify({
+            to: workshop.email,
+            subject: `Din verkstad är godkänd – välkommen till Cykelhjälpen!`,
+            html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+              <h2 style="color:#157A6E">🎉 Din verkstad är godkänd!</h2>
+              <p>Hej ${escapeHtml(workshop.company_name)}!</p>
+              <p>Vi har granskat och <strong>godkänt</strong> din verkstad på Cykelhjälpen. Du kan nu börja ta emot och svara på kundförfrågningar.</p>
+              <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:20px;margin:20px 0">
+                <h3 style="margin-top:0;color:#166534">Du har ${freeLeads} gratis leads kvar</h3>
+                <p style="margin-bottom:0">Svara på förfrågningar helt utan kostnad. När dina gratis leads är slut kan du enkelt köpa fler direkt i din dashboard.</p>
+              </div>
+              <p><a href="https://cykelhjalpen.se/dashboard/verkstad" style="display:inline-block;background:#157A6E;color:#fff;padding:14px 28px;border-radius:999px;text-decoration:none;font-weight:700">Gå till dashboard</a></p>
+              <p style="margin-top:24px;color:#666;font-size:14px">Med vänliga hälsningar,<br>Cykelhjälpen-teamet</p>
+            </div>`,
+          }),
+        })
 
-    return new Response(JSON.stringify({ success: true, approved: parsed.data.approved }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-    })
+        const edgeRuntime = (globalThis as any).EdgeRuntime
+        if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(emailTask)
+        else await emailTask
+      } catch (emailErr) {
+        console.error('Approval email failed', emailErr)
+      }
+
+      return json({ success: true, message: 'Verkstaden har godkänts.', approved: true }, 200, corsHeaders)
+    } else {
+      const { error: updateError } = await adminClient
+        .from('workshops')
+        .update({ approved: false, rejected_reason: reason, reviewed_at: new Date().toISOString() })
+        .eq('id', workshop_id)
+
+      if (updateError) throw updateError
+
+      // Skicka avslagsmail
+      try {
+        const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+          body: JSON.stringify({
+            to: workshop.email,
+            subject: `Din verkstadsansökan har avslagits`,
+            html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+              <h2 style="color:#dc2626">Din ansökan har avslagits</h2>
+              <p>Hej ${escapeHtml(workshop.company_name)}!</p>
+              <p>Vi har tyvärr valt att inte godkänna din verkstad på Cykelhjälpen just nu.</p>
+              ${reason ? `<p><strong>Anledning:</strong> ${escapeHtml(reason)}</p>` : ''}
+              <p>Har du frågor eller vill diskutera beslutet? Svara på detta mail.</p>
+              <p style="margin-top:24px;color:#666;font-size:14px">Med vänliga hälsningar,<br>Cykelhjälpen-teamet</p>
+            </div>`,
+          }),
+        })
+
+        const edgeRuntime = (globalThis as any).EdgeRuntime
+        if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(emailTask)
+        else await emailTask
+      } catch (emailErr) {
+        console.error('Rejection email failed', emailErr)
+      }
+
+      return json({ success: true, message: 'Verkstaden har avslagits.', approved: false }, 200, corsHeaders)
+    }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Okänt fel'
-    console.error('review-workshop', message)
-    return new Response(JSON.stringify({ error: message }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    console.error('review-workshop error', error)
+    return json({ error: 'Något gick fel vid granskningen.' }, 500, corsHeaders)
   }
 })
