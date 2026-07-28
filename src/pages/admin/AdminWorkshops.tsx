@@ -56,7 +56,7 @@ const AdminWorkshops = () => {
 
     setBusy(workshop.id)
     const { data, error } = await supabase.functions.invoke('review-workshop', {
-      body: { workshop_id: workshop.id, approved },
+      body: { workshop_id: workshop.id, action: approved ? 'approve' : 'reject' },
     })
     setBusy(null)
 

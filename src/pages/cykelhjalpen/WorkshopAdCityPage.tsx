@@ -48,7 +48,7 @@ const WorkshopAdCityPage = () => {
   const canonical = `https://cykelhjalpen.se/annons/verkstad/${city.slug}`
 
   const benefits = [
-    { icon: Sparkles, title: 'Tre gratis leads', body: 'Du får testa tre kundförfrågningar utan kostnad när du är godkänd. Fungerar det – fortsätt. Passar det inte – ingen bindning.' },
+    { icon: Sparkles, title: 'Två gratis leads', body: 'Du får testa två kundförfrågningar utan kostnad när du är godkänd. Fungerar det – fortsätt. Passar det inte – ingen bindning.' },
     { icon: Wrench, title: `Kunder i ${city.name}`, body: `Vi visar dig bara förfrågningar från cyklister i ${city.name} och närområdet. Ingen tid slösas på fel jobb.` },
     { icon: Clock, title: 'Svara på tio sekunder', body: 'Ring, mejla eller lämna en offert direkt från dashboarden. Kunden ser ditt svar med logotyp och recensioner.' },
     { icon: TrendingUp, title: `Bara ${LEAD_FEE_KR} kr per lead`, body: 'Ingen månadskostnad. Ingen provision. Du betalar bara för de leads du faktiskt vill jobba med.' },
@@ -110,7 +110,7 @@ const WorkshopAdCityPage = () => {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-5">
-                Tre gratis leads när du blir godkänd · Godkännande sker inom ett dygn
+                Två gratis leads när du blir godkänd · Godkännande sker inom ett dygn
               </p>
             </motion.div>
 
@@ -220,7 +220,7 @@ const WorkshopAdCityPage = () => {
               <div className="text-background/70 mb-8">per lead du väljer att svara på</div>
               <ul className="text-left space-y-3 mb-9 max-w-sm mx-auto">
                 {[
-                  'Tre gratis leads när du blir godkänd',
+                  'Två gratis leads när du blir godkänd',
                   `Bara kunder i ${city.name} och närområdet`,
                   'Full kontroll: du väljer vilka du svarar på',
                   'Ingen provision på jobbet du utför',

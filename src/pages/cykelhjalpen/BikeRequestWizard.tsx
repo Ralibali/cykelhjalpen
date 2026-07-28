@@ -229,6 +229,7 @@ const BikeRequestWizard = () => {
           customer_email: parsed.data.customer_email,
           customer_phone: parsed.data.customer_phone || null,
           city: parsed.data.city,
+          terms_accepted: parsed.data.consent,
           turnstile_token: turnstileToken,
         },
       })

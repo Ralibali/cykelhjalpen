@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Receipt } from 'lucide-react'
+import { Loader2, Receipt, Sparkles } from 'lucide-react'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
+import { BuyLeadsButton } from '@/components/workshop/BuyLeadsButton'
+import { LeadCreditsInvoiceHistory } from '@/components/workshop/LeadCreditsInvoiceHistory'
+import { LEAD_FEE_KR } from '@/lib/pricing'
 
 interface ChargeRow {
   id: string
@@ -57,6 +60,20 @@ const WorkshopBilling = () => {
         <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">Gratis-leads</p><p className="font-display text-2xl font-bold mt-1">{totals.freeCount}</p></div>
       </div>
 
+      <div className="sticker rounded-3xl bg-card p-6 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl mb-1 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" /> Lead credits
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Förköp leads och svara snabbare – {LEAD_FEE_KR} kr exkl. moms per credit. Krediter dras automatiskt när du skickar en offert.
+            </p>
+          </div>
+          <BuyLeadsButton quantity={10} />
+        </div>
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>
       ) : charges.length === 0 ? (
@@ -89,6 +106,11 @@ const WorkshopBilling = () => {
           </table>
         </div>
       )}
+
+      <div className="mt-8">
+        <h2 className="font-display text-xl mb-3">Fakturor för lead credits</h2>
+        <LeadCreditsInvoiceHistory />
+      </div>
     </div>
   )
 }

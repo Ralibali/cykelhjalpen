@@ -29,6 +29,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { CustomerTerms } from '@/components/legal/CustomerTerms'
 import Turnstile from './Turnstile'
 import { CYKEL_CITIES, getCykelCity } from '@/lib/cykelCities'
 import { BIKE_TYPES, REPAIR_CATEGORIES, URGENCY_OPTIONS, type BikeRequestFormState } from '@/lib/bikeRequestForm'
@@ -436,28 +437,11 @@ const BikeRequestStepContent = ({
         <p className="text-xs text-muted-foreground">Vi mejlar en personlig länk där du ser och jämför svaren.</p>
       </div>
 
-      <button
-        type="button"
-        onClick={() => update('consent', !form.consent)}
-        aria-pressed={form.consent}
-        className={`w-full flex items-start gap-3 rounded-2xl border-2 p-4 text-left transition ${
-          form.consent ? 'border-foreground bg-primary/5 shadow-[3px_3px_0_hsl(var(--ink)/0.3)]' : 'border-border hover:border-foreground'
-        }`}
-      >
-        <Checkbox
-          id="consent"
-          checked={form.consent}
-          onCheckedChange={(value) => update('consent', value === true)}
-          onClick={(event) => event.stopPropagation()}
-          className="mt-0.5"
-        />
-        <Label htmlFor="consent" className="text-sm leading-relaxed cursor-pointer" onClick={(event) => event.stopPropagation()}>
-          Jag godkänner att uppgifterna delas med anslutna cykelverkstäder i {form.city} som vill lämna offert, enligt{' '}
-          <a href="/integritetspolicy" target="_blank" rel="noreferrer" className="underline font-medium" onClick={(event) => event.stopPropagation()}>
-            integritetspolicyn
-          </a>.
-        </Label>
-      </button>
+      <CustomerTerms accepted={form.consent} onAccept={(value) => update('consent', value)} />
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        Uppgifterna delas med anslutna cykelverkstäder i {form.city} som vill lämna offert, enligt{' '}
+        <a href="/integritetspolicy" target="_blank" rel="noreferrer" className="underline font-medium">integritetspolicyn</a>.
+      </p>
 
       <div className="border-t-2 border-dashed border-border pt-6">
         <p className="text-sm font-medium mb-3">Säkerhetskontroll</p>

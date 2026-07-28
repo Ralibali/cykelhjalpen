@@ -10,12 +10,12 @@ BEGIN
     AND column_name = 'free_leads_remaining'
   ) THEN
     ALTER TABLE public.workshops 
-    ADD COLUMN free_leads_remaining INTEGER NOT NULL DEFAULT 5;
+    ADD COLUMN free_leads_remaining INTEGER NOT NULL DEFAULT 2;
   END IF;
 END $$;
 
 ALTER TABLE public.workshops 
-ALTER COLUMN free_leads_remaining SET DEFAULT 5;
+ALTER COLUMN free_leads_remaining SET DEFAULT 2;
 
 COMMENT ON COLUMN public.workshops.free_leads_remaining 
 IS 'Antal kvarvarande leads (gratis + köpta). Sätts till 5 vid registrering. Minskas av consume_free_lead_for_response().';

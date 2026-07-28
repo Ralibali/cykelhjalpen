@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/hooks/use-auth'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/hooks/useAuth'
 import { AlertTriangle, X, ShoppingCart } from 'lucide-react'
 import { BuyLeadsButton } from './BuyLeadsButton'
 

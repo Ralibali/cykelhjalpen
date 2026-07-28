@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
+import { QuoteDisclaimer } from '@/components/legal/QuoteDisclaimer'
 import { motion } from 'framer-motion'
 import { AlertTriangle, Bike, CheckCircle2, Clock3, Crown, ExternalLink, Loader2, Mail, MapPin, Phone, RefreshCw, Truck } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
@@ -343,6 +344,12 @@ const CustomerResponses = () => {
                   </ol>
                 )
               })()
+            )}
+
+            {responses.length > 0 && (
+              <div className="mt-6">
+                <QuoteDisclaimer variant="customer" />
+              </div>
             )}
           </>
         )}

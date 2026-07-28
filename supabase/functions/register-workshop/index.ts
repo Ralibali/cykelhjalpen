@@ -9,6 +9,7 @@ const SERVICES = [
   'Växelservice',
   'Komplett service',
   'Elcykelservice',
+  'Elsparkcykelservice',
   'Hjulbygge',
   'Mobil reparation',
 ] as const
@@ -158,7 +159,7 @@ Deno.serve(async (req) => {
       website: normalizedWebsite,
       services: body.services,
       city: body.city,
-      free_leads_remaining: 5,
+      free_leads_remaining: 2,
       terms_accepted_at: now,
       terms_version: termsVersion,
       dpa_accepted_at: now,
@@ -213,8 +214,8 @@ Deno.serve(async (req) => {
             <p>Hej ${escapeHtml(body.company_name)}!</p>
             <p>Tack för att du registrerade din verkstad hos oss.</p>
             <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:20px;margin:20px 0">
-              <h3 style="margin-top:0;color:#166534">🎁 5 gratis leads väntar på dig</h3>
-              <p style="margin-bottom:0">Som ny verkstad får du <strong>5 gratis leads</strong> att svara på helt utan kostnad. Efter det är priset 50 kr per offert.</p>
+              <h3 style="margin-top:0;color:#166534">🎁 2 gratis leads väntar på dig</h3>
+              <p style="margin-bottom:0">Som ny verkstad får du <strong>2 gratis leads</strong> att svara på helt utan kostnad. Efter det är priset 50 kr per offert.</p>
             </div>
             <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:20px;margin:20px 0">
               <h3 style="margin-top:0;color:#1e40af">📋 Viktigt att komma ihåg</h3>

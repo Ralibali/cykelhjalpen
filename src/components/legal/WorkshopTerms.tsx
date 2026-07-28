@@ -127,7 +127,7 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                   <h3 className="font-semibold text-gray-900">5. Lead-credits och betalning</h3>
                   <p className="mt-2">
                     Verkstaden betalar en förmedlingsavgift (lead-credit) för varje svar på en kundförfrågan. 
-                    Nya verkstäder får 5 gratis leads. Därefter kostar varje lead 50 kr inklusive moms. 
+                    Nya verkstäder får 2 gratis leads. Därefter kostar varje lead 50 kr inklusive moms. 
                     Verkstaden kan köpa credits i förväg. Credits som inte förbrukas sparas på kontot.
                   </p>
                 </section>

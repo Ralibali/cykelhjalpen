@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Wrench, Loader2, CheckCircle2, ShieldCheck, MapPin } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
+import { WorkshopTerms } from '@/components/legal/WorkshopTerms'
 import Turnstile from '@/components/cykelhjalpen/Turnstile'
 import { Helmet } from 'react-helmet-async'
 import { LEAD_FEE_KR } from '@/lib/pricing'
@@ -53,6 +54,8 @@ const RegisterWorkshopPage = () => {
     city: initialCity,
     services: [] as string[],
     terms_accepted: false,
+    dpa_accepted: false,
+    marketing_accepted: false,
   })
   const handleTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), [])
   const handleTurnstileExpire = useCallback(() => setTurnstileToken(null), [])
@@ -90,6 +93,8 @@ const RegisterWorkshopPage = () => {
           city: form.city,
           services: form.services,
           terms_accepted: form.terms_accepted,
+          dpa_accepted: form.dpa_accepted,
+          marketing_accepted: form.marketing_accepted,
           turnstile_token: turnstileToken,
         },
       })
@@ -221,12 +226,29 @@ const RegisterWorkshopPage = () => {
             </div>
           </div>
 
-          <label className="flex items-start gap-3 text-sm cursor-pointer pt-4 border-t">
-            <input type="checkbox" checked={form.terms_accepted} onChange={(event) => update('terms_accepted', event.target.checked)} className="mt-1 h-4 w-4" required />
-            <span className="text-muted-foreground leading-relaxed">
-              Jag godkänner <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>. Jag förstår att <strong className="text-foreground">{LEAD_FEE_KR} kr exkl. moms (62,50 kr inkl. moms)</strong> debiteras via Stripe först när jag väljer att skicka en offert.
-            </span>
-          </label>
+          <div className="space-y-4 pt-5 border-t-2 border-dashed border-border">
+            <WorkshopTerms accepted={form.terms_accepted} onAccept={(value) => update('terms_accepted', value)} />
+
+            <label className="flex items-start gap-3 text-sm cursor-pointer">
+              <input type="checkbox" checked={form.dpa_accepted} onChange={(event) => update('dpa_accepted', event.target.checked)} className="mt-1 h-4 w-4" required />
+              <span className="text-muted-foreground leading-relaxed">
+                Jag godkänner <strong className="text-foreground">databehandlingsavtalet (DPA)</strong> – kunduppgifter får endast användas för att besvara förfrågan och raderas när ärendet är avslutat.
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 text-sm cursor-pointer">
+              <input type="checkbox" checked={form.marketing_accepted} onChange={(event) => update('marketing_accepted', event.target.checked)} className="mt-1 h-4 w-4" />
+              <span className="text-muted-foreground leading-relaxed">
+                Jag vill gärna få nyheter och erbjudanden från Cykelhjälpen via mejl <span className="text-xs">(valfritt)</span>.
+              </span>
+            </label>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {LEAD_FEE_KR} kr exkl. moms (62,50 kr inkl. moms) debiteras via Stripe först när du väljer att skicka en offert. Läs gärna även våra{' '}
+              <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och{' '}
+              <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>.
+            </p>
+          </div>
 
           <div>
             <Turnstile
@@ -237,7 +259,7 @@ const RegisterWorkshopPage = () => {
             />
           </div>
 
-          <Button type="submit" disabled={loading || !form.terms_accepted || !turnstileToken} className="w-full cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-12 text-base">
+          <Button type="submit" disabled={loading || !form.terms_accepted || !form.dpa_accepted || !turnstileToken} className="w-full cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-12 text-base">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {loading ? 'Skapar verkstad…' : 'Registrera verkstaden kostnadsfritt'}
           </Button>

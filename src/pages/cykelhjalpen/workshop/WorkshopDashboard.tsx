@@ -3,6 +3,7 @@ import { useOutletContext, Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Bike, Receipt, Send, Gift, Loader2 } from 'lucide-react'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
+import { FreeLeadsBanner } from '@/components/workshop/FreeLeadsBanner'
 
 const WorkshopDashboard = () => {
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
@@ -30,6 +31,8 @@ const WorkshopDashboard = () => {
         <h1 className="font-display text-3xl font-bold">Hej {workshop.company_name}!</h1>
         <p className="text-muted-foreground mt-1">Din verkstad är ansluten i {workshop.city}.</p>
       </div>
+
+      <FreeLeadsBanner />
 
       {loading ? (
         <div className="flex justify-center py-10"><Loader2 className="animate-spin" /></div>

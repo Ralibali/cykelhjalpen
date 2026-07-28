@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Bike, Loader2, Send, Check, CreditCard, MapPin, RefreshCw, Clock3, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { QuoteDisclaimer } from '@/components/legal/QuoteDisclaimer'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
@@ -357,6 +358,7 @@ const WorkshopRequests = () => {
                         ? `En av era ${workshop.free_leads_remaining} gratis-leads används. Ingen Stripe-betalning behövs.`
                         : `${LEAD_FEE_KR} kr exkl. moms debiteras via Stripe först när du går vidare. Kunden ser offerten efter genomförd betalning.`}
                     </div>
+                    <QuoteDisclaimer variant="workshop" />
                     <Button onClick={() => submitOffer(request.id)} disabled={isSubmitting} className="w-full rounded-xl cta-playful bg-accent text-accent-foreground hover:bg-accent/90 h-11">
                       {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                       {workshop.free_leads_remaining > 0 ? 'Skicka med gratis-lead' : `Granska och betala ${LEAD_FEE_KR} kr`}

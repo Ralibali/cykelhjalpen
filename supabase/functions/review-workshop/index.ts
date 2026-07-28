@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
 
       // NYTT: Skicka godkännandemailsom nämner gratis leads
       try {
-        const freeLeads = workshop.free_leads_remaining ?? 5
+        const freeLeads = workshop.free_leads_remaining ?? 2
         const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },

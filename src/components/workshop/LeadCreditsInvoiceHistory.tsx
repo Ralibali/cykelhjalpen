@@ -1,25 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/hooks/use-auth'
-import { Receipt, CheckCircle, XCircle, Clock, ArrowLeft, Download } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/hooks/useAuth'
+import { Receipt, CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 
 interface LeadCreditPurchase {
   id: string
   quantity: number
-  amount_ore: number
-  currency: string
-  status: 'pending' | 'paid' | 'expired' | 'failed' | 'refunded'
-  created_at: string
+  total_sek: number
+  status: 'pending' | 'paid' | 'failed' | 'refunded' | string
+  created_at: string | null
   stripe_payment_intent_id: string | null
 }
 
-const statusConfig = {
-  paid: { icon: CheckCircle, label: 'Betald', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
+const statusConfig: Record<string, { icon: typeof CheckCircle; label: string; color: string; bg: string; border: string }> = {
+  paid: { icon: CheckCircle, label: 'Betald', color: 'text-[hsl(var(--brand-mint))]', bg: 'bg-[hsl(var(--brand-mint)/0.12)]', border: 'border-[hsl(var(--brand-mint)/0.3)]' },
   pending: { icon: Clock, label: 'Väntar', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
-  expired: { icon: XCircle, label: 'Utgången', color: 'text-gray-500', bg: 'bg-gray-50', border: 'border-gray-200' },
   failed: { icon: XCircle, label: 'Misslyckad', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' },
   refunded: { icon: Receipt, label: 'Återbetald', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
 }
@@ -40,7 +37,7 @@ export function LeadCreditsInvoiceHistory() {
 
       const { data, error } = await supabase
         .from('lead_credit_purchases')
-        .select('*')
+        .select('id, quantity, total_sek, status, created_at, stripe_payment_intent_id')
         .eq('workshop_id', workshop.id)
         .order('created_at', { ascending: false })
 
@@ -50,134 +47,90 @@ export function LeadCreditsInvoiceHistory() {
     enabled: !!user?.id,
   })
 
-  const { data: workshop } = useQuery({
-    queryKey: ['workshop-balance', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('workshops')
-        .select('free_leads_remaining, company_name')
-        .eq('user_id', user?.id)
-        .single()
-      if (error) throw error
-      return data
-    },
-    enabled: !!user?.id,
-  })
-
   const totalSpent = purchases
-    ?.filter(p => p.status === 'paid')
-    .reduce((sum, p) => sum + p.amount_ore, 0) ?? 0
+    ?.filter((purchase) => purchase.status === 'paid')
+    .reduce((sum, purchase) => sum + purchase.total_sek, 0) ?? 0
 
   const totalCreditsBought = purchases
-    ?.filter(p => p.status === 'paid')
-    .reduce((sum, p) => sum + p.quantity, 0) ?? 0
+    ?.filter((purchase) => purchase.status === 'paid')
+    .reduce((sum, purchase) => sum + purchase.quantity, 0) ?? 0
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
+      <div className="sticker rounded-3xl bg-card p-6 animate-pulse">
+        <div className="h-5 bg-muted rounded w-1/3 mb-4" />
+        <div className="h-24 bg-muted rounded" />
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <Link 
-        to="/dashboard/verkstad" 
-        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Tillbaka till dashboard
-      </Link>
-
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Fakturahistorik – Lead-credits</h1>
-        <p className="text-gray-600 mt-1">Översikt över alla dina köp av lead-credits</p>
-      </div>
-
-      {/* Sammanfattningskort */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm text-gray-500">Tillgängliga credits</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">
-            {workshop?.free_leads_remaining ?? 0}
-          </p>
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="sticker rounded-3xl bg-card p-5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Credits köpta totalt</p>
+          <p className="font-display text-2xl mt-1">{totalCreditsBought}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm text-gray-500">Credits köpta totalt</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{totalCreditsBought}</p>
+        <div className="sticker rounded-3xl bg-card p-5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Totalt spenderat</p>
+          <p className="font-display text-2xl mt-1">{totalSpent.toLocaleString('sv-SE')} kr</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-sm text-gray-500">Totalt spenderat</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">
-            {(totalSpent / 100).toLocaleString('sv-SE')} kr
-          </p>
+        <div className="sticker rounded-3xl bg-card p-5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Antal köp</p>
+          <p className="font-display text-2xl mt-1">{purchases?.filter((purchase) => purchase.status === 'paid').length ?? 0}</p>
         </div>
       </div>
 
-      {/* Tabell */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="font-semibold text-gray-900">Köphistorik</h2>
-        </div>
-
+      <div className="sticker rounded-3xl bg-card overflow-hidden">
         {!purchases || purchases.length === 0 ? (
-          <div className="p-12 text-center">
-            <Receipt className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Inga köp ännu</p>
-            <p className="text-sm text-gray-400 mt-1">
-              Dina lead-credits-köp kommer visas här när du gjort din första betalning.
+          <div className="p-10 text-center">
+            <span className="inline-flex items-center justify-center rounded-2xl bg-muted p-4 mb-3">
+              <Receipt className="h-6 w-6 text-muted-foreground" />
+            </span>
+            <p className="font-display text-lg mb-1">Inga köp ännu</p>
+            <p className="text-sm text-muted-foreground">
+              Dina lead-credits-köp visas här när du gjort din första betalning.
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-border">
             {purchases.map((purchase) => {
-              const status = statusConfig[purchase.status]
+              const status = statusConfig[purchase.status] || statusConfig.pending
               const StatusIcon = status.icon
-              const date = new Date(purchase.created_at)
+              const date = purchase.created_at ? new Date(purchase.created_at) : null
 
               return (
-                <div 
-                  key={purchase.id} 
-                  className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${status.bg}`}>
+                <div key={purchase.id} className="px-5 py-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <span className={`h-10 w-10 shrink-0 rounded-2xl flex items-center justify-center ${status.bg}`}>
                       <StatusIcon className={`h-5 w-5 ${status.color}`} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {purchase.quantity} lead-credits
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {format(date, 'd MMMM yyyy, HH:mm', { locale: sv })}
-                      </p>
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-medium">{purchase.quantity} lead-credits</p>
+                      {date && (
+                        <p className="text-sm text-muted-foreground">
+                          {format(date, 'd MMMM yyyy, HH:mm', { locale: sv })}
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">
-                        {(purchase.amount_ore / 100).toLocaleString('sv-SE')} kr
-                      </p>
+                      <p className="font-display text-lg">{purchase.total_sek.toLocaleString('sv-SE')} kr</p>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color} border ${status.border}`}>
                         {status.label}
                       </span>
                     </div>
-
                     {purchase.status === 'paid' && purchase.stripe_payment_intent_id && (
                       <a
                         href={`https://dashboard.stripe.com/payments/${purchase.stripe_payment_intent_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-muted-foreground hover:text-foreground transition"
                         title="Se i Stripe"
                       >
-                        <Download className="h-4 w-4" />
+                        <ExternalLink className="h-4 w-4" />
                       </a>
                     )}
                   </div>
@@ -186,14 +139,6 @@ export function LeadCreditsInvoiceHistory() {
             })}
           </div>
         )}
-      </div>
-
-      {/* Info-ruta */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
-          <strong>Pris:</strong> 50 kr per lead-credit. Varje credit ger dig rätt att svara på en kundförfrågan. 
-          Credits som inte används sparas på ditt konto tillsvidare.
-        </p>
       </div>
     </div>
   )

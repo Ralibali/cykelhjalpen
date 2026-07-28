@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
 import { Gift, Zap } from 'lucide-react'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/hooks/useAuth'
 
 export function FreeLeadsBanner() {
   const { user } = useAuth()
@@ -47,7 +47,7 @@ export function FreeLeadsBanner() {
           <span className="text-3xl font-bold text-green-600">
             {workshop.free_leads_remaining}
           </span>
-          <span className="text-sm text-green-500">/5</span>
+          <span className="text-sm text-green-500">/2</span>
         </div>
       </div>
 
@@ -55,7 +55,7 @@ export function FreeLeadsBanner() {
       <div className="mt-4 h-2 w-full rounded-full bg-green-100 overflow-hidden">
         <div
           className="h-full rounded-full bg-green-500 transition-all duration-500"
-          style={{ width: `${(workshop.free_leads_remaining / 5) * 100}%` }}
+          style={{ width: `${(workshop.free_leads_remaining / 2) * 100}%` }}
         />
       </div>
 

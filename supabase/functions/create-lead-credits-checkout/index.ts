@@ -92,8 +92,8 @@ Deno.serve(async (req) => {
         },
         quantity: 1,
       }],
-      success_url: `${origin}/dashboard/verkstad/fakturering?success=true&lead_credits=${quantity}`,
-      cancel_url: `${origin}/dashboard/verkstad/fakturering?canceled=true`,
+      success_url: `${origin}/dashboard/verkstad/betalningar?success=true&lead_credits=${quantity}`,
+      cancel_url: `${origin}/dashboard/verkstad/betalningar?canceled=true`,
       metadata: {
         workshop_id: workshop.id,
         type: 'lead_credits',

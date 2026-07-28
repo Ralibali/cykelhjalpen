@@ -6,6 +6,7 @@ import { Bike, ListChecks, Receipt, Settings, LogOut, Loader2, Clock, MapPin } f
 import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
 import NotificationBell from '@/components/NotificationBell'
+import { LowBalanceAlert } from '@/components/workshop/LowBalanceAlert'
 import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { toast } from 'sonner'
 
@@ -179,6 +180,8 @@ const WorkshopLayout = () => {
           </div>
         </div>
       )}
+
+      {workshop.approved && <LowBalanceAlert />}
 
       <div className="container mx-auto px-4 py-6 md:py-8 grid md:grid-cols-[230px_1fr] gap-6 md:gap-8">
         <aside className="overflow-x-auto">
