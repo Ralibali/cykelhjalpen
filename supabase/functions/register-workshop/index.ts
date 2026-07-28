@@ -24,7 +24,13 @@ const BodySchema = z.object({
   website: z.string().trim().max(300).optional().nullable(),
   city: z.enum(CITIES),
   services: z.array(z.enum(SERVICES)).max(SERVICES.length).default([]),
-  terms_accepted: z.literal(true),
+  terms_accepted: z.literal(true, {
+    errorMap: () => ({ message: 'Du måste godkänna plattformsavtalet för att registrera dig.' })
+  }),
+  dpa_accepted: z.literal(true, {
+    errorMap: () => ({ message: 'Du måste godkänna personuppgiftsbiträdesavtalet (GDPR).' })
+  }),
+  marketing_accepted: z.boolean().optional().default(false),
   turnstile_token: z.string().min(10, 'Bekräfta säkerhetskontrollen innan du registrerar verkstaden.').max(4096),
 })
 
@@ -32,6 +38,13 @@ const json = (body: unknown, status: number, headers: Record<string, string>) =>
   JSON.stringify(body),
   { status, headers: { ...headers, 'Content-Type': 'application/json' } },
 )
+
+const escapeHtml = (value: unknown) => String(value ?? '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;')
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
@@ -117,6 +130,9 @@ Deno.serve(async (req) => {
       ? (/^https?:\/\//i.test(body.website) ? body.website : `https://${body.website}`)
       : null
 
+    const now = new Date().toISOString()
+    const termsVersion = '2026-07-28'
+
     const { error: profileError } = await adminClient.from('profiles').upsert({
       id: user.id,
       role: 'supplier',
@@ -142,12 +158,89 @@ Deno.serve(async (req) => {
       website: normalizedWebsite,
       services: body.services,
       city: body.city,
+      free_leads_remaining: 5,
+      terms_accepted_at: now,
+      terms_version: termsVersion,
+      dpa_accepted_at: now,
     })
 
     if (workshopError) {
       await adminClient.auth.admin.deleteUser(user.id)
       console.error('register-workshop workshop error', workshopError)
       return json({ error: 'Kunde inte spara verkstaden. Försök igen.' }, 400, corsHeaders)
+    }
+
+    // Logga villkorsgodkännande i audit trail
+    try {
+      const clientIp = req.headers.get('cf-connecting-ip')
+        || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+        || null
+      const userAgent = req.headers.get('user-agent') || null
+
+      await adminClient.rpc('log_terms_acceptance', {
+        p_user_id: user.id,
+        p_entity_type: 'workshop',
+        p_entity_id: user.id,
+        p_terms_type: 'workshop',
+        p_terms_version: termsVersion,
+        p_ip_address: clientIp,
+        p_user_agent: userAgent,
+      })
+
+      await adminClient.rpc('log_terms_acceptance', {
+        p_user_id: user.id,
+        p_entity_type: 'workshop',
+        p_entity_id: user.id,
+        p_terms_type: 'dpa',
+        p_terms_version: termsVersion,
+        p_ip_address: clientIp,
+        p_user_agent: userAgent,
+      })
+    } catch (auditErr) {
+      console.error('Terms audit logging failed', auditErr)
+    }
+
+    // Välkomstmail med juridisk info
+    try {
+      const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+        body: JSON.stringify({
+          to: email,
+          subject: `Välkommen till Cykelhjälpen, ${escapeHtml(body.company_name)}!`,
+          html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+            <h2 style="color:#157A6E">Välkommen till Cykelhjälpen!</h2>
+            <p>Hej ${escapeHtml(body.company_name)}!</p>
+            <p>Tack för att du registrerade din verkstad hos oss.</p>
+            <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:20px;margin:20px 0">
+              <h3 style="margin-top:0;color:#166534">🎁 5 gratis leads väntar på dig</h3>
+              <p style="margin-bottom:0">Som ny verkstad får du <strong>5 gratis leads</strong> att svara på helt utan kostnad. Efter det är priset 50 kr per offert.</p>
+            </div>
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:20px;margin:20px 0">
+              <h3 style="margin-top:0;color:#1e40af">📋 Viktigt att komma ihåg</h3>
+              <ul style="margin-bottom:0;padding-left:20px">
+                <li>Offerten du skickar är ett <strong>estimat</strong> – informera kunden om att slutpriset kan variera.</li>
+                <li>Du måste inhämta kundens godkännande innan du påbörjar arbete som väsentligt avviker från offerten (Konsumenttjänstlagen 32 §).</li>
+                <li>Vi är en förmedlare – du ansvarar själv för ditt arbete och din prissättning.</li>
+              </ul>
+            </div>
+            <p><strong>Nästa steg:</strong></p>
+            <ul>
+              <li>Bekräfta din e-postadress</li>
+              <li>Vänta på att vårt team godkänner din verkstad</li>
+              <li>Börja ta emot och svara på förfrågningar</li>
+            </ul>
+            <p>Har du frågor? Svara på detta mail så hjälper vi dig.</p>
+            <p style="margin-top:24px;color:#666;font-size:14px">Med vänliga hälsningar,<br>Cykelhjälpen-teamet</p>
+          </div>`,
+        }),
+      })
+
+      const edgeRuntime = (globalThis as any).EdgeRuntime
+      if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(emailTask)
+      else await emailTask
+    } catch (emailErr) {
+      console.error('Welcome email failed', emailErr)
     }
 
     return json({
