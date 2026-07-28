@@ -63,8 +63,8 @@ export function CustomerTerms({ onAccept, accepted }: CustomerTermsProps) {
                     1. Om Cykelhjälpen
                   </h3>
                   <p className="mt-2">
-                    Cykelhjälpen Sverige AB (org.nr 559XXX-XXXX) är en digital plattform som förmedlar 
-                    kontakt mellan cykelägare ("Kunden") och cykelverkstäder ("Verkstaden"). 
+                    Aurora Media AB (org.nr 559272-0220), som driver Cykelhjälpen, är en digital 
+                    plattform som förmedlar kontakt mellan cykelägare ("Kunden") och cykelverkstäder ("Verkstaden"). 
                     Vi är <strong>inte part i det avtal</strong> som sluts mellan Kunden och Verkstaden. 
                     Vår roll är enbart att förmedla kontakten och hantera betalning för lead-credits.
                   </p>

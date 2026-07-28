@@ -63,7 +63,8 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                     1. Parter och plattformens roll
                   </h3>
                   <p className="mt-2">
-                    Detta avtal sluts mellan Cykelhjälpen Sverige AB ("Plattformen") och din verkstad 
+                    Detta avtal sluts mellan Aurora Media AB (org.nr 559272-0220), som driver Cykelhjälpen 
+                    ("Plattformen"), och din verkstad 
                     ("Verkstaden"). Plattformen tillhandahåller en digital marknadsplats där Verkstaden 
                     kan ta emot förfrågningar från cykelägare ("Kunden"). Plattformen är 
                     <strong> inte part i det avtal</strong> som sluts mellan Verkstaden och Kunden.
