@@ -232,7 +232,7 @@ const BikeRequestWizard = () => {
       if (error) throw new Error(await getFunctionErrorMessage(error, 'Kunde inte skicka ärendet'))
       if (!request?.id || !request?.view_token) throw new Error(request?.error || 'Kunde inte skapa ärendet')
 
-      const uploadErrors = files.length > 0 ? await uploadImages(request.id) : []
+      const uploadErrors = files.length > 0 ? await uploadImages(request.id, request.view_token) : []
       localStorage.removeItem(DRAFT_KEY)
       trackClick('bike_request_submitted', 'Skicka ärende', {
         bike_type: parsed.data.bike_type,
