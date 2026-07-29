@@ -302,8 +302,11 @@ const CustomerResponses = () => {
                                 </div>
                               </div>
                               {response.estimated_price_min !== null && (
-                                <span className="font-display text-2xl text-accent whitespace-nowrap">
-                                  {response.estimated_price_min}{response.estimated_price_max ? `–${response.estimated_price_max}` : ''} kr
+                                <span className="text-right">
+                                  <span className="block font-display text-2xl text-accent whitespace-nowrap">
+                                    {response.estimated_price_min}{response.estimated_price_max ? `–${response.estimated_price_max}` : ''} kr
+                                  </span>
+                                  <span className="block text-[11px] text-muted-foreground mt-0.5">inkl. moms</span>
                                 </span>
                               )}
                             </div>

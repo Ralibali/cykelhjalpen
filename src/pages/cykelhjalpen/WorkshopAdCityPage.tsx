@@ -59,7 +59,7 @@ const WorkshopAdCityPage = () => {
   const steps = [
     { title: 'Anslut din verkstad', body: `Fyll i uppgifterna om din verkstad i ${city.name}. Vi granskar och godkänner inom ett dygn.` },
     { title: 'Få förfrågningar', body: 'Vi mejlar (och SMS:ar om du vill) så fort en cyklist i ditt område behöver hjälp.' },
-    { title: 'Svara på det som passar', body: `Lämna offert med ett klick. Första tre leads är gratis, därefter ${LEAD_FEE_KR} kr per lead du väljer att svara på.` },
+    { title: 'Svara på det som passar', body: `Lämna offert med ett klick. De två första leadsen är gratis – därefter ${LEAD_FEE_KR} kr per lead du väljer att svara på.` },
     { title: 'Ta jobbet', body: 'Kunden hör av sig direkt till dig – du fakturerar som vanligt, vi tar ingen provision.' },
   ]
 
@@ -188,7 +188,7 @@ const WorkshopAdCityPage = () => {
         <div className="max-w-3xl mx-auto px-4">
           <Reveal>
             <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">Kom igång</p>
-            <h2 className="font-display text-3xl md:text-5xl text-center mb-12">Så funkar det</h2>
+            <h2 className="font-display text-3xl md:text-5xl text-center mb-12">Så fungerar det</h2>
           </Reveal>
           <ol className="relative space-y-6 before:absolute before:left-[27px] before:top-4 before:bottom-4 before:w-0.5 before:bg-border">
             {steps.map((step, index) => (

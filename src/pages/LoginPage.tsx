@@ -112,7 +112,7 @@ const LoginPage = () => {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     className="pl-10 rounded-xl"
-                    placeholder="din@email.se"
+                    placeholder="din@epost.se"
                     required
                   />
                 </div>

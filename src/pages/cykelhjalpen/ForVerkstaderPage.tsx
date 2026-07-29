@@ -23,7 +23,7 @@ const benefits = [
 const steps = [
   { title: 'Registrera verkstaden', text: 'Kostnadsfritt och utan bindningstid. Välj vilken stad ni arbetar i.' },
   { title: 'Vi granskar manuellt', text: 'Efter godkännande får ni tillgång till granskade ärenden i er stad.' },
-  { title: 'Svara på de jobb ni vill', text: `Skriv pris och möjlig tid. ${LEAD_FEE_KR} kr exkl. moms debiteras via Stripe först när ni väljer att skicka.` },
+  { title: 'Svara på de jobb ni vill', text: `Skriv pris och möjlig tid. Ett lead (${LEAD_FEE_KR} kr exkl. moms) dras först när ni väljer att skicka – de två första är gratis.` },
   { title: 'Kunden hör av sig', text: 'De får prisförslaget och era kontaktuppgifter. Fortsatt bokning sker direkt med er.' },
 ]
 
@@ -36,8 +36,8 @@ const trackWorkshopCta = (placement: string) => {
 const ForVerkstaderPage = () => (
   <div className="min-h-screen bg-background">
     <Helmet>
-      <title>Få fler kunder till din cykelverkstad | Cykelhjälpen</title>
-      <meta name="description" content="Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift, välj själv vilka lokala ärenden ni vill svara på." />
+      <title>Få fler kunder till er cykelverkstad | Cykelhjälpen</title>
+      <meta name="description" content="Anslut er cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Två gratis kundförfrågningar att börja med – ingen månadsavgift, ingen bindningstid." />
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <link rel="canonical" href="https://cykelhjalpen.se/for-cykelverkstader" />
       <meta property="og:type" content="website" />
@@ -74,7 +74,7 @@ const ForVerkstaderPage = () => (
                 </Button>
                 <Button asChild variant="outline" size="lg" className="rounded-full h-14 px-8 border-2"><a href="#sa-fungerar-det">Så fungerar det</a></Button>
               </div>
-              <p className="mt-5 text-sm text-muted-foreground">Kostnadsfri registrering · Ingen bindningstid · Manuell granskning</p>
+              <p className="mt-5 text-sm text-muted-foreground">Kostnadsfri registrering · Två gratis kundförfrågningar · Ingen bindningstid</p>
             </motion.div>
 
             <motion.div
@@ -101,7 +101,7 @@ const ForVerkstaderPage = () => (
                   <p className="text-xs text-muted-foreground mt-1">exkl. moms per skickad offert</p>
                 </div>
                 <div className="hidden sm:block w-px self-stretch bg-border" />
-                <p className="hidden sm:block text-sm text-muted-foreground max-w-44">Ingen kostnad att se eller avstå från ett ärende.</p>
+                <p className="hidden sm:block text-sm text-muted-foreground max-w-44">De två första förfrågningarna är gratis – sedan {LEAD_FEE_KR} kr per offert ni skickar.</p>
               </div>
             </motion.div>
           </div>
@@ -164,7 +164,7 @@ const ForVerkstaderPage = () => (
               <CheckCircle2 className="h-9 w-9 text-[hsl(var(--brand-sun))]" />
             </span>
             <h2 className="font-display text-3xl md:text-5xl mb-4">Redo att ta emot fler lokala ärenden?</h2>
-            <p className="text-lg text-background/70 mb-8 max-w-xl mx-auto">Registreringen är kostnadsfri och ni bestämmer helt själva vilka jobb ni vill svara på.</p>
+            <p className="text-lg text-background/70 mb-8 max-w-xl mx-auto">Registreringen är kostnadsfri, de två första förfrågningarna är gratis och ni bestämmer helt själva vilka jobb ni vill svara på.</p>
             <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-14 px-10 text-base">
               <Link to="/registrera/verkstad" onClick={() => trackWorkshopCta('bottom')}>
                 Kom igång nu <ArrowRight className="ml-2 h-4 w-4" />

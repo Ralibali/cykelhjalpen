@@ -42,7 +42,7 @@ const TermsPage = () => {
       <main className="flex-1 py-16 px-4">
         <article className="max-w-3xl mx-auto prose prose-slate">
           <h1 className="font-display text-3xl font-bold mb-2">Allmänna villkor</h1>
-          <p className="text-muted-foreground text-sm mb-8">Senast uppdaterad: 13 juli 2026</p>
+          <p className="text-muted-foreground text-sm mb-8">Senast uppdaterad: 30 juli 2026</p>
 
           <section className="space-y-6 text-sm leading-relaxed text-foreground/80">
             <div>
@@ -57,6 +57,9 @@ const TermsPage = () => {
               <ul className="list-disc pl-5 space-y-1">
                 <li>Tjänsten är gratis för cyklister och kräver inget konto.</li>
                 <li>Du förbinder dig att lämna korrekta uppgifter om ditt ärende och dina kontaktuppgifter.</li>
+                <li>Den offert du får gäller det problem du beskrivit – stämmer din beskrivning ska verkstaden hålla priset.</li>
+                <li>Priset får bara justeras om felet visar sig vara något annat eller mer omfattande än du beskrivit. Verkstaden ska då informera dig och få ditt godkännande innan arbetet fortsätter (konsumenttjänstlagen 32 §).</li>
+                <li>Du ansvarar själv för att beskriva felet så noggrant och sanningsenligt du kan – en tydlig beskrivning ger ett pris du kan lita på.</li>
                 <li>Maximalt fem verkstäder kan lämna ett betalt svar på ett ärende.</li>
                 <li>Du väljer själv om du vill anlita någon av de verkstäder som svarar.</li>
                 <li>Avtal om reparation, garanti och betalning ingås direkt mellan dig och verkstaden.</li>
@@ -69,6 +72,8 @@ const TermsPage = () => {
                 <li>Du måste vara minst 18 år och behörig att ingå avtal å verkstadens vägnar.</li>
                 <li>Verkstaden måste godkännas manuellt av Cykelhjälpen innan den får tillgång till ärenden.</li>
                 <li>Du ansvarar för att uppgifterna i ditt konto är korrekta och uppdaterade.</li>
+                <li>Du ska låta offerten gälla det problem kunden beskrivit – stämmer beskrivningen ska priset hållas.</li>
+                <li>Priset får endast justeras om felet avviker från kundens beskrivning. Kunden ska i så fall informeras och godkänna det nya priset innan arbetet fortsätter.</li>
                 <li>Du ansvarar för att lämnade prisförslag och utfört arbete uppfyller tillämplig svensk lagstiftning, bland annat konsumenttjänstlagen när kunden är konsument.</li>
               </ul>
             </div>
@@ -77,7 +82,8 @@ const TermsPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">4. Lead-avgift och betalning för verkstäder</h2>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Det är gratis att registrera och ansöka om godkännande som verkstad.</li>
-                <li>Varje skickat prisförslag kostar <strong>{LEAD_FEE_KR} kr exklusive moms (62,50 kr inklusive moms)</strong> och debiteras via Stripe när verkstaden väljer att gå vidare.</li>
+                <li>Nya verkstäder får <strong>två gratis kundförfrågningar</strong> att testa tjänsten med – ingen månadsavgift och ingen bindningstid.</li>
+                <li>Därefter kostar varje skickat prisförslag <strong>{LEAD_FEE_KR} kr exklusive moms (62,50 kr inklusive moms)</strong>. Verkstaden köper leads i förväg via Stripe och ett lead dras först när ett prisförslag skickas.</li>
                 <li>Moms beräknas utifrån tillämpliga skatteregler och de faktureringsuppgifter som lämnas i Stripe.</li>
                 <li>Maximalt fem verkstäder kan svara per ärende. Först till kvarn gäller.</li>
                 <li>Betalningsunderlag hanteras via Stripe.</li>
@@ -95,7 +101,9 @@ const TermsPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">6. Ansvarsbegränsning</h2>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Cykelhjälpen ansvarar inte för utfört arbete, garanti, tvister eller skador mellan cyklist och verkstad.</li>
-                <li>Cykelhjälpen garanterar inte kvaliteten på verkstadens arbete eller att ett lämnat prisförslag leder till ett uppdrag.</li>
+                <li>Cykelhjälpen ansvarar inte för offerters eller prisers riktighet och garanterar inte kvaliteten på verkstadens arbete eller att ett lämnat prisförslag leder till ett uppdrag.</li>
+                <li>Cykelhjälpen garanterar inte att någon offert alls lämnas på ett ärende och ansvarar inte för verkstäders tillgänglighet, svarstider eller uteblivna svar.</li>
+                <li>Cykelhjälpen ansvarar inte för riktigheten i kunders problembeskrivningar eller för att en förfrågan leder till ett uppdrag.</li>
                 <li>Cykelhjälpens ansvar gentemot en verkstad är, i den utsträckning tvingande lag tillåter, begränsat till det belopp verkstaden betalat till Cykelhjälpen under de senaste tolv månaderna.</li>
                 <li>Cykelhjälpen ansvarar inte för indirekta skador, utebliven vinst eller förlust av data, utom när ansvaret följer av tvingande lag.</li>
               </ul>

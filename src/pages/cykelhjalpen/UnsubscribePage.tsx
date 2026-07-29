@@ -71,14 +71,14 @@ const UnsubscribePage = () => {
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-12">
       <Helmet>
-        <title>Avregistrering – Cykelhjalpen.se</title>
+        <title>Avregistrering – Cykelhjälpen</title>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="referrer" content="no-referrer" />
       </Helmet>
       <div className="w-full max-w-md bg-card border rounded-2xl p-8 shadow-sm space-y-5">
         <div className="text-center space-y-1">
           <h1 className="font-display text-2xl font-bold">Avregistrering</h1>
-          <p className="text-sm text-muted-foreground">Cykelhjalpen.se – utskick till verkstäder</p>
+          <p className="text-sm text-muted-foreground">Cykelhjälpen – utskick till verkstäder</p>
         </div>
 
         {status === 'loading' && (
