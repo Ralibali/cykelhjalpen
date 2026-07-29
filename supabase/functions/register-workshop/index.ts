@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
       : null
 
     const now = new Date().toISOString()
-    const termsVersion = '2026-07-28'
+    const termsVersion = '2026-07-30'
 
     const { error: profileError } = await adminClient.from('profiles').upsert({
       id: user.id,
@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
             <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:20px;margin:20px 0">
               <h3 style="margin-top:0;color:#1e40af">📋 Viktigt att komma ihåg</h3>
               <ul style="margin-bottom:0;padding-left:20px">
-                <li>Offerten du skickar är ett <strong>estimat</strong> – informera kunden om att slutpriset kan variera.</li>
+                <li>Offerten du skickar ska <strong>gälla det problem kunden beskrivit</strong> – avviker felet ska kunden alltid informeras och godkänna det nya priset först.</li>
                 <li>Du måste inhämta kundens godkännande innan du påbörjar arbete som väsentligt avviker från offerten (Konsumenttjänstlagen 32 §).</li>
                 <li>Vi är en förmedlare – du ansvarar själv för ditt arbete och din prissättning.</li>
               </ul>

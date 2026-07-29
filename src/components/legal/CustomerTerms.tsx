@@ -73,24 +73,28 @@ export function CustomerTerms({ onAccept, accepted }: CustomerTermsProps) {
                 <section>
                   <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
-                    2. Offerten är ett estimat – inte ett slutpris
+                    2. Offerten gäller det problem du beskriver
                   </h3>
                   <p className="mt-2">
-                    Den offert du får via Cykelhjälpen är baserad på den beskrivning du lämnat om 
-                    skadan/felet. Offerten är ett <strong>uppskattat pris</strong> och inte ett bindande 
-                    slutpris. Slutpriset kan variera beroende på:
+                    Den offert du får via Cykelhjälpen baseras på din beskrivning av felet.
+                    <strong> Stämmer din beskrivning ska verkstaden hålla priset.</strong> Verkstaden
+                    får bara justera priset om felet visar sig vara något annat, eller mer omfattande,
+                    än vad du beskrivit, till exempel:
                   </p>
                   <ul className="list-disc ml-5 mt-2 space-y-1">
-                    <li>Faktisk omfattning av skada när verkstaden undersökt cykeln</li>
-                    <li>Eventuella dolda fel som inte kunde förutses</li>
-                    <li>Extra arbetstid eller reservdelar utöver det ursprungliga estimatet</li>
-                    <li>Prisändringar hos leverantörer av reservdelar</li>
+                    <li>Dolda fel som inte framgått av din beskrivning</li>
+                    <li>Större skadeomfattning än vad som beskrivits</li>
+                    <li>Felaktig eller ofullständig information i förfrågan</li>
                   </ul>
+                  <p className="mt-2">
+                    Du ansvarar själv för att beskriva felet så noggrant och sanningsenligt du kan.
+                    En tydlig beskrivning ger ett pris du kan lita på.
+                  </p>
                   <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <p className="text-amber-800">
-                      <strong>Viktigt:</strong> Verkstaden är enligt svensk lag skyldig att informera dig 
-                      och be om ditt godkännande innan arbetet påbörjas eller utökas om slutpriset 
-                      väsentligt avviker från offerten (Konsumenttjänstlagen 32 §).
+                      <strong>Viktigt:</strong> Verkstaden är enligt svensk lag alltid skyldig att
+                      informera dig och be om ditt godkännande innan arbetet påbörjas eller utökas,
+                      om slutpriset väsentligt avviker från offerten (Konsumenttjänstlagen 32 §).
                     </p>
                   </div>
                 </section>
@@ -116,7 +120,26 @@ export function CustomerTerms({ onAccept, accepted }: CustomerTermsProps) {
                 </section>
 
                 <section>
-                  <h3 className="font-semibold text-gray-900">5. Tvister</h3>
+                  <h3 className="font-semibold text-gray-900">5. Ansvarsfriskrivning</h3>
+                  <p className="mt-2">
+                    Cykelhjälpen är enbart en förmedlare. Eftersom vi inte är part i avtalet mellan
+                    dig och verkstaden ansvarar vi inte för:
+                  </p>
+                  <ul className="list-disc ml-5 mt-2 space-y-1">
+                    <li>Offerters eller prisers riktighet, verkstadens arbete, kvalitet eller garantier</li>
+                    <li>Skador på cykel, egendom eller person till följd av verkstadens arbete</li>
+                    <li>Att någon offert alls lämnas, eller att ett ärende leder till ett färdigt jobb</li>
+                    <li>Tvister, reklamationer eller återbetalningar mellan dig och verkstaden</li>
+                    <li>Verkstadens tillgänglighet, svarstider eller uteblivna svar</li>
+                    <li>Indirekta skador eller utebliven vinst</li>
+                  </ul>
+                  <p className="mt-2">
+                    Alla frågor om pris, arbete och garanti hanteras direkt mellan dig och verkstaden.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="font-semibold text-gray-900">6. Tvister</h3>
                   <p className="mt-2">
                     Vid tvist med verkstaden rekommenderar vi först att kontakta verkstaden direkt. 
                     Lyckas inte det kan du vända dig till Allmänna reklamationsnämnden (ARN) eller 
@@ -126,7 +149,7 @@ export function CustomerTerms({ onAccept, accepted }: CustomerTermsProps) {
                 </section>
 
                 <p className="text-xs text-gray-500 pt-4 border-t border-gray-200">
-                  Senast uppdaterad: 2026-07-28. Vid ändringar meddelas du via e-post.
+                  Senast uppdaterad: 2026-07-30. Vid ändringar meddelas du via e-post.
                 </p>
               </div>
             </ScrollArea>

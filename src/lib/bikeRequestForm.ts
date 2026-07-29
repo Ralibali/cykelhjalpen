@@ -41,7 +41,7 @@ export interface BikeRequestFormState {
 export const bikeRequestSchema = z.object({
   bike_type: z.enum(BIKE_TYPES, { errorMap: () => ({ message: 'Välj vilken typ av cykel du har' }) }),
   repair_category: z.enum(REPAIR_CATEGORIES, { errorMap: () => ({ message: 'Välj vad du behöver hjälp med' }) }),
-  description: z.string().trim().min(10, 'Beskriv felet med minst tio tecken').max(2000),
+  description: z.string().trim().min(30, 'Beskriv felet med minst 30 tecken – det ger träffsäkrare pris').max(2000),
   city: z.string().refine(isCykelCity, 'Välj en stad som Cykelhjälpen finns i'),
   area: z.string().trim().max(80).optional(),
   postcode: z.string().trim().max(10).refine((value) => !value || /^\d{3}\s?\d{2}$/.test(value), 'Ange postnummer med fem siffror').optional(),

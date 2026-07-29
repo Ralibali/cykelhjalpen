@@ -133,9 +133,9 @@ Deno.serve(async (req) => {
     const row = Array.isArray(data) ? data[0] : data
     if (!row?.id || !row?.view_token) throw new Error('Ärendet skapades utan nödvändiga uppgifter')
 
-    // Juridisk spårning av villkorsgodkännande (kundvillkor, version 2026-07-28).
+    // Juridisk spårning av villkorsgodkännande (kundvillkor, version 2026-07-30).
     // Misslyckas loggningen ska ärendet ändå gå iväg – därför skyddas den i try/catch.
-    const termsVersion = '2026-07-28'
+    const termsVersion = '2026-07-30'
     try {
       const now = new Date().toISOString()
       const requestId = (row as { id?: string } | null)?.id

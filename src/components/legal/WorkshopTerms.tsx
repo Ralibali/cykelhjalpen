@@ -80,9 +80,9 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                     Verkstaden åtar sig att:
                   </p>
                   <ul className="list-disc ml-5 mt-2 space-y-1">
+                    <li>Låta offerten gälla det problem Kunden beskrivit – stämmer beskrivningen ska priset hållas.</li>
                     <li>Ange priser inklusive moms i alla offerter.</li>
-                    <li>Tydligt informera Kunden om att offerten är ett <strong>uppskattat pris</strong> och att slutpriset kan variera.</li>
-                    <li>Innan arbetet påbörjas eller utökas, informera Kunden och inhämta godkännande om slutpriset väsentligt avviker från offerten (Konsumenttjänstlagen 32 §).</li>
+                    <li>Justera priset endast om felet avviker från Kundens beskrivning, och då alltid informera Kunden och inhämta godkännande innan arbetet påbörjas eller utökas (Konsumenttjänstlagen 32 §).</li>
                     <li>Inte ta ut dolda avgifter eller påslag som inte kommunicerats tydligt.</li>
                     <li>Erbjuda Kunden att avböja fortsatt arbete om priset väsentligt överstiger offerten.</li>
                   </ul>
@@ -140,6 +140,8 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                   </p>
                   <ul className="list-disc ml-5 mt-2 space-y-1">
                     <li>Verkstadens arbete, kvalitet eller utförande.</li>
+                    <li>Kunders beskrivningar, uppgifter, betalningsförmåga eller beteende.</li>
+                    <li>Att en förfrågan leder till uppdrag eller att Kunden väljer Verkstadens offert.</li>
                     <li>Tvister mellan Verkstaden och Kunden.</li>
                     <li>Förlust av data eller avbrott i tjänsten som ligger utanför Plattformens rimliga kontroll.</li>
                   </ul>
@@ -178,7 +180,7 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                 </section>
 
                 <p className="text-xs text-gray-500 pt-4 border-t border-gray-200">
-                  Senast uppdaterad: 2026-07-28. Verkstaden meddelas om väsentliga ändringar via e-post 
+                  Senast uppdaterad: 2026-07-30. Verkstaden meddelas om väsentliga ändringar via e-post 
                   minst 30 dagar innan ändringarna träder i kraft.
                 </p>
               </div>

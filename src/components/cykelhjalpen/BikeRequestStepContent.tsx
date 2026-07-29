@@ -62,6 +62,17 @@ export const URGENCY_ICONS: Record<string, LucideIcon> = {
   flexible: CalendarCheck,
 }
 
+const SYMPTOM_SUGGESTIONS = [
+  'Hoppar ur växeln',
+  'Bromsarna tar dåligt',
+  'Gnisslar eller skriker vid tramp',
+  'Punktering',
+  'Kedjan hoppar av',
+  'Startar inte / laddar inte (el)',
+  'Hjulet vinglar',
+  'Växlarna går trögt',
+]
+
 interface Props {
   step: number
   form: BikeRequestFormState
@@ -201,23 +212,54 @@ const BikeRequestStepContent = ({
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label htmlFor="desc" className="font-display text-lg">Beskriv problemet</Label>
+          <div className="rounded-2xl border-2 border-border bg-muted/40 p-4">
+            <p className="flex items-center gap-2 text-sm font-semibold">
+              <Lightbulb className="h-4 w-4 text-[hsl(var(--brand-sun))]" />
+              Ju tydligare du beskriver, desto säkrare pris får du
+            </p>
+            <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+              <li><strong>Vad händer?</strong> "Cykeln hoppar ur växeln när jag trampar hårt"</li>
+              <li><strong>När började det?</strong> "Började efter en vurpa förra veckan"</li>
+              <li><strong>Ljud eller känsla?</strong> "Gnisslar från frambromsen vid inbromsning"</li>
+            </ul>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {SYMPTOM_SUGGESTIONS.map((symptom) => (
+              <button
+                key={symptom}
+                type="button"
+                onClick={() => {
+                  if (!form.description.includes(symptom)) {
+                    const needsSpace = form.description.length > 0 && !form.description.endsWith(' ') && !form.description.endsWith('\n')
+                    update('description', `${form.description}${needsSpace ? ' ' : ''}${symptom}. `)
+                  }
+                }}
+                className="rounded-full border-2 border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:border-foreground hover:bg-muted"
+              >
+                + {symptom}
+              </button>
+            ))}
+          </div>
           <Textarea
             id="desc"
-            rows={4}
+            rows={5}
             value={form.description}
             onChange={(event) => update('description', event.target.value)}
-            placeholder="Exempel: Bakhjulet vinglar och bromsen tar dåligt. Problemet började i går."
+            placeholder="Exempel: Cykeln hoppar ur växeln när jag trampar hårt i uppförsbackar. Problemet började för några veckor sedan och har blivit värre. Det låter dessutom ett skrapande ljud från bakhjulet."
             maxLength={2000}
             className="rounded-xl border-2 focus-visible:ring-accent"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span className={form.description.trim().length >= 10 ? 'text-[hsl(var(--brand-mint))]' : ''}>
-              {form.description.trim().length >= 10 ? '✓ Tillräckligt beskrivet' : 'Minst tio tecken'}
+            <span className={form.description.trim().length >= 30 ? 'text-[hsl(var(--brand-mint))]' : ''}>
+              {form.description.trim().length >= 30 ? '✓ Bra beskrivning!' : 'Minst 30 tecken – beskriv gärna mer'}
             </span>
             <span>{form.description.length}/2000</span>
           </div>
+          <p className="text-xs text-muted-foreground rounded-xl bg-muted/50 border border-border px-3 py-2">
+            Offerten du får gäller det problem du beskriver här. Stämmer din beskrivning ska priset hålla.
+          </p>
         </div>
 
         <div className="space-y-4 border-t-2 border-dashed border-border pt-6">

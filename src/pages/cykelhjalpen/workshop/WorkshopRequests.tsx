@@ -352,6 +352,9 @@ const WorkshopRequests = () => {
                     </div>
                     <div className="space-y-1.5"><Label htmlFor={`time-${request.id}`}>Beräknad tid</Label><Input id={`time-${request.id}`} value={form.estimated_time} onChange={(event) => setForm({ ...form, estimated_time: event.target.value })} placeholder="Exempel: cirka en timme eller två arbetsdagar" className="rounded-xl border-2 bg-background" /></div>
                     <div className="space-y-1.5"><Label htmlFor={`message-${request.id}`}>Meddelande till kunden</Label><Textarea id={`message-${request.id}`} rows={4} value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} placeholder="Beskriv vad ni rekommenderar, vad priset omfattar och när ni kan ta emot cykeln." className="rounded-xl border-2 bg-background" /></div>
+                    <p className="text-xs text-muted-foreground rounded-xl bg-background border border-border px-3 py-2">
+                      Offerten ska gälla det problem kunden beskrivit ovan. Avviker felet från beskrivningen ska kunden informeras och godkänna det nya priset innan arbetet fortsätter.
+                    </p>
                     <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="h-4 w-4 rounded" checked={form.can_pickup} onChange={(event) => setForm({ ...form, can_pickup: event.target.checked })} /> Vi kan hämta cykeln</label>
                     <div className="rounded-xl bg-background p-3.5 text-xs text-muted-foreground border">
                       {workshop.free_leads_remaining > 0

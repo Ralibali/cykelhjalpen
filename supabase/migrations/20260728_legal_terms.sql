@@ -22,7 +22,7 @@ BEGIN
     AND column_name = 'terms_version'
   ) THEN
     ALTER TABLE public.workshops 
-    ADD COLUMN terms_version TEXT DEFAULT '2026-07-28';
+    ADD COLUMN terms_version TEXT DEFAULT '2026-07-30';
   END IF;
 END $$;
 
@@ -59,7 +59,7 @@ BEGIN
     AND column_name = 'customer_terms_version'
   ) THEN
     ALTER TABLE public.bike_repair_requests 
-    ADD COLUMN customer_terms_version TEXT DEFAULT '2026-07-28';
+    ADD COLUMN customer_terms_version TEXT DEFAULT '2026-07-30';
   END IF;
 END $$;
 
@@ -77,9 +77,9 @@ CREATE TABLE IF NOT EXISTS public.terms_versions (
 -- Lägg in initiala versioner
 INSERT INTO public.terms_versions (type, version, title, content_summary)
 VALUES 
-  ('customer', '2026-07-28', 'Användarvillkor för kunder', 'Offert är estimat, konsumentskydd, reklamationsrätt, distansavtalslagen'),
-  ('workshop', '2026-07-28', 'Plattformsavtal för verkstäder', 'Prisinformation, konsumenttjänstlagen, förbjudet beteende, GDPR/DPA'),
-  ('dpa', '2026-07-28', 'Personuppgiftsbiträdesavtal (DPA)', 'GDPR, hantering av kunduppgifter, radering')
+  ('customer', '2026-07-30', 'Användarvillkor för kunder', 'Offert gäller beskrivet problem, konsumentskydd, ansvarsfriskrivning, tvistlösning'),
+  ('workshop', '2026-07-30', 'Plattformsavtal för verkstäder', 'Offertbindning, prisinformation, konsumenttjänstlagen, förbjudet beteende, GDPR/DPA'),
+  ('dpa', '2026-07-30', 'Personuppgiftsbiträdesavtal (DPA)', 'GDPR, hantering av kunduppgifter, radering')
 ON CONFLICT DO NOTHING;
 
 -- 4. Tabell för audit log av godkännanden
