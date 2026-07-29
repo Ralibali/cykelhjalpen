@@ -234,6 +234,8 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string | null
+          customer_terms_accepted_at: string | null
+          customer_terms_version: string | null
           description: string
           id: string
           postcode: string | null
@@ -256,6 +258,8 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone?: string | null
+          customer_terms_accepted_at?: string | null
+          customer_terms_version?: string | null
           description: string
           id?: string
           postcode?: string | null
@@ -278,6 +282,8 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
+          customer_terms_accepted_at?: string | null
+          customer_terms_version?: string | null
           description?: string
           id?: string
           postcode?: string | null
@@ -511,6 +517,53 @@ export type Database = {
           },
           {
             foreignKeyName: "lead_charges_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_credit_purchases: {
+        Row: {
+          amount_ore: number
+          created_at: string
+          currency: string
+          id: string
+          quantity: number
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string
+          updated_at: string
+          workshop_id: string
+        }
+        Insert: {
+          amount_ore: number
+          created_at?: string
+          currency?: string
+          id?: string
+          quantity: number
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id: string
+          updated_at?: string
+          workshop_id: string
+        }
+        Update: {
+          amount_ore?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          quantity?: number
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string
+          updated_at?: string
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_credit_purchases_workshop_id_fkey"
             columns: ["workshop_id"]
             isOneToOne: false
             referencedRelation: "workshops"
@@ -1317,6 +1370,72 @@ export type Database = {
           },
         ]
       }
+      terms_acceptance_log: {
+        Row: {
+          accepted_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          ip_address: unknown
+          terms_type: string
+          terms_version: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          ip_address?: unknown
+          terms_type: string
+          terms_version: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          ip_address?: unknown
+          terms_type?: string
+          terms_version?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      terms_versions: {
+        Row: {
+          content_summary: string | null
+          created_at: string
+          effective_date: string
+          id: string
+          title: string
+          type: string
+          version: string
+        }
+        Insert: {
+          content_summary?: string | null
+          created_at?: string
+          effective_date?: string
+          id?: string
+          title: string
+          type: string
+          version: string
+        }
+        Update: {
+          content_summary?: string | null
+          created_at?: string
+          effective_date?: string
+          id?: string
+          title?: string
+          type?: string
+          version?: string
+        }
+        Relationships: []
+      }
       unlocked_leads: {
         Row: {
           created_at: string | null
@@ -1536,6 +1655,7 @@ export type Database = {
           city: string
           company_name: string
           created_at: string
+          dpa_accepted_at: string | null
           email: string
           free_leads_remaining: number
           id: string
@@ -1544,6 +1664,8 @@ export type Database = {
           slug: string | null
           sms_notifications: boolean
           stripe_customer_id: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string
           user_id: string
           website: string | null
@@ -1555,6 +1677,7 @@ export type Database = {
           city?: string
           company_name: string
           created_at?: string
+          dpa_accepted_at?: string | null
           email: string
           free_leads_remaining?: number
           id?: string
@@ -1563,6 +1686,8 @@ export type Database = {
           slug?: string | null
           sms_notifications?: boolean
           stripe_customer_id?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
@@ -1574,6 +1699,7 @@ export type Database = {
           city?: string
           company_name?: string
           created_at?: string
+          dpa_accepted_at?: string | null
           email?: string
           free_leads_remaining?: number
           id?: string
@@ -1582,6 +1708,8 @@ export type Database = {
           slug?: string | null
           sms_notifications?: boolean
           stripe_customer_id?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
@@ -1848,6 +1976,18 @@ export type Database = {
       get_workshop_id: { Args: { _user_id: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_workshop: { Args: { _user_id: string }; Returns: boolean }
+      log_terms_acceptance: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_ip_address?: unknown
+          p_terms_type: string
+          p_terms_version: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       reserve_outreach_send_slot: {
         Args: { _activity_id: string; _cap: number; _sender: string }
         Returns: {
