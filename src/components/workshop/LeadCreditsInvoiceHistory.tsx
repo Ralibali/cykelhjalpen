@@ -8,8 +8,8 @@ import { sv } from 'date-fns/locale'
 interface LeadCreditPurchase {
   id: string
   quantity: number
-  total_sek: number
-  status: 'pending' | 'paid' | 'failed' | 'refunded' | string
+  amount_ore: number
+  status: 'pending' | 'paid' | 'expired' | 'failed' | 'refunded' | string
   created_at: string | null
   stripe_payment_intent_id: string | null
 }
@@ -17,6 +17,7 @@ interface LeadCreditPurchase {
 const statusConfig: Record<string, { icon: typeof CheckCircle; label: string; color: string; bg: string; border: string }> = {
   paid: { icon: CheckCircle, label: 'Betald', color: 'text-[hsl(var(--brand-mint))]', bg: 'bg-[hsl(var(--brand-mint)/0.12)]', border: 'border-[hsl(var(--brand-mint)/0.3)]' },
   pending: { icon: Clock, label: 'Väntar', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+  expired: { icon: Clock, label: 'Utgången', color: 'text-gray-500', bg: 'bg-gray-100', border: 'border-gray-200' },
   failed: { icon: XCircle, label: 'Misslyckad', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' },
   refunded: { icon: Receipt, label: 'Återbetald', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
 }
@@ -37,7 +38,7 @@ export function LeadCreditsInvoiceHistory() {
 
       const { data, error } = await supabase
         .from('lead_credit_purchases')
-        .select('id, quantity, total_sek, status, created_at, stripe_payment_intent_id')
+        .select('id, quantity, amount_ore, status, created_at, stripe_payment_intent_id')
         .eq('workshop_id', workshop.id)
         .order('created_at', { ascending: false })
 
@@ -49,7 +50,7 @@ export function LeadCreditsInvoiceHistory() {
 
   const totalSpent = purchases
     ?.filter((purchase) => purchase.status === 'paid')
-    .reduce((sum, purchase) => sum + purchase.total_sek, 0) ?? 0
+    .reduce((sum, purchase) => sum + purchase.amount_ore / 100, 0) ?? 0
 
   const totalCreditsBought = purchases
     ?.filter((purchase) => purchase.status === 'paid')
@@ -72,7 +73,7 @@ export function LeadCreditsInvoiceHistory() {
           <p className="font-display text-2xl mt-1">{totalCreditsBought}</p>
         </div>
         <div className="sticker rounded-3xl bg-card p-5">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Totalt spenderat</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Totalt spenderat (exkl. moms)</p>
           <p className="font-display text-2xl mt-1">{totalSpent.toLocaleString('sv-SE')} kr</p>
         </div>
         <div className="sticker rounded-3xl bg-card p-5">
@@ -117,7 +118,7 @@ export function LeadCreditsInvoiceHistory() {
 
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right">
-                      <p className="font-display text-lg">{purchase.total_sek.toLocaleString('sv-SE')} kr</p>
+                      <p className="font-display text-lg">{(purchase.amount_ore / 100).toLocaleString('sv-SE')} kr</p>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color} border ${status.border}`}>
                         {status.label}
                       </span>

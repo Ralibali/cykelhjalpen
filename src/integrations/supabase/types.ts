@@ -1163,45 +1163,39 @@ export type Database = {
       }
       lead_credit_purchases: {
         Row: {
-          created_at: string | null
-          credited_at: string | null
+          amount_ore: number
+          created_at: string
+          currency: string
           id: string
-          price_per_credit_sek: number
           quantity: number
-          status: string | null
+          status: string
           stripe_payment_intent_id: string | null
-          stripe_session_id: string | null
-          total_sek: number
-          vat_amount_sek: number
-          vat_percent: number | null
+          stripe_session_id: string
+          updated_at: string
           workshop_id: string
         }
         Insert: {
-          created_at?: string | null
-          credited_at?: string | null
+          amount_ore: number
+          created_at?: string
+          currency?: string
           id?: string
-          price_per_credit_sek: number
           quantity: number
-          status?: string | null
+          status?: string
           stripe_payment_intent_id?: string | null
-          stripe_session_id?: string | null
-          total_sek: number
-          vat_amount_sek: number
-          vat_percent?: number | null
+          stripe_session_id: string
+          updated_at?: string
           workshop_id: string
         }
         Update: {
-          created_at?: string | null
-          credited_at?: string | null
+          amount_ore?: number
+          created_at?: string
+          currency?: string
           id?: string
-          price_per_credit_sek?: number
           quantity?: number
-          status?: string | null
+          status?: string
           stripe_payment_intent_id?: string | null
-          stripe_session_id?: string | null
-          total_sek?: number
-          vat_amount_sek?: number
-          vat_percent?: number | null
+          stripe_session_id?: string
+          updated_at?: string
           workshop_id?: string
         }
         Relationships: [

@@ -127,6 +127,17 @@ Deno.serve(async (req) => {
         .maybeSingle()
       if (blocked) throw new Error('Kontakten finns i suppression-listan')
 
+      let openInCity: number | null = null
+      if (channel === 'email') {
+        const { count } = await admin
+          .from('bike_repair_requests')
+          .select('id', { count: 'exact', head: true })
+          .eq('city', prospect.city)
+          .eq('admin_status', 'approved')
+          .in('status', ['new', 'has_offers'])
+        openInCity = count ?? 0
+      }
+
       const draft = channel === 'email'
         ? buildEmailDraft({
             company_name: prospect.company_name,
@@ -135,6 +146,7 @@ Deno.serve(async (req) => {
             ai_summary: prospect.ai_summary,
             services: prospect.services,
             unsubscribe_token: prospect.unsubscribe_token,
+            open_requests_in_city: openInCity,
           })
         : buildSmsDraft({ company_name: prospect.company_name, city: prospect.city, unsubscribe_token: prospect.unsubscribe_token })
 

@@ -16,6 +16,7 @@ export interface ProspectForDraft {
   ai_summary: string | null
   services: string[] | null
   unsubscribe_token: string
+  open_requests_in_city?: number | null
 }
 
 // Escapa HTML-attribut/textnoder för allt Firecrawl-innehåll.
@@ -44,6 +45,22 @@ const buildVerifiedDetail = (prospect: ProspectForDraft): string | null => {
   if (prospect.ai_summary) return `Vi läste kort på er sajt: "${truncate(prospect.ai_summary, 140)}"`
   if (prospect.website) return `Vi hittade er verkstad i ${prospect.city}`
   return null
+}
+
+const NUM_WORDS: Record<number, string> = {
+  2: 'två', 3: 'tre', 4: 'fyra', 5: 'fem', 6: 'sex', 7: 'sju',
+  8: 'åtta', 9: 'nio', 10: 'tio', 11: 'elva', 12: 'tolv',
+}
+
+// Live-behov i prospektets stad – sägs bara när det faktiskt väntar ärenden.
+const buildDemandLine = (prospect: ProspectForDraft): string | null => {
+  const n = prospect.open_requests_in_city ?? 0
+  if (n <= 0) return null
+  if (n === 1) {
+    return `Just nu väntar en öppen kundförfrågan i ${prospect.city} – den kan bli er första om ni registrerar verkstaden i dag.`
+  }
+  const count = NUM_WORDS[n] ?? String(n)
+  return `Just nu väntar ${count} öppna kundförfrågningar i ${prospect.city} – en av dem kan bli er första om ni registrerar verkstaden i dag.`
 }
 
 export const unsubscribeUrl = (token: string) =>
@@ -114,6 +131,7 @@ interface DraftBundle {
 export const buildEmailDraft = (prospect: ProspectForDraft): DraftBundle => {
   const greeting = firstWord(prospect.company_name)
   const detail = buildVerifiedDetail(prospect)
+  const demand = buildDemandLine(prospect)
   const unsub = unsubscribeUrl(prospect.unsubscribe_token)
   const subject = `Cykelägare i ${prospect.city} letar efter verkstad`
 
@@ -133,8 +151,11 @@ export const buildEmailDraft = (prospect: ProspectForDraft): DraftBundle => {
     'Det här får ni som ny verkstad:',
     '• Två gratis kundförfrågningar, så att ni kan testa tjänsten utan kostnad.',
     '• Ingen månadsavgift och ingen bindningstid.',
-    '• Därefter kostar varje förfrågan ni svarar på 50 kr inklusive moms.',
+    '• Därefter kostar varje förfrågan ni svarar på 50 kr exklusive moms.',
     '',
+  )
+  if (demand) textLines.push(`${demand}`, '')
+  textLines.push(
     `Registreringen tar bara några minuter och nya verkstäder godkänns inom ett dygn: ${OUTREACH_WORKSHOP_URL}`,
     '',
     'Svara gärna på det här mejlet om ni vill veta mer, så berättar jag hur efterfrågan ser ut i er stad.',
@@ -152,6 +173,7 @@ export const buildEmailDraft = (prospect: ProspectForDraft): DraftBundle => {
   const safeGreeting = escapeHtml(greeting)
   const safeCity = escapeHtml(prospect.city)
   const safeDetail = detail ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6">${escapeHtml(detail)} – därför tror jag att ni skulle passa bra på plattformen.</p>` : ''
+  const safeDemand = demand ? `<p style="margin:0 0 20px;font-size:15px;line-height:1.6"><strong>${escapeHtml(demand)}</strong></p>` : ''
   const safeUnsub = escapeHtml(unsub)
   const safeWorkshopUrl = escapeHtml(OUTREACH_WORKSHOP_URL)
 
@@ -177,8 +199,9 @@ ${safeDetail}
 <ul style="margin:0 0 20px 0;padding-left:20px;font-size:15px;line-height:1.7">
   <li><strong>Två gratis kundförfrågningar</strong>, så att ni kan testa tjänsten utan kostnad.</li>
   <li>Ingen månadsavgift och ingen bindningstid.</li>
-  <li>Därefter kostar varje förfrågan ni svarar på 50 kr inklusive moms.</li>
+  <li>Därefter kostar varje förfrågan ni svarar på 50 kr exklusive moms.</li>
 </ul>
+${safeDemand}
 <p style="margin:0 0 20px;font-size:15px;line-height:1.6">
   Registreringen tar bara några minuter och nya verkstäder godkänns inom ett dygn:
   <a href="${safeWorkshopUrl}" style="color:#4338CA;text-decoration:underline;">${safeWorkshopUrl}</a>

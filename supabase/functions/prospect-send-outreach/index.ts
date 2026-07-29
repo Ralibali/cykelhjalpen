@@ -129,6 +129,13 @@ Deno.serve(async (req) => {
         subject = `Cykelägare i ${prospect.city} letar efter verkstad`
       }
     } else {
+      // Live-behov i prospektets stad – matas in i standardmallen om det finns ärenden.
+      const { count: openInCity } = await admin
+        .from('bike_repair_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('city', prospect.city)
+        .eq('admin_status', 'approved')
+        .in('status', ['new', 'has_offers'])
       const draft = buildEmailDraft({
         company_name: prospect.company_name,
         city: prospect.city,
@@ -136,6 +143,7 @@ Deno.serve(async (req) => {
         ai_summary: prospect.ai_summary,
         services: prospect.services,
         unsubscribe_token: prospect.unsubscribe_token,
+        open_requests_in_city: openInCity ?? 0,
       })
       text = draft.text
       html = draft.html
