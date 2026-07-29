@@ -176,24 +176,19 @@ const BikeRequestWizard = () => {
     event.target.value = ''
   }
 
-  const uploadImages = async (requestId: string) => {
+  const uploadImages = async (requestId: string, viewToken: string) => {
     const results = await Promise.all(files.map(async (file) => {
-      const extension = (file.name.split('.').pop() || 'jpg').toLowerCase()
-      const path = `${requestId}/${crypto.randomUUID()}.${extension}`
-      const { error: uploadError } = await supabase.storage.from('bike-images').upload(path, file, {
-        upsert: false,
-        contentType: file.type,
-      })
-      if (uploadError) return file.name
+      const body = new FormData()
+      body.append('request_id', requestId)
+      body.append('view_token', viewToken)
+      body.append('file', file)
 
-      const { error: insertError } = await supabase.from('bike_request_images').insert({
-        request_id: requestId,
-        image_url: path,
-      })
-      return insertError ? file.name : null
+      const { data, error } = await supabase.functions.invoke('upload-bike-image', { body })
+      return error || !data?.success ? file.name : null
     }))
     return results.filter((result): result is string => Boolean(result))
   }
+
 
   const submit = async () => {
     const parsed = bikeRequestSchema.safeParse(form)
@@ -237,7 +232,7 @@ const BikeRequestWizard = () => {
       if (error) throw new Error(await getFunctionErrorMessage(error, 'Kunde inte skicka ärendet'))
       if (!request?.id || !request?.view_token) throw new Error(request?.error || 'Kunde inte skapa ärendet')
 
-      const uploadErrors = files.length > 0 ? await uploadImages(request.id) : []
+      const uploadErrors = files.length > 0 ? await uploadImages(request.id, request.view_token) : []
       localStorage.removeItem(DRAFT_KEY)
       trackClick('bike_request_submitted', 'Skicka ärende', {
         bike_type: parsed.data.bike_type,
