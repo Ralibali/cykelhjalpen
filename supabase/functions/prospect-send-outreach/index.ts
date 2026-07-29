@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
       text = rendered.text
       html = rendered.html
       if (!subject) {
-        subject = `Kundförfrågningar från cykelägare i ${prospect.city}`
+        subject = `Cykelägare i ${prospect.city} letar efter verkstad`
       }
     } else {
       const draft = buildEmailDraft({

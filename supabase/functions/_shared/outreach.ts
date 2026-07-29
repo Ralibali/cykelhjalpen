@@ -2,7 +2,7 @@
 // HTML/text-strängar produceras här så att både prospect-action (utkast)
 // och prospect-send-outreach (skarpt mejl) använder EXAKT samma innehåll.
 
-export const OUTREACH_FROM = 'Christoffer på Cykelhjalpen.se <info@cykelhjalpen.se>'
+export const OUTREACH_FROM = 'Christoffer på Cykelhjälpen <info@cykelhjalpen.se>'
 export const OUTREACH_REPLY_TO = 'info@cykelhjalpen.se'
 export const OUTREACH_SITE_URL = 'https://cykelhjalpen.se'
 export const OUTREACH_WORKSHOP_URL = 'https://cykelhjalpen.se/for-verkstader'
@@ -67,7 +67,7 @@ export const buildEditedEmail = (
 
   const footerText = includesUnsub
     ? ''
-    : `\n\n---\nVill ni inte få fler mejl från oss? Avregistrera er här: ${unsub}\nNi får detta mejl som offentlig cykelverkstad i vårt lokala nätverk. Rättelse eller radering: info@cykelhjalpen.se.`
+    : `\n\n---\nVill ni inte få fler mejl från oss? Avregistrera er här: ${unsub}\nNi får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@cykelhjalpen.se.`
 
   const text = trimmed + footerText
 
@@ -87,7 +87,7 @@ export const buildEditedEmail = (
   Vill ni inte få fler mejl från oss? <a href="${safeUnsub}" style="color:#6b7280;text-decoration:underline;">Avregistrera er här</a>.
 </p>
 <p style="margin:0;font-size:12px;color:#6b7280;">
-  Ni får detta mejl som offentlig cykelverkstad i vårt lokala nätverk. Rättelse eller radering: info@cykelhjalpen.se.
+  Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@cykelhjalpen.se.
 </p>`
 
   const html = `<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -115,35 +115,43 @@ export const buildEmailDraft = (prospect: ProspectForDraft): DraftBundle => {
   const greeting = firstWord(prospect.company_name)
   const detail = buildVerifiedDetail(prospect)
   const unsub = unsubscribeUrl(prospect.unsubscribe_token)
-  const subject = `Kundförfrågningar från cykelägare i ${prospect.city}`
+  const subject = `Cykelägare i ${prospect.city} letar efter verkstad`
 
   const textLines = [
     `Hej ${greeting}!`,
     '',
-    `Jag heter Christoffer och driver Cykelhjalpen.se. Vi hjälper cykelägare i ${prospect.city} att hitta lokala verkstäder när de behöver service eller reparation.`,
+    `Jag heter Christoffer och driver Cykelhjälpen (cykelhjalpen.se) – en tjänst där cykelägare i ${prospect.city} enkelt får offerter från lokala verkstäder när cykeln behöver service eller reparation.`,
   ]
-  if (detail) textLines.push('', `${detail} – därför vill jag berätta hur det funkar hos oss:`)
+  if (detail) textLines.push('', `${detail} – därför tror jag att ni skulle passa bra på plattformen.`)
   textLines.push(
     '',
-    '• Ni väljer själva vilka kundförfrågningar ni vill svara på.',
-    '• Inga fasta månadsavgifter – ni betalar bara per ärende ni tar emot.',
-    '• De fem första kundförfrågningarna är gratis så ni kan testa i lugn och ro.',
+    'Så här fungerar det:',
+    '• Cykelägaren beskriver sitt ärende och vi skickar förfrågan till verkstäder i er stad.',
+    '• Ni ser ärendena i er dashboard och svarar bara på de som passar er.',
+    '• Kunden jämför pris och svarstid och väljer sedan verkstad.',
     '',
-    `Vill ni testa? Kika på ${OUTREACH_WORKSHOP_URL} eller svara på det här mejlet, så visar jag hur det ser ut i er stad.`,
+    'Det här får ni som ny verkstad:',
+    '• Två gratis kundförfrågningar, så att ni kan testa tjänsten utan kostnad.',
+    '• Ingen månadsavgift och ingen bindningstid.',
+    '• Därefter kostar varje förfrågan ni svarar på 50 kr inklusive moms.',
+    '',
+    `Registreringen tar bara några minuter och nya verkstäder godkänns inom ett dygn: ${OUTREACH_WORKSHOP_URL}`,
+    '',
+    'Svara gärna på det här mejlet om ni vill veta mer, så berättar jag hur efterfrågan ser ut i er stad.',
     '',
     'Vänliga hälsningar,',
     'Christoffer',
-    'Cykelhjalpen.se',
+    'Cykelhjälpen',
     'info@cykelhjalpen.se',
     '',
     `Vill ni inte få fler mejl från oss? Avregistrera er här: ${unsub}`,
-    'Ni får detta mejl som offentlig cykelverkstad i vårt lokala nätverk. Rättelse eller radering: info@cykelhjalpen.se.',
+    'Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@cykelhjalpen.se.',
   )
   const text = textLines.join('\n')
 
   const safeGreeting = escapeHtml(greeting)
   const safeCity = escapeHtml(prospect.city)
-  const safeDetail = detail ? `<p style="margin:0 0 16px">${escapeHtml(detail)} – därför vill jag berätta hur det funkar hos oss:</p>` : ''
+  const safeDetail = detail ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6">${escapeHtml(detail)} – därför tror jag att ni skulle passa bra på plattformen.</p>` : ''
   const safeUnsub = escapeHtml(unsub)
   const safeWorkshopUrl = escapeHtml(OUTREACH_WORKSHOP_URL)
 
@@ -155,29 +163,39 @@ export const buildEmailDraft = (prospect: ProspectForDraft): DraftBundle => {
 <tr><td>
 <p style="margin:0 0 16px;font-size:16px;">Hej ${safeGreeting}!</p>
 <p style="margin:0 0 16px;font-size:15px;line-height:1.6">
-  Jag heter Christoffer och driver <a href="${escapeHtml(OUTREACH_SITE_URL)}" style="color:#4338CA;text-decoration:underline;">Cykelhjalpen.se</a>.
-  Vi hjälper cykelägare i ${safeCity} att hitta lokala verkstäder när de behöver service eller reparation.
+  Jag heter Christoffer och driver <a href="${escapeHtml(OUTREACH_SITE_URL)}" style="color:#4338CA;text-decoration:underline;">Cykelhjälpen</a> –
+  en tjänst där cykelägare i ${safeCity} enkelt får offerter från lokala verkstäder när cykeln behöver service eller reparation.
 </p>
 ${safeDetail}
+<p style="margin:0 0 8px;font-size:15px;line-height:1.6;font-weight:600;">Så här fungerar det:</p>
 <ul style="margin:0 0 20px 0;padding-left:20px;font-size:15px;line-height:1.7">
-  <li>Ni väljer själva vilka kundförfrågningar ni vill svara på.</li>
-  <li>Inga fasta månadsavgifter – ni betalar bara per ärende ni tar emot.</li>
-  <li>De fem första kundförfrågningarna är gratis så ni kan testa i lugn och ro.</li>
+  <li>Cykelägaren beskriver sitt ärende och vi skickar förfrågan till verkstäder i er stad.</li>
+  <li>Ni ser ärendena i er dashboard och svarar bara på de som passar er.</li>
+  <li>Kunden jämför pris och svarstid och väljer sedan verkstad.</li>
+</ul>
+<p style="margin:0 0 8px;font-size:15px;line-height:1.6;font-weight:600;">Det här får ni som ny verkstad:</p>
+<ul style="margin:0 0 20px 0;padding-left:20px;font-size:15px;line-height:1.7">
+  <li><strong>Två gratis kundförfrågningar</strong>, så att ni kan testa tjänsten utan kostnad.</li>
+  <li>Ingen månadsavgift och ingen bindningstid.</li>
+  <li>Därefter kostar varje förfrågan ni svarar på 50 kr inklusive moms.</li>
 </ul>
 <p style="margin:0 0 20px;font-size:15px;line-height:1.6">
-  Vill ni testa? Läs mer på <a href="${safeWorkshopUrl}" style="color:#4338CA;text-decoration:underline;">${safeWorkshopUrl}</a>
-  eller svara på det här mejlet, så visar jag hur det ser ut i er stad.
+  Registreringen tar bara några minuter och nya verkstäder godkänns inom ett dygn:
+  <a href="${safeWorkshopUrl}" style="color:#4338CA;text-decoration:underline;">${safeWorkshopUrl}</a>
+</p>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.6">
+  Svara gärna på det här mejlet om ni vill veta mer, så berättar jag hur efterfrågan ser ut i er stad.
 </p>
 <p style="margin:24px 0 4px;font-size:15px;">Vänliga hälsningar,</p>
 <p style="margin:0;font-size:15px;font-weight:600;">Christoffer</p>
-<p style="margin:0;font-size:14px;color:#374151;">Cykelhjalpen.se</p>
+<p style="margin:0;font-size:14px;color:#374151;">Cykelhjälpen</p>
 <p style="margin:0 0 24px;font-size:14px;color:#374151;">info@cykelhjalpen.se</p>
 <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
 <p style="margin:0 0 8px;font-size:12px;color:#6b7280;">
   Vill ni inte få fler mejl från oss? <a href="${safeUnsub}" style="color:#6b7280;text-decoration:underline;">Avregistrera er här</a>.
 </p>
 <p style="margin:0;font-size:12px;color:#6b7280;">
-  Ni får detta mejl som offentlig cykelverkstad i vårt lokala nätverk. Rättelse eller radering: info@cykelhjalpen.se.
+  Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@cykelhjalpen.se.
 </p>
 </td></tr></table>
 </td></tr></table>
