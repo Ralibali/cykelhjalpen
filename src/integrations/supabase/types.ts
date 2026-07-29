@@ -234,8 +234,6 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string | null
-          customer_terms_accepted_at: string | null
-          customer_terms_version: string | null
           description: string
           id: string
           postcode: string | null
@@ -258,8 +256,6 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone?: string | null
-          customer_terms_accepted_at?: string | null
-          customer_terms_version?: string | null
           description: string
           id?: string
           postcode?: string | null
@@ -282,8 +278,6 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
-          customer_terms_accepted_at?: string | null
-          customer_terms_version?: string | null
           description?: string
           id?: string
           postcode?: string | null
@@ -1161,107 +1155,6 @@ export type Database = {
           },
         ]
       }
-      lead_credit_purchases: {
-        Row: {
-          amount_ore: number
-          created_at: string
-          currency: string
-          id: string
-          quantity: number
-          status: string
-          stripe_payment_intent_id: string | null
-          stripe_session_id: string
-          updated_at: string
-          workshop_id: string
-        }
-        Insert: {
-          amount_ore: number
-          created_at?: string
-          currency?: string
-          id?: string
-          quantity: number
-          status?: string
-          stripe_payment_intent_id?: string | null
-          stripe_session_id: string
-          updated_at?: string
-          workshop_id: string
-        }
-        Update: {
-          amount_ore?: number
-          created_at?: string
-          currency?: string
-          id?: string
-          quantity?: number
-          status?: string
-          stripe_payment_intent_id?: string | null
-          stripe_session_id?: string
-          updated_at?: string
-          workshop_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lead_credit_purchases_workshop_id_fkey"
-            columns: ["workshop_id"]
-            isOneToOne: false
-            referencedRelation: "workshops"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      terms_acceptance_log: {
-        Row: {
-          accepted_at: string | null
-          entity_id: string
-          entity_type: string
-          id: string
-          ip_address: string | null
-          terms_type: string
-          terms_version: string
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          accepted_at?: string | null
-          entity_id: string
-          entity_type: string
-          id?: string
-          ip_address?: string | null
-          terms_type: string
-          terms_version: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          accepted_at?: string | null
-          entity_id?: string
-          entity_type?: string
-          id?: string
-          ip_address?: string | null
-          terms_type?: string
-          terms_version?: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      terms_versions: {
-        Row: {
-          current_version: string
-          terms_type: string
-          updated_at: string | null
-        }
-        Insert: {
-          current_version: string
-          terms_type: string
-          updated_at?: string | null
-        }
-        Update: {
-          current_version?: string
-          terms_type?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       stripe_events: {
         Row: {
           amount_sek: number | null
@@ -1651,9 +1544,6 @@ export type Database = {
           slug: string | null
           sms_notifications: boolean
           stripe_customer_id: string | null
-          terms_accepted_at: string | null
-          terms_version: string | null
-          dpa_accepted_at: string | null
           updated_at: string
           user_id: string
           website: string | null
@@ -1673,9 +1563,6 @@ export type Database = {
           slug?: string | null
           sms_notifications?: boolean
           stripe_customer_id?: string | null
-          terms_accepted_at?: string | null
-          terms_version?: string | null
-          dpa_accepted_at?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
@@ -1695,9 +1582,6 @@ export type Database = {
           slug?: string | null
           sms_notifications?: boolean
           stripe_customer_id?: string | null
-          terms_accepted_at?: string | null
-          terms_version?: string | null
-          dpa_accepted_at?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
