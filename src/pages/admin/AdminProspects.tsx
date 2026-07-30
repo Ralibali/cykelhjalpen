@@ -15,6 +15,19 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
+// Edge-funktioner svarar med { error: "riktigt felmeddelande" } i bodyn vid non-2xx,
+// men functions.invoke exponerar bara en generisk text. Läs bodyn så att panelen
+// visar vad som faktiskt gick fel (t.ex. Resend 422, dagskvot, cooldown).
+const extractFunctionError = async (error: unknown): Promise<string> => {
+  const err = error as { message?: string; context?: { json?: () => Promise<unknown> } }
+  try {
+    const body = await err?.context?.json?.() as { error?: unknown; message?: unknown } | undefined
+    if (body?.error) return String(body.error)
+    if (body?.message) return String(body.message)
+  } catch { /* body kunde inte läsas – fall tillbaka */ }
+  return err?.message ?? 'Okänt fel'
+}
+
 interface Prospect {
   id: string
   company_name: string
@@ -220,8 +233,7 @@ const AdminProspects = () => {
       const { data: updated } = await supabase.from('workshop_prospects').select('*').eq('id', selected.id).maybeSingle()
       if (updated) setSelected(updated as unknown as Prospect)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Okänt fel'
-      toast.error('Åtgärden misslyckades', { description: message })
+      toast.error('Åtgärden misslyckades', { description: await extractFunctionError(error) })
     } finally {
       setBusyAction(false)
     }
@@ -240,7 +252,7 @@ const AdminProspects = () => {
       setEditing((prev) => { const next = { ...prev }; delete next[activity.id]; return next })
       await refreshActivities()
     } catch (error) {
-      toast.error('Kunde inte spara', { description: (error as Error).message })
+      toast.error('Kunde inte spara', { description: await extractFunctionError(error) })
     } finally { setSavingId(null) }
   }
 
@@ -254,7 +266,7 @@ const AdminProspects = () => {
       toast.success('Godkänt – redo att skickas')
       await refreshActivities()
     } catch (error) {
-      toast.error('Kunde inte godkänna', { description: (error as Error).message })
+      toast.error('Kunde inte godkänna', { description: await extractFunctionError(error) })
     } finally { setSavingId(null) }
   }
 
@@ -272,7 +284,7 @@ const AdminProspects = () => {
       const { data: updated } = await supabase.from('workshop_prospects').select('*').eq('id', selected!.id).maybeSingle()
       if (updated) setSelected(updated as unknown as Prospect)
     } catch (error) {
-      toast.error('Sändning misslyckades', { description: (error as Error).message })
+      toast.error('Sändning misslyckades', { description: await extractFunctionError(error) })
       await refreshActivities()
     } finally {
       setSavingId(null)

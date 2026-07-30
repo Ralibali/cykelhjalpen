@@ -51,6 +51,11 @@ Deno.serve(async (req) => {
     })
   }
 
+  // Hissade för att kunna skriva senaste felet på aktiviteten i catch-blocket –
+  // annars visar panelen en gammal lagrad 422:a långt efter att orsaken ändrats.
+  let activityIdForError: string | null = null
+  let lockedIdForError: string | null = null
+
   try {
     if (!LOVABLE_API_KEY || !RESEND_API_KEY) {
       throw new Error('Resend är inte anslutet – saknar API-nyckel.')
@@ -69,6 +74,7 @@ Deno.serve(async (req) => {
     if (!body?.activity_id || body.confirm_send !== true) {
       throw new Error('activity_id och confirm_send:true krävs')
     }
+    activityIdForError = body.activity_id
 
     // Hämta aktivitet + prospekt
     const { data: activity, error: actErr } = await admin
@@ -131,6 +137,7 @@ Deno.serve(async (req) => {
     if (!locked) {
       throw new Error('Utkastet är redan låst för sändning eller inte i status approved/failed.')
     }
+    lockedIdForError = locked.id as string
     const idempotencyKey = locked.idempotency_key as string
 
     // Bygg brödtext från admin-godkänd text; fall tillbaka till standardmall om saknas.
@@ -267,6 +274,25 @@ Deno.serve(async (req) => {
     const message = error instanceof Error ? error.message : 'Okänt fel'
     const status = message === 'unauthenticated' ? 401 : message === 'forbidden' ? 403 : 400
     console.error('prospect-send-outreach', message)
+
+    // Skriv alltid senaste felet på aktiviteten så att panelen inte visar ett
+    // gammalt lagrat fel. Fastnade den i 'sending' rullar vi tillbaka till 'failed'.
+    try {
+      const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+      if (lockedIdForError) {
+        await admin.from('outreach_activities').update({
+          status: 'failed',
+          error: message.slice(0, 500),
+        }).eq('id', lockedIdForError).eq('status', 'sending')
+      } else if (activityIdForError) {
+        await admin.from('outreach_activities').update({
+          error: message.slice(0, 500),
+        }).eq('id', activityIdForError)
+      }
+    } catch (writeErr) {
+      console.error('kunde inte skriva felstatus på aktiviteten:', (writeErr as Error).message)
+    }
+
     return new Response(JSON.stringify({ error: message }), {
       status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
