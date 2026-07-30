@@ -1,7 +1,7 @@
-// Admin-only retry för notification_events. Skickar inga riktiga SMS eller mejl –
-// för in-app-notiser återinsätts raden i `notifications` (om det saknas).
-// För SMS/email loggas ett nytt försök men provider-anrop utförs endast om
-// credentials finns; annars markeras eventet som 'skipped'.
+// Admin-only retry för notification_events. För in-app-notiser återinsätts raden
+// i `notifications` (om det saknas). För SMS görs ett nytt riktigt utskicksförsök
+// via logSmsAttempt (om credentials finns); annars markeras eventet som 'skipped'.
+// E-post stöds inte här ännu – loggas som skipped.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
@@ -49,6 +49,11 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+    if (event.status === 'retrying') {
+      return new Response(JSON.stringify({ ok: true, skipped: true, reason: 'retry_already_in_progress' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     // Markera som retrying så UI syns direkt
     await admin.from('notification_events').update({
@@ -83,7 +88,8 @@ Deno.serve(async (req) => {
         reason: (payload.reason as string) || 'manual_retry',
       })
       await admin.from('notification_events').update({
-        status: result.status === 'pending' ? 'pending' : 'skipped',
+        status: result.status === 'sent' ? 'sent' : result.status === 'failed' ? 'failed' : 'skipped',
+        error: result.status === 'failed' ? 'sms_retry_failed' : null,
       }).eq('id', eventId)
 
     } else {

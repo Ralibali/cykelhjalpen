@@ -170,10 +170,28 @@ export async function sendInAppNotifications(
   })))
 }
 
+/** Skickar SMS via konfigurerad leverantör (46elks/GatewayAPI). Kastar vid HTTP-fel. */
+const sendSmsViaProvider = async (
+  provider: SmsProvider,
+  args: { to: string; message: string; from?: string },
+): Promise<void> => {
+  const req = provider.buildRequest({ to: args.to, message: args.message, from: args.from })
+  const res = await fetch(req.url, {
+    method: req.method,
+    headers: req.headers,
+    body: req.body,
+    signal: AbortSignal.timeout(10_000),
+  })
+  const text = await res.text()
+  if (!res.ok) {
+    throw new Error(`${provider.name} HTTP ${res.status}: ${text.slice(0, 200)}`)
+  }
+}
+
 /**
- * Loggar ett SMS-försök. Om ingen leverantör är konfigurerad markeras det som `skipped`.
- * Skickar INTE riktiga SMS – anroparen kan senare koppla in en providerfetch,
- * men i produktionsflödet just nu loggar vi endast avsikten.
+ * Skickar ett SMS via konfigurerad leverantör och loggar utfallet i
+ * `notification_events`. Utan leverantör markeras försöket som `skipped`.
+ * Idempotent: samma idempotency-nyckel skickar aldrig två gånger.
  */
 export async function logSmsAttempt(
   admin: SupabaseClient,
@@ -199,16 +217,38 @@ export async function logSmsAttempt(
     return { status: 'skipped', provider: null }
   }
 
-  // Provider finns – men i denna körning loggar vi endast intentet.
+  // Idempotens: redan skickat (eller misslyckat loggat) försök med samma nyckel
+  // ska inte skicka på nytt. Failed-försök får ett nytt försök via retry-flödet
+  // som använder egna nycklar.
+  const { data: existing } = await admin
+    .from('notification_events')
+    .select('id, status')
+    .eq('idempotency_key', args.idempotencyKey)
+    .maybeSingle()
+  if (existing && existing.status === 'sent') {
+    return { status: 'sent', provider: provider.name }
+  }
+
+  let status: NotificationStatus = 'sent'
+  let errText: string | null = null
+  try {
+    await sendSmsViaProvider(provider, args)
+  } catch (error) {
+    status = 'failed'
+    errText = error instanceof Error ? error.message : 'SMS-utskick misslyckades'
+    console.error('SMS send failed', errText)
+  }
+
   await logNotificationEvent(admin, {
     channel: 'sms',
     provider: provider.name,
     recipient: args.to,
     idempotencyKey: args.idempotencyKey,
-    status: 'pending',
+    status,
     payload: { message: args.message, from: args.from, reason: args.reason },
+    error: errText,
   })
-  return { status: 'pending', provider: provider.name }
+  return { status, provider: provider.name }
 }
 
 export const notifyAdminsOfPendingRequest = async (

@@ -185,8 +185,9 @@ Deno.serve(async (req) => {
         request_id,
       }).catch((notifyError) => console.error('Workshop in-app notification failed', notifyError))
 
-      // Loggar alla SMS-avsikter i notification_events. Skickar inget riktigt SMS
-      // härifrån – utan konfigurerad leverantör markeras försöket som 'skipped'.
+      // Skickar SMS via 46elks (om ELKS_API_USERNAME/ELKS_API_PASSWORD är satta)
+      // till verkstäder som slagit på sms_notifications. Utan leverantör loggas
+      // försöket som 'skipped' i notification_events.
       const recipients = (workshops || []).filter((workshop) => workshop.sms_notifications && workshop.phone)
       const message = `Nytt godkänt cykelärende i ${city}: ${requestRow.repair_category}. Svara i verkstadsvyn: cykelhjalpen.se/dashboard/verkstad/arenden`
       const smsResults = await Promise.allSettled(recipients.map((workshop) => logSmsAttempt(admin, {
@@ -195,7 +196,7 @@ Deno.serve(async (req) => {
         idempotencyKey: `bike_request_approved_sms:${request_id}:${workshop.id}`,
         reason: 'bike_request_approved',
       })))
-      smsSent = smsResults.filter((result) => result.status === 'fulfilled' && (result.value as { status: string }).status === 'pending').length
+      smsSent = smsResults.filter((result) => result.status === 'fulfilled' && (result.value as { status: string }).status === 'sent').length
     }
 
     await customerEmail
