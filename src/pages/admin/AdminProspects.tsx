@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { AdminLayout } from './AdminDashboard'
 import {
   Search, RefreshCw, Ban, Check, X, ExternalLink, Mail, Phone, MapPin, Star, Copy, Loader2,
-  Send, ShieldCheck, ShieldAlert, Save, Pencil, RotateCcw,
+  Send, ShieldCheck, ShieldAlert, Save, Pencil, RotateCcw, MousePointerClick,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -77,6 +77,34 @@ interface OutreachActivity {
   retry_count: number
 }
 
+interface OutreachClick {
+  id: string
+  activity_id: string
+  prospect_id: string
+  clicked_at: string
+}
+
+interface ClickStats {
+  count: number
+  last: string
+}
+
+// Slår ihop klickrader per aktivitet eller prospekt: antal + senaste klicket.
+const aggregateClicks = (clicks: OutreachClick[], key: 'activity_id' | 'prospect_id'): Record<string, ClickStats> => {
+  const stats: Record<string, ClickStats> = {}
+  for (const click of clicks) {
+    const k = click[key]
+    const existing = stats[k]
+    if (existing) {
+      existing.count += 1
+      if (new Date(click.clicked_at).getTime() > new Date(existing.last).getTime()) existing.last = click.clicked_at
+    } else {
+      stats[k] = { count: 1, last: click.clicked_at }
+    }
+  }
+  return stats
+}
+
 interface ResendStatus {
   configured: boolean
   required_domain: string
@@ -139,6 +167,8 @@ const AdminProspects = () => {
   const [confirmSend, setConfirmSend] = useState<OutreachActivity | null>(null)
   const [resendStatus, setResendStatus] = useState<ResendStatus | null>(null)
   const [resendLoading, setResendLoading] = useState(false)
+  const [prospectClicks, setProspectClicks] = useState<Record<string, ClickStats>>({})
+  const [activityClicks, setActivityClicks] = useState<Record<string, ClickStats>>({})
 
   const fetchProspects = useCallback(async () => {
     setLoading(true)
@@ -154,6 +184,14 @@ const AdminProspects = () => {
     const { data, error } = await query
     if (error) toast.error('Kunde inte läsa prospects', { description: error.message })
     else setProspects((data as unknown as Prospect[]) || [])
+    // Klickstatistik för listans badges. Tål att tabellen inte finns ännu
+    // (om migreringen inte deployats) – då blir det bara inga badges.
+    const { data: clicks } = await supabase
+      .from('outreach_clicks')
+      .select('id, activity_id, prospect_id, clicked_at')
+      .order('clicked_at', { ascending: false })
+      .limit(1000)
+    setProspectClicks(clicks ? aggregateClicks(clicks as OutreachClick[], 'prospect_id') : {})
     setLoading(false)
   }, [cityFilter, statusFilter, minScore])
 
@@ -179,12 +217,15 @@ const AdminProspects = () => {
     setSelected(prospect)
     setSources([])
     setActivities([])
-    const [{ data: srcs }, { data: acts }] = await Promise.all([
+    setActivityClicks({})
+    const [{ data: srcs }, { data: acts }, { data: clicks }] = await Promise.all([
       supabase.from('prospect_sources').select('*').eq('prospect_id', prospect.id).order('fetched_at', { ascending: false }),
       supabase.from('outreach_activities').select('*').eq('prospect_id', prospect.id).order('created_at', { ascending: false }),
+      supabase.from('outreach_clicks').select('id, activity_id, prospect_id, clicked_at').eq('prospect_id', prospect.id).order('clicked_at', { ascending: false }),
     ])
     setSources((srcs as unknown as ProspectSource[]) || [])
     setActivities((acts as unknown as OutreachActivity[]) || [])
+    setActivityClicks(clicks ? aggregateClicks(clicks as OutreachClick[], 'activity_id') : {})
   }
 
   const runDiscovery = async () => {
@@ -212,9 +253,12 @@ const AdminProspects = () => {
 
   const refreshActivities = async () => {
     if (!selected) return
-    const { data } = await supabase
-      .from('outreach_activities').select('*').eq('prospect_id', selected.id).order('created_at', { ascending: false })
+    const [{ data }, { data: clicks }] = await Promise.all([
+      supabase.from('outreach_activities').select('*').eq('prospect_id', selected.id).order('created_at', { ascending: false }),
+      supabase.from('outreach_clicks').select('id, activity_id, prospect_id, clicked_at').eq('prospect_id', selected.id).order('clicked_at', { ascending: false }),
+    ])
     setActivities((data as unknown as OutreachActivity[]) || [])
+    setActivityClicks(clicks ? aggregateClicks(clicks as OutreachClick[], 'activity_id') : {})
   }
 
   const performAction = async (action: string, extra: Record<string, unknown> = {}) => {
@@ -418,7 +462,17 @@ const AdminProspects = () => {
                     </td>
                     <td className="px-3 py-2 text-xs">{p.city}</td>
                     <td className="px-3 py-2"><span className="inline-flex items-center gap-1 text-xs font-semibold"><Star className="h-3 w-3" />{p.score}</span></td>
-                    <td className="px-3 py-2"><span className={cn('inline-block px-2 py-0.5 rounded-full text-xs font-semibold', statusColor[p.status] || 'bg-muted')}>{statusLabel[p.status] || p.status}</span></td>
+                    <td className="px-3 py-2">
+                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs font-semibold', statusColor[p.status] || 'bg-muted')}>{statusLabel[p.status] || p.status}</span>
+                      {prospectClicks[p.id] && (
+                        <div className="mt-1">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-800" title={`Senast ${new Date(prospectClicks[p.id].last).toLocaleString('sv-SE')}`}>
+                            <MousePointerClick className="h-3 w-3" />
+                            Klickat{prospectClicks[p.id].count > 1 ? ` ${prospectClicks[p.id].count}×` : ''}
+                          </span>
+                        </div>
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-xs">
                       {p.email && <div className="truncate max-w-[180px]"><Mail className="h-3 w-3 inline mr-1" />{p.email}</div>}
                       {p.phone && <div><Phone className="h-3 w-3 inline mr-1" />{p.phone}</div>}
@@ -450,6 +504,12 @@ const AdminProspects = () => {
                   {selected.address && <div className="text-xs text-muted-foreground">{selected.address}</div>}
                   {selected.opening_hours && <div className="text-xs text-muted-foreground">Öppet: {selected.opening_hours}</div>}
                   {selected.last_contacted_at && <div className="text-xs text-muted-foreground">Senast kontaktad: {new Date(selected.last_contacted_at).toLocaleString('sv-SE')} · totalt {selected.contact_count}</div>}
+                  {prospectClicks[selected.id] && (
+                    <div className="text-xs font-medium text-green-800 flex items-center gap-1">
+                      <MousePointerClick className="h-3 w-3" />
+                      Har klickat på registreringslänken {prospectClicks[selected.id].count} {prospectClicks[selected.id].count === 1 ? 'gång' : 'gånger'} – senast {new Date(prospectClicks[selected.id].last).toLocaleString('sv-SE')}
+                    </div>
+                  )}
                 </div>
 
                 {selected.ai_summary && <div className="text-xs bg-muted/50 rounded-lg p-3 whitespace-pre-wrap">{selected.ai_summary}</div>}
@@ -507,6 +567,12 @@ const AdminProspects = () => {
                               <div className="text-[11px] whitespace-pre-wrap text-muted-foreground max-h-40 overflow-y-auto border rounded p-2 bg-muted/30">{activity.message}</div>
                               {activity.error && <div className="text-[11px] text-red-700 bg-red-50 rounded p-2 border border-red-200">Fel: {activity.error}</div>}
                               {activity.provider_message_id && <div className="text-[10px] text-muted-foreground">Resend-id: {activity.provider_message_id}</div>}
+                              {activityClicks[activity.id] && (
+                                <div className="text-[11px] font-medium text-green-800 bg-green-50 rounded p-2 border border-green-200 flex items-center gap-1.5">
+                                  <MousePointerClick className="h-3 w-3 shrink-0" />
+                                  Klickade på registreringslänken {activityClicks[activity.id].count} {activityClicks[activity.id].count === 1 ? 'gång' : 'gånger'} – senast {new Date(activityClicks[activity.id].last).toLocaleString('sv-SE')}
+                                </div>
+                              )}
 
                               {isEmail && (
                                 <div className="flex flex-wrap gap-2 pt-1">

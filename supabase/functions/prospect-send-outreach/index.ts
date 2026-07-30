@@ -4,6 +4,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import {
+  buildClickTrackingUrl,
   buildEditedEmail,
   buildEmailDraft,
   OUTREACH_DAILY_CAP,
@@ -11,6 +12,7 @@ import {
   OUTREACH_MIN_DAYS_BETWEEN_CONTACT,
   OUTREACH_REPLY_TO,
   oneClickUnsubscribeUrl,
+  replaceWorkshopUrlWithTracking,
   unsubscribeUrl,
 } from '../_shared/outreach.ts'
 import { looksLikeBusinessEmail } from '../_shared/prospect.ts'
@@ -48,7 +50,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     // Versionsmärket gör det möjligt att utifrån verifiera att senaste koden
     // faktiskt är deployad (GET-anrop utan auth når hit).
-    return new Response(JSON.stringify({ error: 'method not allowed', version: '2026-07-30-tagsfix' }), {
+    return new Response(JSON.stringify({ error: 'method not allowed', version: '2026-07-30-clicktrack' }), {
       status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
@@ -175,6 +177,12 @@ Deno.serve(async (req) => {
       html = draft.html
       if (!subject) subject = draft.subject
     }
+
+    // Byt registreringslänken mot en klickspårningslänk för just det här
+    // utskicket (klick loggas i outreach_clicks, admin ser statistiken i panelen).
+    const trackingUrl = buildClickTrackingUrl(SUPABASE_URL, locked.id as string, prospect.unsubscribe_token as string)
+    text = replaceWorkshopUrlWithTracking(text, trackingUrl)
+    html = replaceWorkshopUrlWithTracking(html, trackingUrl, true)
 
     const oneClickUrl = oneClickUnsubscribeUrl(SUPABASE_URL, prospect.unsubscribe_token)
     const humanUnsubUrl = unsubscribeUrl(prospect.unsubscribe_token)

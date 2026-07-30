@@ -1,7 +1,10 @@
 import { assert, assertEquals, assertStringIncludes } from 'https://deno.land/std@0.224.0/assert/mod.ts'
 import {
+  buildClickTrackingUrl,
   buildEditedEmail,
   oneClickUnsubscribeUrl,
+  OUTREACH_WORKSHOP_URL,
+  replaceWorkshopUrlWithTracking,
   unsubscribeUrl,
 } from './outreach.ts'
 
@@ -50,4 +53,44 @@ Deno.test('oneClickUnsubscribeUrl: bygger en funktions-URL som en mail-provider 
 Deno.test('oneClickUnsubscribeUrl: trimmar avslutande slash', () => {
   const url = oneClickUnsubscribeUrl('https://xyz.supabase.co/', TOKEN)
   assert(!url.includes('.co//'))
+})
+
+const ACTIVITY_ID = '11111111-2222-3333-4444-555555555555'
+
+Deno.test('buildClickTrackingUrl: pekar på outreach-click med aktivitet och token', () => {
+  const url = buildClickTrackingUrl('https://xyz.supabase.co', ACTIVITY_ID, TOKEN)
+  assertEquals(
+    url,
+    `https://xyz.supabase.co/functions/v1/outreach-click?a=${ACTIVITY_ID}&t=${TOKEN}`,
+  )
+})
+
+Deno.test('buildClickTrackingUrl: trimmar avslutande slash', () => {
+  const url = buildClickTrackingUrl('https://xyz.supabase.co/', ACTIVITY_ID, TOKEN)
+  assert(!url.includes('.co//'))
+})
+
+Deno.test('replaceWorkshopUrlWithTracking: ersätter alla förekomster i text', () => {
+  const tracking = buildClickTrackingUrl('https://xyz.supabase.co', ACTIVITY_ID, TOKEN)
+  const input = `Registrera er här: ${OUTREACH_WORKSHOP_URL}\nLäs mer: ${OUTREACH_WORKSHOP_URL}`
+  const result = replaceWorkshopUrlWithTracking(input, tracking)
+  assertEquals(result.split(tracking).length - 1, 2)
+  assert(!result.includes(OUTREACH_WORKSHOP_URL))
+})
+
+Deno.test('replaceWorkshopUrlWithTracking: escapar & i HTML-läge', () => {
+  const tracking = buildClickTrackingUrl('https://xyz.supabase.co', ACTIVITY_ID, TOKEN)
+  const html = `<a href="${OUTREACH_WORKSHOP_URL}">${OUTREACH_WORKSHOP_URL}</a>`
+  const result = replaceWorkshopUrlWithTracking(html, tracking, true)
+  assertStringIncludes(result, `a=${ACTIVITY_ID}&amp;t=${TOKEN}`)
+  assert(!result.includes(`?a=${ACTIVITY_ID}&t=`))
+  // Ohtml-läget lämnar & orört
+  const plain = replaceWorkshopUrlWithTracking(html, tracking)
+  assertStringIncludes(plain, `a=${ACTIVITY_ID}&t=${TOKEN}`)
+})
+
+Deno.test('replaceWorkshopUrlWithTracking: orörd text utan registreringslänk', () => {
+  const tracking = buildClickTrackingUrl('https://xyz.supabase.co', ACTIVITY_ID, TOKEN)
+  const input = 'Hej! Det här mejlet har ingen länk.'
+  assertEquals(replaceWorkshopUrlWithTracking(input, tracking), input)
 })

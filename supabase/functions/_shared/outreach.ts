@@ -71,6 +71,20 @@ export const unsubscribeUrl = (token: string) =>
 export const oneClickUnsubscribeUrl = (supabaseUrl: string, token: string) =>
   `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/prospect-unsubscribe?token=${encodeURIComponent(token)}`
 
+// Klickspårning: vid skarpt utskick byts registreringslänken mot en
+// spårningslänk per utskick. Edge functionen outreach-click loggar klicket i
+// outreach_clicks och 302-vidarebefordrar till den här adressen.
+export const CLICK_REDIRECT_URL =
+  'https://cykelhjalpen.se/for-verkstader?utm_source=outreach&utm_medium=email&utm_campaign=verkstadsrekrytering'
+
+export const buildClickTrackingUrl = (supabaseUrl: string, activityId: string, token: string): string =>
+  `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/outreach-click?a=${encodeURIComponent(activityId)}&t=${encodeURIComponent(token)}`
+
+// Ersätter registreringslänken i mejlets text/html med spårningslänken.
+// I HTML-läge måste & i querysträngen skrivas &amp;.
+export const replaceWorkshopUrlWithTracking = (content: string, trackingUrl: string, forHtml = false): string =>
+  content.split(OUTREACH_WORKSHOP_URL).join(forHtml ? trackingUrl.replace(/&/g, '&amp;') : trackingUrl)
+
 // Renderar admin-godkänd brödtext till säker HTML + textbundle. Brödtexten
 // escapas och nyrader blir <br>/paragraf. Avregistreringsfot läggs alltid till
 // server-side så att admin inte kan råka ta bort den.

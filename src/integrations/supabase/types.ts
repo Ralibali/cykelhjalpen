@@ -895,6 +895,45 @@ export type Database = {
           },
         ]
       }
+      outreach_clicks: {
+        Row: {
+          activity_id: string
+          clicked_at: string
+          id: string
+          prospect_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          activity_id: string
+          clicked_at?: string
+          id?: string
+          prospect_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          activity_id?: string
+          clicked_at?: string
+          id?: string
+          prospect_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_clicks_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "outreach_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outreach_clicks_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "workshop_prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_views: {
         Row: {
           created_at: string
