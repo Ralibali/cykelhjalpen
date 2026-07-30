@@ -1,6 +1,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
+import { logSmsAttempt } from '../_shared/notifications.ts'
+
 
 const BodySchema = z.object({
   request_id: z.string().uuid(),
@@ -113,10 +115,23 @@ Deno.serve(async (req) => {
     if (parsed.data.decision === 'approved') {
       const { data: workshops, error: workshopsError } = await admin
         .from('workshops')
-        .select('id, user_id, company_name, email')
+        .select('id, user_id, company_name, email, phone, sms_notifications')
         .eq('approved', true)
         .eq('city', requestRow.city)
       if (workshopsError) throw workshopsError
+
+      // SMS till verkstäder som slagit på sms_notifications (46elks/GatewayAPI).
+      const smsRecipients = (workshops || []).filter((w) => w.sms_notifications && w.phone)
+      const smsMessage = `Nytt godkänt cykelärende i ${requestRow.city}: ${requestRow.repair_category}. Svara här: cykelhjalpen.se/dashboard/verkstad/arenden`
+      for (const workshop of smsRecipients) {
+        backgroundTasks.push(logSmsAttempt(admin, {
+          to: workshop.phone || '',
+          message: smsMessage,
+          idempotencyKey: `bike_request_approved_sms:${requestRow.id}:${workshop.id}`,
+          reason: 'bike_request_approved',
+        }).catch((error) => console.error('SMS attempt failed', workshop.id, error)))
+      }
+
 
       if ((workshops || []).length > 0) {
         const notifications = (workshops || []).map((workshop) => ({
