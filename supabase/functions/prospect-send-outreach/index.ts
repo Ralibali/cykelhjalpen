@@ -46,7 +46,9 @@ interface Body {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'method not allowed' }), {
+    // Versionsmärket gör det möjligt att utifrån verifiera att senaste koden
+    // faktiskt är deployad (GET-anrop utan auth når hit).
+    return new Response(JSON.stringify({ error: 'method not allowed', version: '2026-07-30-tagsfix' }), {
       status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
