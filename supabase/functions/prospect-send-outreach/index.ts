@@ -23,6 +23,21 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
 
+// Resend tillåter bara ASCII-bokstäver, siffror, understreck och bindestreck i taggar.
+// Translittererar svenska tecken (Norrköping → Norrkoping) och rensar resten.
+const asciiTag = (value: string): string =>
+  value
+    .replace(/[åäáàâã]/gi, 'a')
+    .replace(/[öóòôõø]/gi, 'o')
+    .replace(/[éèêë]/gi, 'e')
+    .replace(/[üúùû]/gi, 'u')
+    .replace(/[íìîï]/gi, 'i')
+    .replace(/[ýÿ]/gi, 'y')
+    .replace(/[ñ]/gi, 'n')
+    .replace(/[ç]/gi, 'c')
+    .replace(/ß/g, 'ss')
+    .replace(/[^A-Za-z0-9_-]/g, '')
+
 interface Body {
   activity_id: string
   confirm_send: boolean
@@ -61,7 +76,9 @@ Deno.serve(async (req) => {
     if (actErr) throw actErr
     if (!activity) throw new Error('Utkastet hittades inte')
     if (activity.channel !== 'email') throw new Error('Endast e-post kan skickas skarpt just nu.')
-    if (activity.status !== 'approved') throw new Error(`Utkastet är inte godkänt (status: ${activity.status}).`)
+    if (activity.status !== 'approved' && activity.status !== 'failed') {
+      throw new Error(`Utkastet är inte godkänt (status: ${activity.status}).`)
+    }
 
     const { data: prospect, error: prospErr } = await admin
       .from('workshop_prospects').select('*').eq('id', activity.prospect_id).maybeSingle()
@@ -179,7 +196,7 @@ Deno.serve(async (req) => {
           },
           tags: [
             { name: 'category', value: 'workshop_outreach' },
-            { name: 'city', value: prospect.city },
+            { name: 'city', value: asciiTag(prospect.city ?? '') || 'unknown' },
           ],
         }),
       })
