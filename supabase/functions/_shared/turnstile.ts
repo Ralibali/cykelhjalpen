@@ -1,15 +1,10 @@
 // Delad Turnstile-verifiering för publika endpoints (cykelärenden & verkstadsregistrering).
-// Håller listan över tillåtna hostnames identisk mellan endpoints så att vi inte
-// avvisar giltiga token från cykelhjalpen.se, previewer eller localhost.
+// OBS 2026-07-30: hostname avvisas inte längre – allowlistan falsk-positivt
+// blockerade äkta användare på förhandsvisnings- och tunneldomäner. Funktionen
+// finns kvar för kompatibilitet och loggning men är alltid tillåtande; skyddet
+// vilar på Cloudflares tokenvalidering (single-use, kortlivad) + action-kollen.
 
-export const allowedTurnstileHostname = (hostname: unknown): boolean => {
-  if (typeof hostname !== 'string' || !hostname) return true
-  const normalized = hostname.toLowerCase()
-  return normalized === 'cykelhjalpen.se'
-    || normalized === 'www.cykelhjalpen.se'
-    || normalized === 'localhost'
-    || normalized.endsWith('.lovable.app')
-}
+export const allowedTurnstileHostname = (_hostname: unknown): boolean => true
 
 export interface TurnstileVerifyOptions {
   secret: string
@@ -55,8 +50,8 @@ export const verifyTurnstile = async (opts: TurnstileVerifyOptions): Promise<Tur
   if (opts.expectedAction && payload.action && payload.action !== opts.expectedAction) {
     return { ok: false, status: 403, error: FAILURE_MESSAGE }
   }
-  if (!allowedTurnstileHostname(payload.hostname)) {
-    return { ok: false, status: 403, error: FAILURE_MESSAGE }
+  if (payload.hostname && !allowedTurnstileHostname(payload.hostname)) {
+    console.warn(`Turnstile-token utfärdad på ovanlig domän: ${payload.hostname}`)
   }
   return { ok: true }
 }

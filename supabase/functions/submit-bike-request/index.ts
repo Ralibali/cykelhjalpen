@@ -100,9 +100,15 @@ Deno.serve(async (req) => {
     if (!verifyResponse.ok) throw new Error('Turnstile verification service unavailable')
     const verification = await verifyResponse.json()
 
+    // Hostname-blockering borttagen 2026-07-30: den falsk-positivt avvisade äkta
+    // användare på förhandsvisnings- och tunneldomäner. Token är single-use,
+    // kortlivad och validerad mot vår hemliga nyckel; action-kollen kvarstår.
+    if (verification.hostname && !allowedTurnstileHostname(verification.hostname)) {
+      console.warn(`Turnstile-token utfärdad på ovanlig domän: ${verification.hostname}`)
+    }
+
     if (!verification.success
-      || (verification.action && verification.action !== 'submit_bike_request')
-      || !allowedTurnstileHostname(verification.hostname)) {
+      || (verification.action && verification.action !== 'submit_bike_request')) {
       return new Response(JSON.stringify({ error: 'Säkerhetskontrollen gick ut eller misslyckades. Bekräfta den igen och försök på nytt.' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

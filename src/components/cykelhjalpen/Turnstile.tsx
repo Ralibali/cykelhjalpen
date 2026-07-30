@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 
-const TURNSTILE_ERROR_MESSAGE = 'Säkerhetskontrollen kunde inte laddas. Kontrollera anslutningen och försök igen.'
+const TURNSTILE_ERROR_MESSAGE = 'Säkerhetskontrollen kunde inte laddas. Stäng gärna av annonsblockerare för den här sidan eller prova en annan webbläsare, och försök sedan igen.'
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
 
 declare global {
@@ -90,7 +90,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_req
 
     const timeout = window.setTimeout(() => {
       if (mounted && !resolved) setError(TURNSTILE_ERROR_MESSAGE)
-    }, 8000)
+    }, 12000)
 
     supabase.functions.invoke('get-turnstile-key').then(({ data, error: functionError }) => {
       if (!mounted) return
