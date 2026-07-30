@@ -8,6 +8,7 @@ import {
   buildEditedEmail,
   buildEmailDraft,
   OUTREACH_DAILY_CAP,
+  OUTREACH_FOLLOWUP_MIN_DAYS,
   OUTREACH_FROM,
   OUTREACH_MIN_DAYS_BETWEEN_CONTACT,
   OUTREACH_REPLY_TO,
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     // Versionsmärket gör det möjligt att utifrån verifiera att senaste koden
     // faktiskt är deployad (GET-anrop utan auth når hit).
-    return new Response(JSON.stringify({ error: 'method not allowed', version: '2026-07-30-clicktrack' }), {
+    return new Response(JSON.stringify({ error: 'method not allowed', version: '2026-07-30-followup' }), {
       status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
@@ -113,11 +114,15 @@ Deno.serve(async (req) => {
       throw new Error('Mottagarens e-post eller domän finns i suppression-listan.')
     }
 
-    // 30-dagars kontaktcooldown per prospekt
+    // 30-dagars kontaktcooldown per prospekt – men bara 3 dagar för en
+    // uppföljning (kind='followup') till prospekt som klickat på länken.
+    const cooldownDays = (locked as { kind?: string }).kind === 'followup'
+      ? OUTREACH_FOLLOWUP_MIN_DAYS
+      : OUTREACH_MIN_DAYS_BETWEEN_CONTACT
     if (prospect.last_contacted_at) {
       const daysSince = (Date.now() - new Date(prospect.last_contacted_at).getTime()) / (1000 * 60 * 60 * 24)
-      if (daysSince < OUTREACH_MIN_DAYS_BETWEEN_CONTACT) {
-        throw new Error(`Prospektet kontaktades senast för ${Math.round(daysSince)} dagar sedan – minst ${OUTREACH_MIN_DAYS_BETWEEN_CONTACT} dagar krävs mellan mejl.`)
+      if (daysSince < cooldownDays) {
+        throw new Error(`Prospektet kontaktades senast för ${Math.round(daysSince)} dagar sedan – minst ${cooldownDays} dagar krävs mellan mejl.`)
       }
     }
 

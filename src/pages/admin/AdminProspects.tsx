@@ -75,6 +75,8 @@ interface OutreachActivity {
   provider_message_id: string | null
   error: string | null
   retry_count: number
+  // Saknas före migreringen av kind-kolumnen – behandlas som 'initial'.
+  kind?: string
 }
 
 interface OutreachClick {
@@ -179,7 +181,8 @@ const AdminProspects = () => {
       .order('created_at', { ascending: false })
       .limit(300)
     if (cityFilter !== 'all') query = query.eq('city', cityFilter)
-    if (statusFilter !== 'all') query = query.eq('status', statusFilter)
+    // 'clicked' är inget riktigt status – det filtreras klient-sidigt mot klickstatistiken.
+    if (statusFilter !== 'all' && statusFilter !== 'clicked') query = query.eq('status', statusFilter)
     if (minScore > 0) query = query.gte('score', minScore)
     const { data, error } = await query
     if (error) toast.error('Kunde inte läsa prospects', { description: error.message })
@@ -349,6 +352,15 @@ const AdminProspects = () => {
     return { total, approved, newCount, contacted }
   }, [prospects])
 
+  // Filterläget "Klickade": bara prospekt med minst ett registrerat klick,
+  // senaste klicket först så att varma leads hamnar överst.
+  const visibleProspects = useMemo(() => {
+    if (statusFilter !== 'clicked') return prospects
+    return prospects
+      .filter((p) => prospectClicks[p.id])
+      .sort((a, b) => new Date(prospectClicks[b.id].last).getTime() - new Date(prospectClicks[a.id].last).getTime())
+  }, [prospects, statusFilter, prospectClicks])
+
   const sendBlocked = !resendStatus || !resendStatus.configured || resendStatus.domain_status !== 'verified'
 
   const startEditing = (activity: OutreachActivity) => {
@@ -430,8 +442,8 @@ const AdminProspects = () => {
             <button key={c} onClick={() => setCityFilter(c)} className={cn('px-3 py-1 rounded-full border text-xs font-semibold', cityFilter === c ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted')}>{c === 'all' ? 'Alla' : c}</button>
           ))}
           <span className="text-muted-foreground ml-4">Status:</span>
-          {(['all', ...STATUSES] as const).map((s) => (
-            <button key={s} onClick={() => setStatusFilter(s)} className={cn('px-3 py-1 rounded-full border text-xs font-semibold', statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted')}>{s === 'all' ? 'Alla' : statusLabel[s] || s}</button>
+          {(['all', 'clicked', ...STATUSES] as const).map((s) => (
+            <button key={s} onClick={() => setStatusFilter(s)} className={cn('px-3 py-1 rounded-full border text-xs font-semibold', statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted', s === 'clicked' && statusFilter !== s && 'border-green-300 text-green-800')}>{s === 'all' ? 'Alla' : s === 'clicked' ? 'Klickade' : statusLabel[s] || s}</button>
           ))}
           <span className="text-muted-foreground ml-4">Min poäng:</span>
           <Input type="number" min={0} max={100} value={minScore} onChange={(e) => setMinScore(Number(e.target.value) || 0)} className="w-20 h-8" />
@@ -452,9 +464,9 @@ const AdminProspects = () => {
               <tbody>
                 {loading ? (
                   <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">Läser in…</td></tr>
-                ) : prospects.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">Inga prospects matchar filtret. Starta en sökning ovan.</td></tr>
-                ) : prospects.map((p) => (
+                ) : visibleProspects.length === 0 ? (
+                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">{statusFilter === 'clicked' ? 'Inga registrerade klick ännu – skicka fler mejl eller vänta på svar.' : 'Inga prospects matchar filtret. Starta en sökning ovan.'}</td></tr>
+                ) : visibleProspects.map((p) => (
                   <tr key={p.id} className={cn('border-t cursor-pointer hover:bg-muted/40', selected?.id === p.id && 'bg-muted/60')} onClick={() => openDetails(p)}>
                     <td className="px-3 py-2">
                       <div className="font-semibold">{p.company_name}</div>
@@ -527,6 +539,16 @@ const AdminProspects = () => {
                   <Button size="sm" variant="outline" onClick={() => performAction('prepare_draft', { channel: 'sms' })} disabled={busyAction || selected.do_not_contact || !selected.phone}>
                     <Phone className="h-4 w-4 mr-1" /> Utkast SMS (inaktivt)
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-green-300 text-green-800"
+                    onClick={() => performAction('prepare_followup')}
+                    disabled={busyAction || selected.do_not_contact || !selected.email || selected.status !== 'contacted' || !prospectClicks[selected.id]}
+                    title={prospectClicks[selected.id] ? 'Skapar ett uppföljningsutkast till prospektet som klickat på länken' : 'Aktiveras när prospektet klickat på registreringslänken'}
+                  >
+                    <MousePointerClick className="h-4 w-4 mr-1" /> Uppföljning till klickare
+                  </Button>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
                   E-postutkast kan skickas skarpt via Resend efter godkänn. SMS skickas aldrig automatiskt.
@@ -547,6 +569,9 @@ const AdminProspects = () => {
                               <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-semibold', activityStatusColor[activity.status] || 'bg-muted')}>
                                 {activityStatusLabel[activity.status] || activity.status}
                               </span>
+                              {activity.kind === 'followup' && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-800">Uppföljning</span>
+                              )}
                             </div>
                             <span className="text-muted-foreground text-[10px]">{new Date(activity.created_at).toLocaleString('sv-SE')}</span>
                           </div>

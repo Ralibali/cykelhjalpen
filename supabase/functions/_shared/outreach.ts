@@ -8,6 +8,9 @@ export const OUTREACH_SITE_URL = 'https://cykelhjalpen.se'
 export const OUTREACH_WORKSHOP_URL = 'https://cykelhjalpen.se/for-verkstader'
 export const OUTREACH_DAILY_CAP = 20
 export const OUTREACH_MIN_DAYS_BETWEEN_CONTACT = 30
+// Uppföljning till prospekt som klickat får skickas tidigare än vanlig
+// kallkontakt – intresset är färskt och svalnar snabbt.
+export const OUTREACH_FOLLOWUP_MIN_DAYS = 3
 
 export interface ProspectForDraft {
   company_name: string
@@ -53,7 +56,7 @@ const NUM_WORDS: Record<number, string> = {
 }
 
 // Live-behov i prospektets stad – sägs bara när det faktiskt väntar ärenden.
-const buildDemandLine = (prospect: ProspectForDraft): string | null => {
+const buildDemandLine = (prospect: { city: string; open_requests_in_city?: number | null }): string | null => {
   const n = prospect.open_requests_in_city ?? 0
   if (n <= 0) return null
   if (n === 1) {
@@ -239,4 +242,41 @@ ${safeDemand}
 </body></html>`
 
   return { subject, text, html }
+}
+
+export interface ProspectForFollowUp {
+  company_name: string
+  city: string
+  open_requests_in_city?: number | null
+}
+
+// Uppföljningsmejl till prospekt som klickat på registreringslänken men inte
+// registrerat sig. Returnerar ämne + brödtext (ren text) – rendering till HTML
+// och avregistreringsfot sker som vanligt i prospect-send-outreach, som även
+// byter registreringslänken mot en klickspårningslänk.
+export const buildFollowUpDraft = (prospect: ProspectForFollowUp): { subject: string; message: string } => {
+  const greeting = firstWord(prospect.company_name)
+  const demand = buildDemandLine(prospect)
+  const subject = `Uppföljning: cykelägare i ${prospect.city} väntar på er`
+
+  const lines = [
+    `Hej ${greeting}!`,
+    '',
+    'Jag såg att ni var inne och tittade på registreringssidan – kul att intresset finns! Jag ville bara kort förklara hur det fungerar, ifall något var oklart.',
+    '',
+    'Cykelhjälpen skickar er färdiga kundförfrågningar från cykelägare i er stad. Ni väljer själva vilka ärenden ni svarar på, de två första är gratis och därefter kostar varje förfrågan ni svarar på 50 kr exklusive moms. Ingen månadsavgift och ingen bindningstid.',
+  ]
+  if (demand) lines.push('', demand)
+  lines.push(
+    '',
+    `Registreringen tar bara några minuter och nya verkstäder godkänns inom ett dygn: ${OUTREACH_WORKSHOP_URL}`,
+    '',
+    'Svara direkt på det här mejlet om ni undrar över något, så hjälper jag er igång.',
+    '',
+    'Vänliga hälsningar,',
+    'Christoffer',
+    'Cykelhjälpen',
+    'info@cykelhjalpen.se',
+  )
+  return { subject, message: lines.join('\n') }
 }

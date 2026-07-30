@@ -2,6 +2,7 @@ import { assert, assertEquals, assertStringIncludes } from 'https://deno.land/st
 import {
   buildClickTrackingUrl,
   buildEditedEmail,
+  buildFollowUpDraft,
   oneClickUnsubscribeUrl,
   OUTREACH_WORKSHOP_URL,
   replaceWorkshopUrlWithTracking,
@@ -93,4 +94,27 @@ Deno.test('replaceWorkshopUrlWithTracking: orörd text utan registreringslänk',
   const tracking = buildClickTrackingUrl('https://xyz.supabase.co', ACTIVITY_ID, TOKEN)
   const input = 'Hej! Det här mejlet har ingen länk.'
   assertEquals(replaceWorkshopUrlWithTracking(input, tracking), input)
+})
+
+Deno.test('buildFollowUpDraft: innehåller registreringslänk, hälsning och stad', () => {
+  const { subject, message } = buildFollowUpDraft({
+    company_name: 'Cykelverkstan AB',
+    city: 'Linköping',
+    open_requests_in_city: 0,
+  })
+  assertStringIncludes(subject, 'Linköping')
+  assertStringIncludes(message, 'Hej Cykelverkstan!')
+  assertStringIncludes(message, OUTREACH_WORKSHOP_URL)
+  assertStringIncludes(message, 'två första är gratis')
+  // Ingen efterfrågerad när det inte väntar ärenden
+  assert(!message.includes('väntar'))
+})
+
+Deno.test('buildFollowUpDraft: nämner väntande ärenden när det finns', () => {
+  const { message } = buildFollowUpDraft({
+    company_name: 'Lunda Cykel',
+    city: 'Lund',
+    open_requests_in_city: 2,
+  })
+  assertStringIncludes(message, 'Just nu väntar två öppna kundförfrågningar i Lund')
 })

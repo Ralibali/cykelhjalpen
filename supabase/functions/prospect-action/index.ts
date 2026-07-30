@@ -1,10 +1,10 @@
 // Admin-only: åtgärder på prospects.
-// action: 'approve' | 'reject' | 'do_not_contact' | 'convert' | 'prepare_draft' | 'update_draft' | 'approve_draft'
+// action: 'approve' | 'reject' | 'do_not_contact' | 'convert' | 'prepare_draft' | 'prepare_followup' | 'update_draft' | 'approve_draft'
 // SKICKAR INGET externt. Alla utkast är inaktiva tills admin uttryckligen anropar prospect-send-outreach.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
-import { buildEmailDraft, unsubscribeUrl } from '../_shared/outreach.ts'
+import { buildEmailDraft, buildFollowUpDraft, OUTREACH_FOLLOWUP_MIN_DAYS, unsubscribeUrl } from '../_shared/outreach.ts'
 import { looksLikeBusinessEmail } from '../_shared/prospect.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
@@ -17,6 +17,7 @@ type Action =
   | 'do_not_contact'
   | 'convert'
   | 'prepare_draft'
+  | 'prepare_followup'
   | 'update_draft'
   | 'approve_draft'
 
@@ -159,6 +160,85 @@ Deno.serve(async (req) => {
           status: 'draft',
           subject: draft.subject,
           message: channel === 'email' ? (draft as { text: string }).text : (draft as { message: string }).message,
+          recipient,
+          performed_by: userData.user.id,
+        })
+        .select('*')
+        .maybeSingle()
+      if (activityError) throw activityError
+      return new Response(JSON.stringify({ ok: true, activity }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    } else if (body.action === 'prepare_followup') {
+      // Uppföljning till prospekt som klickat på registreringslänken men inte
+      // registrerat sig. Skapar bara utkast – admin godkänner och skickar som vanligt.
+      if (prospect.status !== 'contacted') {
+        throw new Error('Uppföljning är bara aktuell för prospekt som kontaktats.')
+      }
+      const recipient = prospect.email
+      if (!recipient) throw new Error('Saknar e-post för uppföljning')
+      if (!looksLikeBusinessEmail(prospect.normalized_email)) {
+        throw new Error('E-postadressen ser inte ut som ett publikt företagsmejl – utkast blockerat.')
+      }
+
+      // Måste ha klickat – annars är det vanlig kallkontakt som gäller.
+      const { count: clickCount } = await admin
+        .from('outreach_clicks')
+        .select('id', { count: 'exact', head: true })
+        .eq('prospect_id', prospect.id)
+      if (!clickCount || clickCount === 0) {
+        throw new Error('Prospektet har inte klickat på länken ännu.')
+      }
+
+      // Bara EN uppföljning per prospekt.
+      const { count: existingFollowups } = await admin
+        .from('outreach_activities')
+        .select('id', { count: 'exact', head: true })
+        .eq('prospect_id', prospect.id)
+        .eq('kind', 'followup')
+      if (existingFollowups && existingFollowups > 0) {
+        throw new Error('Det finns redan en uppföljning för det här prospektet.')
+      }
+
+      // Inte för tätt inpå senaste mejlet.
+      if (prospect.last_contacted_at) {
+        const daysSince = (Date.now() - new Date(prospect.last_contacted_at).getTime()) / (1000 * 60 * 60 * 24)
+        if (daysSince < OUTREACH_FOLLOWUP_MIN_DAYS) {
+          throw new Error(`Senaste mejlet skickades för ${Math.round(daysSince)} dagar sedan – vänta minst ${OUTREACH_FOLLOWUP_MIN_DAYS} dagar med uppföljning.`)
+        }
+      }
+
+      const { data: blocked } = await admin
+        .from('contact_suppression')
+        .select('id')
+        .eq('contact_type', 'email')
+        .eq('value', prospect.normalized_email)
+        .maybeSingle()
+      if (blocked) throw new Error('Kontakten finns i suppression-listan')
+
+      const { count: openInCity } = await admin
+        .from('bike_repair_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('city', prospect.city)
+        .eq('admin_status', 'approved')
+        .in('status', ['new', 'has_offers'])
+
+      const draft = buildFollowUpDraft({
+        company_name: prospect.company_name,
+        city: prospect.city,
+        open_requests_in_city: openInCity ?? 0,
+      })
+
+      const { data: activity, error: activityError } = await admin
+        .from('outreach_activities')
+        .insert({
+          prospect_id: prospect.id,
+          channel: 'email',
+          direction: 'outbound',
+          status: 'draft',
+          kind: 'followup',
+          subject: draft.subject,
+          message: draft.message,
           recipient,
           performed_by: userData.user.id,
         })

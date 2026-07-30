@@ -825,6 +825,7 @@ export type Database = {
           error: string | null
           id: string
           idempotency_key: string | null
+          kind: string
           message: string
           performed_by: string | null
           prospect_id: string
@@ -848,6 +849,7 @@ export type Database = {
           error?: string | null
           id?: string
           idempotency_key?: string | null
+          kind?: string
           message: string
           performed_by?: string | null
           prospect_id: string
@@ -871,6 +873,7 @@ export type Database = {
           error?: string | null
           id?: string
           idempotency_key?: string | null
+          kind?: string
           message?: string
           performed_by?: string | null
           prospect_id?: string
@@ -2038,6 +2041,7 @@ export type Database = {
           error: string | null
           id: string
           idempotency_key: string | null
+          kind: string
           message: string
           performed_by: string | null
           prospect_id: string
