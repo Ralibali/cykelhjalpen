@@ -16,6 +16,7 @@ import BikeRequestStepContent, {
 import { Helmet } from 'react-helmet-async'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
+import { trackAdsConversion } from '@/lib/googleAds'
 import { DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import {
   BIKE_REQUEST_STEPS,
@@ -242,6 +243,7 @@ const BikeRequestWizard = () => {
       })
       trackGoogleEvent('generate_lead', { currency: 'SEK', value: 0, lead_type: 'bike_repair_request', city: parsed.data.city })
       trackEvent('Repair Request Submitted', { city: parsed.data.city, bike_type: parsed.data.bike_type })
+      trackAdsConversion('request_submitted')
 
       toast.success(`Tack! Ärendet i ${parsed.data.city} är mottaget och granskas innan det skickas till verkstäder.`)
       if (uploadErrors.length > 0) toast.error(`${uploadErrors.length} bilder kunde inte laddas upp. Själva ärendet är ändå mottaget.`)

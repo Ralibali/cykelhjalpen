@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
+import { initGoogleAds } from "./lib/googleAds";
 import "./index.css";
 
 // Auto-recover from stale chunk hashes after a redeploy.
@@ -32,6 +33,7 @@ window.addEventListener("unhandledrejection", (e) => {
 
 const rootEl = document.getElementById("root")!;
 rootEl.replaceChildren();
+initGoogleAds();
 createRoot(rootEl).render(
   <HelmetProvider>
     <App />
