@@ -114,17 +114,8 @@ Deno.serve(async (req) => {
       throw new Error('Mottagarens e-post eller domän finns i suppression-listan.')
     }
 
-    // 30-dagars kontaktcooldown per prospekt – men bara 3 dagar för en
-    // uppföljning (kind='followup') till prospekt som klickat på länken.
-    const cooldownDays = (locked as { kind?: string }).kind === 'followup'
-      ? OUTREACH_FOLLOWUP_MIN_DAYS
-      : OUTREACH_MIN_DAYS_BETWEEN_CONTACT
-    if (prospect.last_contacted_at) {
-      const daysSince = (Date.now() - new Date(prospect.last_contacted_at).getTime()) / (1000 * 60 * 60 * 24)
-      if (daysSince < cooldownDays) {
-        throw new Error(`Prospektet kontaktades senast för ${Math.round(daysSince)} dagar sedan – minst ${cooldownDays} dagar krävs mellan mejl.`)
-      }
-    }
+    // (Kontaktcooldown kontrolleras efter att aktiviteten låsts, se nedan.)
+
 
     // (Dagskvot + atomiskt lås görs i RPC:n nedan.)
 
