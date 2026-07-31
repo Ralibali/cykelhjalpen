@@ -86,7 +86,7 @@ const PrivacyPolicyPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">5. Delning av uppgifter</h2>
               <p>Vi delar endast personuppgifter när det behövs för tjänsten, drift, säkerhet, betalning eller lagkrav.</p>
               <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li><strong>Anslutna cykelverkstäder:</strong> en verkstad ser ärendebeskrivning utan kundens kontaktuppgifter innan den skickar en betald offert. Maximalt fem verkstäder kan skicka en offert per ärende.</li>
+                <li><strong>Anslutna cykelverkstäder:</strong> en verkstad ser ärendebeskrivning utan kundens kontaktuppgifter innan den skickar en betald offert. Maximalt tre verkstäder kan skicka en offert per ärende.</li>
                 <li><strong>Stripe:</strong> betalningshantering för verkstadens lead-avgifter.</li>
                 <li><strong>Supabase:</strong> hosting, databas, autentisering och teknisk drift.</li>
                 <li><strong>Google:</strong> analys och annonsmätning endast efter samtycke.</li>

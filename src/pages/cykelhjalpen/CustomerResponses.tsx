@@ -182,7 +182,7 @@ const CustomerResponses = () => {
           {(request.status === 'closed_for_responses' || request.status === 'full')
             ? 'Du har fått maximalt fem prisförslag. Jämför dem nedan och kontakta den verkstad som passar dig bäst.'
             : responses.length > 0
-              ? 'Du har fått prisförslag. Fler kan tillkomma tills fem verkstäder har svarat.'
+              ? 'Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat.'
               : `Anslutna verkstäder i ${request.city} kan nu se ärendet. Nya prisförslag visas här automatiskt.`}
         </p>
       </div>

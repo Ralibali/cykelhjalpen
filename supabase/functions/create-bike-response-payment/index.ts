@@ -19,7 +19,7 @@ const escapeHtml = (value: unknown) => String(value ?? '')
   .replaceAll("'", '&#39;')
 
 const friendlyDatabaseError = (message: string) => {
-  if (message.includes('bike_request_full')) return 'Ärendet är fullt – fem verkstäder har redan svarat.'
+  if (message.includes('bike_request_full')) return 'Ärendet är fullt – tre verkstäder har redan svarat.'
   if (message.includes('response_already_paid')) return 'Offerten är redan skickad.'
   if (message.includes('response_not_found')) return 'Offerten hittades inte.'
   if (message.includes('workshop_not_approved')) return 'Verkstaden är inte godkänd ännu.'
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     if (responseError) throw responseError
     if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
     if (response.paid) throw new Error('Offerten är redan skickad')
-    if (response.status === 'closed_for_responses' || (response as any).status === 'full') throw new Error('Ärendet är fullt – fem verkstäder har redan svarat.')
+    if (response.status === 'closed_for_responses' || (response as any).status === 'full') throw new Error('Ärendet är fullt – tre verkstäder har redan svarat.')
 
     const { count, error: countError } = await admin
       .from('workshop_responses')
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       .eq('request_id', response.request_id)
       .eq('paid', true)
     if (countError) throw countError
-    if ((count || 0) >= 5) throw new Error('Ärendet är fullt – fem verkstäder har redan svarat.')
+    if ((count || 0) >= 3) throw new Error('Ärendet är fullt – tre verkstäder har redan svarat.')
 
     const origin = allowedOrigin(req.headers.get('origin'))
 

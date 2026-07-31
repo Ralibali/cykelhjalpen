@@ -175,7 +175,7 @@ const WorkshopRequests = () => {
       const isStripeConfig = /stripe/i.test(msg) && /konfig|configuration|not set/i.test(msg)
 
       if (isFull) {
-        toast.error('Ärendet är fullt – fem verkstäder har redan svarat.', {
+        toast.error('Ärendet är fullt – tre verkstäder har redan svarat.', {
           description: 'Ditt utkast är sparat men kan inte skickas. Vi tar bort ärendet från listan.',
           duration: 10000,
         })

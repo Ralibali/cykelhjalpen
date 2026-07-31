@@ -60,7 +60,7 @@ const WorkshopDashboard = () => {
           <li>Välj bland ärenden från cyklister i {workshop.city}.</li>
           <li>Skriv pris, beräknad tid och ett tydligt meddelande.</li>
           <li>Granska offerten och betala via Stripe först när du vill skicka den.</li>
-          <li>Max fem verkstäder kan lämna prisförslag per ärende.</li>
+          <li>Max tre verkstäder kan lämna prisförslag per ärende.</li>
         </ol>
       </div>
     </div>

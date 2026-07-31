@@ -60,7 +60,7 @@ const TermsPage = () => {
                 <li>Den offert du får gäller det problem du beskrivit – stämmer din beskrivning ska verkstaden hålla priset.</li>
                 <li>Priset får bara justeras om felet visar sig vara något annat eller mer omfattande än du beskrivit. Verkstaden ska då informera dig och få ditt godkännande innan arbetet fortsätter (konsumenttjänstlagen 32 §).</li>
                 <li>Du ansvarar själv för att beskriva felet så noggrant och sanningsenligt du kan – en tydlig beskrivning ger ett pris du kan lita på.</li>
-                <li>Maximalt fem verkstäder kan lämna ett betalt svar på ett ärende.</li>
+                <li>Maximalt tre verkstäder kan lämna ett betalt svar på ett ärende.</li>
                 <li>Du väljer själv om du vill anlita någon av de verkstäder som svarar.</li>
                 <li>Avtal om reparation, garanti och betalning ingås direkt mellan dig och verkstaden.</li>
               </ul>
@@ -85,7 +85,7 @@ const TermsPage = () => {
                 <li>Nya verkstäder får <strong>två gratis kundförfrågningar</strong> att testa tjänsten med – ingen månadsavgift och ingen bindningstid.</li>
                 <li>Därefter kostar varje skickat prisförslag <strong>{LEAD_FEE_KR} kr exklusive moms (62,50 kr inklusive moms)</strong>. Verkstaden köper leads i förväg via Stripe och ett lead dras först när ett prisförslag skickas.</li>
                 <li>Moms beräknas utifrån tillämpliga skatteregler och de faktureringsuppgifter som lämnas i Stripe.</li>
-                <li>Maximalt fem verkstäder kan svara per ärende. Först till kvarn gäller.</li>
+                <li>Maximalt tre verkstäder kan svara per ärende. Först till kvarn gäller.</li>
                 <li>Betalningsunderlag hanteras via Stripe.</li>
               </ul>
             </div>
