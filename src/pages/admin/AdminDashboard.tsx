@@ -4,13 +4,14 @@ import { supabase } from '@/integrations/supabase/client'
 import Navbar from '@/components/Navbar'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import { getCurrentHost } from '@/lib/hostConfig'
-import { Home, Users, Bike, Wrench, CreditCard, Settings, TrendingUp, BookOpen, Receipt, Shield, Eye, MoreHorizontal, Sparkles, Building2, ClipboardList, BarChart3, ArrowLeft } from 'lucide-react'
+import { Home, Users, Bike, Wrench, CreditCard, Settings, TrendingUp, BookOpen, Receipt, Shield, Eye, MoreHorizontal, Sparkles, Building2, ClipboardList, BarChart3, ArrowLeft, Mail } from 'lucide-react'
 import MarketplaceHealthPanel from '@/components/admin/MarketplaceHealthPanel'
 import { cn } from '@/lib/utils'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 const navItems = [
   { label: 'Översikt', href: '/admin', icon: Home },
+  { label: 'Mejl', href: '/admin/mejl', icon: Mail },
   { label: 'Cykelärenden', href: '/admin/cykelarenden', icon: Bike },
   { label: 'Verkstäder', href: '/admin/verkstader', icon: Wrench },
   { label: 'Betalningar', href: '/admin/cykelbetalningar', icon: CreditCard },
@@ -24,8 +25,29 @@ const navItems = [
   { label: 'Inställningar', href: '/admin/installningar', icon: Settings },
 ]
 
+// Antal olästa mejl i inkorgen – uppdateras var 60:e sekund.
+const useUnreadMailCount = (): number => {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      const { count: unread } = await supabase
+        .from('inbound_emails')
+        .select('*', { count: 'exact', head: true })
+        .is('read_at', null)
+        .is('archived_at', null)
+      if (!cancelled && typeof unread === 'number') setCount(unread)
+    }
+    load()
+    const interval = setInterval(load, 60_000)
+    return () => { cancelled = true; clearInterval(interval) }
+  }, [])
+  return count
+}
+
 export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
+  const unreadMail = useUnreadMailCount()
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       {getCurrentHost() === 'updro' ? <Navbar /> : <CykelNavbar />}
@@ -38,6 +60,11 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 location.pathname === item.href ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
               )}>
               <item.icon className="h-4 w-4" />{item.label}
+              {item.href === '/admin/mejl' && unreadMail > 0 && (
+                <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-semibold rounded-full px-1.5 py-0.5 min-w-5 text-center">
+                  {unreadMail}
+                </span>
+              )}
             </Link>
           ))}
         </aside>
@@ -59,6 +86,11 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               className={cn('flex flex-col items-center gap-0.5 text-xs p-1', active ? 'text-primary' : 'text-muted-foreground')}>
               <item.icon className="h-5 w-5" />
               <span>{item.label.split(' ')[0]}</span>
+              {item.href === '/admin/mejl' && unreadMail > 0 && (
+                <span className="bg-destructive text-destructive-foreground text-[10px] font-semibold rounded-full px-1 min-w-4 text-center leading-tight">
+                  {unreadMail}
+                </span>
+              )}
             </Link>
           )
         })}

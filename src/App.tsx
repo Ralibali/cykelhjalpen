@@ -117,6 +117,7 @@ const AdminOffers = lazy(() => import("./pages/admin/AdminOffers"));
 const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
 const AdminNotificationEvents = lazy(() => import("./pages/admin/AdminNotificationEvents"));
 const AdminProspects = lazy(() => import("./pages/admin/AdminProspects"));
+const AdminInbox = lazy(() => import("./pages/admin/AdminInbox"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminGuides = lazy(() => import("./pages/admin/AdminGuides"));
@@ -250,6 +251,7 @@ const AppRoutes = () => {
           <Route path="/admin/notifikationer" element={<ProtectedRoute role="admin"><AdminNotifications /></ProtectedRoute>} />
           <Route path="/admin/notifieringar-logg" element={<ProtectedRoute role="admin"><AdminNotificationEvents /></ProtectedRoute>} />
           <Route path="/admin/prospekt" element={<ProtectedRoute role="admin"><AdminProspects /></ProtectedRoute>} />
+          <Route path="/admin/mejl" element={<ProtectedRoute role="admin"><AdminInbox /></ProtectedRoute>} />
 
           {/* ============ Updro-only routes ============ */}
           {host === 'updro' && (
