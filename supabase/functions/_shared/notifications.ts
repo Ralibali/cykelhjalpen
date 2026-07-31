@@ -284,3 +284,20 @@ export const notifyWorkshopsOfApprovedRequest = async (
   })), prefix)
   return targets.length
 }
+
+export const notifyAdminsOfNewWorkshop = async (
+  admin: SupabaseClient,
+  ctx: { workshop_id: string; company_name: string; city: string; email: string },
+): Promise<number> => {
+  const { data: admins } = await admin.from('profiles').select('id').eq('role', 'admin')
+  const targets = (admins || []).map((row) => row.id).filter(Boolean)
+  const prefix = `workshop_registered:${ctx.workshop_id}`
+  await sendInAppNotifications(admin, targets.map((id) => ({
+    user_id: id,
+    type: 'workshop_registered',
+    title: `Ny verkstad registrerad: ${ctx.company_name}`,
+    message: `${ctx.city} · ${ctx.email}`,
+    link: '/admin/verkstader',
+  })), prefix)
+  return targets.length
+}

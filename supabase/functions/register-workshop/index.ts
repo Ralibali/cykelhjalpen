@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
+import { notifyAdminsOfNewWorkshop } from '../_shared/notifications.ts'
 import { verifyTurnstile } from '../_shared/turnstile.ts'
 
 const SERVICES = [
@@ -242,6 +243,47 @@ Deno.serve(async (req) => {
       else await emailTask
     } catch (emailErr) {
       console.error('Welcome email failed', emailErr)
+    }
+
+    // Notifiera admin om den nya verkstaden: in-app-klocka + e-post,
+    // så att godkännandet kan ske snabbt. Fel här får aldrig stoppa registreringen.
+    try {
+      await notifyAdminsOfNewWorkshop(adminClient, {
+        workshop_id: user.id,
+        company_name: body.company_name,
+        city: body.city,
+        email,
+      })
+    } catch (notifyErr) {
+      console.error('Admin in-app notification failed', notifyErr)
+    }
+
+    try {
+      const adminEmail = Deno.env.get('ADMIN_NOTIFY_EMAIL') || 'info@cykelhjalpen.se'
+      const adminEmailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+        body: JSON.stringify({
+          to: adminEmail,
+          subject: `Ny verkstad registrerad: ${escapeHtml(body.company_name)} (${escapeHtml(body.city)})`,
+          html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+            <h2 style="margin:0 0 16px">Ny verkstad väntar på godkännande</h2>
+            <table style="border-collapse:collapse;margin:16px 0">
+              <tr><td style="padding:4px 12px 4px 0;color:#555">Verkstad:</td><td><strong>${escapeHtml(body.company_name)}</strong></td></tr>
+              <tr><td style="padding:4px 12px 4px 0;color:#555">Stad:</td><td>${escapeHtml(body.city)}</td></tr>
+              <tr><td style="padding:4px 12px 4px 0;color:#555">E-post:</td><td>${escapeHtml(email)}</td></tr>
+              ${body.phone ? `<tr><td style="padding:4px 12px 4px 0;color:#555">Telefon:</td><td>${escapeHtml(body.phone)}</td></tr>` : ''}
+              ${body.services.length > 0 ? `<tr><td style="padding:4px 12px 4px 0;color:#555">Tjänster:</td><td>${escapeHtml(body.services.join(', '))}</td></tr>` : ''}
+            </table>
+            <p><a href="https://cykelhjalpen.se/admin/verkstader" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Granska och godkänn</a></p>
+          </div>`,
+        }),
+      })
+      const edgeRuntimeAdmin = (globalThis as any).EdgeRuntime
+      if (edgeRuntimeAdmin?.waitUntil) edgeRuntimeAdmin.waitUntil(adminEmailTask)
+      else await adminEmailTask
+    } catch (adminEmailErr) {
+      console.error('Admin notification email failed', adminEmailErr)
     }
 
     return json({

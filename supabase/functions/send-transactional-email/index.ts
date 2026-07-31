@@ -12,6 +12,17 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Endast server-till-server: funktionen skickar mejl från vår domän och får
+    // inte vara ett öppet relä. Alla interna anropare skickar service-nyckeln.
+    const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const authHeader = req.headers.get('Authorization')
+    if (!SERVICE_ROLE_KEY || authHeader !== `Bearer ${SERVICE_ROLE_KEY}`) {
+      return new Response(
+        JSON.stringify({ error: 'unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured')
 
