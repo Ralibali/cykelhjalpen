@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     // Versionsmärket gör det möjligt att utifrån verifiera att senaste koden
     // faktiskt är deployad (GET-anrop utan auth når hit).
-    return new Response(JSON.stringify({ error: 'method not allowed', version: '2026-07-30-followup' }), {
+    return new Response(JSON.stringify({ error: 'method not allowed', version: '2026-07-31-tdzfix' }), {
       status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
@@ -116,7 +116,8 @@ Deno.serve(async (req) => {
 
     // 30-dagars kontaktcooldown per prospekt – men bara 3 dagar för en
     // uppföljning (kind='followup') till prospekt som klickat på länken.
-    const cooldownDays = (locked as { kind?: string }).kind === 'followup'
+    // Obs: använd activity.kind här – locked finns inte förrän efter RPC-låset nedan.
+    const cooldownDays = (activity as { kind?: string }).kind === 'followup'
       ? OUTREACH_FOLLOWUP_MIN_DAYS
       : OUTREACH_MIN_DAYS_BETWEEN_CONTACT
     if (prospect.last_contacted_at) {
