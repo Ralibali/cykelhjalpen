@@ -3,6 +3,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { LEAD_FEE_ORE } from '../_shared/pricing.ts'
 import { corsFor } from '../_shared/cors.ts'
+import { notifyCustomerOfNewResponse } from '../_shared/customer-response.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
 
@@ -10,13 +11,6 @@ const allowedOrigin = (origin: string | null) => {
   if (origin && /^(https:\/\/(www\.)?cykelhjalpen\.se|https:\/\/[a-z0-9-]+\.lovable\.app|http:\/\/localhost(:\d+)?)$/i.test(origin)) return origin
   return 'https://cykelhjalpen.se'
 }
-
-const escapeHtml = (value: unknown) => String(value ?? '')
-  .replaceAll('&', '&amp;')
-  .replaceAll('<', '&lt;')
-  .replaceAll('>', '&gt;')
-  .replaceAll('"', '&quot;')
-  .replaceAll("'", '&#39;')
 
 const friendlyDatabaseError = (message: string) => {
   if (message.includes('bike_request_full')) return 'Ärendet är fullt – tre verkstäder har redan svarat.'
@@ -98,30 +92,18 @@ Deno.serve(async (req) => {
       const consumed = Array.isArray(consumeRows) ? consumeRows[0] : consumeRows
       if (!consumeError && consumed?.request_id) {
         if (!consumed.already_processed) {
-          const { data: requestRow } = await admin
-            .from('bike_repair_requests')
-            .select('customer_name, customer_email, repair_category, view_token')
-            .eq('id', consumed.request_id)
-            .maybeSingle()
+          // Notifiera kunden om det nya svaret – mejl + SMS, idempotent per svar.
+          const notifyTask = notifyCustomerOfNewResponse(admin, {
+            supabaseUrl,
+            serviceRoleKey,
+            requestId: consumed.request_id,
+            responseId: response.id,
+            workshopName: workshop.company_name,
+          }).catch((notifyError) => console.error('Free lead customer notification failed', notifyError))
 
-          if (requestRow?.customer_email && requestRow.view_token) {
-            const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`
-            const emailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
-              body: JSON.stringify({
-                to: requestRow.customer_email,
-                subject: `Nytt prisförslag på din cykel – ${requestRow.repair_category}`,
-                html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111"><h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2><p><strong>${escapeHtml(workshop.company_name)}</strong> har lämnat ett prisförslag på ditt cykelärende.</p><p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p></div>`,
-              }),
-            }).then(async (emailResponse) => {
-              if (!emailResponse.ok) console.error('Free lead customer notification failed', emailResponse.status)
-            }).catch((emailError) => console.error('Free lead customer notification failed', emailError))
-
-            const edgeRuntime = (globalThis as any).EdgeRuntime
-            if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(emailTask)
-            else await emailTask
-          }
+          const edgeRuntime = (globalThis as any).EdgeRuntime
+          if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(notifyTask)
+          else await notifyTask
         }
 
         return new Response(JSON.stringify({

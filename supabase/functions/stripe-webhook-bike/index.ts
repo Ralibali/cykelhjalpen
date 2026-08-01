@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { notifyCustomerOfNewResponse } from "../_shared/customer-response.ts";
 
 const BIKE_SESSION_EVENTS = new Set([
   "checkout.session.completed",
@@ -8,13 +9,6 @@ const BIKE_SESSION_EVENTS = new Set([
   "checkout.session.async_payment_failed",
   "checkout.session.expired",
 ]);
-
-const escapeHtml = (value: unknown) => String(value ?? "")
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;")
-  .replaceAll("'", "&#39;");
 
 const jsonResponse = (body: Record<string, unknown>, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -180,42 +174,27 @@ serve(async (req) => {
 
         // Only the transition from unpaid to paid sends a customer notification.
         if (newlyPaid && requestId) {
-          const [{ data: requestRow, error: requestError }, workshopResult] = await Promise.all([
-            admin.from("bike_repair_requests")
-              .select("customer_name, customer_email, repair_category, view_token")
-              .eq("id", requestId)
-              .maybeSingle(),
-            workshopId
-              ? admin.from("workshops").select("company_name").eq("id", workshopId).maybeSingle()
-              : Promise.resolve({ data: null, error: null }),
-          ]);
-          if (requestError) throw requestError;
-          if (workshopResult.error) throw workshopResult.error;
-
-          if (requestRow?.customer_email && requestRow?.view_token) {
-            const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`;
-            const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${serviceRoleKey}`,
-              },
-              body: JSON.stringify({
-                to: requestRow.customer_email,
-                subject: `Nytt prisförslag på din cykel – ${requestRow.repair_category}`,
-                html: `
-                  <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-                    <h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2>
-                    <p><strong>${escapeHtml(workshopResult.data?.company_name || "En cykelverkstad")}</strong> har lämnat ett nytt prisförslag på ditt ärende.</p>
-                    <p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p>
-                  </div>
-                `,
-              }),
-            });
-            if (!emailResponse.ok) {
-              console.error("customer offer email failed", emailResponse.status, await emailResponse.text().catch(() => ""));
-            }
+          let workshopName = "En cykelverkstad";
+          if (workshopId) {
+            const { data: workshopRow, error: workshopLookupError } = await admin
+              .from("workshops")
+              .select("company_name")
+              .eq("id", workshopId)
+              .maybeSingle();
+            if (workshopLookupError) throw workshopLookupError;
+            if (workshopRow?.company_name) workshopName = workshopRow.company_name;
           }
+
+          // Mejl + SMS till kunden om det nya svaret – idempotent per svar.
+          const notifyResult = await notifyCustomerOfNewResponse(admin, {
+            supabaseUrl,
+            serviceRoleKey,
+            requestId,
+            responseId,
+            workshopName,
+          });
+          if (notifyResult.email === "failed") console.error("customer offer email failed", responseId);
+          if (notifyResult.sms === "failed") console.error("customer offer sms failed", responseId);
         }
       }
     } else if (event.type === "checkout.session.expired") {
