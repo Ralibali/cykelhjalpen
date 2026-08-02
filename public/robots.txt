@@ -2,13 +2,18 @@
 User-agent: *
 Allow: /
 Allow: /registrera/verkstad
+
+# Inloggade, personliga och administrativa vyer
 Disallow: /admin
 Disallow: /admin/
 Disallow: /dashboard
 Disallow: /dashboard/
 Disallow: /logga-in
-Disallow: /registrera
 Disallow: /aterstall-losenord
 Disallow: /mitt-arende/
+Disallow: /avregistrera/
+
+# Kampanj- och annonslandningar ska inte konkurrera i organiskt sök
+Disallow: /annons/
 
 Sitemap: https://cykelhjalpen.se/sitemap.xml

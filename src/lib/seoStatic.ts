@@ -36,6 +36,8 @@ const cityLinks = CYKEL_CITIES.map((city) => ({
   href: cityLandingPath(city.name),
 }))
 
+const cityLandingPaths = new Set(CYKEL_CITIES.map((city) => cityLandingPath(city.name)))
+
 const cityRoutes = (): StaticSeoRoute[] => CYKEL_CITIES.map((city) => ({
   path: cityLandingPath(city.name),
   title: `Cykelverkstad ${city.name} – jämför lokala prisförslag`,
@@ -71,7 +73,7 @@ const cityRoutes = (): StaticSeoRoute[] => CYKEL_CITIES.map((city) => ({
   ],
 }))
 
-const detailedCykelPages = CYKEL_SEO_PAGES.filter((page) => page.slug !== 'cykelverkstad-linkoping')
+const detailedCykelPages = CYKEL_SEO_PAGES.filter((page) => !cityLandingPaths.has(`/${page.slug}`))
 
 const cykelIndexableRoutes = (): StaticSeoRoute[] => [
   {
@@ -117,28 +119,31 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
     ],
   },
   ...cityRoutes(),
-  ...detailedCykelPages.map<StaticSeoRoute>((page) => ({
-    path: `/${page.slug}`,
-    title: page.title,
-    description: trunc(page.description),
-    h1: page.h1,
-    city: 'Linköping',
-    priority: page.variant === 'price-stats' ? 0.9 : 0.78,
-    changefreq: page.variant === 'price-stats' ? 'weekly' : 'monthly',
-    lastmod: today(),
-    sections: page.sections,
-    faq: page.faq,
-    ogImage: page.ogImage,
-    links: [
-      { label: 'Skicka cykelärende i Linköping', href: '/skicka-arende?stad=Link%C3%B6ping' },
-      { label: 'Cykelverkstad i Linköping', href: '/cykelverkstad-linkoping' },
-      ...cityLinks.filter((link) => link.href !== '/cykelverkstad-linkoping'),
-    ],
-  })),
+  ...detailedCykelPages.map<StaticSeoRoute>((page) => {
+    const cityPath = cityLandingPath(page.city)
+    return {
+      path: `/${page.slug}`,
+      title: page.title,
+      description: trunc(page.description),
+      h1: page.h1,
+      city: page.city,
+      priority: page.variant === 'price-stats' ? 0.9 : 0.78,
+      changefreq: page.variant === 'price-stats' ? 'weekly' : 'monthly',
+      lastmod: today(),
+      sections: page.sections,
+      faq: page.faq,
+      ogImage: page.ogImage,
+      links: [
+        { label: `Skicka cykelärende i ${page.city}`, href: `/skicka-arende?stad=${encodeURIComponent(page.city)}` },
+        { label: `Cykelverkstad i ${page.city}`, href: cityPath },
+        ...cityLinks.filter((link) => link.href !== cityPath),
+      ],
+    }
+  }),
 ]
 
 const CYKEL_NOINDEX_PATHS = [
-  '/skicka-arende', '/registrera/verkstad', '/mitt-arende',
+  '/skicka-arende', '/registrera/verkstad', '/mitt-arende', '/avregistrera', '/annons/verkstad',
   '/integritetspolicy', '/villkor', '/cookies',
   '/publicera', '/byraer', '/priser', '/om-oss', '/artiklar', '/verktyg', '/stader',
   '/jamfor', '/hitta-webbyra', '/hitta-seo-byra', '/hitta-digital-byra',

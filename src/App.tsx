@@ -11,6 +11,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import CookieConsent from "@/components/CookieConsent";
 import { COMPARISON_PAGES } from "./lib/seoComparisons";
 import { getNoindexSeoRoutes } from "./lib/seoStatic";
+import { getRobotsDirectiveForPath } from "./lib/seoRobots";
 import { getCurrentHost } from "./lib/hostConfig";
 import SupplierLayout from "@/components/SupplierLayout";
 import BuyerLayout from "@/components/BuyerLayout";
@@ -142,26 +143,24 @@ const NoindexGuard = ({ host }: { host: 'cykelhjalpen' | 'updro' }) => {
   const location = useLocation();
 
   useEffect(() => {
-    const path = location.pathname.replace(/\/$/, '') || '/';
-    const noindexPaths = new Set(getNoindexSeoRoutes(host).map(route => route.path));
-    const privatePrefixes = ['/admin', '/dashboard'];
-    const privateExact = ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/landing', '/landing/byra'];
-    const shouldNoindex = noindexPaths.has(path) || privateExact.includes(path) || privatePrefixes.some(prefix => path === prefix || path.startsWith(`${prefix}/`));
+    if (typeof document === 'undefined') return;
 
-    if (!shouldNoindex || typeof document === 'undefined') return;
+    const noindexPaths = getNoindexSeoRoutes(host).map((route) => route.path);
+    const directive = getRobotsDirectiveForPath(location.pathname, noindexPaths);
 
-    const applyNoindex = () => {
+    const applyDirective = () => {
       let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
       if (!robots) {
         robots = document.createElement('meta');
         robots.name = 'robots';
         document.head.appendChild(robots);
       }
-      robots.content = 'noindex, nofollow';
+      robots.content = directive;
     };
 
-    applyNoindex();
-    window.setTimeout(applyNoindex, 0);
+    applyDirective();
+    const timeoutId = window.setTimeout(applyDirective, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [location.pathname, host]);
 
   return null;
