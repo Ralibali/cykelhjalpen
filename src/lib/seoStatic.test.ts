@@ -71,6 +71,33 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     }
   })
 
+  it('kopplar varje prerenderad SEO-sida till rätt stad', () => {
+    const routes = getIndexableSeoRoutes('cykelhjalpen')
+    const byPath = new Map(routes.map((route) => [route.path, route]))
+    const cityHubPaths = new Set(CYKEL_CITIES.map((city) => cityLandingPath(city.name)))
+
+    for (const page of CYKEL_SEO_PAGES) {
+      const path = `/${page.slug}`
+      const route = byPath.get(path)
+
+      expect(route, `saknar statisk SEO-route: ${path}`).toBeDefined()
+      expect(route?.city, `fel stad på ${path}`).toBe(page.city)
+
+      if (!cityHubPaths.has(path)) {
+        expect(route?.links).toEqual(expect.arrayContaining([
+          {
+            label: `Skicka cykelärende i ${page.city}`,
+            href: `/skicka-arende?stad=${encodeURIComponent(page.city)}`,
+          },
+          {
+            label: `Cykelverkstad i ${page.city}`,
+            href: cityLandingPath(page.city),
+          },
+        ]))
+      }
+    }
+  })
+
   it('indexerar verkstadssidan men inte formulär eller privata kundsidor', () => {
     const indexablePaths = getIndexableSeoRoutes('cykelhjalpen').map((route) => route.path)
     const noindexPaths = getNoindexSeoRoutes('cykelhjalpen').map((route) => route.path)
@@ -79,6 +106,8 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     expect(indexablePaths).not.toContain('/skicka-arende')
     expect(indexablePaths).not.toContain('/registrera/verkstad')
     expect(noindexPaths).toContain('/mitt-arende')
+    expect(noindexPaths).toContain('/avregistrera')
+    expect(noindexPaths).toContain('/annons/verkstad')
   })
 
   it('har inga dubbla URL:er i sitemap', () => {
