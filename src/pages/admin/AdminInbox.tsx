@@ -221,7 +221,7 @@ const AdminInbox = () => {
           </div>
         </div>
 
-        <WebhookCard />
+        <InboundWebhookCard />
 
 
 
