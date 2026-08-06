@@ -60,10 +60,10 @@ export function LowBalanceAlert() {
               <p className="text-sm text-amber-700 mt-1">
                 {t('Du har bara')} <strong>{t('{n} lead', { n: workshop.free_leads_remaining })}</strong> {t('kvar. Köp credits nu så du inte missar några förfrågningar.')}
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <BuyLeadsButton quantity={5} />
-                <BuyLeadsButton quantity={10} variant="outline" />
+              <div className="mt-3">
+                <BuyLeadsPicker defaultQuantity={5} />
               </div>
+
             </div>
           </div>
           <button 
