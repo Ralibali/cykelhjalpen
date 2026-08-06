@@ -334,10 +334,36 @@ const noindexRoutesFor = (paths: string[]): StaticSeoRoute[] => paths.map((route
   noindex: true,
 }))
 
+/**
+ * Legacy URLs that still get traffic (old outreach links) and redirect client-side.
+ * They must never be indexed themselves, but they point search engines at the
+ * live page through a self-non-referencing canonical.
+ */
+export const LEGACY_ALIAS_ROUTES: { path: string; canonicalPath: string; lang?: 'sv' | 'en' }[] = [
+  { path: '/for-verkstader', canonicalPath: '/for-cykelverkstader', lang: 'sv' },
+  { path: '/en/for-verkstader', canonicalPath: '/en/for-bike-shops', lang: 'en' },
+  { path: '/en/for-cykelverkstader', canonicalPath: '/en/for-bike-shops', lang: 'en' },
+]
+
+const legacyAliasRoutes = (): StaticSeoRoute[] => LEGACY_ALIAS_ROUTES.map((alias) => ({
+  path: alias.path,
+  canonicalPath: alias.canonicalPath,
+  title: '',
+  description: '',
+  h1: '',
+  priority: 0.1,
+  changefreq: 'yearly' as const,
+  noindex: true,
+  lang: alias.lang,
+}))
+
 const indexableFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro'
   ? updroIndexableRoutes()
   : [...cykelIndexableRoutes(), ...englishRoutes()]
-const noindexFor = (host: SiteHost): StaticSeoRoute[] => noindexRoutesFor(host === 'updro' ? UPDRO_NOINDEX_PATHS : CYKEL_NOINDEX_PATHS)
+const noindexFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro'
+  ? noindexRoutesFor(UPDRO_NOINDEX_PATHS)
+  : [...noindexRoutesFor(CYKEL_NOINDEX_PATHS), ...legacyAliasRoutes()]
+
 
 export const getAllStaticSeoRoutes = (host: SiteHost = 'cykelhjalpen') => {
   const map = new Map<string, StaticSeoRoute>()
