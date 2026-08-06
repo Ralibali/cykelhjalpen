@@ -75,6 +75,12 @@ const RedirectToArtikel = () => {
   return <Navigate to={slug ? `/artiklar/${slug}` : '/artiklar'} replace />;
 };
 
+// Redirect som behåller querysträngen (t.ex. utm-parametrar från mejlutskick)
+const RedirectKeepSearch = ({ to }: { to: string }) => {
+  const { search } = useLocation();
+  return <Navigate to={`${to}${search}`} replace />;
+};
+
 // SEO pages
 const PillarPage = lazy(() => import("./components/seo/PillarPage"));
 const SubPage = lazy(() => import("./components/seo/SubPage"));
