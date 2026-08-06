@@ -80,6 +80,7 @@ const AdminWorkshopDetail = () => {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [grantOpen, setGrantOpen] = useState(false)
+  const [grantMode, setGrantMode] = useState<'add' | 'remove'>('add')
   const [grantAmount, setGrantAmount] = useState(2)
   const [grantReason, setGrantReason] = useState('')
 
