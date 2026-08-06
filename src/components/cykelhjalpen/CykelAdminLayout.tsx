@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Bell, Bike, CreditCard, FileText, Home, Search, Wrench } from 'lucide-react'
+import { Bell, Bike, CreditCard, FileText, Home, Mail, Search, Wrench } from 'lucide-react'
 import CykelNavbar from './CykelNavbar'
 import { cn } from '@/lib/utils'
 
@@ -9,10 +9,12 @@ const navItems = [
   { label: 'Cykelärenden', href: '/admin/cykelarenden', icon: Bike },
   { label: 'Offerter', href: '/admin/offerter', icon: FileText },
   { label: 'Verkstäder', href: '/admin/verkstader', icon: Wrench },
+  { label: 'Inkorg', href: '/admin/mejl', icon: Mail },
   { label: 'Prospekt', href: '/admin/prospekt', icon: Search },
   { label: 'Notiser', href: '/admin/notifieringar-logg', icon: Bell },
   { label: 'Betalningar', href: '/admin/cykelbetalningar', icon: CreditCard },
 ]
+
 
 const isActivePath = (pathname: string, href: string) => (
   href === '/admin' ? pathname === href : pathname === href || pathname.startsWith(`${href}/`)
