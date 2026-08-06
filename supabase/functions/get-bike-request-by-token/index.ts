@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://esm.sh/zod@3.25.76";
 import { corsFor } from "../_shared/cors.ts";
+import { toCustomerResponse } from "../_shared/token-view.ts";
 
 const BodySchema = z.object({ token: z.string().uuid() });
 
