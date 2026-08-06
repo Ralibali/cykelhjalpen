@@ -139,20 +139,23 @@ const AdminWorkshopDetail = () => {
       toast.error(t('Ange ett antal mellan 1 och 50.'))
       return
     }
+    const delta = grantMode === 'remove' ? -amount : amount
     setBusy(true)
     const { data: userData } = await supabase.auth.getUser()
     const { error } = await supabase.from('free_lead_grants').insert({
       workshop_id: workshop.id,
       admin_id: userData?.user?.id || '',
-      amount,
+      amount: delta,
       reason: grantReason.trim() || null,
     })
     setBusy(false)
     if (error) {
-      toast.error(t('Kunde inte fylla på leads: {msg}', { msg: error.message }))
+      toast.error(t('Kunde inte uppdatera leads: {msg}', { msg: error.message }))
       return
     }
-    toast.success(t('{amount} gratis-leads tillagda', { amount }))
+    toast.success(grantMode === 'remove'
+      ? t('{amount} gratis-leads borttagna', { amount })
+      : t('{amount} gratis-leads tillagda', { amount }))
     setGrantOpen(false)
     setGrantReason('')
     setGrantAmount(2)
