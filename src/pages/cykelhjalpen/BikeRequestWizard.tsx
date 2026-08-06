@@ -14,6 +14,7 @@ import BikeRequestStepContent, {
   URGENCY_ICONS,
 } from '@/components/cykelhjalpen/BikeRequestStepContent'
 import { Helmet } from 'react-helmet-async'
+import { usePageSeo } from '@/i18n/usePageSeo'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
@@ -25,7 +26,7 @@ import {
   makeDefaultBikeRequest,
   type BikeRequestFormState,
 } from '@/lib/bikeRequestForm'
-import { useT } from '@/lib/i18n'
+import { useT, useLanguage } from '@/lib/i18n'
 
 const DRAFT_KEY = 'cykelhjalpen_request_draft_v3'
 
@@ -64,6 +65,8 @@ interface SummaryRow {
 
 const BikeRequestWizard = () => {
   const t = useT()
+  const pageSeo = usePageSeo('/skicka-arende')
+  const { lang } = useLanguage()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const requestedCity = resolveCykelCityParam(searchParams.get('stad'))
@@ -244,6 +247,7 @@ const BikeRequestWizard = () => {
           customer_email: parsed.data.customer_email,
           customer_phone: parsed.data.customer_phone || null,
           city: parsed.data.city,
+          customer_language: lang,
           terms_accepted: parsed.data.consent,
           turnstile_token: turnstileToken,
         },
@@ -330,13 +334,12 @@ const BikeRequestWizard = () => {
       <Helmet>
         <title>{t('Få pris på cykelreparation | Cykelhjälpen')}</title>
         <meta name="description" content={t('Beskriv ditt cykelproblem och jämför lokala prisförslag i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto.')} />
-        <meta name="robots" content="noindex, follow" />
-        <link rel="canonical" href="https://cykelhjalpen.se/skicka-arende" />
+        <meta name="robots" content="index, follow, max-image-preview:large" />
+        <link rel="canonical" href={pageSeo.canonical} />
         <meta property="og:type" content="website" />
-        <meta property="og:locale" content="sv_SE" />
         <meta property="og:title" content={t('Få pris på cykelreparation | Cykelhjälpen')} />
         <meta property="og:description" content={t('Beskriv cykelproblemet och jämför lokala prisförslag. Gratis och utan konto.')} />
-        <meta property="og:url" content="https://cykelhjalpen.se/skicka-arende" />
+        <meta property="og:url" content={pageSeo.canonical} />
         <meta property="og:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>

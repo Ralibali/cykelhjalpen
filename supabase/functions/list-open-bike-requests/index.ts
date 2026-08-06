@@ -47,7 +47,7 @@ serve(async (req) => {
     // City filtering must happen before returning data. Client-side filtering is not access control.
     const { data, error } = await admin
       .from("bike_repair_requests")
-      .select("id, bike_type, repair_category, description, area, postcode, urgency, can_drop_off, wants_pickup, status, created_at")
+      .select("id, bike_type, repair_category, description, area, postcode, urgency, can_drop_off, wants_pickup, status, created_at, customer_language")
       .in("status", ["new", "has_offers"])
       .eq("admin_status", "approved")
       .eq("city", ws.city)

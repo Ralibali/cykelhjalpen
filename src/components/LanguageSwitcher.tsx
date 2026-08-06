@@ -1,17 +1,35 @@
 import { Globe } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
-import { EN_PREFIX, useLanguage, type Lang } from '@/lib/i18n'
+import { useLanguage, type Lang } from '@/lib/i18n'
+import { EN_PREFIX, toEnglishPath, toSwedishPath } from '@/i18n/routes'
 
-/** Toggles between the Swedish (/) and English (/en) version of the current page. */
+/**
+ * Switches between the Swedish (/) and English (/en/...) version of the *current* page.
+ * Falls back to the start page when the current page has no translation.
+ * The choice is stored in localStorage, but we never auto-redirect on browser language.
+ */
 export default function LanguageSwitcher({ className = '' }: { className?: string }) {
   const { lang } = useLanguage()
   const location = useLocation()
 
   const go = (next: Lang) => {
     if (next === lang) return
-    const path = `${location.pathname}${location.search}${location.hash}`
-    const target = next === 'en' ? `${EN_PREFIX}${path === '/' ? '' : path}` || EN_PREFIX : path
-    window.location.assign(target)
+    try {
+      window.localStorage.setItem('cykelhjalpen.lang', next)
+    } catch {
+      /* ignore */
+    }
+    const path = location.pathname || '/'
+    const suffix = `${location.search}${location.hash}`
+
+    let target: string
+    if (next === 'en') {
+      const mapped = toEnglishPath(path)
+      target = mapped ? (mapped === '/' ? EN_PREFIX : `${EN_PREFIX}${mapped}`) : EN_PREFIX
+    } else {
+      target = toSwedishPath(path) || '/'
+    }
+    window.location.assign(`${target}${suffix}`)
   }
 
   return (

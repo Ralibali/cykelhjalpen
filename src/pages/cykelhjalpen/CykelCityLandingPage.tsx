@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { usePageSeo } from '@/i18n/usePageSeo'
 import { motion } from 'framer-motion'
 import { ArrowRight, Bike, CheckCircle2, MapPin, ShieldCheck, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,7 +15,8 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
   const t = useT()
   const cityData = getCykelCity(city)
   const cityImage = getCityImage(city)
-  const canonical = `https://cykelhjalpen.se${cityLandingPath(city)}`
+  const pageSeo = usePageSeo(cityLandingPath(city))
+  const canonical = pageSeo.canonical
 
   const trackCta = (placement: string) => {
     trackClick('city_request_cta_clicked', t('Få prisförslag i {city}', { city }), { city, placement })
@@ -77,7 +79,6 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <link rel="canonical" href={canonical} />
         <meta property="og:type" content="website" />
-        <meta property="og:locale" content="sv_SE" />
         <meta property="og:site_name" content="Cykelhjälpen" />
         <meta property="og:title" content={t('Cykelverkstad {city} – jämför lokala prisförslag', { city })} />
         <meta property="og:description" content={t('Få lokala prisförslag på cykelreparation i {city}. Gratis och utan konto.', { city })} />

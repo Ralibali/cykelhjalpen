@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { usePageSeo } from '@/i18n/usePageSeo'
 import { useQuery } from '@tanstack/react-query'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
@@ -16,6 +17,7 @@ const SectionFallback = () => <div aria-hidden className="min-h-[240px]" />
 
 const CykelhjalpenIndexV2 = () => {
   const t = useT()
+  const pageSeo = usePageSeo('/')
   const faqs = buildCykelHomeFaqs(t)
   const { data: stats } = useQuery({
     queryKey: ['cykel-public-stats'],
@@ -34,13 +36,12 @@ const CykelhjalpenIndexV2 = () => {
         <title>{t('Cykelhjälpen – jämför lokala cykelverkstäder')}</title>
         <meta name="description" content={t('Beskriv felet på din cykel och jämför pris och tid från anslutna cykelverkstäder i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto.')} />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        <link rel="canonical" href="https://cykelhjalpen.se/" />
+        <link rel="canonical" href={pageSeo.canonical} />
         <meta property="og:type" content="website" />
-        <meta property="og:locale" content="sv_SE" />
         <meta property="og:site_name" content="Cykelhjälpen" />
         <meta property="og:title" content={t('Cykelhjälpen – jämför lokala cykelverkstäder')} />
         <meta property="og:description" content={t('Få lokala prisförslag på cykelreparation i fyra svenska cykelstäder. Gratis och utan konto.')} />
-        <meta property="og:url" content="https://cykelhjalpen.se/" />
+        <meta property="og:url" content={pageSeo.canonical} />
         <meta property="og:image" content="https://cykelhjalpen.se/og/hem.jpg" />
         <meta property="og:image:alt" content={t('Cykelhjälpen – lokala cykelverkstäder')} />
         <meta name="twitter:card" content="summary_large_image" />

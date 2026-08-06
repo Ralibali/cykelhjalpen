@@ -21,6 +21,10 @@ export interface StaticSeoRoute {
   sections?: { h2: string; body: string }[]
   faq?: { q: string; a: string }[]
   ogImage?: string
+  /** Language version of this URL. Defaults to Swedish. */
+  lang?: 'sv' | 'en'
+  /** Path of the same page in the other language (used for hreflang alternates). */
+  altPath?: string
 }
 
 const today = () => new Date().toISOString().split('T')[0]
@@ -118,6 +122,25 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
       { q: 'Måste vi svara på alla ärenden?', a: 'Nej. Verkstaden väljer själv vilka förfrågningar den vill svara på.' },
     ],
   },
+  {
+    path: '/skicka-arende',
+    title: 'Skicka cykelärende gratis | Cykelhjälpen',
+    description: 'Beskriv problemet på två minuter och jämför prisförslag från lokala cykelverkstäder. Gratis och utan konto.',
+    h1: 'Skicka ditt cykelärende gratis',
+    priority: 0.9,
+    changefreq: 'monthly',
+    lastmod: today(),
+    ogImage: '/og/hem.jpg',
+    sections: [
+      { h2: 'Så går det till', body: 'Välj stad, beskriv cykeln och problemet och lämna dina kontaktuppgifter. Anslutna verkstäder svarar med pris och tid.' },
+      { h2: 'Gratis och utan konto', body: 'Det kostar inget och du har ingen köpplikt. Du får en personlig länk till ärendet via e-post.' },
+    ],
+    links: [...cityLinks, { label: 'För cykelverkstäder', href: '/for-cykelverkstader' }],
+    faq: [
+      { q: 'Vad kostar det?', a: 'Det är gratis för dig som cyklist.' },
+      { q: 'Hur många svar får jag?', a: 'Upp till fem verkstäder kan svara med pris och tid.' },
+    ],
+  },
   ...cityRoutes(),
   ...detailedCykelPages.map<StaticSeoRoute>((page) => {
     const cityPath = cityLandingPath(page.city)
@@ -142,8 +165,120 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
   }),
 ]
 
+// ============ English versions of the commercially important pages ============
+// Real, separately indexable URLs under /en/ — written for international students
+// and newcomers. Key message: free, no account needed, compare up to 5 quotes.
+
+const enCityLinks = CYKEL_CITIES.map((city) => ({
+  label: `Bike repair in ${city.name}`,
+  href: `/en/bike-repair-${city.slug}`,
+}))
+
+const englishRoutes = (): StaticSeoRoute[] => [
+  {
+    path: '/en',
+    altPath: '/',
+    lang: 'en',
+    title: 'Bike repair in Sweden – compare local bike shops | Cykelhjälpen',
+    description: 'Free and no account needed. Describe your bike problem and compare up to 5 quotes from local bike shops in Linköping, Norrköping, Uppsala and Lund.',
+    h1: 'Compare local bike shops in Sweden',
+    priority: 0.95,
+    changefreq: 'weekly',
+    lastmod: today(),
+    ogImage: '/og/hem.jpg',
+    sections: [
+      { h2: 'How it works', body: 'Choose your city, describe your bike and the problem, and leave your contact details. Local bike shops reply with a price and how long the repair takes.' },
+      { h2: 'Free, no account needed', body: 'Sending a request is free and you never have to accept a quote. You get a personal link to your request by email.' },
+      { h2: 'Made for students and newcomers', body: 'You can write your request in English. The bike shop sees that you want the answer in English.' },
+    ],
+    links: [
+      { label: 'Get free quotes', href: '/en/submit-request' },
+      ...enCityLinks,
+      { label: 'For bike shops', href: '/en/for-bike-shops' },
+    ],
+    faq: [
+      { q: 'What does it cost?', a: 'It is free for you as a cyclist and there is no obligation to buy.' },
+      { q: 'Do I need an account?', a: 'No. You send the request and get a personal link by email.' },
+      { q: 'How many quotes do I get?', a: 'Up to 5 local bike shops can reply with a price and a time.' },
+    ],
+  },
+  {
+    path: '/en/submit-request',
+    altPath: '/skicka-arende',
+    lang: 'en',
+    title: 'Get free bike repair quotes | Cykelhjälpen',
+    description: 'Describe your bike problem in two minutes and compare up to 5 quotes from local bike shops in Sweden. Free, no account needed.',
+    h1: 'Send your bike repair request for free',
+    priority: 0.9,
+    changefreq: 'monthly',
+    lastmod: today(),
+    ogImage: '/og/hem.jpg',
+    sections: [
+      { h2: 'Two minutes, no account', body: 'Tell us the type of bike, what is wrong and where you live. You do not need to create an account.' },
+      { h2: 'Compare up to 5 quotes', body: 'Local bike shops in your city reply with a price and how long the repair takes. You choose if you want to go ahead.' },
+      { h2: 'Answers in English', body: 'When you send the request in English, the bike shop sees that you expect an answer in English.' },
+    ],
+    links: [...enCityLinks, { label: 'For bike shops', href: '/en/for-bike-shops' }],
+    faq: [
+      { q: 'Is it really free?', a: 'Yes. Sending a request costs nothing and you never have to accept a quote.' },
+      { q: 'What happens after I send it?', a: 'We review the request and send it to local bike shops. You get a personal link by email.' },
+    ],
+  },
+  {
+    path: '/en/for-bike-shops',
+    altPath: '/for-cykelverkstader',
+    lang: 'en',
+    title: 'Get more customers to your bike shop | Cykelhjälpen',
+    description: 'Join with your bike shop in Linköping, Norrköping, Uppsala or Lund. No monthly fee — you only pay when you send a quote.',
+    h1: 'Get more local customers to your bike shop',
+    priority: 0.7,
+    changefreq: 'monthly',
+    lastmod: today(),
+    ogImage: '/og/for-cykelverkstader.jpg',
+    sections: [
+      { h2: 'Local, reviewed requests', body: 'We send bike repair requests from people in the city where your shop works.' },
+      { h2: 'No monthly fee', body: 'Registration is free. You pay a lead fee only when you choose to send a quote.' },
+      { h2: 'You keep the customer', body: 'After you send a quote, the customer gets your contact details and books directly with you.' },
+    ],
+    links: [{ label: 'Register your bike shop for free', href: '/registrera/verkstad' }, ...enCityLinks],
+    faq: [
+      { q: 'Does it cost anything to register?', a: 'No. There is no monthly fee.' },
+      { q: 'Do we have to answer every request?', a: 'No. You choose which requests you want to answer.' },
+    ],
+  },
+  ...CYKEL_CITIES.map<StaticSeoRoute>((city) => ({
+    path: `/en/bike-repair-${city.slug}`,
+    altPath: cityLandingPath(city.name),
+    lang: 'en',
+    title: `Bike repair in ${city.name} – compare local bike shops | Cykelhjälpen`,
+    description: `Free and no account needed. Describe your bike problem and compare up to 5 quotes from local bike shops in ${city.name}.`,
+    h1: `Bike repair in ${city.name}`,
+    city: city.name,
+    priority: 0.85,
+    changefreq: 'weekly',
+    lastmod: today(),
+    ogImage: '/og/hem.jpg',
+    sections: [
+      { h2: `Local bike shops in ${city.name}`, body: `We cover ${city.areas}. Add your area or postal code so the bike shops can judge the distance and possible pick-up.` },
+      { h2: 'Common repairs', body: 'Local bike shops can help with punctures, tyres, brakes, gears, chain, wheels, full service and electric bike problems.' },
+      { h2: 'Free, no account needed', body: 'Sending a request is free and you decide if you want to accept any of the quotes.' },
+    ],
+    links: [
+      { label: `Get quotes in ${city.name}`, href: `/en/submit-request?stad=${city.slug}` },
+      ...enCityLinks.filter((link) => link.href !== `/en/bike-repair-${city.slug}`),
+      { label: 'For bike shops', href: '/en/for-bike-shops' },
+    ],
+    faq: [
+      { q: `What does a bike repair in ${city.name} cost?`, a: 'The price depends on the repair. You compare up to 5 quotes for free before you decide.' },
+      { q: 'Can I write in English?', a: 'Yes. The bike shop sees that you want the answer in English.' },
+    ],
+  })),
+]
+
+
+
 const CYKEL_NOINDEX_PATHS = [
-  '/skicka-arende', '/registrera/verkstad', '/mitt-arende', '/avregistrera', '/annons/verkstad',
+  '/registrera/verkstad', '/mitt-arende', '/avregistrera', '/annons/verkstad',
   '/integritetspolicy', '/villkor', '/cookies',
   '/publicera', '/byraer', '/priser', '/om-oss', '/artiklar', '/verktyg', '/stader',
   '/jamfor', '/hitta-webbyra', '/hitta-seo-byra', '/hitta-digital-byra',
@@ -190,12 +325,21 @@ const noindexRoutesFor = (paths: string[]): StaticSeoRoute[] => paths.map((route
   noindex: true,
 }))
 
-const indexableFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro' ? updroIndexableRoutes() : cykelIndexableRoutes()
+const indexableFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro'
+  ? updroIndexableRoutes()
+  : [...cykelIndexableRoutes(), ...englishRoutes()]
 const noindexFor = (host: SiteHost): StaticSeoRoute[] => noindexRoutesFor(host === 'updro' ? UPDRO_NOINDEX_PATHS : CYKEL_NOINDEX_PATHS)
 
 export const getAllStaticSeoRoutes = (host: SiteHost = 'cykelhjalpen') => {
   const map = new Map<string, StaticSeoRoute>()
   for (const route of [...indexableFor(host), ...noindexFor(host)]) map.set(route.path, route)
+  // Link Swedish routes back to their English counterpart so both sides emit hreflang.
+  for (const route of map.values()) {
+    if (route.lang === 'en' && route.altPath) {
+      const swedish = map.get(route.altPath)
+      if (swedish) map.set(route.altPath, { ...swedish, altPath: route.path, lang: 'sv' })
+    }
+  }
   return [...map.values()]
 }
 
@@ -213,6 +357,7 @@ export const generateSitemapIndexXml = (host: SiteHost = 'cykelhjalpen') =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>${siteUrlFor(host)}/sitemap.xml</loc><lastmod>${today()}</lastmod></sitemap>\n</sitemapindex>`
 
 const jsonLd = (host: SiteHost, route: StaticSeoRoute) => {
+  const pageLang = route.lang === 'en' ? 'en' : 'sv-SE'
   const siteUrl = siteUrlFor(host)
   const url = absFor(host, route.path)
   const brandName = host === 'updro' ? 'Updro' : 'Cykelhjälpen'
@@ -223,7 +368,7 @@ const jsonLd = (host: SiteHost, route: StaticSeoRoute) => {
   const graph: Record<string, unknown>[] = [
     { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: brandName, legalName: 'Aurora Media AB', url: siteUrl },
     { '@type': 'WebSite', '@id': `${siteUrl}/#website`, url: siteUrl, name: brandName, publisher: { '@id': `${siteUrl}/#organization` }, inLanguage: 'sv-SE' },
-    { '@type': 'WebPage', '@id': `${url}#webpage`, url, name: route.title, headline: route.h1, description: route.description, isPartOf: { '@id': `${siteUrl}/#website` }, inLanguage: 'sv-SE' },
+    { '@type': 'WebPage', '@id': `${url}#webpage`, url, name: route.title, headline: route.h1, description: route.description, isPartOf: { '@id': `${siteUrl}/#website` }, inLanguage: pageLang },
   ]
 
   if (host === 'cykelhjalpen') {
@@ -257,16 +402,31 @@ const jsonLd = (host: SiteHost, route: StaticSeoRoute) => {
   return JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c')
 }
 
+const alternateLinks = (host: SiteHost, route: StaticSeoRoute) => {
+  if (!route.altPath) return []
+  const isEnglish = route.lang === 'en'
+  const svUrl = absFor(host, isEnglish ? route.altPath : route.path)
+  const enUrl = absFor(host, isEnglish ? route.path : route.altPath)
+  return [
+    `<link rel="alternate" hreflang="sv" href="${svUrl}" />`,
+    `<link rel="alternate" hreflang="en" href="${enUrl}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${svUrl}" />`,
+  ]
+}
+
 const head = (host: SiteHost, route: StaticSeoRoute) => {
   const image = imageFor(host, route.ogImage)
   const url = absFor(host, route.path)
+  const isEnglish = route.lang === 'en'
   return [
+    ...alternateLinks(host, route),
     `<title>${esc(route.title)}</title>`,
     `<meta name="description" content="${esc(route.description)}" />`,
     `<meta name="robots" content="${route.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}" />`,
     `<link rel="canonical" href="${url}" />`,
     '<meta property="og:type" content="website" />',
-    '<meta property="og:locale" content="sv_SE" />',
+    `<meta property="og:locale" content="${isEnglish ? 'en_US' : 'sv_SE'}" />`,
+    `<meta property="og:locale:alternate" content="${isEnglish ? 'sv_SE' : 'en_US'}" />`,
     `<meta property="og:site_name" content="${host === 'updro' ? 'Updro' : 'Cykelhjälpen'}" />`,
     `<meta property="og:url" content="${url}" />`,
     `<meta property="og:title" content="${esc(route.title)}" />`,
@@ -282,6 +442,7 @@ const head = (host: SiteHost, route: StaticSeoRoute) => {
 }
 
 const body = (route: StaticSeoRoute) => {
+  if (route.lang === 'en') return englishBody(route)
   const primaryHref = route.path === '/for-cykelverkstader'
     ? '/registrera/verkstad'
     : route.city
@@ -297,18 +458,41 @@ const body = (route: StaticSeoRoute) => {
   }</article></main>`
 }
 
+const englishBody = (route: StaticSeoRoute) => {
+  const primaryHref = route.path === '/en/for-bike-shops'
+    ? '/registrera/verkstad'
+    : route.city
+      ? `/en/submit-request?stad=${encodeURIComponent(route.city)}`
+      : '/en/submit-request'
+  const primaryLabel = route.path === '/en/for-bike-shops' ? 'Register your bike shop for free' : 'Get free quotes'
+  return `<main id="static-seo-content" data-static-route="${esc(route.path)}" lang="en"><nav><a href="/en">Cykelhjälpen</a></nav><article><h1>${esc(route.h1)}</h1><p>${esc(route.description)}</p><p><a href="${primaryHref}">${primaryLabel}</a></p>${
+    route.sections?.map((section) => `<section><h2>${esc(section.h2)}</h2><p>${esc(section.body)}</p></section>`).join('') || ''
+  }${
+    route.links?.length ? `<section><h2>Related pages</h2><ul>${route.links.map((link) => `<li><a href="${esc(link.href)}">${esc(link.label)}</a></li>`).join('')}</ul></section>` : ''
+  }${
+    route.faq?.length ? `<section><h2>Frequently asked questions</h2>${route.faq.map((item) => `<article><h3>${esc(item.q)}</h3><p>${esc(item.a)}</p></article>`).join('')}</section>` : ''
+  }</article></main>`
+}
+
 export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: SiteHost = 'cykelhjalpen') => {
   let html = template
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(route.title)}</title>`)
     .replace(/<meta name="description" content="[^"]*"\s*\/?>/, `<meta name="description" content="${esc(route.description)}" />`)
     .replace(/<meta name="robots" content="[^"]*"\s*\/?>/, `<meta name="robots" content="${route.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}" />`)
-    .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/, `<link rel="canonical" href="${absFor(host, route.path)}" />`)
+    .replace(/<link rel="canonical" href="[^"]*"\s*\/?>\s*/g, '')
 
   html = html
+    .replace(/<link rel="alternate"[^>]+>\s*/g, '')
     .replace(/<meta property="og:[^>]+>\s*/g, '')
     .replace(/<meta name="twitter:[^>]+>\s*/g, '')
     .replace(/<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>\s*/g, '')
     .replace('</head>', `    ${head(host, route)}\n  </head>`)
+
+  if (route.lang === 'en') {
+    html = html
+      .replace(/<html lang="[^"]*"/, '<html lang="en"')
+      .replace(/<noscript>[\s\S]*?<\/noscript>/, `<noscript><main style="padding:2rem;font-family:system-ui,sans-serif"><h2>Cykelhjälpen — compare local bike shops</h2><p>Free and no account needed. Describe your bike problem and compare up to 5 quotes from local bike shops.</p><p><a href="/en/submit-request">Get free quotes</a> · <a href="/en/bike-repair-linkoping">Linköping</a> · <a href="/en/bike-repair-norrkoping">Norrköping</a> · <a href="/en/bike-repair-uppsala">Uppsala</a> · <a href="/en/bike-repair-lund">Lund</a> · <a href="/en/for-bike-shops">For bike shops</a></main></noscript>`)
+  }
 
   return html.replace(/<div id="root">[\s\S]*?<\/div>/, `<div id="root">${body(route)}</div>`)
 }

@@ -232,6 +232,7 @@ export type Database = {
           city: string
           created_at: string
           customer_email: string
+          customer_language: string
           customer_name: string
           customer_phone: string | null
           customer_terms_accepted_at: string | null
@@ -256,6 +257,7 @@ export type Database = {
           city?: string
           created_at?: string
           customer_email: string
+          customer_language?: string
           customer_name: string
           customer_phone?: string | null
           customer_terms_accepted_at?: string | null
@@ -280,6 +282,7 @@ export type Database = {
           city?: string
           created_at?: string
           customer_email?: string
+          customer_language?: string
           customer_name?: string
           customer_phone?: string | null
           customer_terms_accepted_at?: string | null
@@ -2063,26 +2066,48 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      submit_bike_repair_request: {
-        Args: {
-          p_area: string
-          p_bike_type: string
-          p_can_drop_off: boolean
-          p_city?: string
-          p_customer_email: string
-          p_customer_name: string
-          p_customer_phone: string
-          p_description: string
-          p_postcode: string
-          p_repair_category: string
-          p_urgency: string
-          p_wants_pickup: boolean
-        }
-        Returns: {
-          id: string
-          view_token: string
-        }[]
-      }
+      submit_bike_repair_request:
+        | {
+            Args: {
+              p_area: string
+              p_bike_type: string
+              p_can_drop_off: boolean
+              p_city?: string
+              p_customer_email: string
+              p_customer_name: string
+              p_customer_phone: string
+              p_description: string
+              p_postcode: string
+              p_repair_category: string
+              p_urgency: string
+              p_wants_pickup: boolean
+            }
+            Returns: {
+              id: string
+              view_token: string
+            }[]
+          }
+        | {
+            Args: {
+              p_area: string
+              p_bike_type: string
+              p_can_drop_off: boolean
+              p_city: string
+              p_customer_email: string
+              p_customer_language?: string
+              p_customer_name: string
+              p_customer_phone: string
+              p_description: string
+              p_postcode: string
+              p_repair_category: string
+              p_urgency: string
+              p_wants_pickup: boolean
+            }
+            Returns: {
+              id: string
+              view_token: string
+            }[]
+          }
     }
     Enums: {
       [_ in never]: never

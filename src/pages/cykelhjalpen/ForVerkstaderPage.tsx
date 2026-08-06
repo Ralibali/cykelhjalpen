@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { usePageSeo } from '@/i18n/usePageSeo'
 import { motion } from 'framer-motion'
 import { Wrench, TrendingUp, Users, Bell, CheckCircle2, ArrowRight, MapPin } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
@@ -36,6 +37,7 @@ const trackWorkshopCta = (placement: string) => {
 
 const ForVerkstaderPage = () => {
   const t = useT()
+  const pageSeo = usePageSeo('/for-cykelverkstader')
   const benefits = useBenefits(t)
   const steps = useSteps(t)
   return (
@@ -44,13 +46,12 @@ const ForVerkstaderPage = () => {
       <title>{t('Få fler kunder till er cykelverkstad')} | Cykelhjälpen</title>
       <meta name="description" content={t('Anslut er cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Två gratis kundförfrågningar att börja med – ingen månadsavgift, ingen bindningstid.')} />
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-      <link rel="canonical" href="https://cykelhjalpen.se/for-cykelverkstader" />
+      <link rel="canonical" href={pageSeo.canonical} />
       <meta property="og:type" content="website" />
-      <meta property="og:locale" content="sv_SE" />
       <meta property="og:site_name" content="Cykelhjälpen" />
       <meta property="og:title" content={t('Få fler lokala kunder till din cykelverkstad')} />
       <meta property="og:description" content={t('Ingen månadsavgift. Välj själv vilka lokala ärenden ni vill svara på.')} />
-      <meta property="og:url" content="https://cykelhjalpen.se/for-cykelverkstader" />
+      <meta property="og:url" content={pageSeo.canonical} />
       <meta property="og:image" content="https://cykelhjalpen.se/og/for-cykelverkstader.jpg" />
       <meta name="twitter:card" content="summary_large_image" />
     </Helmet>

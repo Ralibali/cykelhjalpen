@@ -31,6 +31,7 @@ const BodySchema = z.object({
   customer_email: z.string().trim().toLowerCase().email().max(160),
   customer_phone: z.string().trim().max(40).optional().nullable(),
   city: z.enum(CITIES),
+  customer_language: z.enum(['sv', 'en']).optional().default('sv'),
   terms_accepted: z.literal(true, {
     errorMap: () => ({ message: 'Du måste godkänna användarvillkoren för att skicka förfrågan.' }),
   }),
@@ -133,6 +134,7 @@ Deno.serve(async (req) => {
       p_customer_email: body.customer_email,
       p_customer_phone: body.customer_phone || null,
       p_city: body.city,
+      p_customer_language: body.customer_language ?? 'sv',
     })
     if (error) throw error
 

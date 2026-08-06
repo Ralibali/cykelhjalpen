@@ -179,7 +179,10 @@ export const setSEOMeta = (meta: SEOMeta) => {
   setOrCreateMetaProperty('og:type', ogType)
   setOrCreateMetaProperty('og:image', finalOgImage)
   setOrCreateMetaProperty('og:site_name', SITE_NAME)
-  setOrCreateMetaProperty('og:locale', 'sv_SE')
+  setOrCreateMetaProperty(
+    'og:locale',
+    typeof window !== 'undefined' && /^\/en(\/|$)/.test(window.location.pathname) ? 'en_US' : 'sv_SE',
+  )
 
   // Twitter
   setOrCreateMeta('twitter:card', 'summary_large_image')
