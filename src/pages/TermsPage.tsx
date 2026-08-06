@@ -54,7 +54,7 @@ const TermsPage = () => {
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('1. Om tjänsten')}</h2>
               <p>{t('Cykelhjälpen.se (”Tjänsten”) drivs av')} <strong>{t('Aurora Media AB')}</strong>{t(', organisationsnummer 559272-0220, under namnet Cykelhjälpen. Bolagets registrerade postadress är Gustafstorpsvägen 42, 585 74 Ljungsbro.')}</p>
-              <p className="mt-2">{t('Tjänsten är en leadplattform där cyklister i Linköping, Norrköping, Uppsala och Lund kan beskriva ett cykelproblem och få upp till fem prisförslag från anslutna cykelverkstäder.')}</p>
+              <p className="mt-2">{t('Tjänsten är en leadplattform där cyklister i Linköping, Norrköping, Uppsala och Lund kan beskriva ett cykelproblem och få upp till tre prisförslag från anslutna cykelverkstäder.')}</p>
               <p className="mt-2">{t('Cykelhjälpen är en förmedlingsplattform och är inte part i avtalet mellan cyklist och verkstad. Ansvaret för utfört arbete, garanti och betalning ligger hos respektive part.')}</p>
             </div>
 

@@ -14,7 +14,7 @@ export const sv = {
   common: {
     free: 'Gratis',
     noAccount: 'Inget konto behövs',
-    compareQuotes: 'Jämför upp till fem offerter från lokala cykelverkstäder',
+    compareQuotes: 'Jämför upp till tre offerter från lokala cykelverkstäder',
     back: 'Tillbaka',
     next: 'Nästa',
     send: 'Skicka',
@@ -88,7 +88,7 @@ export const sv = {
     q2: 'Behöver jag skapa konto?',
     a2: 'Nej. Du skickar ärendet och får en personlig länk via e-post.',
     q3: 'Hur många svar får jag?',
-    a3: 'Upp till fem verkstäder kan svara med pris och tid.',
+    a3: 'Upp till tre verkstäder kan svara med pris och tid.',
     q4: 'Kan jag få svar på engelska?',
     a4: 'Ja. Skickar du ärendet på engelska ser verkstaden att du vill ha svar på engelska.',
   },

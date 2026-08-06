@@ -149,7 +149,7 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
     links: [...cityLinks, { label: 'För cykelverkstäder', href: '/for-cykelverkstader' }],
     faq: [
       { q: 'Vad kostar det?', a: 'Det är gratis för dig som cyklist.' },
-      { q: 'Hur många svar får jag?', a: 'Upp till fem verkstäder kan svara med pris och tid.' },
+      { q: 'Hur många svar får jag?', a: 'Upp till tre verkstäder kan svara med pris och tid.' },
     ],
   },
   ...cityRoutes(),
@@ -178,7 +178,7 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
 
 // ============ English versions of the commercially important pages ============
 // Real, separately indexable URLs under /en/ — written for international students
-// and newcomers. Key message: free, no account needed, compare up to 5 quotes.
+// and newcomers. Key message: free, no account needed, compare up to three quotes.
 
 const enCityLinks = CYKEL_CITIES.map((city) => ({
   label: `Bike repair in ${city.name}`,
@@ -191,7 +191,7 @@ const englishRoutes = (): StaticSeoRoute[] => [
     altPath: '/',
     lang: 'en',
     title: 'Bike repair in Sweden – compare local bike shops | Cykelhjälpen',
-    description: 'Free and no account needed. Describe your bike problem and compare up to 5 quotes from local bike shops in Linköping, Norrköping, Uppsala and Lund.',
+    description: 'Free and no account needed. Describe your bike problem and compare up to three quotes from local bike shops in Linköping, Norrköping, Uppsala and Lund.',
     h1: 'Compare local bike shops in Sweden',
     priority: 0.95,
     changefreq: 'weekly',
@@ -218,7 +218,7 @@ const englishRoutes = (): StaticSeoRoute[] => [
     altPath: '/skicka-arende',
     lang: 'en',
     title: 'Get free bike repair quotes | Cykelhjälpen',
-    description: 'Describe your bike problem in two minutes and compare up to 5 quotes from local bike shops in Sweden. Free, no account needed.',
+    description: 'Describe your bike problem in two minutes and compare up to three quotes from local bike shops in Sweden. Free, no account needed.',
     h1: 'Send your bike repair request for free',
     priority: 0.9,
     changefreq: 'monthly',
@@ -226,7 +226,7 @@ const englishRoutes = (): StaticSeoRoute[] => [
     ogImage: '/og/hem.jpg',
     sections: [
       { h2: 'Two minutes, no account', body: 'Tell us the type of bike, what is wrong and where you live. You do not need to create an account.' },
-      { h2: 'Compare up to 5 quotes', body: 'Local bike shops in your city reply with a price and how long the repair takes. You choose if you want to go ahead.' },
+      { h2: 'Compare up to three quotes', body: 'Local bike shops in your city reply with a price and how long the repair takes. You choose if you want to go ahead.' },
       { h2: 'Answers in English', body: 'When you send the request in English, the bike shop sees that you expect an answer in English.' },
     ],
     links: [...enCityLinks, { label: 'For bike shops', href: '/en/for-bike-shops' }],
@@ -540,7 +540,7 @@ export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: 
   if (route.lang === 'en') {
     html = html
       .replace(/<html lang="[^"]*"/, '<html lang="en"')
-      .replace(/<noscript>[\s\S]*?<\/noscript>/, `<noscript><main style="padding:2rem;font-family:system-ui,sans-serif"><h2>Cykelhjälpen — compare local bike shops</h2><p>Free and no account needed. Describe your bike problem and compare up to 5 quotes from local bike shops.</p><p><a href="/en/submit-request">Get free quotes</a> · <a href="/en/bike-repair-linkoping">Linköping</a> · <a href="/en/bike-repair-norrkoping">Norrköping</a> · <a href="/en/bike-repair-uppsala">Uppsala</a> · <a href="/en/bike-repair-lund">Lund</a> · <a href="/en/for-bike-shops">For bike shops</a></main></noscript>`)
+      .replace(/<noscript>[\s\S]*?<\/noscript>/, `<noscript><main style="padding:2rem;font-family:system-ui,sans-serif"><h2>Cykelhjälpen — compare local bike shops</h2><p>Free and no account needed. Describe your bike problem and compare up to three quotes from local bike shops.</p><p><a href="/en/submit-request">Get free quotes</a> · <a href="/en/bike-repair-linkoping">Linköping</a> · <a href="/en/bike-repair-norrkoping">Norrköping</a> · <a href="/en/bike-repair-uppsala">Uppsala</a> · <a href="/en/bike-repair-lund">Lund</a> · <a href="/en/for-bike-shops">For bike shops</a></main></noscript>`)
   }
 
   return html.replace(/<div id="root">[\s\S]*?<\/div>/, `<div id="root">${body(route)}</div>`)

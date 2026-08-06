@@ -27,8 +27,8 @@ export const EN_SEO: Record<string, string> = {
     'Lund\u2019s compact center and big student life make cycling central to getting between home, university and the station.',
 
   // localIntro helper
-  'Behöver du {what} i {city}? {localIntro} Cykelhjälpen kopplar dig till lokala, anslutna cykelverkstäder som täcker bland annat {areas}. Skicka ett kostnadsfritt ärende — du får upp till fem prisförslag inom ett dygn.':
-    'Need {what} in {city}? {localIntro} Cykelhjälpen connects you to local, partnered bike shops covering areas including {areas}. Send a free request — you\u2019ll get up to five quotes within a day.',
+  'Behöver du {what} i {city}? {localIntro} Cykelhjälpen kopplar dig till lokala, anslutna cykelverkstäder som täcker bland annat {areas}. Skicka ett kostnadsfritt ärende — du får upp till tre prisförslag inom ett dygn.':
+    'Need {what} in {city}? {localIntro} Cykelhjälpen connects you to local, partnered bike shops covering areas including {areas}. Send a free request — you\u2019ll get up to three quotes within a day.',
 
   // common FAQ
   'Hur snabbt får jag svar?': 'How fast will I get a reply?',
@@ -46,8 +46,8 @@ export const EN_SEO: Record<string, string> = {
   // cykelverkstad service
   'Cykelverkstad i {city}': 'Bike shop in {city}',
   'Cykelverkstad {city} — jämför lokala priser': 'Bike shop {city} — compare local prices',
-  'Hitta en cykelverkstad i {city}. Skicka gratis ärende och få upp till fem offerter på reparation, service eller punktering.':
-    'Find a bike shop in {city}. Send a free request and get up to five quotes for repairs, service or a flat tire.',
+  'Hitta en cykelverkstad i {city}. Skicka gratis ärende och få upp till tre offerter på reparation, service eller punktering.':
+    'Find a bike shop in {city}. Send a free request and get up to three quotes for repairs, service or a flat tire.',
   'Hur fungerar Cykelhjälpen?': 'How does Cykelhjälpen work?',
   'Du beskriver felet på två minuter. Vi skickar ärendet till anslutna cykelverkstäder i {city} som lämnar pris och tid. Du väljer själv vilken verkstad du vill anlita.':
     'Describe the issue in two minutes. We send your request to partnered bike shops in {city}, who provide price and timing. You choose which shop to use.',
@@ -253,8 +253,8 @@ export const EN_SEO: Record<string, string> = {
   'Cykeltyp, slitdelar och hur snabbt du behöver hjälp påverkar priset. En elcykel kostar oftast mer än en stadscykel eftersom det krävs mer tid och rätt verktyg.':
     'Bike type, worn parts and how quickly you need help all affect the price. An e-bike usually costs more than a city bike since it requires more time and the right tools.',
   'Är det här ett fast pris?': 'Is this a fixed price?',
-  'Nej, det är ett spann från riktiga offerter. För exakt pris för just din cykel — skicka ärende så får du upp till fem offerter.':
-    'No, it\u2019s a range based on real quotes. For an exact price for your bike, send a request and get up to five quotes.',
+  'Nej, det är ett spann från riktiga offerter. För exakt pris för just din cykel — skicka ärende så får du upp till tre offerter.':
+    'No, it\u2019s a range based on real quotes. For an exact price for your bike, send a request and get up to three quotes.',
   'Hur ofta uppdateras priserna?': 'How often are the prices updated?',
   'Statistiken hämtas live varje gång du laddar sidan, så fort en ny offert lämnas räknas den in.':
     'The statistics are fetched live every time you load the page, so as soon as a new quote comes in it\u2019s included.',
@@ -262,10 +262,10 @@ export const EN_SEO: Record<string, string> = {
   // district page
   'Cykelverkstad i {district}, {city}': 'Bike shop in {district}, {city}',
   'Cykelverkstad {district} {city} — lokala offerter': 'Bike shop {district} {city} — local quotes',
-  'Behöver du en cykelverkstad i {district}, {city}? Skicka gratis ärende och få upp till fem prisförslag inom ett dygn.':
-    'Need a bike shop in {district}, {city}? Send a free request and get up to five quotes within a day.',
-  'Behöver du en cykelverkstad i {district}, {city}? {localIntro} Skicka ett kostnadsfritt ärende och få upp till fem prisförslag från verkstäder som täcker {district} och närliggande områden.':
-    'Need a bike shop in {district}, {city}? {localIntro} Send a free request and get up to five quotes from shops covering {district} and nearby areas.',
+  'Behöver du en cykelverkstad i {district}, {city}? Skicka gratis ärende och få upp till tre prisförslag inom ett dygn.':
+    'Need a bike shop in {district}, {city}? Send a free request and get up to three quotes within a day.',
+  'Behöver du en cykelverkstad i {district}, {city}? {localIntro} Skicka ett kostnadsfritt ärende och få upp till tre prisförslag från verkstäder som täcker {district} och närliggande områden.':
+    'Need a bike shop in {district}, {city}? {localIntro} Send a free request and get up to three quotes from shops covering {district} and nearby areas.',
   'Lokalt i {district}': 'Local in {district}',
   '{district} är en av stadsdelarna i {city} där cykeln används dagligen. Verkstäder i närområdet hjälper till med både vardagscyklar, elcyklar och racer — beskriv problemet så matchas rätt verkstad.':
     '{district} is one of the neighborhoods in {city} where bikes are used every day. Nearby shops help with everyday bikes, e-bikes and road bikes — describe the problem and we\u2019ll match the right shop.',

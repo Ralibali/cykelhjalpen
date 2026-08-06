@@ -139,7 +139,7 @@ export const EN_WIZARD: Record<string, string> = {
     'Your request has been received and is being reviewed before it’s published for bike shops in {city}. You’ll get an e-mail when the review is done.',
   'Ärendet är publicerat': 'The request has been published',
   'Du har fått maximalt fem prisförslag. Jämför dem nedan och kontakta den verkstad som passar dig bäst.':
-    'You’ve received the maximum of five quotes. Compare them below and contact the bike shop that suits you best.',
+    'You’ve received the maximum of three quotes. Compare them below and contact the bike shop that suits you best.',
   'Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat.': 'You’ve received quotes. More may arrive until three bike shops have responded.',
   'Anslutna verkstäder i {city} kan nu se ärendet. Nya prisförslag visas här automatiskt.': 'Affiliated bike shops in {city} can now see the request. New quotes will show up here automatically.',
   'Mitt cykelärende | Cykelhjälpen': 'My bike request | Cykelhjälpen',
@@ -438,7 +438,7 @@ export const EN_WIZARD: Record<string, string> = {
   '1. Om tjänsten': '1. About the service',
   'Cykelhjälpen.se (”Tjänsten”) drivs av': 'Cykelhjälpen.se ("the Service") is operated by',
   ', organisationsnummer 559272-0220, under namnet Cykelhjälpen. Bolagets registrerade postadress är Gustafstorpsvägen 42, 585 74 Ljungsbro.': ', reg. no. 559272-0220, under the name Cykelhjälpen. The company\'s registered postal address is Gustafstorpsvägen 42, 585 74 Ljungsbro, Sweden.',
-  'Tjänsten är en leadplattform där cyklister i Linköping, Norrköping, Uppsala och Lund kan beskriva ett cykelproblem och få upp till fem prisförslag från anslutna cykelverkstäder.': 'The Service is a lead platform where cyclists in Linköping, Norrköping, Uppsala and Lund can describe a bike problem and receive up to five price quotes from affiliated bike shops.',
+  'Tjänsten är en leadplattform där cyklister i Linköping, Norrköping, Uppsala och Lund kan beskriva ett cykelproblem och få upp till tre prisförslag från anslutna cykelverkstäder.': 'The Service is a lead platform where cyclists in Linköping, Norrköping, Uppsala and Lund can describe a bike problem and receive up to three price quotes from affiliated bike shops.',
   'Cykelhjälpen är en förmedlingsplattform och är inte part i avtalet mellan cyklist och verkstad. Ansvaret för utfört arbete, garanti och betalning ligger hos respektive part.': 'Cykelhjälpen is an intermediary platform and is not a party to the agreement between the cyclist and the bike shop. Responsibility for work performed, warranty and payment lies with the respective parties.',
   '2. För cyklister': '2. For cyclists',
   'Tjänsten är gratis för cyklister och kräver inget konto.': 'The Service is free for cyclists and requires no account.',
