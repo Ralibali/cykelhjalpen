@@ -219,7 +219,7 @@ const AdminWorkshops = () => {
       <Dialog open={Boolean(grantTarget)} onOpenChange={(open) => !open && setGrantTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('Fyll på gratis-leads')}</DialogTitle>
+            <DialogTitle>{grantMode === 'remove' ? t('Dra av gratis-leads') : t('Fyll på gratis-leads')}</DialogTitle>
             <DialogDescription>
               {grantTarget
                 ? t('{name} har {count} gratis-leads kvar.', { name: grantTarget.company_name, count: grantTarget.free_leads_remaining ?? 0 })
@@ -228,7 +228,9 @@ const AdminWorkshops = () => {
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium" htmlFor="grant-amount">{t('Antal leads att lägga till')}</label>
+              <label className="text-sm font-medium" htmlFor="grant-amount">
+                {grantMode === 'remove' ? t('Antal leads att dra av') : t('Antal leads att lägga till')}
+              </label>
               <Input
                 id="grant-amount"
                 type="number"
@@ -237,6 +239,9 @@ const AdminWorkshops = () => {
                 value={grantAmount}
                 onChange={(event) => setGrantAmount(Number(event.target.value))}
               />
+              {grantMode === 'remove' && (
+                <p className="text-xs text-muted-foreground mt-1">{t('Saldot kan aldrig bli lägre än noll.')}</p>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium" htmlFor="grant-reason">{t('Anledning (valfritt)')}</label>
@@ -250,9 +255,15 @@ const AdminWorkshops = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setGrantTarget(null)}>{t('Avbryt')}</Button>
-            <Button onClick={submitGrant} disabled={!grantTarget || busy === grantTarget.id}>
-              {busy === grantTarget?.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Gift className="h-4 w-4 mr-1" />}
-              {t('Fyll på')}
+            <Button
+              onClick={submitGrant}
+              variant={grantMode === 'remove' ? 'destructive' : 'default'}
+              disabled={!grantTarget || busy === grantTarget.id}
+            >
+              {busy === grantTarget?.id
+                ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                : grantMode === 'remove' ? <Minus className="h-4 w-4 mr-1" /> : <Gift className="h-4 w-4 mr-1" />}
+              {grantMode === 'remove' ? t('Dra av') : t('Fyll på')}
             </Button>
           </DialogFooter>
         </DialogContent>
