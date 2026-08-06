@@ -1,6 +1,6 @@
 import { CYKEL_SEO_PAGES, buildCykelSeoPages } from './cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath, getCykelCity } from './cykelCities'
-import { EN } from '@/locales/en'
+import { EN } from '../locales/en'
 import type { SiteHost } from './hostConfig'
 
 /** English rendering of every generated local SEO page. */
