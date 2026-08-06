@@ -41,6 +41,7 @@ const AdminWorkshops = () => {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
   const [grantTarget, setGrantTarget] = useState<WorkshopRow | null>(null)
+  const [grantMode, setGrantMode] = useState<'add' | 'remove'>('add')
   const [grantAmount, setGrantAmount] = useState(2)
   const [grantReason, setGrantReason] = useState('')
 
