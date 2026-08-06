@@ -129,6 +129,10 @@ export const EN_WORKSHOP: Record<string, string> = {
   'Kunde inte skapa betalning': 'Could not create payment',
   'Något gick fel': 'Something went wrong',
   '{quantity} leads – {price} kr': '{quantity} leads – {price} SEK',
+  'Välj antal leads': 'Choose number of leads',
+  'Köp {quantity} leads – {price} kr': 'Buy {quantity} leads – {price} SEK',
+  'Priser exkl. moms. {price} kr per lead.': 'Prices excl. VAT. {price} SEK per lead.',
+
 
   '{n} gratis lead kvar': '{n} free lead left',
   '{n} gratis leads kvar': '{n} free leads left',
