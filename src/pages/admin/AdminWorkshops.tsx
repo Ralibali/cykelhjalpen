@@ -180,8 +180,16 @@ const AdminWorkshops = () => {
                     <span className={`font-medium ${(workshop.free_leads_remaining || 0) === 0 ? 'text-muted-foreground' : ''}`}>
                       {workshop.free_leads_remaining ?? 0}
                     </span>
-                    <Button size="sm" variant="ghost" className="ml-1" onClick={() => openGrantDialog(workshop)} disabled={busy === workshop.id}>
+                    <Button size="sm" variant="ghost" className="ml-1" onClick={() => openGrantDialog(workshop, 'add')} disabled={busy === workshop.id}>
                       <Gift className="h-4 w-4 mr-1" /> {t('Fyll på')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => openGrantDialog(workshop, 'remove')}
+                      disabled={busy === workshop.id || (workshop.free_leads_remaining || 0) === 0}
+                    >
+                      <Minus className="h-4 w-4 mr-1" /> {t('Dra av')}
                     </Button>
                   </td>
                   <td className="p-3 whitespace-nowrap">{new Date(workshop.created_at).toLocaleDateString('sv-SE')}</td>
