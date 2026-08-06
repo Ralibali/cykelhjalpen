@@ -42,6 +42,7 @@ const UnsubscribePage = lazy(() => import("./pages/cykelhjalpen/UnsubscribePage"
 import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
+const AdminBikeResponses = lazy(() => import("./pages/admin/AdminBikeResponses"));
 const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
 const AdminWorkshopDetail = lazy(() => import("./pages/admin/AdminWorkshopDetail"));
 const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
