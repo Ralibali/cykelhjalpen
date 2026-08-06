@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  ArrowLeft, Check, Copy, Gift, Loader2, Mail, MapPin, Phone, RefreshCw, X,
+  ArrowLeft, Check, Copy, Gift, Loader2, Mail, MapPin, Minus, Phone, RefreshCw, X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
