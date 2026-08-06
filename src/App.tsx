@@ -154,6 +154,7 @@ const AdminStripeLog = lazy(() => import("./pages/admin/AdminStripeLog"));
 const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
 const AdminVisitors = lazy(() => import("./pages/admin/AdminVisitors"));
 const AdminMarketplaceHealth = lazy(() => import("./pages/admin/AdminMarketplaceHealth"));
+const AdminRedirects = lazy(() => import("./pages/admin/AdminRedirects"));
 
 const queryClient = new QueryClient();
 
