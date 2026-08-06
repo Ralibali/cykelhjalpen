@@ -35,7 +35,7 @@ const buildSmsDraft = (prospect: { company_name: string; city: string; unsubscri
   const first = prospect.company_name.split(/\s+/)[0] || 'ni'
   return {
     subject: null as string | null,
-    message: `Hej ${first}! Christoffer på Cykelhjälpen här – vi förmedlar kundförfrågningar från cykelägare i ${prospect.city} till lokala verkstäder. Ni får två gratis förfrågningar att testa med. Läs mer: https://cykelhjalpen.se/for-verkstader Avreg: ${unsubscribeUrl(prospect.unsubscribe_token)}`,
+    message: `Hej ${first}! Christoffer på Cykelhjälpen här – vi förmedlar kundförfrågningar från cykelägare i ${prospect.city} till lokala verkstäder. Ni får två gratis förfrågningar att testa med. Läs mer: https://cykelhjalpen.se/for-cykelverkstader Avreg: ${unsubscribeUrl(prospect.unsubscribe_token)}`,
   }
 }
 

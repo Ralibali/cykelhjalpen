@@ -2,7 +2,7 @@
 //
 // GET ?a=<activity_id>&t=<unsubscribe_token>
 //   • loggar klicket i outreach_clicks (om tokenet stämmer mot prospektet)
-//   • 302-vidarebefordrar ALLTID till /for-verkstader – även vid fel, så att
+//   • 302-vidarebefordrar ALLTID till /for-cykelverkstader – även vid fel, så att
 //     mottagaren aldrig fastnar på en felsida
 //
 // Token-kravet gör att activity-id inte kan gissas för att fabricera statistik.
