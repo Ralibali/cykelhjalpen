@@ -45,8 +45,8 @@ export const EN_HOME: Record<string, string> = {
   'Vad kostar det att skicka en förfrågan?': 'What does it cost to send a request?',
   'Vanliga frågor': 'Frequently asked questions',
   'Verkstäder granskas manuellt innan de kan ta emot ärenden och lämna prisförslag.': 'Bike shops are manually reviewed before they can receive requests and submit quotes.',
-  'Vi granskar kundärenden och verkstäder. Verkstäder betalar först när de själva väljer att skicka ett prisförslag.':
-    'We review customer requests and bike shops. Bike shops only pay when they choose to send a quote.',
+  'Vi granskar kundärenden och verkstäder. Det kostar inget att lämna prisförslag – verkstaden betalar först när kunden väljer deras offert.':
+    'We review customer requests and bike shops. Sending a quote is free — the shop only pays when the customer picks their quote.',
   'Vilka städer finns Cykelhjälpen i?': 'Which cities is Cykelhjälpen available in?',
   '{workshops} godkända verkstäder · {requests} mottagna ärenden · {responses} skickade prisförslag':
     '{workshops} approved bike shops · {requests} requests received · {responses} quotes sent',
@@ -104,13 +104,13 @@ export const EN_HOME: Record<string, string> = {
   'Redo att ta emot fler lokala ärenden?': 'Ready to receive more local requests?',
   'Registreringen är kostnadsfri, de två första förfrågningarna är gratis och ni bestämmer helt själva vilka jobb ni vill svara på.':
     'Registration is free, the first two requests are free, and you decide entirely for yourselves which jobs to respond to.',
-  'Skriv pris och möjlig tid. Ett lead ({fee} kr exkl. moms) dras först när ni väljer att skicka – de två första är gratis.':
-    'Enter your price and available time. A lead fee ({fee} SEK excl. VAT) is only charged when you choose to send it – the first two are free.',
+  'Skriv pris och möjlig tid – det kostar inget att lämna offert. Ett lead ({fee} kr exkl. moms) dras först när kunden väljer er offert – de två första vinsterna är gratis.':
+    'Enter your price and available time — quoting is free. A lead fee ({fee} SEK excl. VAT) is only charged when the customer picks your quote — the first two wins are free.',
   'Svara på de jobb ni vill': 'Respond to the jobs you want',
   'Ta emot relevanta förfrågningar från cyklister i den stad där ni arbetar.': 'Receive relevant requests from cyclists in the city where you work.',
   'Tillgängligt i {cities}': 'Available in {cities}',
   'Vi granskar manuellt': 'We review manually',
   'Välj själv vilka jobb som passar er kapacitet, kompetens och säsong.': 'Choose for yourselves which jobs fit your capacity, skills and the season.',
-  'exkl. moms per skickad offert': 'excl. VAT per quote sent',
+  'exkl. moms – bara när kunden väljer er': 'excl. VAT — only when the customer picks you',
   'utan månadsavgift': 'no monthly fee',
 }

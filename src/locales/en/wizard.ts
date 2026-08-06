@@ -138,8 +138,6 @@ export const EN_WIZARD: Record<string, string> = {
   'Ditt ärende är mottaget och granskas innan det publiceras för verkstäder i {city}. Du får ett mejl när granskningen är klar.':
     'Your request has been received and is being reviewed before it’s published for bike shops in {city}. You’ll get an e-mail when the review is done.',
   'Ärendet är publicerat': 'The request has been published',
-  'Du har fått maximalt fem prisförslag. Jämför dem nedan och kontakta den verkstad som passar dig bäst.':
-    'You’ve received the maximum of three quotes. Compare them below and contact the bike shop that suits you best.',
   'Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat.': 'You’ve received quotes. More may arrive until three bike shops have responded.',
   'Anslutna verkstäder i {city} kan nu se ärendet. Nya prisförslag visas här automatiskt.': 'Affiliated bike shops in {city} can now see the request. New quotes will show up here automatically.',
   'Mitt cykelärende | Cykelhjälpen': 'My bike request | Cykelhjälpen',
@@ -215,9 +213,9 @@ export const EN_WIZARD: Record<string, string> = {
   'Tack! {company} är registrerad i {city} och väntar på godkännande.': 'Thanks! {company} is registered in {city} and awaiting approval.',
   'Kontot är skapat. Bekräfta e-postadressen via länken vi skickat innan du loggar in.': 'Your account has been created. Confirm your e-mail via the link we sent before logging in.',
   'Registrera cykelverkstad | Cykelhjälpen': 'Register your bike shop | Cykelhjälpen',
-  'Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift och betalning endast när ni väljer att skicka en offert.':
-    'Register your bike shop in Linköping, Norrköping, Uppsala or Lund. No monthly fee, and payment only when you choose to send a quote.',
-  'Kostnadsfri registrering. Betala bara när ni väljer att skicka en offert.': 'Free registration. Pay only when you choose to send a quote.',
+  'Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift – ni lämnar offert gratis och betalar först när kunden väljer er.':
+    'Register your bike shop in Linköping, Norrköping, Uppsala or Lund. No monthly fee — quoting is free and you only pay when the customer picks you.',
+  'Kostnadsfri registrering. Lämna offert gratis och betala bara när kunden väljer er.': 'Free registration. Quote for free and pay only when the customer picks you.',
   'Anslut din verkstad': 'Connect your bike shop',
   'Skapa ett kostnadsfritt konto och få relevanta förfrågningar från cyklister i den stad där ni arbetar. Ni väljer själva vilka jobb ni vill svara på.':
     'Create a free account and get relevant requests from cyclists in the city where you work. You decide which jobs you want to respond to.',
