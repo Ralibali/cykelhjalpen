@@ -1,0 +1,1 @@
+DELETE FROM public.outreach_clicks WHERE user_agent LIKE 'curl/%';
