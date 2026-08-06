@@ -43,6 +43,7 @@ import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
 const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
+const AdminWorkshopDetail = lazy(() => import("./pages/admin/AdminWorkshopDetail"));
 const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
 
 // Lazy-loaded pages
@@ -369,6 +370,7 @@ const AppRoutes = () => {
               {/* Cykelhjälpen admin */}
               <Route path="/admin/cykelarenden" element={<ProtectedRoute role="admin"><AdminBikeRequests /></ProtectedRoute>} />
               <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
+              <Route path="/admin/verkstader/:id" element={<ProtectedRoute role="admin"><AdminWorkshopDetail /></ProtectedRoute>} />
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
 
               {/* Local SEO — dynamiska routes från CYKEL_SEO_PAGES (sv + en) */}

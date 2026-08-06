@@ -396,7 +396,9 @@ const CykelAdminOverview = () => {
                 {pendingWorkshops.slice(0, 8).map((workshop) => (
                   <div key={workshop.id} className="rounded-xl border p-4 flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="font-medium">{workshop.company_name}</h3>
+                      <Link to={`/admin/verkstader/${workshop.id}`} className="font-medium text-primary hover:underline">
+                        {workshop.company_name}
+                      </Link>
                       <p className="text-xs text-muted-foreground truncate">{workshop.email}{workshop.phone ? ` · ${workshop.phone}` : ''}</p>
                     </div>
                     <Button size="sm" onClick={() => setWorkshopApproved(workshop, true)} disabled={busy === workshop.id}>

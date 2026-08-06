@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -161,7 +162,9 @@ const AdminWorkshops = () => {
               {items.map((workshop) => (
                 <tr key={workshop.id} className="border-t align-top">
                   <td className="p-3">
-                    <div className="font-medium">{workshop.company_name}</div>
+                    <Link to={`/admin/verkstader/${workshop.id}`} className="font-medium text-primary hover:underline">
+                      {workshop.company_name}
+                    </Link>
                     <div className="text-xs text-muted-foreground">{workshop.city || t('Stad saknas')}</div>
                   </td>
                   <td className="p-3">
