@@ -7,7 +7,8 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Bike, CheckCircle2, Clock, Copy, CreditCard, ExternalLink, Loader2, RefreshCw, Wrench, XCircle,
+  AlertTriangle, Bike, CheckCircle2, Clock, Copy, CreditCard, ExternalLink, Loader2,
+  Mail, RefreshCw, TrendingUp, Wrench, XCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
@@ -45,17 +46,21 @@ interface ChargeRow {
   id: string
   amount: number
   status: string
+  created_at: string
 }
 
-const StatCard = ({ label, value, icon: Icon }: { label: string; value: number | string; icon: typeof Bike }) => (
-  <div className="rounded-xl border bg-card p-4">
-    <div className="flex items-center justify-between gap-3">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <Icon className="h-4 w-4 text-primary" />
+const StatCard = ({ label, value, icon: Icon, to }: { label: string; value: number | string; icon: typeof Bike; to?: string }) => {
+  const card = (
+    <div className="rounded-xl border bg-card p-4 h-full transition-colors hover:bg-muted/40">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <Icon className="h-4 w-4 text-primary" />
+      </div>
+      <p className="font-display text-2xl font-bold mt-2">{value}</p>
     </div>
-    <p className="font-display text-2xl font-bold mt-2">{value}</p>
-  </div>
-)
+  )
+  return to ? <Link to={to} className="block">{card}</Link> : card
+}
 
 const formatMoney = (ore: number) => new Intl.NumberFormat('sv-SE', {
   style: 'currency',
@@ -73,19 +78,27 @@ const CykelAdminOverview = () => {
   const [rejectTarget, setRejectTarget] = useState<RequestRow | null>(null)
   const [rejectReason, setRejectReason] = useState('')
   const [incomingPending, setIncomingPending] = useState(0)
+  const [funnel, setFunnel] = useState({ contacted: 0, clicked: 0, replied: 0, converted: 0 })
+  const [unreadMail, setUnreadMail] = useState(0)
+  const [failedNotifs, setFailedNotifs] = useState(0)
   const knownRequestIds = useRef<Set<string>>(new Set())
 
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [requestResult, workshopResult, chargeResult] = await Promise.all([
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString()
+    const [requestResult, workshopResult, chargeResult, prospectResult, clickResult, mailResult, notifResult] = await Promise.all([
       supabase
         .from('bike_repair_requests')
         .select('id, view_token, created_at, customer_name, customer_email, customer_phone, bike_type, repair_category, description, area, postcode, city, urgency, admin_status, workshop_responses(id, paid)')
         .order('created_at', { ascending: false })
         .limit(200),
       supabase.from('workshops').select('id, company_name, email, phone, approved, created_at').order('created_at', { ascending: false }),
-      supabase.from('lead_charges').select('id, amount, status').order('created_at', { ascending: false }),
+      supabase.from('lead_charges').select('id, amount, status, created_at').order('created_at', { ascending: false }),
+      supabase.from('workshop_prospects').select('status'),
+      supabase.from('outreach_clicks').select('prospect_id'),
+      supabase.from('inbound_emails').select('*', { count: 'exact', head: true }).is('read_at', null).is('archived_at', null),
+      supabase.from('notification_events').select('*', { count: 'exact', head: true }).eq('status', 'failed').gte('created_at', sevenDaysAgo),
     ])
 
     const errors = [requestResult.error, workshopResult.error, chargeResult.error].filter(Boolean)
@@ -96,6 +109,18 @@ const CykelAdminOverview = () => {
     setRequests((requestResult.data as RequestRow[]) || [])
     setWorkshops((workshopResult.data as WorkshopRow[]) || [])
     setCharges((chargeResult.data as ChargeRow[]) || [])
+
+    // Rekryteringstratten: statusräkning + unika prospekt som klickat på länken.
+    const prospectStatuses = (prospectResult.data || []) as { status: string }[]
+    const clickedProspects = new Set(((clickResult.data || []) as { prospect_id: string }[]).map((row) => row.prospect_id))
+    setFunnel({
+      contacted: prospectStatuses.filter((p) => p.status === 'contacted').length,
+      clicked: clickedProspects.size,
+      replied: prospectStatuses.filter((p) => p.status === 'replied').length,
+      converted: prospectStatuses.filter((p) => p.status === 'converted').length,
+    })
+    setUnreadMail(mailResult.count || 0)
+    setFailedNotifs(notifResult.count || 0)
     setLoading(false)
     setIncomingPending(0)
     knownRequestIds.current = new Set(((requestResult.data as RequestRow[]) || []).map((row) => row.id))
@@ -213,9 +238,15 @@ const CykelAdminOverview = () => {
     () => requests.reduce((sum, request) => sum + (request.workshop_responses || []).filter((response) => response.paid).length, 0),
     [requests],
   )
-  const revenue = useMemo(
-    () => charges.filter((charge) => charge.status === 'paid').reduce((sum, charge) => sum + (charge.amount || 0), 0),
-    [charges],
+  const revenue30d = useMemo(() => {
+    const cutoff = Date.now() - 30 * 86_400_000
+    return charges
+      .filter((charge) => charge.status === 'paid' && new Date(charge.created_at).getTime() >= cutoff)
+      .reduce((sum, charge) => sum + (charge.amount || 0), 0)
+  }, [charges])
+  const approvedWithoutResponse = useMemo(
+    () => approvedRequests.filter((request) => !(request.workshop_responses || []).some((response) => response.paid)).length,
+    [approvedRequests],
   )
 
   return (
@@ -237,12 +268,61 @@ const CykelAdminOverview = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
-        <StatCard label={t('Väntar granskning')} value={pendingRequests.length} icon={Clock} />
-        <StatCard label={t('Godkända ärenden')} value={approvedRequests.length} icon={CheckCircle2} />
-        <StatCard label={t('Verkstäder väntar')} value={pendingWorkshops.length} icon={Wrench} />
-        <StatCard label={t('Betalda offerter')} value={paidResponses} icon={CreditCard} />
-        <StatCard label={t('Intäkter')} value={formatMoney(revenue)} icon={CreditCard} />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+        <StatCard label={t('Väntar granskning')} value={pendingRequests.length} icon={Clock} to="/admin/cykelarenden" />
+        <StatCard label={t('Godkända ärenden')} value={approvedRequests.length} icon={CheckCircle2} to="/admin/cykelarenden" />
+        <StatCard label={t('Verkstäder väntar')} value={pendingWorkshops.length} icon={Wrench} to="/admin/verkstader" />
+        <StatCard label={t('Betalda offerter')} value={paidResponses} icon={CreditCard} to="/admin/cykelbetalningar" />
+        <StatCard label={t('Intäkter (30 d)')} value={formatMoney(revenue30d)} icon={CreditCard} to="/admin/cykelbetalningar" />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <section className="rounded-xl border bg-card p-5">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <h2 className="font-display font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" /> {t('Rekrytering av verkstäder')}
+            </h2>
+            <Link to="/admin/prospekt" className="text-xs text-primary hover:underline font-medium">{t('Öppna prospekt →')}</Link>
+          </div>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            <div className="rounded-lg bg-muted/40 p-3">
+              <p className="text-xl font-bold font-display">{funnel.contacted}</p>
+              <p className="text-xs text-muted-foreground">{t('Kontaktade')}</p>
+            </div>
+            <div className="rounded-lg bg-muted/40 p-3">
+              <p className="text-xl font-bold font-display">{funnel.clicked}</p>
+              <p className="text-xs text-muted-foreground">{t('Klickat')}</p>
+            </div>
+            <div className="rounded-lg bg-muted/40 p-3">
+              <p className="text-xl font-bold font-display">{funnel.replied}</p>
+              <p className="text-xs text-muted-foreground">{t('Svarat')}</p>
+            </div>
+            <div className="rounded-lg bg-muted/40 p-3">
+              <p className="text-xl font-bold font-display">{funnel.converted}</p>
+              <p className="text-xs text-muted-foreground">{t('Anslutna')}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-xl border bg-card p-5">
+          <h2 className="font-display font-semibold flex items-center gap-2 mb-3">
+            <AlertTriangle className="h-4 w-4 text-primary" /> {t('Drift')}
+          </h2>
+          <div className="space-y-1 text-sm">
+            <Link to="/admin/mejl" className="flex items-center justify-between rounded-lg px-2 py-2 hover:bg-muted/40 transition-colors">
+              <span className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> {t('Olästa mejl')}</span>
+              <span className={unreadMail > 0 ? 'font-semibold text-primary' : 'text-muted-foreground'}>{unreadMail}</span>
+            </Link>
+            <Link to="/admin/notifieringar-logg" className="flex items-center justify-between rounded-lg px-2 py-2 hover:bg-muted/40 transition-colors">
+              <span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-muted-foreground" /> {t('Misslyckade notiser (7 d)')}</span>
+              <span className={failedNotifs > 0 ? 'font-semibold text-destructive' : 'text-muted-foreground'}>{failedNotifs}</span>
+            </Link>
+            <Link to="/admin/cykelarenden" className="flex items-center justify-between rounded-lg px-2 py-2 hover:bg-muted/40 transition-colors">
+              <span className="flex items-center gap-2"><Bike className="h-4 w-4 text-muted-foreground" /> {t('Godkända ärenden utan svar')}</span>
+              <span className={approvedWithoutResponse > 0 ? 'font-semibold' : 'text-muted-foreground'}>{approvedWithoutResponse}</span>
+            </Link>
+          </div>
+        </section>
       </div>
 
       {loading ? (

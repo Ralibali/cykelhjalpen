@@ -74,7 +74,7 @@ serve(async (req) => {
 
     // The database trigger is the final guard, but full requests should disappear
     // from the product before a workshop spends time writing an offer.
-    const requests = initialRequests.filter((row) => (paidCounts.get(row.id) || 0) < 5);
+    const requests = initialRequests.filter((row) => (paidCounts.get(row.id) || 0) < 3);
     const requestIds = requests.map((row) => row.id);
     const imagesByRequest = new Map<string, { id: string; url: string }[]>();
 
