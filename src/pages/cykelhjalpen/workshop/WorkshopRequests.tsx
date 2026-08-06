@@ -30,6 +30,7 @@ interface RequestRow {
   wants_pickup: boolean
   status: string
   created_at: string
+  customer_language?: string | null
   images?: RequestImage[]
 }
 
@@ -309,6 +310,11 @@ const WorkshopRequests = () => {
                       {request.urgency && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-brand-sun/40 px-2.5 py-1 font-medium">
                           <Clock3 className="h-3 w-3" /> {request.urgency}
+                        </span>
+                      )}
+                      {request.customer_language === 'en' && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-mint/40 px-2.5 py-1 font-bold" title={t('Kunden skickade ärendet på engelska och förväntar sig svar på engelska.')}>
+                          🇬🇧 {t('Svara på engelska')}
                         </span>
                       )}
                       {request.wants_pickup && (

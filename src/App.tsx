@@ -14,6 +14,7 @@ import { getNoindexSeoRoutes } from "./lib/seoStatic";
 import { getRobotsDirectiveForPath } from "./lib/seoRobots";
 import { getCurrentHost } from "./lib/hostConfig";
 import { EN_PREFIX, LanguageProvider, getRouterBasename, useLanguage } from "@/lib/i18n";
+import { toSwedishPath, toEnglishPath } from "@/i18n/routes";
 
 import SupplierLayout from "@/components/SupplierLayout";
 import BuyerLayout from "@/components/BuyerLayout";
@@ -168,20 +169,38 @@ const NoindexGuard = ({ host }: { host: 'cykelhjalpen' | 'updro' }) => {
   return null;
 };
 
-/** Adds self-referencing hreflang alternates for the sv/en versions of the current URL. */
+/** Adds self-referencing canonical + hreflang alternates for the sv/en versions of the current URL. */
 const HreflangTags = () => {
   const location = useLocation();
   const { lang } = useLanguage();
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
+    // Run after Helmet has flushed its own head tags so de-duplication sticks.
+    const timer = window.setTimeout(() => {
     const origin = window.location.origin;
-    const path = location.pathname === '/' ? '' : location.pathname;
-    const alternates: Array<[string, string]> = [
-      ['sv', `${origin}${path || '/'}`],
-      ['en', `${origin}${EN_PREFIX}${path}`],
-      ['x-default', `${origin}${path || '/'}`],
-    ];
+    const routerPath = location.pathname || '/';
+
+    // Swedish path is canonical; English pages use their own translated slug.
+    const svPath = lang === 'en' ? toSwedishPath(routerPath) : routerPath;
+    const enPath = lang === 'en'
+      ? (routerPath === '/' ? EN_PREFIX : `${EN_PREFIX}${routerPath}`)
+      : (() => {
+          const mapped = toEnglishPath(routerPath);
+          if (!mapped) return null;
+          return mapped === '/' ? EN_PREFIX : `${EN_PREFIX}${mapped}`;
+        })();
+
+    const selfUrl = lang === 'en'
+      ? `${origin}${routerPath === '/' ? EN_PREFIX : `${EN_PREFIX}${routerPath}`}`
+      : `${origin}${routerPath}`;
+
+    const alternates: Array<[string, string]> = [];
+    if (svPath && enPath) {
+      alternates.push(['sv', `${origin}${svPath}`]);
+      alternates.push(['en', `${origin}${enPath}`]);
+      alternates.push(['x-default', `${origin}${svPath}`]);
+    }
 
     document.querySelectorAll('link[rel="alternate"][data-i18n]').forEach((el) => el.remove());
     for (const [hreflang, href] of alternates) {
@@ -193,17 +212,51 @@ const HreflangTags = () => {
       document.head.appendChild(link);
     }
 
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    const canonicals = Array.from(
+      document.querySelectorAll('link[rel="canonical"]'),
+    ) as HTMLLinkElement[];
+    let canonical = canonicals.shift();
     if (!canonical) {
       canonical = document.createElement('link');
       canonical.rel = 'canonical';
       document.head.appendChild(canonical);
     }
-    canonical.href = lang === 'en' ? `${origin}${EN_PREFIX}${path}` : `${origin}${path || '/'}`;
+    canonicals.forEach((el) => el.remove());
+    canonical.href = selfUrl;
+
+    // og:locale per language version. Helmet may already render these per page,
+    // so reuse whatever tag exists and keep exactly one of each.
+    const setOg = (property: string, content: string) => {
+      const tags = Array.from(
+        document.querySelectorAll(`meta[property="${property}"]`),
+      ) as HTMLMetaElement[];
+      let tag = tags.shift();
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        tag.setAttribute('data-i18n', 'true');
+        document.head.appendChild(tag);
+      }
+      tags.forEach((el) => el.remove());
+      tag.content = content;
+    };
+    setOg('og:locale', lang === 'en' ? 'en_US' : 'sv_SE');
+    setOg('og:locale:alternate', lang === 'en' ? 'sv_SE' : 'en_US');
+
+    let ogUrl = document.querySelector('meta[property="og:url"]') as HTMLMetaElement | null;
+    if (!ogUrl) {
+      ogUrl = document.createElement('meta');
+      ogUrl.setAttribute('property', 'og:url');
+      document.head.appendChild(ogUrl);
+    }
+    ogUrl.content = selfUrl;
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [location.pathname, lang]);
 
   return null;
 };
+
 
 const AppRoutes = () => {
   const host = getCurrentHost();
@@ -227,6 +280,13 @@ const AppRoutes = () => {
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
               <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
+
+              {/* English routes (served under /en/ via router basename) */}
+              <Route path="/submit-request" element={<BikeRequestWizard />} />
+              <Route path="/for-bike-shops" element={<ForVerkstaderPage />} />
+              {CYKEL_CITIES.map((c) => (
+                <Route key={`en-${c.slug}`} path={`/bike-repair-${c.slug}`} element={<CykelCityLandingPage city={c.name} />} />
+              ))}
               {/* Google Ads: rekryteringssida per stad för verkstäder (noindex) */}
               <Route path="/annons/verkstad/:citySlug" element={<WorkshopAdCityPage />} />
               <Route path="/avregistrera/:token" element={<UnsubscribePage />} />

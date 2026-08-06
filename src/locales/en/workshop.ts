@@ -162,4 +162,6 @@ export const EN_WORKSHOP: Record<string, string> = {
   '{n} dagar sedan': '{n} days ago',
   '{n} månad sedan': '{n} month ago',
   '{n} månader sedan': '{n} months ago',
+  'Svara på engelska': 'Answer in English',
+  'Kunden skickade ärendet på engelska och förväntar sig svar på engelska.': 'The customer submitted the request in English and expects an answer in English.',
 }
