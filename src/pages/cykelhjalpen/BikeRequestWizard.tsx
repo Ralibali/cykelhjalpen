@@ -146,10 +146,20 @@ const BikeRequestWizard = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // När staden kommer från ?stad= hoppar vi över platssteget (2).
+  const nextStepFrom = (current: number) => {
+    const next = Math.min(BIKE_REQUEST_STEPS.length - 1, current + 1)
+    return cityLocked && next === 2 ? Math.min(BIKE_REQUEST_STEPS.length - 1, next + 1) : next
+  }
+  const prevStepFrom = (current: number) => {
+    const prev = Math.max(0, current - 1)
+    return cityLocked && prev === 2 ? Math.max(0, prev - 1) : prev
+  }
+
   const goNext = () => {
     if (!canContinue()) return
     trackClick('bike_request_step_completed', BIKE_REQUEST_STEPS[step], { step: step + 1, city: form.city })
-    setStep((current) => Math.min(BIKE_REQUEST_STEPS.length - 1, current + 1))
+    setStep((current) => nextStepFrom(current))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
