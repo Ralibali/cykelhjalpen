@@ -57,24 +57,26 @@ serve(async (req) => {
 
     const initialRequests = data || [];
     const initialIds = initialRequests.map((row) => row.id);
-    const paidCounts = new Map<string, number>();
+    const sentCounts = new Map<string, number>();
 
     if (initialIds.length > 0) {
-      const { data: paidRows, error: paidError } = await admin
+      // Betala-vid-vinst: svar är synliga direkt när de skickas, så det är
+      // antalet skickade svar (inte betalda) som avgör när ärendet är fullt.
+      const { data: sentRows, error: sentError } = await admin
         .from("workshop_responses")
         .select("request_id")
         .in("request_id", initialIds)
-        .eq("paid", true);
-      if (paidError) throw paidError;
+        .in("status", ["sent", "won"]);
+      if (sentError) throw sentError;
 
-      for (const row of paidRows || []) {
-        paidCounts.set(row.request_id, (paidCounts.get(row.request_id) || 0) + 1);
+      for (const row of sentRows || []) {
+        sentCounts.set(row.request_id, (sentCounts.get(row.request_id) || 0) + 1);
       }
     }
 
     // The database trigger is the final guard, but full requests should disappear
     // from the product before a workshop spends time writing an offer.
-    const requests = initialRequests.filter((row) => (paidCounts.get(row.id) || 0) < 3);
+    const requests = initialRequests.filter((row) => (sentCounts.get(row.id) || 0) < 3);
     const requestIds = requests.map((row) => row.id);
     const imagesByRequest = new Map<string, { id: string; url: string }[]>();
 

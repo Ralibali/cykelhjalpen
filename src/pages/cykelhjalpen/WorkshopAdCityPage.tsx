@@ -46,14 +46,14 @@ const WorkshopAdCityPage = () => {
 
   const registerHref = `/registrera/verkstad?stad=${encodeURIComponent(city.name)}&utm_source=google&utm_medium=cpc&utm_campaign=verkstad-${city.slug}`
   const pageTitle = t('Cykelverkstad i {city}? Få nya kunder via Cykelhjälpen', { city: city.name })
-  const pageDesc = t('Anslut din verkstad i {city} till Cykelhjälpen. Få kvalificerade leads direkt i inboxen – du betalar bara {fee} kr per lead du väljer att svara på. Ingen månadskostnad, ingen bindning.', { city: city.name, fee: LEAD_FEE_KR })
+  const pageDesc = t('Anslut din verkstad i {city} till Cykelhjälpen. Få kvalificerade leads direkt i inboxen – det kostar inget att svara, du betalar bara {fee} kr exkl. moms när kunden väljer dig. Ingen månadskostnad, ingen bindning.', { city: city.name, fee: LEAD_FEE_KR })
   const canonical = `https://cykelhjalpen.se/annons/verkstad/${city.slug}`
 
   const benefits = [
-    { icon: Sparkles, title: t('Två gratis leads'), body: t('Du får testa två kundförfrågningar utan kostnad när du är godkänd. Fungerar det – fortsätt. Passar det inte – ingen bindning.') },
+    { icon: Sparkles, title: t('Två gratis leads'), body: t('Dina två första vunna ärenden regleras med gratis-leads när du är godkänd. Fungerar det – fortsätt. Passar det inte – ingen bindning.') },
     { icon: Wrench, title: t('Kunder i {city}', { city: city.name }), body: t('Vi visar dig bara förfrågningar från cyklister i {city} och närområdet. Ingen tid slösas på fel jobb.', { city: city.name }) },
     { icon: Clock, title: t('Svara på tio sekunder'), body: t('Ring, mejla eller lämna en offert direkt från dashboarden. Kunden ser ditt svar med logotyp och recensioner.') },
-    { icon: TrendingUp, title: t('Bara {fee} kr per lead', { fee: LEAD_FEE_KR }), body: t('Ingen månadskostnad. Ingen provision. Du betalar bara för de leads du faktiskt vill jobba med.') },
+    { icon: TrendingUp, title: t('Bara {fee} kr vid vinst', { fee: LEAD_FEE_KR }), body: t('Ingen månadskostnad. Ingen provision. Det kostar inget att svara – du betalar bara när kunden väljer dig.') },
     { icon: ShieldCheck, title: t('Kvalitetsgranskade förfrågningar'), body: t('Varje förfrågan granskas av oss innan den skickas till dig – inga botar, inga skämt, bara riktiga cyklister som behöver hjälp.') },
     { icon: BadgeCheck, title: t('Bli synlig i sökningar'), body: t('Godkända verkstäder listas på våra stadssidor som rankar högt för sökningar som "cykelreparation {city}".', { city: city.name }) },
   ]
@@ -61,7 +61,7 @@ const WorkshopAdCityPage = () => {
   const steps = [
     { title: t('Anslut din verkstad'), body: t('Fyll i uppgifterna om din verkstad i {city}. Vi granskar och godkänner inom ett dygn.', { city: city.name }) },
     { title: t('Få förfrågningar'), body: t('Vi mejlar (och SMS:ar om du vill) så fort en cyklist i ditt område behöver hjälp.') },
-    { title: t('Svara på det som passar'), body: t('Lämna offert med ett klick. De två första leadsen är gratis – därefter {fee} kr per lead du väljer att svara på.', { fee: LEAD_FEE_KR }) },
+    { title: t('Svara på det som passar'), body: t('Lämna offert med ett klick – helt kostnadsfritt. Vinner du ärendet kostar det {fee} kr exkl. moms, eller så dras ett gratis-lead.', { fee: LEAD_FEE_KR }) },
     { title: t('Ta jobbet'), body: t('Kunden hör av sig direkt till dig – du fakturerar som vanligt, vi tar ingen provision.') },
   ]
 
@@ -99,7 +99,7 @@ const WorkshopAdCityPage = () => {
                 {t('Fyll kalendern med nya cykeljobb i {city}', { city: city.name })}
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8">
-                {t('Vi skickar kvalificerade kundförfrågningar direkt till din verkstad. Du väljer vilka du svarar på – betalar bara')} <strong className="text-foreground">{t('{fee} kr per lead', { fee: LEAD_FEE_KR })}</strong>. {t('Ingen månadskostnad, ingen bindning.')}
+                {t('Vi skickar kvalificerade kundförfrågningar direkt till din verkstad. Det kostar inget att svara – du betalar bara')} <strong className="text-foreground">{t('{fee} kr exkl. moms när kunden väljer dig', { fee: LEAD_FEE_KR })}</strong>. {t('Ingen månadskostnad, ingen bindning.')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-14 px-8 text-base shadow-brand">
@@ -136,7 +136,7 @@ const WorkshopAdCityPage = () => {
               </div>
               <div className="absolute -bottom-5 left-6 sticker rounded-2xl bg-card px-5 py-4">
                 <p className="font-display text-3xl leading-none">{LEAD_FEE_KR} kr</p>
-                <p className="text-xs text-muted-foreground mt-1">{t('per lead du själv väljer')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('per vunnet ärende, exkl. moms')}</p>
               </div>
             </motion.div>
           </div>
@@ -219,7 +219,7 @@ const WorkshopAdCityPage = () => {
                 <Sparkles className="w-4 h-4 text-[hsl(var(--brand-sun))]" /> {t('Ingen bindning · Ingen månadskostnad')}
               </div>
               <div className="font-display text-6xl mb-2">{LEAD_FEE_KR} kr</div>
-              <div className="text-background/70 mb-8">{t('per lead du väljer att svara på')}</div>
+              <div className="text-background/70 mb-8">{t('per vunnet ärende – att svara är gratis')}</div>
               <ul className="text-left space-y-3 mb-9 max-w-sm mx-auto">
                 {[
                   t('Två gratis leads när du blir godkänd'),

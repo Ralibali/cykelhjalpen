@@ -351,20 +351,20 @@ export const EN_SEO: Record<string, string> = {
 
   // WorkshopAdCityPage
   'Cykelverkstad i {city}? Få nya kunder via Cykelhjälpen': 'Bike shop in {city}? Get new customers through Cykelhjälpen',
-  'Anslut din verkstad i {city} till Cykelhjälpen. Få kvalificerade leads direkt i inboxen – du betalar bara {fee} kr per lead du väljer att svara på. Ingen månadskostnad, ingen bindning.':
-    'Connect your bike shop in {city} to Cykelhjälpen. Get qualified leads straight to your inbox – you only pay {fee} kr per lead you choose to respond to. No monthly fee, no commitment.',
+  'Anslut din verkstad i {city} till Cykelhjälpen. Få kvalificerade leads direkt i inboxen – det kostar inget att svara, du betalar bara {fee} kr exkl. moms när kunden väljer dig. Ingen månadskostnad, ingen bindning.':
+    'Connect your bike shop in {city} to Cykelhjälpen. Get qualified leads straight to your inbox – responding is free, you only pay {fee} SEK excl. VAT when the customer picks you. No monthly fee, no commitment.',
   'Anslut din verkstad': 'Connect your bike shop',
   'För cykelverkstäder i {city}': 'For bike shops in {city}',
   'Fyll kalendern med nya cykeljobb i {city}': 'Fill your schedule with new bike jobs in {city}',
-  'Vi skickar kvalificerade kundförfrågningar direkt till din verkstad. Du väljer vilka du svarar på – betalar bara':
-    'We send qualified customer requests straight to your bike shop. You choose which ones to respond to – you only pay',
-  '{fee} kr per lead': '{fee} kr per lead',
+  'Vi skickar kvalificerade kundförfrågningar direkt till din verkstad. Det kostar inget att svara – du betalar bara':
+    'We send qualified customer requests straight to your bike shop. Responding is free – you only pay',
+  '{fee} kr exkl. moms när kunden väljer dig': '{fee} SEK excl. VAT when the customer picks you',
   'Ingen månadskostnad, ingen bindning.': 'No monthly fee, no commitment.',
   'Anslut din verkstad gratis': 'Connect your bike shop for free',
   'Läs mer om upplägget': 'Read more about how it works',
   'Två gratis leads när du blir godkänd · Godkännande sker inom ett dygn': 'Two free leads once you\u2019re approved · Approval within one business day',
   'Cykelmekaniker i sin verkstad': 'Bike mechanic in their shop',
-  'per lead du själv väljer': 'per lead you choose yourself',
+  'per vunnet ärende, exkl. moms': 'per won request, excl. VAT',
   'Godkända verkstäder': 'Approved bike shops',
   'Förfrågningar hittills': 'Requests so far',
   'Öppna jobb i {city}': 'Open jobs in {city}',
@@ -373,17 +373,17 @@ export const EN_SEO: Record<string, string> = {
   'Cykelhjälpen är gjort för verkstäder som vill växa i {city} utan att lägga tid och pengar på marknadsföring.':
     'Cykelhjälpen is built for bike shops that want to grow in {city} without spending time and money on marketing.',
   'Två gratis leads': 'Two free leads',
-  'Du får testa två kundförfrågningar utan kostnad när du är godkänd. Fungerar det – fortsätt. Passar det inte – ingen bindning.':
-    'You get to try two customer requests for free once you\u2019re approved. If it works for you, keep going. If not, there\u2019s no commitment.',
+  'Dina två första vunna ärenden regleras med gratis-leads när du är godkänd. Fungerar det – fortsätt. Passar det inte – ingen bindning.':
+    'Your first two won requests are settled with free leads once you\u2019re approved. If it works for you, keep going. If not, there\u2019s no commitment.',
   'Kunder i {city}': 'Customers in {city}',
   'Vi visar dig bara förfrågningar från cyklister i {city} och närområdet. Ingen tid slösas på fel jobb.':
     'We only show you requests from cyclists in {city} and the surrounding area. No time wasted on the wrong jobs.',
   'Svara på tio sekunder': 'Reply in ten seconds',
   'Ring, mejla eller lämna en offert direkt från dashboarden. Kunden ser ditt svar med logotyp och recensioner.':
     'Call, email or send a quote directly from the dashboard. The customer sees your reply with your logo and reviews.',
-  'Bara {fee} kr per lead': 'Only {fee} kr per lead',
-  'Ingen månadskostnad. Ingen provision. Du betalar bara för de leads du faktiskt vill jobba med.':
-    'No monthly fee. No commission. You only pay for the leads you actually want to work with.',
+  'Bara {fee} kr vid vinst': 'Only {fee} kr when you win',
+  'Ingen månadskostnad. Ingen provision. Det kostar inget att svara – du betalar bara när kunden väljer dig.':
+    'No monthly fee. No commission. Responding is free – you only pay when the customer picks you.',
   'Kvalitetsgranskade förfrågningar': 'Quality-checked requests',
   'Varje förfrågan granskas av oss innan den skickas till dig – inga botar, inga skämt, bara riktiga cyklister som behöver hjälp.':
     'We review every request before it\u2019s sent to you – no bots, no pranks, just real cyclists who need help.',
@@ -398,13 +398,13 @@ export const EN_SEO: Record<string, string> = {
   'Vi mejlar (och SMS:ar om du vill) så fort en cyklist i ditt område behöver hjälp.':
     'We\u2019ll email you (and text you if you want) as soon as a cyclist in your area needs help.',
   'Svara på det som passar': 'Respond to what suits you',
-  'Lämna offert med ett klick. De två första leadsen är gratis – därefter {fee} kr per lead du väljer att svara på.':
-    'Send a quote with one click. The first two leads are free – after that, {fee} kr per lead you choose to respond to.',
+  'Lämna offert med ett klick – helt kostnadsfritt. Vinner du ärendet kostar det {fee} kr exkl. moms, eller så dras ett gratis-lead.':
+    'Send a quote with one click – completely free. If you win the request it costs {fee} SEK excl. VAT, or a free lead is used instead.',
   'Ta jobbet': 'Take the job',
   'Kunden hör av sig direkt till dig – du fakturerar som vanligt, vi tar ingen provision.':
     'The customer contacts you directly – you invoice as usual, and we take no commission.',
   'Ingen bindning · Ingen månadskostnad': 'No commitment · No monthly fee',
-  'per lead du väljer att svara på': 'per lead you choose to respond to',
+  'per vunnet ärende – att svara är gratis': 'per won request – responding is free',
   'Två gratis leads när du blir godkänd': 'Two free leads once you\u2019re approved',
   'Bara kunder i {city} och närområdet': 'Only customers in {city} and the surrounding area',
   'Full kontroll: du väljer vilka du svarar på': 'Full control: you choose who you respond to',

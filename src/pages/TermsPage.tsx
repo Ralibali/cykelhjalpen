@@ -88,8 +88,8 @@ const TermsPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('4. Lead-avgift och betalning för verkstäder')}</h2>
               <ul className="list-disc pl-5 space-y-1">
                 <li>{t('Det är gratis att registrera och ansöka om godkännande som verkstad.')}</li>
-                <li>{t('Nya verkstäder får')} <strong>{t('två gratis kundförfrågningar')}</strong> {t('att testa tjänsten med – ingen månadsavgift och ingen bindningstid.')}</li>
-                <li>{t('Därefter kostar varje skickat prisförslag')} <strong>{t('{fee} kr exklusive moms (62,50 kr inklusive moms)', { fee: LEAD_FEE_KR })}</strong>. {t('Verkstaden köper leads i förväg via Stripe och ett lead dras först när ett prisförslag skickas.')}</li>
+                <li>{t('Det är kostnadsfritt för verkstäder att svara på kundförfrågningar.')}</li>
+                <li>{t('Först när kunden väljer verkstadens prisförslag som vinnande debiteras en vinstavgift om')} <strong>{t('{fee} kr exklusive moms (62,50 kr inklusive moms)', { fee: LEAD_FEE_KR })}</strong>. {t('Nya verkstäder får')} <strong>{t('två gratis leads')}</strong> {t('som automatiskt dras vid vinst i stället för betalning. Verkstaden kan även köpa leads i förväg via Stripe.')}</li>
                 <li>{t('Moms beräknas utifrån tillämpliga skatteregler och de faktureringsuppgifter som lämnas i Stripe.')}</li>
                 <li>{t('Maximalt tre verkstäder kan svara per ärende. Först till kvarn gäller.')}</li>
                 <li>{t('Betalningsunderlag hanteras via Stripe.')}</li>

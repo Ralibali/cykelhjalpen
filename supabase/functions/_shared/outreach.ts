@@ -168,7 +168,7 @@ export const buildEmailDraft = (prospect: ProspectForDraft): DraftBundle => {
     'Det här får ni som ny verkstad:',
     '• Två gratis kundförfrågningar, så att ni kan testa tjänsten utan kostnad.',
     '• Ingen månadsavgift och ingen bindningstid.',
-    '• Därefter kostar varje förfrågan ni svarar på 50 kr exklusive moms.',
+    '• Det kostar inget att svara – först när kunden väljer er betalar ni 50 kr exklusive moms.',
     '',
   )
   if (demand) textLines.push(`${demand}`, '')
@@ -216,7 +216,7 @@ ${safeDetail}
 <ul style="margin:0 0 20px 0;padding-left:20px;font-size:15px;line-height:1.7">
   <li><strong>Två gratis kundförfrågningar</strong>, så att ni kan testa tjänsten utan kostnad.</li>
   <li>Ingen månadsavgift och ingen bindningstid.</li>
-  <li>Därefter kostar varje förfrågan ni svarar på 50 kr exklusive moms.</li>
+  <li>Det kostar inget att svara – först när kunden väljer er betalar ni 50 kr exklusive moms.</li>
 </ul>
 ${safeDemand}
 <p style="margin:0 0 20px;font-size:15px;line-height:1.6">
@@ -264,7 +264,7 @@ export const buildFollowUpDraft = (prospect: ProspectForFollowUp): { subject: st
     '',
     'Jag såg att ni var inne och tittade på registreringssidan – kul att intresset finns! Jag ville bara kort förklara hur det fungerar, ifall något var oklart.',
     '',
-    'Cykelhjälpen skickar er färdiga kundförfrågningar från cykelägare i er stad. Ni väljer själva vilka ärenden ni svarar på, de två första är gratis och därefter kostar varje förfrågan ni svarar på 50 kr exklusive moms. Ingen månadsavgift och ingen bindningstid.',
+    'Cykelhjälpen skickar er färdiga kundförfrågningar från cykelägare i er stad. Ni väljer själva vilka ärenden ni svarar på – det kostar inget att svara. Först när kunden väljer er betalar ni 50 kr exklusive moms, och era två första vunna ärenden regleras med gratis-leads. Ingen månadsavgift och ingen bindningstid.',
   ]
   if (demand) lines.push('', demand)
   lines.push(

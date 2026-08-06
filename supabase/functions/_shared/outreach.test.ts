@@ -105,7 +105,7 @@ Deno.test('buildFollowUpDraft: innehåller registreringslänk, hälsning och sta
   assertStringIncludes(subject, 'Linköping')
   assertStringIncludes(message, 'Hej Cykelverkstan!')
   assertStringIncludes(message, OUTREACH_WORKSHOP_URL)
-  assertStringIncludes(message, 'två första är gratis')
+  assertStringIncludes(message, 'två första vunna ärenden')
   // Ingen efterfrågerad när det inte väntar ärenden
   assert(!message.includes('väntar'))
 })

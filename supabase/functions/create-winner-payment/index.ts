@@ -1,23 +1,17 @@
+// Vinnande verkstad betalar vinstavgiften (50 kr exkl. moms) för att låsa upp
+// kundens kontaktuppgifter. Skapar en Stripe Checkout-session för ett svar som
+// redan är 'won' men ännu inte betalat.
 import Stripe from 'npm:stripe@18.5.0'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { LEAD_FEE_ORE } from '../_shared/pricing.ts'
 import { corsFor } from '../_shared/cors.ts'
-import { notifyCustomerOfNewResponse } from '../_shared/customer-response.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
 
 const allowedOrigin = (origin: string | null) => {
   if (origin && /^(https:\/\/(www\.)?cykelhjalpen\.se|https:\/\/[a-z0-9-]+\.lovable\.app|http:\/\/localhost(:\d+)?)$/i.test(origin)) return origin
   return 'https://cykelhjalpen.se'
-}
-
-const friendlyDatabaseError = (message: string) => {
-  if (message.includes('bike_request_full')) return 'Ärendet är fullt – tre verkstäder har redan svarat.'
-  if (message.includes('response_already_paid')) return 'Offerten är redan skickad.'
-  if (message.includes('response_not_found')) return 'Offerten hittades inte.'
-  if (message.includes('workshop_not_approved')) return 'Verkstaden är inte godkänd ännu.'
-  return message
 }
 
 Deno.serve(async (req) => {
@@ -53,7 +47,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
     const { data: workshop, error: workshopError } = await admin
       .from('workshops')
-      .select('id, approved, company_name, stripe_customer_id, email, free_leads_remaining')
+      .select('id, approved, company_name, stripe_customer_id, email')
       .eq('user_id', userData.user.id)
       .maybeSingle()
     if (workshopError) throw workshopError
@@ -66,61 +60,16 @@ Deno.serve(async (req) => {
       .maybeSingle()
     if (responseError) throw responseError
     if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
-    if (response.paid) throw new Error('Offerten är redan skickad')
-    if (response.status === 'closed_for_responses' || (response as any).status === 'full') throw new Error('Ärendet är fullt – tre verkstäder har redan svarat.')
-
-    const { count, error: countError } = await admin
-      .from('workshop_responses')
-      .select('*', { head: true, count: 'exact' })
-      .eq('request_id', response.request_id)
-      .eq('paid', true)
-    if (countError) throw countError
-    if ((count || 0) >= 3) throw new Error('Ärendet är fullt – tre verkstäder har redan svarat.')
-
-    const origin = allowedOrigin(req.headers.get('origin'))
-
-    if ((workshop.free_leads_remaining || 0) > 0) {
-      const { data: consumeRows, error: consumeError } = await admin.rpc('consume_free_lead_for_response', {
-        p_response_id: response.id,
-        p_workshop_id: workshop.id,
-      })
-
-      if (consumeError && !consumeError.message.includes('no_free_leads')) {
-        throw new Error(friendlyDatabaseError(consumeError.message))
-      }
-
-      const consumed = Array.isArray(consumeRows) ? consumeRows[0] : consumeRows
-      if (!consumeError && consumed?.request_id) {
-        if (!consumed.already_processed) {
-          // Notifiera kunden om det nya svaret – mejl + SMS, idempotent per svar.
-          const notifyTask = notifyCustomerOfNewResponse(admin, {
-            supabaseUrl,
-            serviceRoleKey,
-            requestId: consumed.request_id,
-            responseId: response.id,
-            workshopName: workshop.company_name,
-          }).catch((notifyError) => console.error('Free lead customer notification failed', notifyError))
-
-          const edgeRuntime = (globalThis as any).EdgeRuntime
-          if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(notifyTask)
-          else await notifyTask
-        }
-
-        return new Response(JSON.stringify({
-          url: `${origin}/dashboard/verkstad/arenden?paid=true&free=1&response_id=${response.id}`,
-          free_lead: true,
-          remaining_free_leads: consumed.remaining_free_leads,
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-        })
-      }
-      // If another request used the final free lead, continue to the normal paid Checkout flow.
-    }
+    if (response.status !== 'won') throw new Error('Endast vinnande offerter kan betalas.')
+    if (response.paid) throw new Error('Vinstavgiften är redan betald.')
 
     const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeSecret) throw new Error('Stripe är inte konfigurerat')
     const stripe = new Stripe(stripeSecret, { apiVersion: '2025-08-27.basil' })
 
+    const origin = allowedOrigin(req.headers.get('origin'))
+
+    // Återanvänd en öppen Checkout-session om en redan finns för svaret.
     const { data: pendingCharges, error: pendingError } = await admin
       .from('lead_charges')
       .select('id, stripe_session_id')
@@ -180,17 +129,17 @@ Deno.serve(async (req) => {
       line_items: [{
         price_data: {
           currency: 'sek',
-          product_data: { name: 'Cykelhjälpen – offert till kund', description: `Lead-avgift för ärende ${response.request_id.slice(0, 8)}` },
+          product_data: { name: 'Cykelhjälpen – vinstavgift', description: `Kunden valde er för ärende ${response.request_id.slice(0, 8)}` },
           unit_amount: LEAD_FEE_ORE,
           tax_behavior: 'exclusive',
         },
         quantity: 1,
       }],
-      success_url: `${origin}/dashboard/verkstad/arenden?paid=true&response_id=${response.id}`,
-      cancel_url: `${origin}/dashboard/verkstad/arenden?canceled=true&response_id=${response.id}`,
-      metadata: { response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
+      success_url: `${origin}/dashboard/verkstad?won_paid=true&response_id=${response.id}`,
+      cancel_url: `${origin}/dashboard/verkstad?won_canceled=true&response_id=${response.id}`,
+      metadata: { kind: 'winner_fee', response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
       payment_intent_data: {
-        metadata: { response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
+        metadata: { kind: 'winner_fee', response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
       },
     })
 
@@ -232,9 +181,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   } catch (error) {
-    const rawMessage = error instanceof Error ? error.message : 'Okänt fel'
-    const message = friendlyDatabaseError(rawMessage)
-    console.error('create-bike-response-payment', rawMessage)
+    const message = error instanceof Error ? error.message : 'Okänt fel'
+    console.error('create-winner-payment', message)
     return new Response(JSON.stringify({ error: message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

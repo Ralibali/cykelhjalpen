@@ -120,9 +120,9 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                 </section>
 
                 <section>
-                  <h3 className="font-semibold text-gray-900">{t('5. Lead-credits och betalning')}</h3>
+                  <h3 className="font-semibold text-gray-900">{t('5. Vinstavgift och lead-credits')}</h3>
                   <p className="mt-2">
-                    {t('Verkstaden betalar en förmedlingsavgift (lead-credit) för varje svar på en kundförfrågan. Nya verkstäder får 2 gratis leads. Därefter kostar varje lead 50 kr exklusive moms (62,50 kr inklusive moms). Verkstaden kan köpa credits i förväg. Credits som inte förbrukas sparas på kontot.')}
+                    {t('Det är kostnadsfritt för Verkstaden att svara på kundförfrågningar. Först när kunden väljer Verkstadens prisförslag som vinnande debiteras en förmedlingsavgift om 50 kr exklusive moms (62,50 kr inklusive moms) innan kundens kontaktuppgifter låses upp. Nya verkstäder får 2 gratis leads som automatiskt dras vid vinst i stället för betalning. Verkstaden kan även köpa credits i förväg. Credits som inte förbrukas sparas på kontot.')}
                   </p>
                 </section>
 
@@ -165,7 +165,7 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                 </section>
 
                 <p className="text-xs text-gray-500 pt-4 border-t border-gray-200">
-                  {t('Senast uppdaterad: 2026-07-30. Verkstaden meddelas om väsentliga ändringar via e-post minst 30 dagar innan ändringarna träder i kraft.')}
+                  {t('Senast uppdaterad: 2026-08-06. Verkstaden meddelas om väsentliga ändringar via e-post minst 30 dagar innan ändringarna träder i kraft.')}
                 </p>
               </div>
             </ScrollArea>

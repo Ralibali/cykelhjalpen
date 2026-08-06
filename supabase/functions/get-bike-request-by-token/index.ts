@@ -51,10 +51,9 @@ serve(async (req) => {
     const [{ data: responses, error: responseError }, { data: imageRows, error: imageError }] = await Promise.all([
       admin
         .from("workshop_responses")
-        .select("id, message, estimated_price_min, estimated_price_max, estimated_time, can_pickup, created_at, workshops(id, company_name, phone, email, website)")
+        .select("id, message, estimated_price_min, estimated_price_max, estimated_time, can_pickup, status, created_at, workshops(id, company_name, phone, email, website)")
         .eq("request_id", request.id)
-        .eq("paid", true)
-        .eq("status", "sent")
+        .in("status", ["sent", "won", "lost"])
         .order("created_at", { ascending: true })
         .limit(5),
       admin
@@ -74,6 +73,7 @@ serve(async (req) => {
       estimated_price_max: row.estimated_price_max,
       estimated_time: row.estimated_time,
       can_pickup: row.can_pickup,
+      status: row.status,
       created_at: row.created_at,
       workshop: row.workshops,
     }));

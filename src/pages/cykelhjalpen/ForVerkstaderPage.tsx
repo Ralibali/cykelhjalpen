@@ -107,7 +107,7 @@ const ForVerkstaderPage = () => {
                   <p className="text-xs text-muted-foreground mt-1">{t('exkl. moms per skickad offert')}</p>
                 </div>
                 <div className="hidden sm:block w-px self-stretch bg-border" />
-                <p className="hidden sm:block text-sm text-muted-foreground max-w-44">{t('De två första förfrågningarna är gratis – sedan {fee} kr per offert ni skickar.', { fee: LEAD_FEE_KR })}</p>
+                <p className="hidden sm:block text-sm text-muted-foreground max-w-44">{t('Kostnadsfritt att svara – ni betalar {fee} kr exkl. moms först när kunden väljer er.', { fee: LEAD_FEE_KR })}</p>
               </div>
             </motion.div>
           </div>

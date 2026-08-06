@@ -82,7 +82,7 @@ export const EN_HOME: Record<string, string> = {
     'Cykelhjälpen sends you relevant, manually reviewed requests from cyclists in your city. You decide yourselves if and when to submit a quote.',
   'Cykelmekaniker i sin verkstad med cyklar på väggen': 'A bike mechanic in their shop with bikes on the wall',
   'De får prisförslaget och era kontaktuppgifter. Fortsatt bokning sker direkt med er.': 'They receive the quote and your contact details. Further booking happens directly with you.',
-  'De två första förfrågningarna är gratis – sedan {fee} kr per offert ni skickar.': 'The first two requests are free – then {fee} SEK per quote you send.',
+  'Kostnadsfritt att svara – ni betalar {fee} kr exkl. moms först när kunden väljer er.': 'Free to respond – you only pay {fee} SEK excl. VAT once the customer picks you.',
   'Därför ansluter verkstäder sig': 'Why bike shops join us',
   'Efter godkännande får ni tillgång till granskade ärenden i er stad.': 'Once approved, you get access to reviewed requests in your city.',
   'En enkel verkstadsvy': 'A simple shop dashboard',

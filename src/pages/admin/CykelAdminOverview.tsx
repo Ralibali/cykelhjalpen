@@ -30,7 +30,7 @@ interface RequestRow {
   city: string
   urgency: string | null
   admin_status: string
-  workshop_responses?: { id: string; paid: boolean }[]
+  workshop_responses?: { id: string; paid: boolean; status: string }[]
 }
 
 interface WorkshopRow {
@@ -90,7 +90,7 @@ const CykelAdminOverview = () => {
     const [requestResult, workshopResult, chargeResult, prospectResult, clickResult, mailResult, notifResult] = await Promise.all([
       supabase
         .from('bike_repair_requests')
-        .select('id, view_token, created_at, customer_name, customer_email, customer_phone, bike_type, repair_category, description, area, postcode, city, urgency, admin_status, workshop_responses(id, paid)')
+        .select('id, view_token, created_at, customer_name, customer_email, customer_phone, bike_type, repair_category, description, area, postcode, city, urgency, admin_status, status, workshop_responses(id, paid, status)')
         .order('created_at', { ascending: false })
         .limit(200),
       supabase.from('workshops').select('id, company_name, email, phone, approved, created_at').order('created_at', { ascending: false }),
@@ -235,7 +235,7 @@ const CykelAdminOverview = () => {
     [workshops],
   )
   const paidResponses = useMemo(
-    () => requests.reduce((sum, request) => sum + (request.workshop_responses || []).filter((response) => response.paid).length, 0),
+    () => requests.reduce((sum, request) => sum + (request.workshop_responses || []).filter((response) => response.status === 'won' || response.paid).length, 0),
     [requests],
   )
   const revenue30d = useMemo(() => {
@@ -245,7 +245,7 @@ const CykelAdminOverview = () => {
       .reduce((sum, charge) => sum + (charge.amount || 0), 0)
   }, [charges])
   const approvedWithoutResponse = useMemo(
-    () => approvedRequests.filter((request) => !(request.workshop_responses || []).some((response) => response.paid)).length,
+    () => approvedRequests.filter((request) => !(request.workshop_responses || []).some((response) => response.status === 'sent' || response.status === 'won' || response.paid)).length,
     [approvedRequests],
   )
 
@@ -272,7 +272,7 @@ const CykelAdminOverview = () => {
         <StatCard label={t('Väntar granskning')} value={pendingRequests.length} icon={Clock} to="/admin/cykelarenden" />
         <StatCard label={t('Godkända ärenden')} value={approvedRequests.length} icon={CheckCircle2} to="/admin/cykelarenden" />
         <StatCard label={t('Verkstäder väntar')} value={pendingWorkshops.length} icon={Wrench} to="/admin/verkstader" />
-        <StatCard label={t('Betalda offerter')} value={paidResponses} icon={CreditCard} to="/admin/cykelbetalningar" />
+        <StatCard label={t('Reglerade vinster')} value={paidResponses} icon={CreditCard} to="/admin/cykelbetalningar" />
         <StatCard label={t('Intäkter (30 d)')} value={formatMoney(revenue30d)} icon={CreditCard} to="/admin/cykelbetalningar" />
       </div>
 

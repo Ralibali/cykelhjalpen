@@ -69,7 +69,7 @@ const WorkshopBilling = () => {
               <Sparkles className="h-5 w-5 text-primary" /> {t('Lead credits')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt när du skickar en offert.', { price: LEAD_FEE_KR })}
+              {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt först när kunden väljer dig som vinnare.', { price: LEAD_FEE_KR })}
             </p>
           </div>
           <BuyLeadsButton quantity={10} />

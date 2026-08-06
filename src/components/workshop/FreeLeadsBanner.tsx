@@ -38,7 +38,7 @@ export function FreeLeadsBanner() {
                 : t('{n} gratis leads kvar', { n: workshop.free_leads_remaining })}
             </h3>
             <p className="mt-0.5 text-sm text-green-700">
-              {t('Svara på cykelförfrågningar helt utan kostnad. Efter dina gratis leads är priset 50 kr per offert.')}
+              {t('Det kostar inget att svara. När kunden väljer er dras ett gratis-lead automatiskt – utan gratis-leads kostar vinsten 50 kr exkl. moms.')}
             </p>
             {!workshop.approved && (
               <p className="mt-1.5 text-xs text-amber-700 bg-amber-100 inline-block px-2 py-0.5 rounded">

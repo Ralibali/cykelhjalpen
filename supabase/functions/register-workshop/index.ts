@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
       : null
 
     const now = new Date().toISOString()
-    const termsVersion = '2026-07-30'
+    const termsVersion = '2026-08-06'
 
     const { error: profileError } = await adminClient.from('profiles').upsert({
       id: user.id,

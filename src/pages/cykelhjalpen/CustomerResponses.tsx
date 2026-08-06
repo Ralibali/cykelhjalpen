@@ -20,6 +20,7 @@ interface WorkshopResponse {
   estimated_price_max: number | null
   estimated_time: string | null
   can_pickup: boolean
+  status: string
   workshop: {
     id?: string
     company_name: string
@@ -71,8 +72,13 @@ const CustomerResponses = () => {
   const [responses, setResponses] = useState<WorkshopResponse[]>([])
   const [images, setImages] = useState<RequestImage[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [selectingId, setSelectingId] = useState<string | null>(null)
   const knownIdsRef = useRef<Set<string>>(new Set())
   const firstLoadRef = useRef(true)
+
+  const winner = responses.find((response) => response.status === 'won') || null
+  const hasWinner = Boolean(winner) || request?.status === 'completed'
 
   const load = useCallback(async (showSpinner = false) => {
     if (!token) return
@@ -113,7 +119,7 @@ const CustomerResponses = () => {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full') return
+    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full' || request?.status === 'completed') return
     const id = window.setInterval(() => { load() }, POLL_MS)
     const onVisible = () => { if (document.visibilityState === 'visible') load() }
     document.addEventListener('visibilitychange', onVisible)
@@ -134,6 +140,34 @@ const CustomerResponses = () => {
     // "offer accepted" signal. Only pass low-cardinality city – no IDs, names
     // or free text – so this stays privacy-safe in Plausible.
     if (request?.city) trackEvent('Offer Accepted', { city: request.city })
+  }
+
+  // Kunden väljer vinnande verkstad. Valet är slutgiltigt och reglerar
+  // ärendet: vinnaren betalar vinstavgiften (eller drar ett gratis-lead) och
+  // får kundens kontaktuppgifter, övriga svar markeras som ej valda.
+  const pickWinner = async (response: WorkshopResponse) => {
+    if (!token) return
+    setSelectingId(response.id)
+    try {
+      const { data, error } = await supabase.functions.invoke('select-bike-winner', {
+        body: { token, response_id: response.id },
+      })
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+
+      toast.success(t('Du har valt {name}!', { name: response.workshop?.company_name || t('verkstaden') }), {
+        description: t('Verkstaden får dina kontaktuppgifter och hör av sig till dig inom kort.'),
+      })
+      if (request?.city) trackEvent('Winner Selected', { city: request.city })
+      setConfirmingId(null)
+      await load()
+    } catch (error) {
+      toast.error(t('Kunde inte registrera valet.'), {
+        description: (error as Error)?.message || t('Försök igen om en stund.'),
+      })
+    } finally {
+      setSelectingId(null)
+    }
   }
 
   const mailSubject = (companyName?: string) =>
@@ -172,6 +206,24 @@ const CustomerResponses = () => {
       )
     }
 
+    if (request.status === 'completed') {
+      return (
+        <div className="sticker rounded-3xl bg-[hsl(var(--brand-mint)/0.12)] p-6 md:p-7 mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="inline-flex items-center justify-center rounded-2xl bg-[hsl(var(--brand-mint)/0.2)] p-2.5">
+              <CheckCircle2 className="h-5 w-5 text-[hsl(var(--brand-mint))]" />
+            </span>
+            <h1 className="font-display text-2xl">{t('Du har valt verkstad')}</h1>
+          </div>
+          <p className="text-sm">
+            {winner
+              ? t('{name} har fått dina kontaktuppgifter och hör av sig till dig inom kort.', { name: winner.workshop?.company_name || t('Verkstaden') })
+              : t('Verkstaden du valt har fått dina kontaktuppgifter och hör av sig till dig inom kort.')}
+          </p>
+        </div>
+      )
+    }
+
     return (
       <div className="sticker rounded-3xl bg-[hsl(var(--brand-mint)/0.12)] p-6 md:p-7 mb-8">
         <div className="flex items-center gap-3 mb-3">
@@ -182,9 +234,9 @@ const CustomerResponses = () => {
         </div>
         <p className="text-sm">
           {(request.status === 'closed_for_responses' || request.status === 'full')
-            ? t('Du har fått maximalt fem prisförslag. Jämför dem nedan och kontakta den verkstad som passar dig bäst.')
+            ? t('Du har fått maximalt tre prisförslag. Jämför dem nedan och välj den verkstad du vill gå vidare med.')
             : responses.length > 0
-              ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat.')
+              ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat. Välj den verkstad du vill gå vidare med.')
               : t('Anslutna verkstäder i {city} kan nu se ärendet. Nya prisförslag visas här automatiskt.', { city: request.city })}
         </p>
       </div>
@@ -247,7 +299,7 @@ const CustomerResponses = () => {
 
             <div className="flex items-center justify-between gap-3 mb-4">
               <h2 className="font-display text-xl">{t('Prisförslag ({count})', { count: responses.length })}</h2>
-              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && (
+              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && request.status !== 'completed' && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--brand-mint))] opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--brand-mint))]" /></span>
                   {t('Uppdateras automatiskt')}
@@ -280,15 +332,18 @@ const CustomerResponses = () => {
                       const phone = response.workshop?.phone
                       const website = safeWebsite(response.workshop?.website)
                       const company = response.workshop?.company_name
-                      const isCheapest = response.id === cheapestId && sorted.length > 1
+                      const isWinner = response.status === 'won'
+                      const isLoser = hasWinner && !isWinner
+                      const isCheapest = response.id === cheapestId && sorted.length > 1 && !hasWinner
                       return (
                         <motion.li
                           key={response.id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.4, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                          className={isLoser ? 'opacity-60' : ''}
                         >
-                          <article className={`sticker rounded-3xl bg-card p-6 ${isCheapest ? 'ring-2 ring-[hsl(var(--brand-mint))] ring-offset-2 ring-offset-background' : ''}`}>
+                          <article className={`sticker rounded-3xl bg-card p-6 ${isWinner ? 'ring-2 ring-[hsl(var(--brand-mint))] ring-offset-2 ring-offset-background' : isCheapest ? 'ring-2 ring-[hsl(var(--brand-mint))] ring-offset-2 ring-offset-background' : ''}`}>
                             <div className="flex justify-between items-start gap-3 mb-3">
                               <div className="min-w-0 flex items-start gap-3">
                                 <span className="hidden sm:inline-flex shrink-0 items-center justify-center h-11 w-11 rounded-2xl bg-primary/10 font-display text-lg text-primary">
@@ -296,6 +351,16 @@ const CustomerResponses = () => {
                                 </span>
                                 <div className="min-w-0">
                                   <h3 className="font-display text-xl leading-tight">{company || t('Cykelverkstad')}</h3>
+                                  {isWinner && (
+                                    <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] px-2.5 py-1 rounded-full">
+                                      <CheckCircle2 className="h-3 w-3" /> {t('Ditt val')}
+                                    </span>
+                                  )}
+                                  {isLoser && (
+                                    <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold bg-muted text-muted-foreground px-2.5 py-1 rounded-full">
+                                      {t('Ej vald')}
+                                    </span>
+                                  )}
                                   {isCheapest && (
                                     <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] px-2.5 py-1 rounded-full">
                                       <Crown className="h-3 w-3" /> {t('Bästa pris')}
@@ -326,20 +391,38 @@ const CustomerResponses = () => {
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
-                              {phone && (
+                              {!isLoser && phone && (
                                 <Button asChild size="sm" className="rounded-full shadow-brand" onClick={() => handleContact(response, 'phone')}>
                                   <a href={`tel:${phone}`} aria-label={t('Ring {name}', { name: company || t('verkstaden') })}><Phone className="h-4 w-4 mr-1.5" /> {t('Ring')}</a>
                                 </Button>
                               )}
-                              {email && (
+                              {!isLoser && email && (
                                 <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'email')}>
                                   <a href={`mailto:${email}?subject=${mailSubject(company)}`} aria-label={t('Mejla {name}', { name: company || t('verkstaden') })}><Mail className="h-4 w-4 mr-1.5" /> {t('Mejla')}</a>
                                 </Button>
                               )}
-                              {website && (
+                              {!isLoser && website && (
                                 <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'website')}>
                                   <a href={website} target="_blank" rel="noreferrer" aria-label={t('Öppna webbplatsen för {name}', { name: company || t('verkstaden') })}><ExternalLink className="h-4 w-4 mr-1.5" /> {t('Webbplats')}</a>
                                 </Button>
+                              )}
+                              {!hasWinner && request.admin_status === 'approved' && response.status === 'sent' && (
+                                confirmingId === response.id ? (
+                                  <span className="flex flex-wrap items-center gap-2 rounded-2xl bg-[hsl(var(--brand-mint)/0.1)] px-3 py-2">
+                                    <span className="text-xs font-medium">{t('Valet är slutgiltigt. Gå vidare med {name}?', { name: company || t('verkstaden') })}</span>
+                                    <Button size="sm" className="rounded-full" disabled={selectingId === response.id} onClick={() => pickWinner(response)}>
+                                      {selectingId === response.id ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
+                                      {t('Ja, välj verkstaden')}
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="rounded-full" disabled={selectingId === response.id} onClick={() => setConfirmingId(null)}>
+                                      {t('Avbryt')}
+                                    </Button>
+                                  </span>
+                                ) : (
+                                  <Button size="sm" variant="outline" className="rounded-full border-2 border-[hsl(var(--brand-mint))] text-[hsl(var(--brand-mint))] font-semibold" onClick={() => setConfirmingId(response.id)}>
+                                    <CheckCircle2 className="h-4 w-4 mr-1.5" /> {t('Välj denna verkstad')}
+                                  </Button>
+                                )
                               )}
                             </div>
                           </article>

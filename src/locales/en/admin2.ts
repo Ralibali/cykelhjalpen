@@ -31,6 +31,7 @@ export const EN_ADMIN2: Record<string, string> = {
   'Belopp': 'Amount',
   'Beställare': 'Customer',
   'Betalda offerter': 'Paid quotes',
+  'Reglerade vinster': 'Settled wins',
   'Betalning genomförd': 'Payment completed',
   'Blockerad: Resend-nyckel eller domän saknas': 'Blocked: Resend key or domain is missing',
   'Byrå': 'Agency',

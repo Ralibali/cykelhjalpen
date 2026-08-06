@@ -248,7 +248,7 @@ const RegisterWorkshopPage = () => {
             </label>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {t('{fee} kr exkl. moms (62,50 kr inkl. moms) debiteras via Stripe först när du väljer att skicka en offert. Läs gärna även våra', { fee: LEAD_FEE_KR })}{' '}
+              {t('Det är kostnadsfritt att svara på förfrågningar. Först när kunden väljer din verkstad debiteras {fee} kr exkl. moms (62,50 kr inkl. moms) via Stripe – eller så dras ett gratis-lead. Läs gärna även våra', { fee: LEAD_FEE_KR })}{' '}
               <Link to="/villkor" className="underline text-foreground" target="_blank">{t('allmänna villkor')}</Link> {t('och')}{' '}
               <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">{t('integritetspolicy')}</Link>.
             </p>

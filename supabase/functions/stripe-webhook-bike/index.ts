@@ -96,17 +96,25 @@ serve(async (req) => {
 
         let responseRow = existingResponse;
         let newlyPaid = false;
+        // Vinnande svar (betala-vid-vinst) behåller statusen 'won' – betalningen
+        // låser bara upp kundens kontaktuppgifter. Ärendet är redan 'completed'.
+        const isWinnerFee = existingResponse.status === "won" || session.metadata?.kind === "winner_fee";
 
         if (!existingResponse.paid) {
-          // The database trigger serializes paid responses for this request and
-          // rejects the sixth one even if several payments finish simultaneously.
+          // The database trigger serializes visible responses for this request
+          // and rejects the fourth one even if several sends finish simultaneously.
           const { data: updatedResponse, error: responseError } = await admin
             .from("workshop_responses")
-            .update({
-              paid: true,
-              status: "sent",
-              stripe_payment_intent_id: paymentIntentId,
-            })
+            .update(isWinnerFee
+              ? {
+                paid: true,
+                stripe_payment_intent_id: paymentIntentId,
+              }
+              : {
+                paid: true,
+                status: "sent",
+                stripe_payment_intent_id: paymentIntentId,
+              })
             .eq("id", responseId)
             .eq("paid", false)
             .select("id, request_id, workshop_id, paid, status")
@@ -154,7 +162,8 @@ serve(async (req) => {
         const requestId = responseRow.request_id || metadataRequestId;
         const workshopId = responseRow.workshop_id || metadataWorkshopId;
 
-        if (requestId) {
+        // Vinnaravgifter påverkar inte ärendets status – det är redan 'completed'.
+        if (requestId && !isWinnerFee) {
           const { count: paidCount, error: paidCountError } = await admin
             .from("workshop_responses")
             .select("*", { head: true, count: "exact" })
@@ -173,7 +182,8 @@ serve(async (req) => {
         }
 
         // Only the transition from unpaid to paid sends a customer notification.
-        if (newlyPaid && requestId) {
+        // Vinnaravgifter notifierar inte – kunden fick sin notis när valet gjordes.
+        if (newlyPaid && requestId && !isWinnerFee) {
           let workshopName = "En cykelverkstad";
           if (workshopId) {
             const { data: workshopRow, error: workshopLookupError } = await admin

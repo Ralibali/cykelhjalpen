@@ -24,3 +24,6 @@ verify_jwt = false
 
 [functions.inbound-email-webhook]
 verify_jwt = false
+
+[functions.select-bike-winner]
+verify_jwt = false

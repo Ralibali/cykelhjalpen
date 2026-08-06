@@ -51,6 +51,7 @@ export const EN_ADMIN: Record<string, string> = {
   'Godkända ärenden': 'Approved requests',
   'Verkstäder väntar': 'Bike shops pending',
   'Betalda offerter': 'Paid quotes',
+  'Reglerade vinster': 'Settled wins',
   'Intäkter': 'Revenue',
   'Ärenden att granska': 'Requests to review',
   'Verkstäder notifieras först efter godkännande.': 'Bike shops are only notified after approval.',

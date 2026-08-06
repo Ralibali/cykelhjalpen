@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
-import { Bike, Loader2, Send, Check, CreditCard, MapPin, RefreshCw, Clock3, Truck } from 'lucide-react'
+import { Bike, Loader2, Send, Check, MapPin, RefreshCw, Clock3, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { QuoteDisclaimer } from '@/components/legal/QuoteDisclaimer'
@@ -85,59 +85,19 @@ const WorkshopRequests = () => {
 
   useEffect(() => { load() }, [workshop.id, workshop.city])
 
-  const confirmWebhookPaid = async (responseId: string) => {
-    // Poll ENDAST den response som betalningen avsåg – aldrig acceptera en annan
-    // nyligen betald offert. response_id kommer från success_url:en som Stripe
-    // omdirigerar tillbaka till (skickad av create-bike-response-payment).
-    const toastId = toast.loading(t('Väntar på bekräftelse från Stripe…'))
-    const started = Date.now()
-    const timeoutMs = 15000
-    while (Date.now() - started < timeoutMs) {
-      const { data } = await supabase
-        .from('workshop_responses')
-        .select('id, paid')
-        .eq('id', responseId)
-        .eq('workshop_id', workshop.id)
-        .maybeSingle()
-      if (data?.paid) {
-        toast.success(t('Betalning bekräftad – offerten är skickad till kunden. ✅'), { id: toastId })
-        trackEvent('Offer Submitted', { city: workshop.city, source: 'paid' })
-        await load()
-        return
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-    }
-    toast.warning(t('Betalningen registrerades men Stripe-webhooken har inte bekräftat den ännu.'), {
-      id: toastId,
-      description: t('Kolla att STRIPE_WEBHOOK_SECRET_BIKE och endpointen i Stripe Dashboard är korrekt konfigurerade. Offerten skickas så snart webhook når fram.'),
-      duration: 12000,
-    })
-    await load()
-  }
-
   useEffect(() => {
     const params = new URLSearchParams(location.search)
-    const responseId = params.get('response_id')
-    if (params.get('paid') === 'true') {
+    if (params.get('paid') === 'true' || params.get('canceled') === 'true') {
+      // Äldre Stripe-sessioner från den tidigare modellen kan fortfarande leda hit.
       navigate(location.pathname, { replace: true })
-      if (params.get('free') === '1') {
-        toast.success(t('Offerten är skickad med en gratis-lead. ✅'), {
-          description: t('Kunden har fått ett mejl med ditt prisförslag.'),
-        })
-        trackEvent('Offer Submitted', { city: workshop.city, source: 'free' })
-        load()
-      } else if (responseId) {
-        confirmWebhookPaid(responseId)
-      } else {
-        // Bakåtkompatibelt fallback för äldre success_url utan response_id.
+      if (params.get('paid') === 'true') {
         toast.info(t('Betalningen registrerades. Uppdaterar listan…'))
-        load()
+      } else {
+        toast.info(t('Betalningen avbröts.'), {
+          description: t('Din offert är sparad som utkast och kan skickas när du är redo.'),
+        })
       }
-    } else if (params.get('canceled') === 'true') {
-      toast.info(t('Betalningen avbröts.'), {
-        description: t('Din offert är sparad som utkast och kan skickas när du är redo.'),
-      })
-      navigate(location.pathname, { replace: true })
+      load()
     }
   }, [location.search])
 
@@ -164,31 +124,28 @@ const WorkshopRequests = () => {
     return true
   }
 
-
-  const openPayment = async (responseId: string, requestId: string) => {
+  // Skickar ett sparat utkast till kunden – kostnadsfritt i betala-vid-vinst-modellen.
+  const sendResponse = async (responseId: string, requestId: string) => {
     setSubmitting(requestId)
-    const { data: payment, error } = await supabase.functions.invoke('create-bike-response-payment', {
+    const { data: result, error } = await supabase.functions.invoke('submit-bike-response', {
       body: { response_id: responseId },
     })
     setSubmitting(null)
 
-    if (error || payment?.error) {
-      const msg = String(payment?.error || error?.message || '')
+    if (error || result?.error) {
+      const msg = String(result?.error || error?.message || '')
       const isFull = /bike_request_full|ärendet är fullt/i.test(msg)
-      const isStripeConfig = /stripe/i.test(msg) && /konfig|configuration|not set/i.test(msg)
+      const isCompleted = /valt en (annan )?verkstad/i.test(msg)
 
       if (isFull) {
         toast.error(t('Ärendet är fullt – tre verkstäder har redan svarat.'), {
           description: t('Ditt utkast är sparat men kan inte skickas. Vi tar bort ärendet från listan.'),
           duration: 10000,
         })
-      } else if (isStripeConfig) {
-        toast.error(t('Stripe är inte korrekt konfigurerat.'), {
-          description: t('Kontrollera att STRIPE_SECRET_KEY är sparad som secret.'),
-          duration: 10000,
-        })
+      } else if (isCompleted) {
+        toast.info(t('Kunden har redan valt en verkstad för det här ärendet.'), { duration: 8000 })
       } else {
-        toast.error(t('Kunde inte starta betalningen.'), {
+        toast.error(t('Kunde inte skicka offerten.'), {
           description: msg || t('Något gick fel. Offerten är sparad och kan skickas senare.'),
           duration: 8000,
         })
@@ -196,28 +153,21 @@ const WorkshopRequests = () => {
       await load()
       return
     }
-    if (payment?.free) {
-      toast.success(t('Offerten skickades med en gratis-lead. ✅'), {
-        description: t('Kunden ser ditt prisförslag direkt.'),
+
+    if (!result?.already_sent) {
+      toast.success(t('Offerten är skickad! ✅'), {
+        description: t('Kunden har fått ett mejl. Du betalar bara om kunden väljer dig.'),
       })
-      await load()
-      return
+      trackEvent('Offer Submitted', { city: workshop.city, source: 'free_to_answer' })
     }
-    if (payment?.url) {
-      toast.success(t('Öppnar Stripe-checkout…'))
-      window.location.assign(payment.url)
-    } else {
-      toast.error(t('Ingen betalningslänk skapades.'), {
-        description: t('Stripe returnerade inget URL. Försök igen eller kontakta support om felet återkommer.'),
-      })
-    }
+    await load()
   }
 
   const submitOffer = async (requestId: string) => {
     if (!validateOffer()) return
     const existing = responseByRequest.get(requestId)
-    if (existing && !existing.paid) {
-      await openPayment(existing.id, requestId)
+    if (existing && (existing.status === 'draft' || existing.status === 'pending_payment')) {
+      await sendResponse(existing.id, requestId)
       return
     }
 
@@ -248,7 +198,7 @@ const WorkshopRequests = () => {
     setResponses((current) => [...current, response as ExistingResponse])
     setForm(emptyForm)
     setActive(null)
-    await openPayment(response.id, requestId)
+    await sendResponse(response.id, requestId)
   }
 
   if (!workshop.approved) return <div className="sticker bg-card p-6 text-center text-muted-foreground">{t('Ditt konto väntar på godkännande.')}</div>
@@ -284,8 +234,8 @@ const WorkshopRequests = () => {
         <div className="space-y-4">
           {requests.map((request) => {
             const existing = responseByRequest.get(request.id)
-            const paid = Boolean(existing?.paid)
-            const pendingPayment = Boolean(existing && !existing.paid)
+            const sent = existing?.status === 'sent' || existing?.status === 'won' || (existing?.paid && existing?.status !== 'lost')
+            const isDraft = Boolean(existing && !sent && existing?.status !== 'lost')
             const isSubmitting = submitting === request.id
 
             return (
@@ -334,12 +284,12 @@ const WorkshopRequests = () => {
                     )}
                   </div>
 
-                  {paid ? (
+                  {sent ? (
                     <span className="text-sm flex items-center gap-1.5 rounded-full bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] font-medium px-3 py-1.5"><Check className="h-4 w-4" /> {t('Offert skickad')}</span>
-                  ) : pendingPayment ? (
-                    <Button size="sm" onClick={() => openPayment(existing!.id, request.id)} disabled={isSubmitting}>
-                      {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      {t('Fortsätt till betalning')}
+                  ) : isDraft ? (
+                    <Button size="sm" onClick={() => sendResponse(existing!.id, request.id)} disabled={isSubmitting}>
+                      {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                      {t('Skicka offerten')}
                     </Button>
                   ) : (
                     <Button size="sm" onClick={() => toggleOffer(request.id)}>
@@ -348,8 +298,8 @@ const WorkshopRequests = () => {
                   )}
                 </div>
 
-                {pendingPayment && (
-                  <p className="mt-3 text-xs text-amber-700 bg-amber-50 rounded-lg p-3">{t('Offerten är sparad men ännu inte skickad till kunden. Slutför betalningen när du är redo.')}</p>
+                {isDraft && (
+                  <p className="mt-3 text-xs text-amber-700 bg-amber-50 rounded-lg p-3">{t('Offerten är sparad men ännu inte skickad till kunden. Skicka den när du är redo – det kostar inget.')}</p>
                 )}
 
                 {active === request.id && !existing && (
@@ -365,14 +315,12 @@ const WorkshopRequests = () => {
                     </p>
                     <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="h-4 w-4 rounded" checked={form.can_pickup} onChange={(event) => setForm({ ...form, can_pickup: event.target.checked })} /> {t('Vi kan hämta cykeln')}</label>
                     <div className="rounded-xl bg-background p-3.5 text-xs text-muted-foreground border">
-                      {workshop.free_leads_remaining > 0
-                        ? t('En av era {n} gratis-leads används. Ingen Stripe-betalning behövs.', { n: workshop.free_leads_remaining })
-                        : t('{price} kr exkl. moms debiteras via Stripe först när du går vidare. Kunden ser offerten efter genomförd betalning.', { price: LEAD_FEE_KR })}
+                      {t('Det är kostnadsfritt att svara. Först om kunden väljer dig betalar du {price} kr exkl. moms – eller så dras ett gratis-lead automatiskt om du har kvar.', { price: LEAD_FEE_KR })}
                     </div>
                     <QuoteDisclaimer variant="workshop" />
                     <Button onClick={() => submitOffer(request.id)} disabled={isSubmitting} className="w-full rounded-xl cta-playful bg-accent text-accent-foreground hover:bg-accent/90 h-11">
                       {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                      {workshop.free_leads_remaining > 0 ? t('Skicka med gratis-lead') : t('Granska och betala {price} kr', { price: LEAD_FEE_KR })}
+                      {t('Skicka offerten – kostnadsfritt')}
                     </Button>
                   </div>
                 )}
