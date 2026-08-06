@@ -285,5 +285,5 @@ export const EN_ADMIN3: Record<string, string> = {
   'Återställ': 'Reset',
   'Önskad start': 'Desired start',
   'Öppna uppdrag': 'Open requests',
-  '✅ Din byrå är nu verifierad på Updro': '✅ Your agency is now verified on Updro',
+  '✅ Din byrå är nu verifierad': '✅ Your agency is now verified',
 }

@@ -31,7 +31,7 @@ export const EmailChangeEmail = ({
 }: EmailChangeEmailProps) => (
   <Html lang="sv" dir="ltr">
     <Head />
-    <Preview>Bekräfta byte av e-postadress på Updro</Preview>
+    <Preview>Bekräfta byte av e-postadress på Cykelhjälpen</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -42,7 +42,7 @@ export const EmailChangeEmail = ({
         </Section>
         <Heading style={h1}>Bekräfta ny e-postadress</Heading>
         <Text style={text}>
-          Du har begärt att byta e-postadress på Updro från{' '}
+          Du har begärt att byta e-postadress på Cykelhjälpen från{' '}
           <Link href={`mailto:${email}`} style={link}>
             {email}
           </Link>{' '}

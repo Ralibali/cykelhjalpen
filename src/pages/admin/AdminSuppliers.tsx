@@ -62,7 +62,7 @@ const AdminSuppliers = () => {
       await supabase.from('notifications').insert({
         user_id: editSupplier.id,
         type: 'supplier_verified',
-        title: t('✅ Din byrå är nu verifierad på Updro'),
+        title: t('✅ Din byrå är nu verifierad'),
         message: t('Grattis! Din byrå har blivit verifierad. Detta visas för beställare och ökar dina chanser att bli vald.'),
       })
       setEditSupplier(null)

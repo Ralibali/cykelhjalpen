@@ -19,12 +19,12 @@ const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
 const FROM_EMAIL = 'Cykelhjälpen <info@auroramedia.se>'
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Bekräfta din e-post – Updro',
-  invite: 'Du har blivit inbjuden till Updro',
-  magiclink: 'Din inloggningslänk – Updro',
-  recovery: 'Återställ ditt lösenord – Updro',
-  email_change: 'Bekräfta ny e-postadress – Updro',
-  reauthentication: 'Din verifieringskod – Updro',
+  signup: 'Bekräfta din e-post – Cykelhjälpen',
+  invite: 'Du har blivit inbjuden till Cykelhjälpen',
+  magiclink: 'Din inloggningslänk – Cykelhjälpen',
+  recovery: 'Återställ ditt lösenord – Cykelhjälpen',
+  email_change: 'Bekräfta ny e-postadress – Cykelhjälpen',
+  reauthentication: 'Din verifieringskod – Cykelhjälpen',
 }
 
 const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
@@ -36,10 +36,10 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
-const SITE_NAME = "updro"
-const ROOT_DOMAIN = "updro.se"
+const SITE_NAME = "Cykelhjälpen"
+const ROOT_DOMAIN = "cykelhjalpen.se"
 
-const SAMPLE_PROJECT_URL = "https://updro.se"
+const SAMPLE_PROJECT_URL = "https://cykelhjalpen.se"
 const SAMPLE_EMAIL = "user@example.test"
 const SAMPLE_DATA: Record<string, object> = {
   signup: {

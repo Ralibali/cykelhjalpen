@@ -26,7 +26,7 @@ export const MagicLinkEmail = ({
 }: MagicLinkEmailProps) => (
   <Html lang="sv" dir="ltr">
     <Head />
-    <Preview>Din inloggningslänk för Updro</Preview>
+    <Preview>Din inloggningslänk för Cykelhjälpen</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -37,7 +37,7 @@ export const MagicLinkEmail = ({
         </Section>
         <Heading style={h1}>Din inloggningslänk</Heading>
         <Text style={text}>
-          Klicka på knappen nedan för att logga in på Updro. Länken upphör att gälla inom kort.
+          Klicka på knappen nedan för att logga in på Cykelhjälpen. Länken upphör att gälla inom kort.
         </Text>
         <Section style={{ textAlign: 'center' as const, margin: '30px 0' }}>
           <Button style={button} href={confirmationUrl}>

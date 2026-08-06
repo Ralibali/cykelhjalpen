@@ -26,7 +26,7 @@ export const RecoveryEmail = ({
 }: RecoveryEmailProps) => (
   <Html lang="sv" dir="ltr">
     <Head />
-    <Preview>Återställ ditt lösenord på Updro</Preview>
+    <Preview>Återställ ditt lösenord på Cykelhjälpen</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -37,7 +37,7 @@ export const RecoveryEmail = ({
         </Section>
         <Heading style={h1}>Återställ ditt lösenord</Heading>
         <Text style={text}>
-          Vi fick en förfrågan om att återställa lösenordet för ditt konto på Updro. Klicka på knappen nedan för att välja ett nytt lösenord.
+          Vi fick en förfrågan om att återställa lösenordet för ditt konto på Cykelhjälpen. Klicka på knappen nedan för att välja ett nytt lösenord.
         </Text>
         <Section style={{ textAlign: 'center' as const, margin: '30px 0' }}>
           <Button style={button} href={confirmationUrl}>

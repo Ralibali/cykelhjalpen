@@ -19,9 +19,9 @@ const NotFound = () => {
   useEffect(() => {
     console.error('404 Error: User attempted to access non-existent route:', pathname)
     setSEOMeta({
-      title: `${t('Sidan hittades inte (404)')} | ${isCykel ? 'Cykelhjälpen' : 'Updro'}`,
+      title: `${t('Sidan hittades inte (404)')} | Cykelhjälpen`,
       description: t('Sidan du söker finns inte. Gå tillbaka till startsidan för att hitta rätt.'),
-      canonical: `${isCykel ? 'https://cykelhjalpen.se' : 'https://updro.se'}${pathname}`,
+      canonical: `https://cykelhjalpen.se${pathname}`,
       noindex: true,
     })
 

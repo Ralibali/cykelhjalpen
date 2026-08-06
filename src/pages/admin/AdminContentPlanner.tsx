@@ -111,7 +111,7 @@ const AdminContentPlanner = () => {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    setSEOMeta({ title: "Innehållsplanering – Admin | Updro", description: "Planera och bulk-generera artiklar", noindex: true });
+    setSEOMeta({ title: "Innehållsplanering – Admin | Cykelhjälpen", description: "Planera och bulk-generera artiklar", noindex: true });
   }, []);
 
   // Existing articles (for dedupe + calendar)

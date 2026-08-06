@@ -29,7 +29,7 @@ export const InviteEmail = ({
 }: InviteEmailProps) => (
   <Html lang="sv" dir="ltr">
     <Head />
-    <Preview>Du har blivit inbjuden till Updro</Preview>
+    <Preview>Du har blivit inbjuden till Cykelhjälpen</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -42,7 +42,7 @@ export const InviteEmail = ({
         <Text style={text}>
           Du har blivit inbjuden att gå med i{' '}
           <Link href={siteUrl} style={link}>
-            <strong>Updro</strong>
+            <strong>Cykelhjälpen</strong>
           </Link>
           . Klicka på knappen nedan för att acceptera inbjudan och skapa ditt konto.
         </Text>

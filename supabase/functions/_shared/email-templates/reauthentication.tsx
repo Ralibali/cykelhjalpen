@@ -21,7 +21,7 @@ interface ReauthenticationEmailProps {
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="sv" dir="ltr">
     <Head />
-    <Preview>Din verifieringskod för Updro</Preview>
+    <Preview>Din verifieringskod för Cykelhjälpen</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
