@@ -12,8 +12,10 @@ import { toast } from 'sonner'
 import { Mail, Lock } from 'lucide-react'
 import { setSEOMeta } from '@/lib/seoHelpers'
 import { getCurrentHost } from '@/lib/hostConfig'
+import { useT } from '@/lib/i18n'
 
 const LoginPage = () => {
+  const t = useT()
   const { signIn, profile } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -24,16 +26,16 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false)
 
   const copy = useMemo(() => isCykel ? {
-    title: 'Logga in | Cykelhjälpen',
-    description: 'Logga in på din verkstadssida hos Cykelhjälpen.',
+    title: t('Logga in | Cykelhjälpen'),
+    description: t('Logga in på din verkstadssida hos Cykelhjälpen.'),
     canonical: 'https://cykelhjalpen.se/logga-in',
-    welcome: 'Välkommen tillbaka till Cykelhjälpen',
+    welcome: t('Välkommen tillbaka till Cykelhjälpen'),
   } : {
-    title: 'Logga in | Updro',
-    description: 'Logga in på ditt Updro-konto för att hantera uppdrag, offerter och meddelanden.',
+    title: t('Logga in | Updro'),
+    description: t('Logga in på ditt Updro-konto för att hantera uppdrag, offerter och meddelanden.'),
     canonical: 'https://updro.se/logga-in',
-    welcome: 'Välkommen tillbaka till Updro',
-  }, [isCykel])
+    welcome: t('Välkommen tillbaka till Updro'),
+  }, [isCykel, t])
 
   useEffect(() => {
     setSEOMeta({
@@ -46,7 +48,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (searchParams.get('registrerad') === 'verkstad') {
-      toast.success('Kontot är skapat. Bekräfta e-postadressen och logga sedan in.')
+      toast.success(t('Kontot är skapat. Bekräfta e-postadressen och logga sedan in.'))
     }
   }, [searchParams])
 
@@ -57,9 +59,9 @@ const LoginPage = () => {
     setLoading(false)
 
     if (error) {
-      toast.error('Kunde inte logga in. Kontrollera e-post, lösenord och att kontot är bekräftat.')
+      toast.error(t('Kunde inte logga in. Kontrollera e-post, lösenord och att kontot är bekräftat.'))
     } else {
-      toast.success('Inloggad!')
+      toast.success(t('Inloggad!'))
     }
   }
 
@@ -94,14 +96,14 @@ const LoginPage = () => {
             <div className="inline-flex items-center justify-center rounded-2xl bg-brand-sun p-3 sticker mb-4">
               <Lock className="h-6 w-6" />
             </div>
-            <h1 className="font-display text-4xl">Logga in</h1>
+            <h1 className="font-display text-4xl">{t('Logga in')}</h1>
             <p className="text-muted-foreground mt-2">{copy.welcome}</p>
           </div>
 
           <div className="bg-card rounded-3xl border-2 border-foreground p-7 sticker">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="email">E-post</Label>
+                <Label htmlFor="email">{t('E-post')}</Label>
                 <div className="relative mt-1">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -112,14 +114,14 @@ const LoginPage = () => {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     className="pl-10 rounded-xl"
-                    placeholder="din@epost.se"
+                    placeholder={t('din@epost.se')}
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="password">Lösenord</Label>
+                <Label htmlFor="password">{t('Lösenord')}</Label>
                 <div className="relative mt-1">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -136,21 +138,21 @@ const LoginPage = () => {
               </div>
 
               <Button type="submit" disabled={loading} className="w-full rounded-full py-6 text-base shadow-brand cta-playful">
-                {loading ? 'Loggar in…' : 'Logga in'}
+                {loading ? t('Loggar in…') : t('Logga in')}
               </Button>
             </form>
 
             <div className="mt-4 text-center text-sm">
               <Link to="/aterstall-losenord" className="text-primary hover:underline">
-                Glömt lösenord?
+                {t('Glömt lösenord?')}
               </Link>
             </div>
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Inget konto?{' '}
+            {t('Inget konto?')}{' '}
             <Link to={isCykel ? '/registrera/verkstad' : '/registrera'} className="text-primary hover:underline font-medium">
-              {isCykel ? 'Registrera din verkstad' : 'Registrera dig'}
+              {isCykel ? t('Registrera din verkstad') : t('Registrera dig')}
             </Link>
           </p>
         </div>

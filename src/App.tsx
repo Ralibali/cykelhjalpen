@@ -13,6 +13,8 @@ import { COMPARISON_PAGES } from "./lib/seoComparisons";
 import { getNoindexSeoRoutes } from "./lib/seoStatic";
 import { getRobotsDirectiveForPath } from "./lib/seoRobots";
 import { getCurrentHost } from "./lib/hostConfig";
+import { EN_PREFIX, LanguageProvider, getRouterBasename, useLanguage } from "@/lib/i18n";
+
 import SupplierLayout from "@/components/SupplierLayout";
 import BuyerLayout from "@/components/BuyerLayout";
 
@@ -166,8 +168,46 @@ const NoindexGuard = ({ host }: { host: 'cykelhjalpen' | 'updro' }) => {
   return null;
 };
 
+/** Adds self-referencing hreflang alternates for the sv/en versions of the current URL. */
+const HreflangTags = () => {
+  const location = useLocation();
+  const { lang } = useLanguage();
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const origin = window.location.origin;
+    const path = location.pathname === '/' ? '' : location.pathname;
+    const alternates: Array<[string, string]> = [
+      ['sv', `${origin}${path || '/'}`],
+      ['en', `${origin}${EN_PREFIX}${path}`],
+      ['x-default', `${origin}${path || '/'}`],
+    ];
+
+    document.querySelectorAll('link[rel="alternate"][data-i18n]').forEach((el) => el.remove());
+    for (const [hreflang, href] of alternates) {
+      const link = document.createElement('link');
+      link.rel = 'alternate';
+      link.hreflang = hreflang;
+      link.href = href;
+      link.setAttribute('data-i18n', 'true');
+      document.head.appendChild(link);
+    }
+
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = lang === 'en' ? `${origin}${EN_PREFIX}${path}` : `${origin}${path || '/'}`;
+  }, [location.pathname, lang]);
+
+  return null;
+};
+
 const AppRoutes = () => {
   const host = getCurrentHost();
+
   return (
     <>
       <PageTracker />
@@ -353,15 +393,19 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-          <CookieConsent />
-        </AuthProvider>
+      <BrowserRouter basename={getRouterBasename()}>
+        <LanguageProvider>
+          <AuthProvider>
+            <HreflangTags />
+            <AppRoutes />
+            <CookieConsent />
+          </AuthProvider>
+        </LanguageProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
   </ThemeProvider>
 );
+
 
 export default App;

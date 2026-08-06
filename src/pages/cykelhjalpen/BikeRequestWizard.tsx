@@ -21,10 +21,11 @@ import { DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykel
 import {
   BIKE_REQUEST_STEPS,
   URGENCY_OPTIONS,
-  bikeRequestSchema,
+  makeBikeRequestSchema,
   makeDefaultBikeRequest,
   type BikeRequestFormState,
 } from '@/lib/bikeRequestForm'
+import { useT } from '@/lib/i18n'
 
 const DRAFT_KEY = 'cykelhjalpen_request_draft_v3'
 
@@ -50,7 +51,7 @@ const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
   return (error as any)?.message || fallback
 }
 
-const STEP_HINTS = ['Berätta om cykeln', 'Vad är fel?', 'Var finns den?', 'Vem skickar?']
+const STEP_HINTS_SV = ['Berätta om cykeln', 'Vad är fel?', 'Var finns den?', 'Vem skickar?']
 
 interface SummaryRow {
   key: string
@@ -62,6 +63,7 @@ interface SummaryRow {
 }
 
 const BikeRequestWizard = () => {
+  const t = useT()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const requestedCity = isCykelCity(searchParams.get('stad')) ? searchParams.get('stad') as CykelCityName : null
@@ -85,6 +87,9 @@ const BikeRequestWizard = () => {
       return defaults
     }
   })
+
+  const STEP_HINTS = STEP_HINTS_SV.map((hint) => t(hint))
+  const stepLabels = BIKE_REQUEST_STEPS.map((label) => t(label))
 
   const { data: stats } = useQuery({
     queryKey: ['cykel-public-stats'],
@@ -165,9 +170,9 @@ const BikeRequestWizard = () => {
 
     for (const file of combined) {
       if (!allowedTypes.includes(file.type)) {
-        toast.error(`${file.name}: endast JPEG, PNG eller WebP tillåts`)
+        toast.error(t('{name}: endast JPEG, PNG eller WebP tillåts', { name: file.name }))
       } else if (file.size > maxSize) {
-        toast.error(`${file.name}: filen är större än fem MB`)
+        toast.error(t('{name}: filen är större än fem MB', { name: file.name }))
       } else if (!valid.some((existing) => existing.name === file.name && existing.size === file.size)) {
         valid.push(file)
       }
@@ -192,13 +197,13 @@ const BikeRequestWizard = () => {
 
 
   const submit = async () => {
-    const parsed = bikeRequestSchema.safeParse(form)
+    const parsed = makeBikeRequestSchema(t).safeParse(form)
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message || 'Kontrollera att alla obligatoriska uppgifter är ifyllda')
+      toast.error(parsed.error.issues[0]?.message || t('Kontrollera att alla obligatoriska uppgifter är ifyllda'))
       return
     }
     if (!turnstileToken) {
-      toast.error('Bekräfta säkerhetskontrollen innan du skickar')
+      toast.error(t('Bekräfta säkerhetskontrollen innan du skickar'))
       return
     }
 
@@ -230,8 +235,8 @@ const BikeRequestWizard = () => {
         },
       })
 
-      if (error) throw new Error(await getFunctionErrorMessage(error, 'Kunde inte skicka ärendet'))
-      if (!request?.id || !request?.view_token) throw new Error(request?.error || 'Kunde inte skapa ärendet')
+      if (error) throw new Error(await getFunctionErrorMessage(error, t('Kunde inte skicka ärendet')))
+      if (!request?.id || !request?.view_token) throw new Error(request?.error || t('Kunde inte skapa ärendet'))
 
       const uploadErrors = files.length > 0 ? await uploadImages(request.id, request.view_token) : []
       localStorage.removeItem(DRAFT_KEY)
@@ -245,25 +250,26 @@ const BikeRequestWizard = () => {
       trackEvent('Repair Request Submitted', { city: parsed.data.city, bike_type: parsed.data.bike_type })
       trackAdsConversion('request_submitted')
 
-      toast.success(`Tack! Ärendet i ${parsed.data.city} är mottaget och granskas innan det skickas till verkstäder.`)
-      if (uploadErrors.length > 0) toast.error(`${uploadErrors.length} bilder kunde inte laddas upp. Själva ärendet är ändå mottaget.`)
+      toast.success(t('Tack! Ärendet i {city} är mottaget och granskas innan det skickas till verkstäder.', { city: parsed.data.city }))
+      if (uploadErrors.length > 0) toast.error(t('{count} bilder kunde inte laddas upp. Själva ärendet är ändå mottaget.', { count: uploadErrors.length }))
       navigate(`/mitt-arende/${request.view_token}`)
     } catch (error) {
       setTurnstileToken(null)
       setTurnstileResetKey((current) => current + 1)
       trackClick('bike_request_submission_failed', 'Skicka gratis', { step: step + 1, city: form.city })
-      toast.error((error as Error)?.message || 'Något gick fel. Försök igen.')
+      toast.error((error as Error)?.message || t('Något gick fel. Försök igen.'))
     } finally {
       setSubmitting(false)
     }
   }
 
-  const urgencyLabel = URGENCY_OPTIONS.find((option) => option.value === form.urgency)?.label || ''
+  const urgencyLabel = URGENCY_OPTIONS.find((option) => option.value === form.urgency)?.label
+  const urgencyLabelText = urgencyLabel ? t(urgencyLabel) : ''
 
   const summaryRows: SummaryRow[] = [
     {
       key: 'bike',
-      label: 'Cykel',
+      label: t('Cykel'),
       value: form.bike_type,
       filled: Boolean(form.bike_type),
       icon: BIKE_TYPE_ICONS[form.bike_type] || Bike,
@@ -271,7 +277,7 @@ const BikeRequestWizard = () => {
     },
     {
       key: 'problem',
-      label: 'Problem',
+      label: t('Problem'),
       value: form.repair_category,
       filled: Boolean(form.repair_category),
       icon: REPAIR_CATEGORY_ICONS[form.repair_category] || REPAIR_CATEGORY_ICONS['Annat'],
@@ -279,15 +285,15 @@ const BikeRequestWizard = () => {
     },
     {
       key: 'images',
-      label: 'Bilder',
-      value: files.length > 0 ? `${files.length} ${files.length === 1 ? 'bild' : 'bilder'}` : '',
+      label: t('Bilder'),
+      value: files.length > 0 ? t('{count} {word}', { count: files.length, word: files.length === 1 ? t('bild') : t('bilder') }) : '',
       filled: files.length > 0,
       icon: Camera,
       targetStep: 1,
     },
     {
       key: 'city',
-      label: 'Stad',
+      label: t('Stad'),
       value: form.city,
       filled: Boolean(form.city),
       icon: MapPin,
@@ -295,8 +301,8 @@ const BikeRequestWizard = () => {
     },
     {
       key: 'urgency',
-      label: 'Tid',
-      value: urgencyLabel,
+      label: t('Tid'),
+      value: urgencyLabelText,
       filled: Boolean(form.urgency),
       icon: URGENCY_ICONS[form.urgency] || Clock3,
       targetStep: 2,
@@ -308,14 +314,14 @@ const BikeRequestWizard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Få pris på cykelreparation | Cykelhjälpen</title>
-        <meta name="description" content="Beskriv ditt cykelproblem och jämför lokala prisförslag i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto." />
+        <title>{t('Få pris på cykelreparation | Cykelhjälpen')}</title>
+        <meta name="description" content={t('Beskriv ditt cykelproblem och jämför lokala prisförslag i Linköping, Norrköping, Uppsala eller Lund. Gratis och utan konto.')} />
         <meta name="robots" content="noindex, follow" />
         <link rel="canonical" href="https://cykelhjalpen.se/skicka-arende" />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="sv_SE" />
-        <meta property="og:title" content="Få pris på cykelreparation | Cykelhjälpen" />
-        <meta property="og:description" content="Beskriv cykelproblemet och jämför lokala prisförslag. Gratis och utan konto." />
+        <meta property="og:title" content={t('Få pris på cykelreparation | Cykelhjälpen')} />
+        <meta property="og:description" content={t('Beskriv cykelproblemet och jämför lokala prisförslag. Gratis och utan konto.')} />
         <meta property="og:url" content="https://cykelhjalpen.se/skicka-arende" />
         <meta property="og:image" content="https://cykelhjalpen.se/og/skicka-arende.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -327,20 +333,20 @@ const BikeRequestWizard = () => {
           <div className="flex items-center gap-3 mb-3">
             <div className="sticker bg-brand-sun p-2 rounded-xl"><Bike className="h-5 w-5" /></div>
             <div>
-              <h1 className="font-display text-3xl md:text-4xl">Få pris på cykelreparation</h1>
+              <h1 className="font-display text-3xl md:text-4xl">{t('Få pris på cykelreparation')}</h1>
               <p className="text-sm text-muted-foreground">{STEP_HINTS[step]}</p>
             </div>
           </div>
 
           <div className="mb-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-primary" /> Gratis och utan konto</span>
-            <span className="inline-flex items-center gap-1.5"><Clock3 className="h-4 w-4 text-primary" /> Tar cirka två minuter</span>
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-primary" /> {t('Gratis och utan konto')}</span>
+            <span className="inline-flex items-center gap-1.5"><Clock3 className="h-4 w-4 text-primary" /> {t('Tar cirka två minuter')}</span>
           </div>
 
           {/* Stepper */}
-          <nav aria-label={`Steg ${step + 1} av ${BIKE_REQUEST_STEPS.length}`} className="mb-8">
+          <nav aria-label={t('Steg {n} av {total}', { n: step + 1, total: BIKE_REQUEST_STEPS.length })} className="mb-8">
             <ol className="flex items-center gap-2 sm:gap-3">
-              {BIKE_REQUEST_STEPS.map((label, index) => {
+              {stepLabels.map((label, index) => {
                 const done = index < step
                 const active = index === step
                 return (
@@ -389,7 +395,7 @@ const BikeRequestWizard = () => {
 
           {/* Kompakt sammanfattning (mobil) */}
           {filledSummaryRows.length > 0 && (
-            <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden" aria-label="Dina val hittills">
+            <div className="mb-5 flex gap-2 overflow-x-auto pb-1 lg:hidden" aria-label={t('Dina val hittills')}>
               {filledSummaryRows.map(({ key, label, value, icon: Icon, targetStep }) => (
                 <button
                   key={key}
@@ -427,18 +433,18 @@ const BikeRequestWizard = () => {
                 <div className="mt-5 flex items-start gap-2 text-sm text-muted-foreground">
                   <Users className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                   <p>
-                    {stats.workshops} godkända verkstäder · svar brukar komma inom 1–2 dagar · ingen köpplikt
+                    {t('{n} godkända verkstäder · svar brukar komma inom 1–2 dagar · ingen köpplikt', { n: stats.workshops })}
                   </p>
                 </div>
               )}
 
               <div className="flex justify-between gap-3 mt-6 sticky bottom-3 z-10 rounded-2xl bg-background/95 backdrop-blur p-2 border-2 border-border shadow-md lg:static lg:bg-transparent lg:border-0 lg:shadow-none lg:p-0">
                 <Button variant="outline" onClick={() => goToStep(Math.max(0, step - 1))} disabled={step === 0 || submitting} className="rounded-xl border-2">
-                  <ArrowLeft className="h-4 w-4 mr-1" /> Tillbaka
+                  <ArrowLeft className="h-4 w-4 mr-1" /> {t('Tillbaka')}
                 </Button>
                 {step < BIKE_REQUEST_STEPS.length - 1 ? (
                   <Button onClick={goNext} disabled={!canContinue()} className="min-w-32 rounded-xl shadow-brand">
-                    Fortsätt <ArrowRight className="h-4 w-4 ml-1" />
+                    {t('Fortsätt')} <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 ) : (
                   <Button
@@ -447,7 +453,7 @@ const BikeRequestWizard = () => {
                     className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 min-w-44 rounded-xl h-11 text-base"
                   >
                     {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
-                    {submitting ? 'Skickar…' : 'Skicka gratis'}
+                    {submitting ? t('Skickar…') : t('Skicka gratis')}
                   </Button>
                 )}
               </div>
@@ -456,7 +462,7 @@ const BikeRequestWizard = () => {
             {/* Live-sammanfattning (desktop) */}
             <aside className="hidden lg:block">
               <div className="sticky top-24 sticker rounded-3xl bg-card p-6">
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold mb-4">Din förfrågan</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold mb-4">{t('Din förfrågan')}</p>
                 <ul className="space-y-1">
                   {summaryRows.map(({ key, label, value, filled, icon: Icon, targetStep }) => (
                     <li key={key}>
@@ -475,7 +481,7 @@ const BikeRequestWizard = () => {
                         <span className="min-w-0">
                           <span className="block text-xs text-muted-foreground">{label}</span>
                           <span className={`block truncate text-sm font-medium ${filled ? 'text-foreground group-hover:underline' : 'text-muted-foreground/60'}`}>
-                            {filled ? value : 'Ej valt ännu'}
+                            {filled ? value : t('Ej valt ännu')}
                           </span>
                         </span>
                         {filled && <Check className="ml-auto h-4 w-4 shrink-0 text-[hsl(var(--brand-mint))]" strokeWidth={3} />}
@@ -485,7 +491,7 @@ const BikeRequestWizard = () => {
                 </ul>
                 <div className="mt-5 rounded-2xl bg-muted/60 p-4 text-xs leading-relaxed text-muted-foreground">
                   <ShieldCheck className="mb-2 h-4 w-4 text-primary" />
-                  Uppgifterna delas bara med granskade verkstäder i din stad. Du väljer själv om du vill tacka ja till något prisförslag.
+                  {t('Uppgifterna delas bara med granskade verkstäder i din stad. Du väljer själv om du vill tacka ja till något prisförslag.')}
                 </div>
               </div>
             </aside>

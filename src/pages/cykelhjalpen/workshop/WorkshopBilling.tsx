@@ -6,6 +6,7 @@ import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { BuyLeadsButton } from '@/components/workshop/BuyLeadsButton'
 import { LeadCreditsInvoiceHistory } from '@/components/workshop/LeadCreditsInvoiceHistory'
 import { LEAD_FEE_KR } from '@/lib/pricing'
+import { useT } from '@/lib/i18n'
 
 interface ChargeRow {
   id: string
@@ -15,7 +16,7 @@ interface ChargeRow {
   stripe_session_id: string | null
 }
 
-const statusLabel: Record<string, string> = {
+const STATUS_LABEL_SOURCE: Record<string, string> = {
   paid: 'Betald',
   pending: 'Väntar',
   free_lead: 'Gratis-lead',
@@ -24,6 +25,7 @@ const statusLabel: Record<string, string> = {
 }
 
 const WorkshopBilling = () => {
+  const t = useT()
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const [charges, setCharges] = useState<ChargeRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,24 +52,24 @@ const WorkshopBilling = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold">Betalningar</h1>
-        <p className="text-sm text-muted-foreground mt-1">Historik för skickade offerter från {workshop.company_name}. Beloppen visas exklusive moms.</p>
+        <h1 className="font-display text-2xl font-bold">{t('Betalningar')}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('Historik för skickade offerter från {name}. Beloppen visas exklusive moms.', { name: workshop.company_name })}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">Debiterat exkl. moms</p><p className="font-display text-2xl font-bold mt-1">{totals.paidExVat.toLocaleString('sv-SE')} kr</p></div>
-        <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">Betalda offerter</p><p className="font-display text-2xl font-bold mt-1">{totals.paidCount}</p></div>
-        <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">Gratis-leads</p><p className="font-display text-2xl font-bold mt-1">{totals.freeCount}</p></div>
+        <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">{t('Debiterat exkl. moms')}</p><p className="font-display text-2xl font-bold mt-1">{totals.paidExVat.toLocaleString('sv-SE')} kr</p></div>
+        <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">{t('Betalda offerter')}</p><p className="font-display text-2xl font-bold mt-1">{totals.paidCount}</p></div>
+        <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">{t('Gratis-leads')}</p><p className="font-display text-2xl font-bold mt-1">{totals.freeCount}</p></div>
       </div>
 
       <div className="sticker rounded-3xl bg-card p-6 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="font-display text-xl mb-1 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" /> Lead credits
+              <Sparkles className="h-5 w-5 text-primary" /> {t('Lead credits')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Förköp leads och svara snabbare – {LEAD_FEE_KR} kr exkl. moms per credit. Krediter dras automatiskt när du skickar en offert.
+              {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt när du skickar en offert.', { price: LEAD_FEE_KR })}
             </p>
           </div>
           <BuyLeadsButton quantity={10} />
@@ -77,16 +79,16 @@ const WorkshopBilling = () => {
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>
       ) : charges.length === 0 ? (
-        <div className="sticker rounded-3xl bg-card p-8 text-center text-muted-foreground"><Receipt className="h-8 w-8 mx-auto mb-3 opacity-50" />Inga betalningar ännu.</div>
+        <div className="sticker rounded-3xl bg-card p-8 text-center text-muted-foreground"><Receipt className="h-8 w-8 mx-auto mb-3 opacity-50" />{t('Inga betalningar ännu.')}</div>
       ) : (
         <div className="sticker rounded-3xl bg-card overflow-x-auto">
           <table className="w-full text-sm min-w-[620px]">
             <thead className="bg-muted/40">
               <tr>
-                <th className="text-left p-3">Datum</th>
-                <th className="text-left p-3">Belopp exkl. moms</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3">Stripe-id</th>
+                <th className="text-left p-3">{t('Datum')}</th>
+                <th className="text-left p-3">{t('Belopp exkl. moms')}</th>
+                <th className="text-left p-3">{t('Status')}</th>
+                <th className="text-left p-3">{t('Stripe-id')}</th>
               </tr>
             </thead>
             <tbody>
@@ -96,7 +98,7 @@ const WorkshopBilling = () => {
                   <td className="p-3 font-medium">{charge.amount === 0 ? '0 kr' : `${(charge.amount / 100).toLocaleString('sv-SE')} kr`}</td>
                   <td className="p-3">
                     <span className={`rounded-full px-2 py-1 text-xs font-medium ${charge.status === 'paid' ? 'bg-green-100 text-green-700' : charge.status === 'free_lead' ? 'bg-primary/10 text-primary' : charge.status === 'refunded' ? 'bg-amber-100 text-amber-700' : 'bg-muted text-muted-foreground'}`}>
-                      {statusLabel[charge.status] || charge.status}
+                      {t(STATUS_LABEL_SOURCE[charge.status]) || charge.status}
                     </span>
                   </td>
                   <td className="p-3 text-xs text-muted-foreground font-mono">{charge.stripe_session_id ? `${charge.stripe_session_id.slice(0, 20)}…` : '—'}</td>
@@ -108,7 +110,7 @@ const WorkshopBilling = () => {
       )}
 
       <div className="mt-8">
-        <h2 className="font-display text-xl mb-3">Fakturor för lead credits</h2>
+        <h2 className="font-display text-xl mb-3">{t('Fakturor för lead credits')}</h2>
         <LeadCreditsInvoiceHistory />
       </div>
     </div>

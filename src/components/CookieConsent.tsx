@@ -9,6 +9,7 @@ import {
   readConsentLevel,
   type ConsentLevel,
 } from '@/lib/analyticsConsent'
+import { useT } from '@/lib/i18n'
 
 const GA_ID = 'G-C0XMZG0KDQ'
 const ADS_ID = 'AW-10941540384'
@@ -83,6 +84,7 @@ const applyConsent = (level: ConsentLevel) => {
 
 const CookieConsent = () => {
   const location = useLocation()
+  const t = useT()
   const [visible, setVisible] = useState(false)
   const [level, setLevel] = useState<ConsentLevel | null>(null)
 
@@ -156,10 +158,10 @@ const CookieConsent = () => {
         type="button"
         onClick={() => setVisible(true)}
         className="fixed bottom-3 left-3 z-40 inline-flex items-center gap-1.5 rounded-full border-2 border-border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur transition hover:border-foreground hover:text-foreground"
-        aria-label="Ändra cookieinställningar"
+        aria-label={t('Ändra cookieinställningar')}
       >
         <Cookie className="h-3.5 w-3.5" />
-        Cookieinställningar
+        {t('Cookieinställningar')}
       </button>
     )
   }
@@ -170,21 +172,21 @@ const CookieConsent = () => {
         <div className="text-sm text-foreground/80">
           <p id="cookie-heading" className="font-display text-lg text-foreground mb-1.5 flex items-center gap-2">
             <span className="inline-flex items-center justify-center rounded-xl bg-muted p-1.5"><Cookie className="h-4 w-4 text-primary" /></span>
-            Dina cookieinställningar
+            {t('Dina cookieinställningar')}
           </p>
           <p>
-            Vi använder nödvändiga lagringsfunktioner för att webbplatsen och tjänsten ska fungera. Med ditt aktiva samtycke använder vi även Google Analytics, Google Ads och vår egen anonymiserade produktstatistik för att förbättra tjänsten och mäta marknadsföring. Du kan neka utan att grundfunktionerna påverkas. Läs mer i vår{' '}
-            <Link to="/integritetspolicy" className="text-primary hover:underline">integritetspolicy</Link> och{' '}
-            <Link to="/cookies" className="text-primary hover:underline">cookiepolicy</Link>.
+            {t('Vi använder nödvändiga lagringsfunktioner för att webbplatsen och tjänsten ska fungera. Med ditt aktiva samtycke använder vi även Google Analytics, Google Ads och vår egen anonymiserade produktstatistik för att förbättra tjänsten och mäta marknadsföring. Du kan neka utan att grundfunktionerna påverkas. Läs mer i vår')}{' '}
+            <Link to="/integritetspolicy" className="text-primary hover:underline">{t('integritetspolicy')}</Link>{' '}{t('och')}{' '}
+            <Link to="/cookies" className="text-primary hover:underline">{t('cookiepolicy')}</Link>.
           </p>
-          {level && <p className="mt-2 text-xs text-muted-foreground">Nuvarande val: {level === 'all' ? 'statistik och marknadsföring tillåts' : 'endast nödvändiga funktioner'}.</p>}
+          {level && <p className="mt-2 text-xs text-muted-foreground">{t('Nuvarande val: {choice}.', { choice: level === 'all' ? t('statistik och marknadsföring tillåts') : t('endast nödvändiga funktioner') })}</p>}
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
           <Button variant="outline" size="sm" className="rounded-xl" onClick={() => accept('necessary')}>
-            Endast nödvändiga
+            {t('Endast nödvändiga')}
           </Button>
           <Button size="sm" className="rounded-xl bg-primary text-primary-foreground" onClick={() => accept('all')}>
-            Tillåt statistik och marknadsföring
+            {t('Tillåt statistik och marknadsföring')}
           </Button>
         </div>
       </div>

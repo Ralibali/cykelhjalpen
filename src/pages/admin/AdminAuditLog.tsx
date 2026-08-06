@@ -4,6 +4,7 @@ import { AdminLayout } from './AdminDashboard'
 import { Shield, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n'
 
 interface AuditEntry {
   id: string
@@ -16,6 +17,7 @@ interface AuditEntry {
 }
 
 const AdminAuditLog = () => {
+  const t = useT()
   const [entries, setEntries] = useState<AuditEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [adminNames, setAdminNames] = useState<Map<string, string>>(new Map())
@@ -30,7 +32,7 @@ const AdminAuditLog = () => {
         const { data: profiles } = await supabase.from('profiles').select('id, full_name, email').in('id', ids)
         if (profiles) {
           const map = new Map<string, string>()
-          profiles.forEach(p => map.set(p.id, p.full_name || p.email || 'Admin'))
+          profiles.forEach(p => map.set(p.id, p.full_name || p.email || t('Admin')))
           setAdminNames(map)
         }
       }
@@ -50,16 +52,16 @@ const AdminAuditLog = () => {
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl font-bold">Audit-logg</h1>
+        <h1 className="font-display text-2xl font-bold">{t('Audit-logg')}</h1>
         <Button variant="outline" size="sm" onClick={fetchEntries} disabled={loading}>
-          <RefreshCw className={cn('h-4 w-4 mr-1', loading && 'animate-spin')} />Uppdatera
+          <RefreshCw className={cn('h-4 w-4 mr-1', loading && 'animate-spin')} />{t('Uppdatera')}
         </Button>
       </div>
 
       {loading && entries.length === 0 ? (
-        <p className="text-muted-foreground">Laddar...</p>
+        <p className="text-muted-foreground">{t('Laddar...')}</p>
       ) : entries.length === 0 ? (
-        <p className="text-muted-foreground">Inga loggposter ännu. Admin-åtgärder loggas här automatiskt.</p>
+        <p className="text-muted-foreground">{t('Inga loggposter ännu. Admin-åtgärder loggas här automatiskt.')}</p>
       ) : (
         <div className="space-y-2">
           {entries.map(e => (
@@ -75,7 +77,7 @@ const AdminAuditLog = () => {
                   <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 bg-muted text-muted-foreground">{e.target_type}</span>
                 </div>
                 <p className="text-sm mt-1">
-                  <span className="font-medium">{adminNames.get(e.admin_id) || 'Admin'}</span>
+                  <span className="font-medium">{adminNames.get(e.admin_id) || t('Admin')}</span>
                   {e.target_id && <span className="text-muted-foreground"> → {e.target_id.slice(0, 8)}...</span>}
                 </p>
                 {Object.keys(e.details || {}).length > 0 && (

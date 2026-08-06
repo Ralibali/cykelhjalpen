@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
+import { useT } from '@/lib/i18n'
 
 interface WorkshopResponse {
   id: string
@@ -62,6 +63,7 @@ const safeWebsite = (website: string | null | undefined) => {
 }
 
 const CustomerResponses = () => {
+  const t = useT()
   const { token } = useParams()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -95,13 +97,13 @@ const CustomerResponses = () => {
         for (const response of nextResponses) {
           if (!knownIdsRef.current.has(response.id)) {
             knownIdsRef.current.add(response.id)
-            toast.success(`Nytt prisförslag från ${response.workshop?.company_name || 'verkstad'}`)
+            toast.success(t('Nytt prisförslag från {name}', { name: response.workshop?.company_name || t('verkstad') }))
           }
         }
       }
       setResponses(nextResponses)
     } catch (error) {
-      setLoadError((error as Error)?.message || 'Kunde inte läsa ärendet just nu.')
+      setLoadError((error as Error)?.message || t('Kunde inte läsa ärendet just nu.'))
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -135,7 +137,7 @@ const CustomerResponses = () => {
   }
 
   const mailSubject = (companyName?: string) =>
-    encodeURIComponent(`Angående prisförslag på cykelreparation${companyName ? ` från ${companyName}` : ''}`)
+    encodeURIComponent(companyName ? t('Angående prisförslag på cykelreparation från {name}', { name: companyName }) : t('Angående prisförslag på cykelreparation'))
 
   const statusCard = () => {
     if (!request) return null
@@ -147,11 +149,11 @@ const CustomerResponses = () => {
             <span className="inline-flex items-center justify-center rounded-2xl bg-destructive/10 p-2.5">
               <AlertTriangle className="h-5 w-5 text-destructive" />
             </span>
-            <h1 className="font-display text-2xl">Ärendet behöver hjälp</h1>
+            <h1 className="font-display text-2xl">{t('Ärendet behöver hjälp')}</h1>
           </div>
-          <p className="text-sm">Vi kunde inte publicera ärendet i sin nuvarande form.</p>
-          {request.rejected_reason && <p className="text-sm mt-2"><strong>Anledning:</strong> {request.rejected_reason}</p>}
-          <p className="text-sm mt-3">Kontakta <a className="underline font-medium" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a> så hjälper vi dig vidare.</p>
+          <p className="text-sm">{t('Vi kunde inte publicera ärendet i sin nuvarande form.')}</p>
+          {request.rejected_reason && <p className="text-sm mt-2"><strong>{t('Anledning:')}</strong> {request.rejected_reason}</p>}
+          <p className="text-sm mt-3">{t('Kontakta')} <a className="underline font-medium" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a> {t('så hjälper vi dig vidare.')}</p>
         </div>
       )
     }
@@ -163,9 +165,9 @@ const CustomerResponses = () => {
             <span className="inline-flex items-center justify-center rounded-2xl bg-background/60 p-2.5">
               <Bike className="h-5 w-5" />
             </span>
-            <h1 className="font-display text-2xl">Tack {request.customer_name}!</h1>
+            <h1 className="font-display text-2xl">{t('Tack {name}!', { name: request.customer_name })}</h1>
           </div>
-          <p className="text-sm">Ditt ärende är mottaget och granskas innan det publiceras för verkstäder i {request.city}. Du får ett mejl när granskningen är klar.</p>
+          <p className="text-sm">{t('Ditt ärende är mottaget och granskas innan det publiceras för verkstäder i {city}. Du får ett mejl när granskningen är klar.', { city: request.city })}</p>
         </div>
       )
     }
@@ -176,14 +178,14 @@ const CustomerResponses = () => {
           <span className="inline-flex items-center justify-center rounded-2xl bg-[hsl(var(--brand-mint)/0.2)] p-2.5">
             <CheckCircle2 className="h-5 w-5 text-[hsl(var(--brand-mint))]" />
           </span>
-          <h1 className="font-display text-2xl">Ärendet är publicerat</h1>
+          <h1 className="font-display text-2xl">{t('Ärendet är publicerat')}</h1>
         </div>
         <p className="text-sm">
           {(request.status === 'closed_for_responses' || request.status === 'full')
-            ? 'Du har fått maximalt fem prisförslag. Jämför dem nedan och kontakta den verkstad som passar dig bäst.'
+            ? t('Du har fått maximalt fem prisförslag. Jämför dem nedan och kontakta den verkstad som passar dig bäst.')
             : responses.length > 0
-              ? 'Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat.'
-              : `Anslutna verkstäder i ${request.city} kan nu se ärendet. Nya prisförslag visas här automatiskt.`}
+              ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat.')
+              : t('Anslutna verkstäder i {city} kan nu se ärendet. Nya prisförslag visas här automatiskt.', { city: request.city })}
         </p>
       </div>
     )
@@ -192,7 +194,7 @@ const CustomerResponses = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Mitt cykelärende | Cykelhjälpen</title>
+        <title>{t('Mitt cykelärende | Cykelhjälpen')}</title>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="referrer" content="no-referrer" />
       </Helmet>
@@ -202,41 +204,41 @@ const CustomerResponses = () => {
           <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>
         ) : loadError ? (
           <div className="sticker bg-card p-8 text-center">
-            <h1 className="font-display text-2xl font-bold mb-2">Kunde inte läsa ärendet</h1>
+            <h1 className="font-display text-2xl font-bold mb-2">{t('Kunde inte läsa ärendet')}</h1>
             <p className="text-muted-foreground mb-5">{loadError}</p>
             <Button onClick={() => load(true)} disabled={refreshing}>
               {refreshing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-              Försök igen
+              {t('Försök igen')}
             </Button>
           </div>
         ) : !request ? (
           <div className="sticker bg-card p-8 text-center">
-            <h1 className="font-display text-2xl font-bold mb-2">Ärendet hittades inte</h1>
-            <p className="text-muted-foreground">Kontakta info@cykelhjalpen.se om du behöver hjälp.</p>
+            <h1 className="font-display text-2xl font-bold mb-2">{t('Ärendet hittades inte')}</h1>
+            <p className="text-muted-foreground">{t('Kontakta info@cykelhjalpen.se om du behöver hjälp.')}</p>
           </div>
         ) : (
           <>
             {statusCard()}
 
             <section className="sticker rounded-3xl bg-card p-6 mb-8" aria-labelledby="request-summary-heading">
-              <h2 id="request-summary-heading" className="font-display text-lg mb-3">Ditt ärende</h2>
+              <h2 id="request-summary-heading" className="font-display text-lg mb-3">{t('Ditt ärende')}</h2>
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium"><MapPin className="h-3.5 w-3.5 text-primary" /> {request.city}</span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium"><Bike className="h-3.5 w-3.5 text-primary" /> {request.bike_type}</span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium">{request.repair_category}</span>
                 {request.urgency && <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-sun/40 px-3 py-1.5 text-xs font-medium"><Clock3 className="h-3.5 w-3.5" /> {request.urgency}</span>}
-                {request.wants_pickup && <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"><Truck className="h-3.5 w-3.5" /> Önskar hämtning</span>}
+                {request.wants_pickup && <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"><Truck className="h-3.5 w-3.5" /> {t('Önskar hämtning')}</span>}
               </div>
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{request.description}</p>
             </section>
 
             {images.length > 0 && (
               <section className="mb-8" aria-labelledby="request-images-heading">
-                <h2 id="request-images-heading" className="font-display text-xl mb-3">Dina bilder</h2>
+                <h2 id="request-images-heading" className="font-display text-xl mb-3">{t('Dina bilder')}</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {images.map((image) => (
                     <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-2xl border-2 border-foreground bg-muted hover:opacity-90 transition">
-                      <img src={image.url} alt="Uppladdad bild på cykelproblemet" className="h-full w-full object-cover" loading="lazy" />
+                      <img src={image.url} alt={t('Uppladdad bild på cykelproblemet')} className="h-full w-full object-cover" loading="lazy" />
                     </a>
                   ))}
                 </div>
@@ -244,11 +246,11 @@ const CustomerResponses = () => {
             )}
 
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="font-display text-xl">Prisförslag ({responses.length})</h2>
+              <h2 className="font-display text-xl">{t('Prisförslag ({count})', { count: responses.length })}</h2>
               {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--brand-mint))] opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--brand-mint))]" /></span>
-                  Uppdateras automatiskt
+                  {t('Uppdateras automatiskt')}
                 </span>
               )}
             </div>
@@ -260,8 +262,8 @@ const CustomerResponses = () => {
                 </span>
                 <p className="text-sm text-muted-foreground">
                   {request.admin_status === 'approved'
-                    ? 'Inga prisförslag ännu. Verkstäderna svarar utifrån kapacitet och typ av reparation.'
-                    : 'Prisförslag visas här efter att ärendet har godkänts och en verkstad har svarat.'}
+                    ? t('Inga prisförslag ännu. Verkstäderna svarar utifrån kapacitet och typ av reparation.')
+                    : t('Prisförslag visas här efter att ärendet har godkänts och en verkstad har svarat.')}
                 </p>
               </div>
             ) : (
@@ -290,13 +292,13 @@ const CustomerResponses = () => {
                             <div className="flex justify-between items-start gap-3 mb-3">
                               <div className="min-w-0 flex items-start gap-3">
                                 <span className="hidden sm:inline-flex shrink-0 items-center justify-center h-11 w-11 rounded-2xl bg-primary/10 font-display text-lg text-primary">
-                                  {(company || 'C').charAt(0).toUpperCase()}
+                                  {(company || t('C')).charAt(0).toUpperCase()}
                                 </span>
                                 <div className="min-w-0">
-                                  <h3 className="font-display text-xl leading-tight">{company || 'Cykelverkstad'}</h3>
+                                  <h3 className="font-display text-xl leading-tight">{company || t('Cykelverkstad')}</h3>
                                   {isCheapest && (
                                     <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] px-2.5 py-1 rounded-full">
-                                      <Crown className="h-3 w-3" /> Bästa pris
+                                      <Crown className="h-3 w-3" /> {t('Bästa pris')}
                                     </span>
                                   )}
                                 </div>
@@ -306,7 +308,7 @@ const CustomerResponses = () => {
                                   <span className="block font-display text-2xl text-accent whitespace-nowrap">
                                     {response.estimated_price_min}{response.estimated_price_max ? `–${response.estimated_price_max}` : ''} kr
                                   </span>
-                                  <span className="block text-[11px] text-muted-foreground mt-0.5">inkl. moms</span>
+                                  <span className="block text-[11px] text-muted-foreground mt-0.5">{t('inkl. moms')}</span>
                                 </span>
                               )}
                             </div>
@@ -319,24 +321,24 @@ const CustomerResponses = () => {
                               )}
                               {response.can_pickup && (
                                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                                  <Truck className="h-3 w-3" /> Kan hämta cykeln
+                                  <Truck className="h-3 w-3" /> {t('Kan hämta cykeln')}
                                 </span>
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
                               {phone && (
                                 <Button asChild size="sm" className="rounded-full shadow-brand" onClick={() => handleContact(response, 'phone')}>
-                                  <a href={`tel:${phone}`} aria-label={`Ring ${company || 'verkstaden'}`}><Phone className="h-4 w-4 mr-1.5" /> Ring</a>
+                                  <a href={`tel:${phone}`} aria-label={t('Ring {name}', { name: company || t('verkstaden') })}><Phone className="h-4 w-4 mr-1.5" /> {t('Ring')}</a>
                                 </Button>
                               )}
                               {email && (
                                 <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'email')}>
-                                  <a href={`mailto:${email}?subject=${mailSubject(company)}`} aria-label={`Mejla ${company || 'verkstaden'}`}><Mail className="h-4 w-4 mr-1.5" /> Mejla</a>
+                                  <a href={`mailto:${email}?subject=${mailSubject(company)}`} aria-label={t('Mejla {name}', { name: company || t('verkstaden') })}><Mail className="h-4 w-4 mr-1.5" /> {t('Mejla')}</a>
                                 </Button>
                               )}
                               {website && (
                                 <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'website')}>
-                                  <a href={website} target="_blank" rel="noreferrer" aria-label={`Öppna webbplatsen för ${company || 'verkstaden'}`}><ExternalLink className="h-4 w-4 mr-1.5" /> Webbplats</a>
+                                  <a href={website} target="_blank" rel="noreferrer" aria-label={t('Öppna webbplatsen för {name}', { name: company || t('verkstaden') })}><ExternalLink className="h-4 w-4 mr-1.5" /> {t('Webbplats')}</a>
                                 </Button>
                               )}
                             </div>

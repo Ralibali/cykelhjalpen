@@ -4,6 +4,7 @@ import { AdminLayout } from './AdminDashboard'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, FunnelChart, Funnel, LabelList } from 'recharts'
 import { TrendingUp, Users, ClipboardList, CreditCard, Eye, ArrowUpRight, ArrowDownRight, DollarSign, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n'
 
 interface TimeSeriesPoint { date: string; count: number }
 interface CategoryCount { name: string; value: number }
@@ -50,6 +51,7 @@ const growth = (current: number, prev: number) => {
 }
 
 const AdminAnalytics = () => {
+  const t = useT()
   const [registrations, setRegistrations] = useState<TimeSeriesPoint[]>([])
   const [projectsByDay, setProjectsByDay] = useState<TimeSeriesPoint[]>([])
   const [categoryDist, setCategoryDist] = useState<CategoryCount[]>([])
@@ -180,38 +182,38 @@ const AdminAnalytics = () => {
 
   return (
     <AdminLayout>
-      <h1 className="font-display text-2xl font-bold mb-6">Statistik & Analys</h1>
+      <h1 className="font-display text-2xl font-bold mb-6">{t('Statistik & Analys')}</h1>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4 mb-8">
-        <StatCard label="Användare" value={totals.users} icon={Users} color="bg-primary/10 text-primary" changePercent={growth(totals.users, prevTotals.users)} />
-        <StatCard label="Byråer" value={totals.suppliers} icon={Users} color="bg-violet-100 text-violet-700" changePercent={growth(totals.suppliers, prevTotals.suppliers)} />
-        <StatCard label="Uppdrag" value={totals.projects} icon={ClipboardList} color="bg-accent/10 text-accent-foreground" changePercent={growth(totals.projects, prevTotals.projects)} />
-        <StatCard label="Offerter" value={totals.offers} icon={CreditCard} color="bg-amber-100 text-amber-700" changePercent={growth(totals.offers, prevTotals.offers)} />
-        <StatCard label="Upplåsta leads" value={totals.leads} icon={Eye} color="bg-emerald-100 text-emerald-700" />
-        <StatCard label="Omdömen" value={totals.reviews} icon={TrendingUp} color="bg-rose-100 text-rose-700" />
-        <StatCard label="Intäkter (30d)" value={`${Math.round(revenue.monthlyRevenue / 100).toLocaleString('sv-SE')}`} suffix=" kr" icon={DollarSign} color="bg-primary/10 text-primary" />
-        <StatCard label="Aktiva prenumerationer" value={revenue.subscriptions} icon={Zap} color="bg-violet-100 text-violet-700" />
+        <StatCard label={t('Användare')} value={totals.users} icon={Users} color="bg-primary/10 text-primary" changePercent={growth(totals.users, prevTotals.users)} />
+        <StatCard label={t('Byråer')} value={totals.suppliers} icon={Users} color="bg-violet-100 text-violet-700" changePercent={growth(totals.suppliers, prevTotals.suppliers)} />
+        <StatCard label={t('Uppdrag')} value={totals.projects} icon={ClipboardList} color="bg-accent/10 text-accent-foreground" changePercent={growth(totals.projects, prevTotals.projects)} />
+        <StatCard label={t('Offerter')} value={totals.offers} icon={CreditCard} color="bg-amber-100 text-amber-700" changePercent={growth(totals.offers, prevTotals.offers)} />
+        <StatCard label={t('Upplåsta leads')} value={totals.leads} icon={Eye} color="bg-emerald-100 text-emerald-700" />
+        <StatCard label={t('Omdömen')} value={totals.reviews} icon={TrendingUp} color="bg-rose-100 text-rose-700" />
+        <StatCard label={t('Intäkter (30d)')} value={`${Math.round(revenue.monthlyRevenue / 100).toLocaleString('sv-SE')}`} suffix=" kr" icon={DollarSign} color="bg-primary/10 text-primary" />
+        <StatCard label={t('Aktiva prenumerationer')} value={revenue.subscriptions} icon={Zap} color="bg-violet-100 text-violet-700" />
       </div>
 
       {/* Revenue Chart */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Intäkter per dag (30 dagar, SEK)</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Intäkter per dag (30 dagar, SEK)')}</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={revenueByDay}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`${v} kr`, 'Intäkt']} />
-              <Bar dataKey="amount" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Intäkt" />
+              <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`${v} kr`, t('Intäkt')]} />
+              <Bar dataKey="amount" fill="#8b5cf6" radius={[4, 4, 0, 0]} name={t('Intäkt')} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Lead Funnel */}
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Lead-funnel (totalt)</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Lead-funnel (totalt)')}</h2>
           <div className="space-y-4 mt-4">
             {funnelData.map((step, i) => {
               const maxVal = funnelData[0]?.value || 1
@@ -227,7 +229,7 @@ const AdminAnalytics = () => {
                   </div>
                   {i < funnelData.length - 1 && funnelData[i + 1] && step.value > 0 && (
                     <p className="text-[10px] text-muted-foreground mt-1 text-right">
-                      → {Math.round((funnelData[i + 1].value / step.value) * 100)}% konvertering
+                      → {t('{pct}% konvertering', { pct: Math.round((funnelData[i + 1].value / step.value) * 100) })}
                     </p>
                   )}
                 </div>
@@ -240,27 +242,27 @@ const AdminAnalytics = () => {
       {/* Charts Row 1 */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Nya registreringar (30 dagar)</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Nya registreringar (30 dagar)')}</h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={registrations}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis allowDecimals={false} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
               <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))' }} />
-              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Registreringar" />
+              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name={t('Registreringar')} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Nya uppdrag (30 dagar)</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Nya uppdrag (30 dagar)')}</h2>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={projectsByDay}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis allowDecimals={false} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
               <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))' }} />
-              <Line type="monotone" dataKey="count" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name="Uppdrag" />
+              <Line type="monotone" dataKey="count" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name={t('Uppdrag')} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -269,7 +271,7 @@ const AdminAnalytics = () => {
       {/* Charts Row 2 */}
       <div className="grid md:grid-cols-3 gap-6 mb-6">
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Kategorier</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Kategorier')}</h2>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie data={categoryDist} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name.slice(0, 12)} ${(percent * 100).toFixed(0)}%`}>
@@ -281,7 +283,7 @@ const AdminAnalytics = () => {
         </div>
 
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Budgetfördelning</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Budgetfördelning')}</h2>
           <div className="space-y-3 mt-4">
             {budgetDist.map((b, i) => (
               <div key={b.name} className="flex items-center gap-3">
@@ -294,7 +296,7 @@ const AdminAnalytics = () => {
         </div>
 
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Planer (byråer)</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Planer (byråer)')}</h2>
           <div className="space-y-3 mt-4">
             {planDist.map((p, i) => (
               <div key={p.name} className="flex items-center gap-3">
@@ -310,32 +312,32 @@ const AdminAnalytics = () => {
       {/* Conversion & Top Suppliers */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Konverteringsdata</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Konverteringsdata')}</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-muted/50 rounded-lg p-4">
-              <p className="text-xs text-muted-foreground">Uppdrag med offerter</p>
+              <p className="text-xs text-muted-foreground">{t('Uppdrag med offerter')}</p>
               <p className="text-2xl font-bold">{conversionStats.withOffers}<span className="text-sm font-normal text-muted-foreground">/{conversionStats.totalProjects}</span></p>
               <p className="text-xs text-muted-foreground mt-1">
-                {conversionStats.totalProjects > 0 ? Math.round((conversionStats.withOffers / conversionStats.totalProjects) * 100) : 0}% konvertering
+                {t('{pct}% konvertering', { pct: conversionStats.totalProjects > 0 ? Math.round((conversionStats.withOffers / conversionStats.totalProjects) * 100) : 0 })}
               </p>
             </div>
             <div className="bg-muted/50 rounded-lg p-4">
-              <p className="text-xs text-muted-foreground">Snitt offerter/uppdrag</p>
+              <p className="text-xs text-muted-foreground">{t('Snitt offerter/uppdrag')}</p>
               <p className="text-2xl font-bold">{conversionStats.avgOffers}</p>
             </div>
             <div className="bg-muted/50 rounded-lg p-4">
-              <p className="text-xs text-muted-foreground">Snitt visningar/uppdrag</p>
+              <p className="text-xs text-muted-foreground">{t('Snitt visningar/uppdrag')}</p>
               <p className="text-2xl font-bold">{conversionStats.avgViewCount}</p>
             </div>
             <div className="bg-muted/50 rounded-lg p-4">
-              <p className="text-xs text-muted-foreground">Lead-köp (totalt)</p>
+              <p className="text-xs text-muted-foreground">{t('Lead-köp (totalt)')}</p>
               <p className="text-2xl font-bold">{revenue.leadPurchases}</p>
             </div>
           </div>
         </div>
 
         <div className="bg-card rounded-xl border p-5">
-          <h2 className="font-display font-semibold mb-4">Topp byråer</h2>
+          <h2 className="font-display font-semibold mb-4">{t('Topp byråer')}</h2>
           <div className="space-y-2">
             {topSuppliers.map((s, i) => (
               <div key={s.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
@@ -343,21 +345,21 @@ const AdminAnalytics = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{s.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {s.completed_projects} projekt · {s.avg_rating} ★ · {s.plan}
+                    {t('{n} projekt · {rating} ★ · {plan}', { n: s.completed_projects, rating: s.avg_rating, plan: s.plan })}
                     {s.is_verified && ' ✓'}
                   </p>
                 </div>
                 <span className="text-xs font-semibold">{s.lead_credits} credits</span>
               </div>
             ))}
-            {topSuppliers.length === 0 && <p className="text-sm text-muted-foreground">Inga byråer ännu</p>}
+            {topSuppliers.length === 0 && <p className="text-sm text-muted-foreground">{t('Inga byråer ännu')}</p>}
           </div>
         </div>
       </div>
 
       {/* Recent Activity */}
       <div className="bg-card rounded-xl border p-5">
-        <h2 className="font-display font-semibold mb-4">Senaste aktivitet (systemnotifikationer)</h2>
+        <h2 className="font-display font-semibold mb-4">{t('Senaste aktivitet (systemnotifikationer)')}</h2>
         <div className="space-y-2 max-h-[400px] overflow-y-auto">
           {recentActivity.map(n => (
             <div key={n.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
@@ -369,7 +371,7 @@ const AdminAnalytics = () => {
               <span className="text-[10px] text-muted-foreground whitespace-nowrap">{n.created_at ? new Date(n.created_at).toLocaleDateString('sv-SE') : ''}</span>
             </div>
           ))}
-          {recentActivity.length === 0 && <p className="text-sm text-muted-foreground">Ingen aktivitet ännu</p>}
+          {recentActivity.length === 0 && <p className="text-sm text-muted-foreground">{t('Ingen aktivitet ännu')}</p>}
         </div>
       </div>
     </AdminLayout>

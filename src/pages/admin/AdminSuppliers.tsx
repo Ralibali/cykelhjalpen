@@ -10,8 +10,10 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { exportCsv } from '@/lib/exportCsv'
+import { useT } from '@/lib/i18n'
 
 const AdminSuppliers = () => {
+  const t = useT()
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [search, setSearch] = useState('')
   const [editSupplier, setEditSupplier] = useState<any>(null)
@@ -54,14 +56,14 @@ const AdminSuppliers = () => {
     }).eq('id', editSupplier.id)
 
     if (error) {
-      toast.error('Kunde inte spara')
+      toast.error(t('Kunde inte spara'))
     } else {
-      toast.success('Byrå uppdaterad!')
+      toast.success(t('Byrå uppdaterad!'))
       await supabase.from('notifications').insert({
         user_id: editSupplier.id,
         type: 'supplier_verified',
-        title: '✅ Din byrå är nu verifierad på Updro',
-        message: 'Grattis! Din byrå har blivit verifierad. Detta visas för beställare och ökar dina chanser att bli vald.',
+        title: t('✅ Din byrå är nu verifierad på Updro'),
+        message: t('Grattis! Din byrå har blivit verifierad. Detta visas för beställare och ökar dina chanser att bli vald.'),
       })
       setEditSupplier(null)
       fetchSuppliers()
@@ -72,54 +74,54 @@ const AdminSuppliers = () => {
     if (!creditDialog) return
     const newCredits = Math.max(0, (creditDialog.supplier.lead_credits || 0) + creditDialog.amount)
     const { error } = await supabase.from('supplier_profiles').update({ lead_credits: newCredits }).eq('id', creditDialog.supplier.id)
-    if (error) { toast.error('Kunde inte uppdatera credits'); return }
+    if (error) { toast.error(t('Kunde inte uppdatera credits')); return }
 
     // Notify supplier
-    const action = creditDialog.amount > 0 ? 'lagt till' : 'dragit av'
+    const action = creditDialog.amount > 0 ? t('lagt till') : t('dragit av')
     await supabase.from('notifications').insert({
       user_id: creditDialog.supplier.id,
       type: 'credit_adjustment',
-      title: `Lead-credits ${action}`,
-      message: `Admin har ${action} ${Math.abs(creditDialog.amount)} lead-credits. Ditt nya saldo: ${newCredits} credits.`,
+      title: t('Lead-credits {action}', { action }),
+      message: t('Admin har {action} {amount} lead-credits. Ditt nya saldo: {balance} credits.', { action, amount: Math.abs(creditDialog.amount), balance: newCredits }),
       link: '/dashboard/supplier/fakturering',
     })
 
-    toast.success(`Credits uppdaterade: ${newCredits}`)
+    toast.success(t('Credits uppdaterade: {balance}', { balance: newCredits }))
     setCreditDialog(null)
     fetchSuppliers()
   }
 
   const handleExport = () => {
     exportCsv(filtered.map(s => ({
-      Byrå: s.profiles?.company_name || s.profiles?.full_name || s.slug,
-      'E-post': s.profiles?.email || '–',
-      Telefon: s.profiles?.phone || '–',
-      Stad: s.profiles?.city || '–',
-      'Org.nr': s.org_number || '–',
-      Plan: s.plan || 'none',
-      Credits: s.lead_credits || 0,
-      Betyg: s.avg_rating || 0,
-      Omdömen: s.review_count || 0,
-      Projekt: s.completed_projects || 0,
-      Verifierad: s.is_verified ? 'Ja' : 'Nej',
+      [t('Byrå')]: s.profiles?.company_name || s.profiles?.full_name || s.slug,
+      [t('E-post')]: s.profiles?.email || '–',
+      [t('Telefon')]: s.profiles?.phone || '–',
+      [t('Stad')]: s.profiles?.city || '–',
+      [t('Org.nr')]: s.org_number || '–',
+      [t('Plan')]: s.plan || 'none',
+      [t('Credits')]: s.lead_credits || 0,
+      [t('Betyg')]: s.avg_rating || 0,
+      [t('Omdömen')]: s.review_count || 0,
+      [t('Projekt')]: s.completed_projects || 0,
+      [t('Verifierad')]: s.is_verified ? t('Ja') : t('Nej'),
     })), 'byraer')
   }
 
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="font-display text-2xl font-bold">Byråer</h1>
+        <h1 className="font-display text-2xl font-bold">{t('Byråer')}</h1>
         <div className="flex items-center gap-3">
           <div className="flex gap-1">
             {['all', 'none', 'trial', 'monthly', 'lead'].map(p => (
               <Button key={p} size="sm" variant={planFilter === p ? 'default' : 'outline'} className="rounded-xl text-xs" onClick={() => setPlanFilter(p)}>
-                {p === 'all' ? 'Alla' : p}
+                {p === 'all' ? t('Alla') : p}
               </Button>
             ))}
           </div>
           <div className="relative w-56">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Sök byrå / org.nr..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 rounded-xl" />
+            <Input placeholder={t('Sök byrå / org.nr...')} value={search} onChange={e => setSearch(e.target.value)} className="pl-10 rounded-xl" />
           </div>
           <Button size="sm" variant="outline" className="rounded-xl" onClick={handleExport}>
             <Download className="h-4 w-4 mr-1" />CSV
@@ -129,14 +131,14 @@ const AdminSuppliers = () => {
       <div className="bg-card rounded-xl border overflow-hidden overflow-x-auto">
         <table className="w-full min-w-[900px] text-sm">
           <thead><tr className="border-b bg-muted/50">
-            <th className="text-left p-3 font-medium">Byrå</th>
-            <th className="text-left p-3 font-medium">Org.nr</th>
-            <th className="text-left p-3 font-medium">Kontakt</th>
-            <th className="text-left p-3 font-medium">Plan</th>
-            <th className="text-left p-3 font-medium">Credits</th>
-            <th className="text-left p-3 font-medium">Betyg</th>
-            <th className="text-left p-3 font-medium">Verifiering</th>
-            <th className="text-left p-3 font-medium">Åtgärd</th>
+            <th className="text-left p-3 font-medium">{t('Byrå')}</th>
+            <th className="text-left p-3 font-medium">{t('Org.nr')}</th>
+            <th className="text-left p-3 font-medium">{t('Kontakt')}</th>
+            <th className="text-left p-3 font-medium">{t('Plan')}</th>
+            <th className="text-left p-3 font-medium">{t('Credits')}</th>
+            <th className="text-left p-3 font-medium">{t('Betyg')}</th>
+            <th className="text-left p-3 font-medium">{t('Verifiering')}</th>
+            <th className="text-left p-3 font-medium">{t('Åtgärd')}</th>
           </tr></thead>
           <tbody>
             {filtered.map(s => (
@@ -169,35 +171,35 @@ const AdminSuppliers = () => {
                 </td>
                 <td className="p-3">
                   <div className="flex flex-col gap-0.5 text-xs">
-                    {s.is_verified && <span className="text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Verifierad</span>}
-                    {s.has_fskatt && <span className="text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> F-skatt</span>}
-                    {s.credit_check_passed && <span className="text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Kreditkoll</span>}
-                    {!s.is_verified && !s.has_fskatt && !s.credit_check_passed && <span className="text-muted-foreground">Ej verifierad</span>}
+                    {s.is_verified && <span className="text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {t('Verifierad')}</span>}
+                    {s.has_fskatt && <span className="text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {t('F-skatt')}</span>}
+                    {s.credit_check_passed && <span className="text-emerald-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {t('Kreditkoll')}</span>}
+                    {!s.is_verified && !s.has_fskatt && !s.credit_check_passed && <span className="text-muted-foreground">{t('Ej verifierad')}</span>}
                   </div>
                 </td>
                 <td className="p-3">
                   <Button size="sm" variant="outline" className="rounded-xl text-xs" onClick={() => setEditSupplier({ ...s })}>
-                    Redigera
+                    {t('Redigera')}
                   </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && <p className="p-6 text-center text-muted-foreground">Inga byråer hittades.</p>}
+        {filtered.length === 0 && <p className="p-6 text-center text-muted-foreground">{t('Inga byråer hittades.')}</p>}
       </div>
 
       {/* Credit adjustment dialog */}
       <Dialog open={!!creditDialog} onOpenChange={() => setCreditDialog(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Coins className="h-5 w-5" /> Justera lead-credits</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Coins className="h-5 w-5" /> {t('Justera lead-credits')}</DialogTitle>
           </DialogHeader>
           {creditDialog && (
             <div className="space-y-4 mt-2">
               <p className="text-sm text-muted-foreground">
                 <strong>{creditDialog.supplier.profiles?.company_name || creditDialog.supplier.profiles?.full_name}</strong>
-                <br />Nuvarande saldo: <strong>{creditDialog.supplier.lead_credits || 0}</strong> credits
+                <br />{t('Nuvarande saldo:')} <strong>{creditDialog.supplier.lead_credits || 0}</strong> {t('credits')}
               </p>
               <div className="flex items-center gap-3">
                 <Button size="icon" variant="outline" className="rounded-xl" onClick={() => setCreditDialog({ ...creditDialog, amount: creditDialog.amount - 1 })}>
@@ -209,12 +211,12 @@ const AdminSuppliers = () => {
                 </Button>
               </div>
               <p className="text-sm text-center">
-                Nytt saldo: <strong>{Math.max(0, (creditDialog.supplier.lead_credits || 0) + creditDialog.amount)}</strong> credits
+                {t('Nytt saldo:')} <strong>{Math.max(0, (creditDialog.supplier.lead_credits || 0) + creditDialog.amount)}</strong> {t('credits')}
                 <span className={cn('ml-2 text-xs', creditDialog.amount > 0 ? 'text-emerald-600' : creditDialog.amount < 0 ? 'text-destructive' : '')}>
                   ({creditDialog.amount > 0 ? '+' : ''}{creditDialog.amount})
                 </span>
               </p>
-              <Button onClick={handleCreditAdjust} className="w-full rounded-xl">Bekräfta</Button>
+              <Button onClick={handleCreditAdjust} className="w-full rounded-xl">{t('Bekräfta')}</Button>
             </div>
           )}
         </DialogContent>
@@ -225,13 +227,13 @@ const AdminSuppliers = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              Redigera: {editSupplier?.profiles?.company_name || editSupplier?.profiles?.full_name}
+              {t('Redigera:')} {editSupplier?.profiles?.company_name || editSupplier?.profiles?.full_name}
             </DialogTitle>
           </DialogHeader>
           {editSupplier && (
             <div className="space-y-5 mt-2">
               <div>
-                <Label className="text-sm font-medium">Organisationsnummer</Label>
+                <Label className="text-sm font-medium">{t('Organisationsnummer')}</Label>
                 <div className="flex gap-2 mt-1">
                   <Input
                     value={editSupplier.org_number || ''}
@@ -242,7 +244,7 @@ const AdminSuppliers = () => {
                   {editSupplier.org_number && (
                     <a href={`https://www.allabolag.se/${(editSupplier.org_number || '').replace('-', '')}`} target="_blank" rel="noopener noreferrer">
                       <Button size="sm" variant="outline" className="rounded-xl whitespace-nowrap">
-                        <ExternalLink className="h-3 w-3 mr-1" /> Allabolag
+                        <ExternalLink className="h-3 w-3 mr-1" /> {t('Allabolag')}
                       </Button>
                     </a>
                   )}
@@ -250,44 +252,44 @@ const AdminSuppliers = () => {
               </div>
 
               <div className="space-y-4 border rounded-xl p-4">
-                <h4 className="font-semibold text-sm">Verifiering</h4>
+                <h4 className="font-semibold text-sm">{t('Verifiering')}</h4>
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm">Verifierad byrå</Label>
+                  <Label className="text-sm">{t('Verifierad byrå')}</Label>
                   <Switch checked={editSupplier.is_verified || false} onCheckedChange={v => setEditSupplier({ ...editSupplier, is_verified: v })} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm">Godkänd F-skatt & moms</Label>
+                  <Label className="text-sm">{t('Godkänd F-skatt & moms')}</Label>
                   <Switch checked={editSupplier.has_fskatt || false} onCheckedChange={v => setEditSupplier({ ...editSupplier, has_fskatt: v })} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm">Godkänd kreditkontroll</Label>
+                  <Label className="text-sm">{t('Godkänd kreditkontroll')}</Label>
                   <Switch checked={editSupplier.credit_check_passed || false} onCheckedChange={v => setEditSupplier({ ...editSupplier, credit_check_passed: v })} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm">Framhävd (featured)</Label>
+                  <Label className="text-sm">{t('Framhävd (featured)')}</Label>
                   <Switch checked={editSupplier.is_featured || false} onCheckedChange={v => setEditSupplier({ ...editSupplier, is_featured: v })} />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-sm font-medium">Plan</Label>
+                  <Label className="text-sm font-medium">{t('Plan')}</Label>
                   <select
                     className="mt-1 w-full rounded-xl border px-3 py-2 text-sm bg-background"
                     value={editSupplier.plan || 'none'}
                     onChange={e => setEditSupplier({ ...editSupplier, plan: e.target.value })}
                   >
-                    <option value="none">Ingen</option>
-                    <option value="trial">Trial</option>
-                    <option value="monthly">Månadskort</option>
-                    <option value="lead">Pay per lead</option>
-                    <option value="payg">Pay as you go</option>
-                    <option value="standard">Standard</option>
-                    <option value="premium">Premium</option>
+                    <option value="none">{t('Ingen')}</option>
+                    <option value="trial">{t('Trial')}</option>
+                    <option value="monthly">{t('Månadskort')}</option>
+                    <option value="lead">{t('Pay per lead')}</option>
+                    <option value="payg">{t('Pay as you go')}</option>
+                    <option value="standard">{t('Standard')}</option>
+                    <option value="premium">{t('Premium')}</option>
                   </select>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Lead credits</Label>
+                  <Label className="text-sm font-medium">{t('Lead credits')}</Label>
                   <Input
                     type="number"
                     className="mt-1 rounded-xl"
@@ -298,8 +300,8 @@ const AdminSuppliers = () => {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setEditSupplier(null)}>Avbryt</Button>
-                <Button className="flex-1 rounded-xl" onClick={handleSave}>Spara ändringar</Button>
+                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setEditSupplier(null)}>{t('Avbryt')}</Button>
+                <Button className="flex-1 rounded-xl" onClick={handleSave}>{t('Spara ändringar')}</Button>
               </div>
             </div>
           )}

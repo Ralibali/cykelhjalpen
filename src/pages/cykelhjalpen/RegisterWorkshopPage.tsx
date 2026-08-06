@@ -16,8 +16,9 @@ import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
 import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, type CykelCityName } from '@/lib/cykelCities'
+import { useT } from '@/lib/i18n'
 
-const SERVICES = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Elsparkcykelservice', 'Hjulbygge', 'Mobil reparation']
+const SERVICES_SV = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Elsparkcykelservice', 'Hjulbygge', 'Mobil reparation']
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
   const gtag = (window as any).gtag
@@ -38,6 +39,7 @@ const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
 }
 
 const RegisterWorkshopPage = () => {
+  const t = useT()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const cityParam = searchParams.get('stad')
@@ -74,10 +76,10 @@ const RegisterWorkshopPage = () => {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!form.terms_accepted) return toast.error('Du måste godkänna villkoren')
-    if (form.company_name.trim().length < 2) return toast.error('Ange verkstadens namn')
-    if (form.password.length < 8) return toast.error('Lösenordet måste vara minst åtta tecken')
-    if (!turnstileToken) return toast.error('Bekräfta säkerhetskontrollen innan du registrerar verkstaden.')
+    if (!form.terms_accepted) return toast.error(t('Du måste godkänna villkoren'))
+    if (form.company_name.trim().length < 2) return toast.error(t('Ange verkstadens namn'))
+    if (form.password.length < 8) return toast.error(t('Lösenordet måste vara minst åtta tecken'))
+    if (!turnstileToken) return toast.error(t('Bekräfta säkerhetskontrollen innan du registrerar verkstaden.'))
 
     setLoading(true)
     trackClick('workshop_registration_submit_clicked', 'Skicka ansökan', { services_count: form.services.length, city: form.city })
@@ -100,7 +102,7 @@ const RegisterWorkshopPage = () => {
         },
       })
 
-      if (error) throw new Error(await getFunctionErrorMessage(error, 'Registreringen misslyckades'))
+      if (error) throw new Error(await getFunctionErrorMessage(error, t('Registreringen misslyckades')))
       if (data?.error) throw new Error(data.error)
 
       trackClick('workshop_registration_completed', 'Skicka ansökan', { services_count: form.services.length, city: form.city })
@@ -116,19 +118,19 @@ const RegisterWorkshopPage = () => {
         })
         if (sessionError) throw sessionError
 
-        toast.success(`Tack! ${form.company_name} är registrerad i ${form.city} och väntar på godkännande.`)
+        toast.success(t('Tack! {company} är registrerad i {city} och väntar på godkännande.', { company: form.company_name, city: form.city }))
         navigate('/dashboard/verkstad')
         return
       }
 
-      toast.success('Kontot är skapat. Bekräfta e-postadressen via länken vi skickat innan du loggar in.')
+      toast.success(t('Kontot är skapat. Bekräfta e-postadressen via länken vi skickat innan du loggar in.'))
       navigate('/logga-in?registrerad=verkstad')
     } catch (error) {
       trackClick('workshop_registration_failed', 'Skicka ansökan', { city: form.city })
       // Vid backend-fel behöver Turnstile-token förnyas – det är single-use.
       setTurnstileToken(null)
       setTurnstileResetKey((current) => current + 1)
-      toast.error((error as Error)?.message || 'Registreringen misslyckades')
+      toast.error((error as Error)?.message || t('Registreringen misslyckades'))
     } finally {
       setLoading(false)
     }
@@ -137,13 +139,13 @@ const RegisterWorkshopPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Registrera cykelverkstad | Cykelhjälpen</title>
-        <meta name="description" content="Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift och betalning endast när ni väljer att skicka en offert." />
+        <title>{t('Registrera cykelverkstad | Cykelhjälpen')}</title>
+        <meta name="description" content={t('Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift och betalning endast när ni väljer att skicka en offert.')} />
         <meta name="robots" content="noindex, follow" />
         <link rel="canonical" href="https://cykelhjalpen.se/registrera/verkstad" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Registrera cykelverkstad | Cykelhjälpen" />
-        <meta property="og:description" content="Kostnadsfri registrering. Betala bara när ni väljer att skicka en offert." />
+        <meta property="og:title" content={t('Registrera cykelverkstad | Cykelhjälpen')} />
+        <meta property="og:description" content={t('Kostnadsfri registrering. Betala bara när ni väljer att skicka en offert.')} />
         <meta property="og:url" content="https://cykelhjalpen.se/registrera/verkstad" />
         <meta property="og:image" content="https://cykelhjalpen.se/og/registrera-verkstad.jpg" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -153,26 +155,26 @@ const RegisterWorkshopPage = () => {
       <main className="container mx-auto px-4 py-10 md:py-14 max-w-2xl">
         <div className="flex items-center gap-3 mb-3">
           <div className="sticker bg-accent p-2"><Wrench className="h-5 w-5 text-accent-foreground" /></div>
-          <h1 className="font-display text-3xl font-bold">Anslut din verkstad</h1>
+          <h1 className="font-display text-3xl font-bold">{t('Anslut din verkstad')}</h1>
         </div>
         <p className="text-muted-foreground mb-5">
-          Skapa ett kostnadsfritt konto och få relevanta förfrågningar från cyklister i den stad där ni arbetar. Ni väljer själva vilka jobb ni vill svara på.
+          {t('Skapa ett kostnadsfritt konto och få relevanta förfrågningar från cyklister i den stad där ni arbetar. Ni väljer själva vilka jobb ni vill svara på.')}
         </p>
 
         <div className="grid sm:grid-cols-3 gap-2 mb-8 text-sm">
-          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> Ingen månadsavgift</div>
-          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> Välj ärenden själv</div>
-          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><ShieldCheck className="h-4 w-4 text-primary shrink-0" /> Manuell granskning</div>
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {t('Ingen månadsavgift')}</div>
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {t('Välj ärenden själv')}</div>
+          <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><ShieldCheck className="h-4 w-4 text-primary shrink-0" /> {t('Manuell granskning')}</div>
         </div>
 
         <form onSubmit={submit} className="sticker rounded-3xl bg-card p-6 md:p-8 space-y-5">
           <div>
-            <Label htmlFor="cn">Verkstadens namn</Label>
+            <Label htmlFor="cn">{t('Verkstadens namn')}</Label>
             <Input id="cn" autoComplete="organization" required value={form.company_name} onChange={(event) => update('company_name', event.target.value)} className="rounded-xl border-2" />
           </div>
 
           <div>
-            <Label>Vilken stad arbetar ni i?</Label>
+            <Label>{t('Vilken stad arbetar ni i?')}</Label>
             <div className="grid grid-cols-2 gap-3 mt-2">
               {CYKEL_CITIES.map((city) => (
                 <button
@@ -190,39 +192,39 @@ const RegisterWorkshopPage = () => {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="em">E-post</Label>
+              <Label htmlFor="em">{t('E-post')}</Label>
               <Input id="em" type="email" inputMode="email" autoComplete="email" required value={form.email} onChange={(event) => update('email', event.target.value)} className="rounded-xl border-2" />
             </div>
             <div>
-              <Label htmlFor="pw">Lösenord</Label>
+              <Label htmlFor="pw">{t('Lösenord')}</Label>
               <Input id="pw" type="password" autoComplete="new-password" required minLength={8} value={form.password} onChange={(event) => update('password', event.target.value)} className="rounded-xl border-2" />
-              <p className="text-xs text-muted-foreground mt-1">Minst åtta tecken.</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('Minst åtta tecken.')}</p>
             </div>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="ph">Telefon <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+              <Label htmlFor="ph">{t('Telefon')} <span className="font-normal text-muted-foreground">({t('valfritt')})</span></Label>
               <Input id="ph" type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={(event) => update('phone', event.target.value)} className="rounded-xl border-2" />
             </div>
             <div>
-              <Label htmlFor="ws">Webbplats <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+              <Label htmlFor="ws">{t('Webbplats')} <span className="font-normal text-muted-foreground">({t('valfritt')})</span></Label>
               <Input id="ws" inputMode="url" autoComplete="url" value={form.website} onChange={(event) => update('website', event.target.value)} placeholder="verkstad.se" className="rounded-xl border-2" />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="ad">Adress i {form.city} <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
+            <Label htmlFor="ad">{t('Adress i {city}', { city: form.city })} <span className="font-normal text-muted-foreground">({t('valfritt')})</span></Label>
             <Input id="ad" autoComplete="street-address" value={form.address} onChange={(event) => update('address', event.target.value)} className="rounded-xl border-2" />
           </div>
 
           <div>
-            <Label>Tjänster ni erbjuder <span className="font-normal text-muted-foreground">(valfritt)</span></Label>
-            <p className="text-sm text-muted-foreground mt-1 mb-3">Det hjälper oss att skicka mer relevanta förfrågningar.</p>
+            <Label>{t('Tjänster ni erbjuder')} <span className="font-normal text-muted-foreground">({t('valfritt')})</span></Label>
+            <p className="text-sm text-muted-foreground mt-1 mb-3">{t('Det hjälper oss att skicka mer relevanta förfrågningar.')}</p>
             <div className="flex flex-wrap gap-2">
-              {SERVICES.map((service) => (
+              {SERVICES_SV.map((service) => (
                 <button key={service} type="button" onClick={() => toggleService(service)} aria-pressed={form.services.includes(service)} className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition-all ${form.services.includes(service) ? 'border-foreground bg-primary text-primary-foreground shadow-[2px_2px_0_hsl(var(--ink))]' : 'border-border hover:border-foreground'}`}>
-                  {service}
+                  {t(service)}
                 </button>
               ))}
             </div>
@@ -234,21 +236,21 @@ const RegisterWorkshopPage = () => {
             <label className="flex items-start gap-3 text-sm cursor-pointer">
               <input type="checkbox" checked={form.dpa_accepted} onChange={(event) => update('dpa_accepted', event.target.checked)} className="mt-1 h-4 w-4" required />
               <span className="text-muted-foreground leading-relaxed">
-                Jag godkänner <strong className="text-foreground">databehandlingsavtalet (DPA)</strong> – kunduppgifter får endast användas för att besvara förfrågan och raderas när ärendet är avslutat.
+                {t('Jag godkänner')} <strong className="text-foreground">{t('databehandlingsavtalet (DPA)')}</strong> – {t('kunduppgifter får endast användas för att besvara förfrågan och raderas när ärendet är avslutat.')}
               </span>
             </label>
 
             <label className="flex items-start gap-3 text-sm cursor-pointer">
               <input type="checkbox" checked={form.marketing_accepted} onChange={(event) => update('marketing_accepted', event.target.checked)} className="mt-1 h-4 w-4" />
               <span className="text-muted-foreground leading-relaxed">
-                Jag vill gärna få nyheter och erbjudanden från Cykelhjälpen via mejl <span className="text-xs">(valfritt)</span>.
+                {t('Jag vill gärna få nyheter och erbjudanden från Cykelhjälpen via mejl')} <span className="text-xs">({t('valfritt')})</span>.
               </span>
             </label>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {LEAD_FEE_KR} kr exkl. moms (62,50 kr inkl. moms) debiteras via Stripe först när du väljer att skicka en offert. Läs gärna även våra{' '}
-              <Link to="/villkor" className="underline text-foreground" target="_blank">allmänna villkor</Link> och{' '}
-              <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">integritetspolicy</Link>.
+              {t('{fee} kr exkl. moms (62,50 kr inkl. moms) debiteras via Stripe först när du väljer att skicka en offert. Läs gärna även våra', { fee: LEAD_FEE_KR })}{' '}
+              <Link to="/villkor" className="underline text-foreground" target="_blank">{t('allmänna villkor')}</Link> {t('och')}{' '}
+              <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">{t('integritetspolicy')}</Link>.
             </p>
           </div>
 
@@ -263,10 +265,10 @@ const RegisterWorkshopPage = () => {
 
           <Button type="submit" disabled={loading || !form.terms_accepted || !form.dpa_accepted || !turnstileToken} className="w-full cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-12 text-base">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {loading ? 'Skapar verkstad…' : 'Registrera verkstaden kostnadsfritt'}
+            {loading ? t('Skapar verkstad…') : t('Registrera verkstaden kostnadsfritt')}
           </Button>
 
-          <p className="text-xs text-center text-muted-foreground">Har du redan ett konto? <Link to="/logga-in" className="underline">Logga in</Link></p>
+          <p className="text-xs text-center text-muted-foreground">{t('Har du redan ett konto?')} <Link to="/logga-in" className="underline">{t('Logga in')}</Link></p>
         </form>
       </main>
       <CykelFooter />

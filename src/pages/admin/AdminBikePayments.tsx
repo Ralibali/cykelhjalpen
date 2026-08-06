@@ -4,6 +4,7 @@ import { Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
+import { useT } from '@/lib/i18n'
 
 interface LeadCharge {
   id: string
@@ -21,6 +22,7 @@ const formatMoney = (ore: number) => new Intl.NumberFormat('sv-SE', {
 }).format((ore || 0) / 100)
 
 const AdminBikePayments = () => {
+  const t = useT()
   const [items, setItems] = useState<LeadCharge[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -32,7 +34,7 @@ const AdminBikePayments = () => {
       .order('created_at', { ascending: false })
 
     if (error) {
-      toast.error(`Kunde inte läsa betalningar: ${error.message}`)
+      toast.error(t('Kunde inte läsa betalningar: {msg}', { msg: error.message }))
       setItems([])
     } else {
       setItems((data as LeadCharge[]) || [])
@@ -55,25 +57,25 @@ const AdminBikePayments = () => {
     <CykelAdminLayout>
       <div className="flex items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="font-display text-2xl font-bold">Cykelbetalningar</h1>
-          <p className="text-sm text-muted-foreground mt-1">Stripe-betalningar för skickade verkstadsofferter.</p>
+          <h1 className="font-display text-2xl font-bold">{t('Cykelbetalningar')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('Stripe-betalningar för skickade verkstadsofferter.')}</p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Uppdatera
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('Uppdatera')}
         </Button>
       </div>
 
       <div className="grid sm:grid-cols-3 gap-3 mb-6">
         <div className="rounded-xl border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Totalt betalt</p>
+          <p className="text-xs text-muted-foreground">{t('Totalt betalt')}</p>
           <p className="font-display text-2xl font-bold mt-1">{formatMoney(totals.amount)}</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Betalda offerter</p>
+          <p className="text-xs text-muted-foreground">{t('Betalda offerter')}</p>
           <p className="font-display text-2xl font-bold mt-1">{totals.count}</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Övriga statusar</p>
+          <p className="text-xs text-muted-foreground">{t('Övriga statusar')}</p>
           <p className="font-display text-2xl font-bold mt-1">{totals.pending}</p>
         </div>
       </div>
@@ -81,17 +83,17 @@ const AdminBikePayments = () => {
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl border bg-card p-8 text-center text-muted-foreground">Inga betalningar registrerade ännu.</div>
+        <div className="rounded-xl border bg-card p-8 text-center text-muted-foreground">{t('Inga betalningar registrerade ännu.')}</div>
       ) : (
         <div className="overflow-x-auto border rounded-xl bg-card">
           <table className="w-full text-sm">
             <thead className="bg-muted/60">
               <tr>
-                <th className="text-left p-3">Datum</th>
-                <th className="text-left p-3">Verkstad</th>
-                <th className="text-left p-3">Belopp</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3">Stripe-id</th>
+                <th className="text-left p-3">{t('Datum')}</th>
+                <th className="text-left p-3">{t('Verkstad')}</th>
+                <th className="text-left p-3">{t('Belopp')}</th>
+                <th className="text-left p-3">{t('Status')}</th>
+                <th className="text-left p-3">{t('Stripe-id')}</th>
               </tr>
             </thead>
             <tbody>

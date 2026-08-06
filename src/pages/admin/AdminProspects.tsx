@@ -14,6 +14,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useT } from '@/lib/i18n'
 
 // Edge-funktioner svarar med { error: "riktigt felmeddelande" } i bodyn vid non-2xx,
 // men functions.invoke exponerar bara en generisk text. Läs bodyn så att panelen
@@ -119,7 +120,7 @@ interface ResendStatus {
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
 const STATUSES = ['new', 'review', 'approved_for_contact', 'contacted', 'replied', 'converted', 'rejected', 'do_not_contact'] as const
 
-const statusLabel: Record<string, string> = {
+const statusLabelSv: Record<string, string> = {
   new: 'Ny', review: 'Granskning', approved_for_contact: 'Godkänd', contacted: 'Kontaktad',
   replied: 'Svarat', converted: 'Konverterad', rejected: 'Avvisad', do_not_contact: 'Do-not-contact',
 }
@@ -135,7 +136,7 @@ const statusColor: Record<string, string> = {
   do_not_contact: 'bg-red-100 text-red-800',
 }
 
-const activityStatusLabel: Record<string, string> = {
+const activityStatusLabelSv: Record<string, string> = {
   draft: 'Utkast', pending_approval: 'Väntar godkänd.', approved: 'Godkänd',
   sending: 'Skickar…', sent: 'Skickat', failed: 'Misslyckat', skipped: 'Hoppat över', replied: 'Svar mottaget',
 }
@@ -152,6 +153,7 @@ const activityStatusColor: Record<string, string> = {
 }
 
 const AdminProspects = () => {
+  const t = useT()
   const [prospects, setProspects] = useState<Prospect[]>([])
   const [loading, setLoading] = useState(true)
   const [cityFilter, setCityFilter] = useState<string>('all')
@@ -185,7 +187,7 @@ const AdminProspects = () => {
     if (statusFilter !== 'all' && statusFilter !== 'clicked') query = query.eq('status', statusFilter)
     if (minScore > 0) query = query.gte('score', minScore)
     const { data, error } = await query
-    if (error) toast.error('Kunde inte läsa prospects', { description: error.message })
+    if (error) toast.error(t('Kunde inte läsa prospects'), { description: error.message })
     else setProspects((data as unknown as Prospect[]) || [])
     // Klickstatistik för listans badges. Tål att tabellen inte finns ännu
     // (om migreringen inte deployats) – då blir det bara inga badges.
@@ -207,8 +209,8 @@ const AdminProspects = () => {
       if (error) throw error
       setResendStatus(data as ResendStatus)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Okänt fel'
-      toast.error('Kunde inte hämta Resend-status', { description: message })
+      const message = error instanceof Error ? error.message : t('Okänt fel')
+      toast.error(t('Kunde inte hämta Resend-status'), { description: message })
     } finally {
       setResendLoading(false)
     }
@@ -240,15 +242,15 @@ const AdminProspects = () => {
       })
       if (error) throw error
       const stats = (data as { stats?: Record<string, number> })?.stats
-      toast.success('Sökning klar', {
+      toast.success(t('Sökning klar'), {
         description: stats
-          ? `Skannade ${stats.queried} sökningar, ${stats.inserted} nya, ${stats.updated} uppdaterade, ${stats.suppressed} blockerade.`
-          : 'Prospects uppdaterade.',
+          ? t('Skannade {queried} sökningar, {inserted} nya, {updated} uppdaterade, {suppressed} blockerade.', { queried: stats.queried, inserted: stats.inserted, updated: stats.updated, suppressed: stats.suppressed })
+          : t('Prospects uppdaterade.'),
       })
       await fetchProspects()
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Okänt fel'
-      toast.error('Discovery misslyckades', { description: message })
+      const message = error instanceof Error ? error.message : t('Okänt fel')
+      toast.error(t('Discovery misslyckades'), { description: message })
     } finally {
       setDiscovering(false)
     }
@@ -272,7 +274,7 @@ const AdminProspects = () => {
         body: { prospect_id: selected.id, action, ...extra },
       })
       if (error) throw error
-      toast.success('Åtgärd utförd')
+      toast.success(t('Åtgärd utförd'))
       await fetchProspects()
       await refreshActivities()
       const draft = (data as { activity?: OutreachActivity })?.activity
@@ -280,7 +282,7 @@ const AdminProspects = () => {
       const { data: updated } = await supabase.from('workshop_prospects').select('*').eq('id', selected.id).maybeSingle()
       if (updated) setSelected(updated as unknown as Prospect)
     } catch (error) {
-      toast.error('Åtgärden misslyckades', { description: await extractFunctionError(error) })
+      toast.error(t('Åtgärden misslyckades'), { description: await extractFunctionError(error) })
     } finally {
       setBusyAction(false)
     }
@@ -295,11 +297,11 @@ const AdminProspects = () => {
         body: { action: 'update_draft', activity_id: activity.id, subject: edit.subject, message: edit.message },
       })
       if (error) throw error
-      toast.success('Utkastet sparat')
+      toast.success(t('Utkastet sparat'))
       setEditing((prev) => { const next = { ...prev }; delete next[activity.id]; return next })
       await refreshActivities()
     } catch (error) {
-      toast.error('Kunde inte spara', { description: await extractFunctionError(error) })
+      toast.error(t('Kunde inte spara'), { description: await extractFunctionError(error) })
     } finally { setSavingId(null) }
   }
 
@@ -310,10 +312,10 @@ const AdminProspects = () => {
         body: { action: 'approve_draft', activity_id: activity.id },
       })
       if (error) throw error
-      toast.success('Godkänt – redo att skickas')
+      toast.success(t('Godkänt – redo att skickas'))
       await refreshActivities()
     } catch (error) {
-      toast.error('Kunde inte godkänna', { description: await extractFunctionError(error) })
+      toast.error(t('Kunde inte godkänna'), { description: await extractFunctionError(error) })
     } finally { setSavingId(null) }
   }
 
@@ -325,13 +327,13 @@ const AdminProspects = () => {
       })
       if (error) throw error
       const msgId = (data as { provider_message_id?: string })?.provider_message_id
-      toast.success('Mejlet är skickat via Resend', { description: msgId ? `Resend-id: ${msgId}` : undefined })
+      toast.success(t('Mejlet är skickat via Resend'), { description: msgId ? t('Resend-id: {id}', { id: msgId }) : undefined })
       await fetchProspects()
       await refreshActivities()
       const { data: updated } = await supabase.from('workshop_prospects').select('*').eq('id', selected!.id).maybeSingle()
       if (updated) setSelected(updated as unknown as Prospect)
     } catch (error) {
-      toast.error('Sändning misslyckades', { description: await extractFunctionError(error) })
+      toast.error(t('Sändning misslyckades'), { description: await extractFunctionError(error) })
       await refreshActivities()
     } finally {
       setSavingId(null)
@@ -340,8 +342,8 @@ const AdminProspects = () => {
   }
 
   const copyToClipboard = async (text: string, label: string) => {
-    try { await navigator.clipboard.writeText(text); toast.success(`${label} kopierat`) }
-    catch { toast.error('Kunde inte kopiera') }
+    try { await navigator.clipboard.writeText(text); toast.success(t('{label} kopierat', { label })) }
+    catch { toast.error(t('Kunde inte kopiera')) }
   }
 
   const summary = useMemo(() => {
@@ -363,6 +365,9 @@ const AdminProspects = () => {
 
   const sendBlocked = !resendStatus || !resendStatus.configured || resendStatus.domain_status !== 'verified'
 
+  const statusLabel = (s: string) => t(statusLabelSv[s] || s)
+  const activityStatusLabel = (s: string) => t(activityStatusLabelSv[s] || s)
+
   const startEditing = (activity: OutreachActivity) => {
     setEditing((prev) => ({
       ...prev,
@@ -375,13 +380,13 @@ const AdminProspects = () => {
       <div className="max-w-7xl mx-auto py-8 px-4 space-y-6">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="font-display text-2xl font-bold">Verkstadsrekrytering</h1>
+            <h1 className="font-display text-2xl font-bold">{t('Verkstadsrekrytering')}</h1>
             <p className="text-sm text-muted-foreground">
-              {summary.total} prospects · {summary.newCount} nya · {summary.approved} godkända · {summary.contacted} kontaktade
+              {t('{total} prospects · {newCount} nya · {approved} godkända · {contacted} kontaktade', { total: summary.total, newCount: summary.newCount, approved: summary.approved, contacted: summary.contacted })}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchProspects} disabled={loading}>
-            <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} /> Uppdatera
+            <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} /> {t('Uppdatera')}
           </Button>
         </div>
 
@@ -392,15 +397,15 @@ const AdminProspects = () => {
               ? <ShieldCheck className="h-5 w-5 text-emerald-600" />
               : <ShieldAlert className="h-5 w-5 text-amber-600" />}
             <div>
-              <p className="text-sm font-semibold">Avsändare</p>
+              <p className="text-sm font-semibold">{t('Avsändare')}</p>
               <p className="text-xs text-muted-foreground font-mono">{resendStatus?.from || 'Christoffer på Cykelhjalpen.se <info@cykelhjalpen.se>'}</p>
-              <p className="text-xs text-muted-foreground">Reply-To: {resendStatus?.reply_to || 'info@cykelhjalpen.se'}</p>
+              <p className="text-xs text-muted-foreground">{t('Reply-To: {email}', { email: resendStatus?.reply_to || 'info@cykelhjalpen.se' })}</p>
             </div>
           </div>
           <div className="flex-1 min-w-[220px]">
-            <p className="text-sm font-semibold">Resend-status</p>
+            <p className="text-sm font-semibold">{t('Resend-status')}</p>
             <p className="text-xs text-muted-foreground">
-              Nyckel: {resendStatus?.configured ? '✓ konfigurerad' : '✗ saknas'} · Domän{' '}
+              {t('Nyckel:')} {resendStatus?.configured ? t('✓ konfigurerad') : t('✗ saknas')} · {t('Domän')}{' '}
               <span className="font-mono">cykelhjalpen.se</span>:{' '}
               <span className={cn('font-semibold', resendStatus?.domain_status === 'verified' ? 'text-emerald-700' : 'text-amber-700')}>
                 {resendStatus?.domain_status || '—'}
@@ -409,43 +414,43 @@ const AdminProspects = () => {
             {resendStatus?.domain_message && <p className="text-[11px] text-muted-foreground mt-1">{resendStatus.domain_message}</p>}
           </div>
           <Button variant="ghost" size="sm" onClick={fetchResendStatus} disabled={resendLoading}>
-            <RotateCcw className={cn('h-4 w-4 mr-2', resendLoading && 'animate-spin')} /> Kontrollera
+            <RotateCcw className={cn('h-4 w-4 mr-2', resendLoading && 'animate-spin')} /> {t('Kontrollera')}
           </Button>
         </div>
 
         {/* Discovery */}
         <div className="border rounded-xl p-4 bg-card space-y-3">
-          <div className="flex items-center gap-2"><Search className="h-4 w-4" /><h2 className="font-semibold">Starta ny sökning</h2></div>
+          <div className="flex items-center gap-2"><Search className="h-4 w-4" /><h2 className="font-semibold">{t('Starta ny sökning')}</h2></div>
           <div className="flex flex-wrap gap-2 items-end">
             <div>
-              <label className="text-xs text-muted-foreground block mb-1">Stad</label>
+              <label className="text-xs text-muted-foreground block mb-1">{t('Stad')}</label>
               <select className="border rounded-md px-3 py-2 text-sm bg-background" value={discoverCity} onChange={(e) => setDiscoverCity(e.target.value as typeof CITIES[number])}>
                 {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="flex-1 min-w-[280px]">
-              <label className="text-xs text-muted-foreground block mb-1">Söktermer (kommaseparerade)</label>
+              <label className="text-xs text-muted-foreground block mb-1">{t('Söktermer (kommaseparerade)')}</label>
               <Input value={discoverTerms} onChange={(e) => setDiscoverTerms(e.target.value)} />
             </div>
             <Button onClick={runDiscovery} disabled={discovering}>
               {discovering ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
-              Sök & extrahera
+              {t('Sök & extrahera')}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Firecrawl hämtar publika företagswebbplatser. Inget mejl skickas – utkast måste godkännas och skickas manuellt.</p>
+          <p className="text-xs text-muted-foreground">{t('Firecrawl hämtar publika företagswebbplatser. Inget mejl skickas – utkast måste godkännas och skickas manuellt.')}</p>
         </div>
 
         {/* Filter */}
         <div className="flex flex-wrap gap-2 items-center text-sm">
-          <span className="text-muted-foreground">Stad:</span>
+          <span className="text-muted-foreground">{t('Stad:')}</span>
           {(['all', ...CITIES] as const).map((c) => (
-            <button key={c} onClick={() => setCityFilter(c)} className={cn('px-3 py-1 rounded-full border text-xs font-semibold', cityFilter === c ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted')}>{c === 'all' ? 'Alla' : c}</button>
+            <button key={c} onClick={() => setCityFilter(c)} className={cn('px-3 py-1 rounded-full border text-xs font-semibold', cityFilter === c ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted')}>{c === 'all' ? t('Alla') : c}</button>
           ))}
-          <span className="text-muted-foreground ml-4">Status:</span>
+          <span className="text-muted-foreground ml-4">{t('Status:')}</span>
           {(['all', 'clicked', ...STATUSES] as const).map((s) => (
-            <button key={s} onClick={() => setStatusFilter(s)} className={cn('px-3 py-1 rounded-full border text-xs font-semibold', statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted', s === 'clicked' && statusFilter !== s && 'border-green-300 text-green-800')}>{s === 'all' ? 'Alla' : s === 'clicked' ? 'Klickade' : statusLabel[s] || s}</button>
+            <button key={s} onClick={() => setStatusFilter(s)} className={cn('px-3 py-1 rounded-full border text-xs font-semibold', statusFilter === s ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted', s === 'clicked' && statusFilter !== s && 'border-green-300 text-green-800')}>{s === 'all' ? t('Alla') : s === 'clicked' ? t('Klickade') : statusLabel(s) || s}</button>
           ))}
-          <span className="text-muted-foreground ml-4">Min poäng:</span>
+          <span className="text-muted-foreground ml-4">{t('Min poäng:')}</span>
           <Input type="number" min={0} max={100} value={minScore} onChange={(e) => setMinScore(Number(e.target.value) || 0)} className="w-20 h-8" />
         </div>
 
@@ -454,18 +459,18 @@ const AdminProspects = () => {
             <table className="min-w-full text-sm">
               <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
                 <tr>
-                  <th className="text-left px-3 py-2">Företag</th>
-                  <th className="text-left px-3 py-2">Stad</th>
-                  <th className="text-left px-3 py-2">Poäng</th>
-                  <th className="text-left px-3 py-2">Status</th>
-                  <th className="text-left px-3 py-2">Kontakt</th>
+                  <th className="text-left px-3 py-2">{t('Företag')}</th>
+                  <th className="text-left px-3 py-2">{t('Stad')}</th>
+                  <th className="text-left px-3 py-2">{t('Poäng')}</th>
+                  <th className="text-left px-3 py-2">{t('Status')}</th>
+                  <th className="text-left px-3 py-2">{t('Kontakt')}</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">Läser in…</td></tr>
+                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">{t('Läser in…')}</td></tr>
                 ) : visibleProspects.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">{statusFilter === 'clicked' ? 'Inga registrerade klick ännu – skicka fler mejl eller vänta på svar.' : 'Inga prospects matchar filtret. Starta en sökning ovan.'}</td></tr>
+                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">{statusFilter === 'clicked' ? t('Inga registrerade klick ännu – skicka fler mejl eller vänta på svar.') : t('Inga prospects matchar filtret. Starta en sökning ovan.')}</td></tr>
                 ) : visibleProspects.map((p) => (
                   <tr key={p.id} className={cn('border-t cursor-pointer hover:bg-muted/40', selected?.id === p.id && 'bg-muted/60')} onClick={() => openDetails(p)}>
                     <td className="px-3 py-2">
@@ -475,12 +480,12 @@ const AdminProspects = () => {
                     <td className="px-3 py-2 text-xs">{p.city}</td>
                     <td className="px-3 py-2"><span className="inline-flex items-center gap-1 text-xs font-semibold"><Star className="h-3 w-3" />{p.score}</span></td>
                     <td className="px-3 py-2">
-                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs font-semibold', statusColor[p.status] || 'bg-muted')}>{statusLabel[p.status] || p.status}</span>
+                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs font-semibold', statusColor[p.status] || 'bg-muted')}>{statusLabel(p.status)}</span>
                       {prospectClicks[p.id] && (
                         <div className="mt-1">
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-800" title={`Senast ${new Date(prospectClicks[p.id].last).toLocaleString('sv-SE')}`}>
                             <MousePointerClick className="h-3 w-3" />
-                            Klickat{prospectClicks[p.id].count > 1 ? ` ${prospectClicks[p.id].count}×` : ''}
+                            {prospectClicks[p.id].count > 1 ? t('Klickat {n}×', { n: prospectClicks[p.id].count }) : t('Klickat')}
                           </span>
                         </div>
                       )}
@@ -498,7 +503,7 @@ const AdminProspects = () => {
           {/* Detaljer */}
           <div className="border rounded-xl bg-card p-4 h-fit sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
             {!selected ? (
-              <p className="text-sm text-muted-foreground">Välj ett prospekt för att se detaljer och åtgärder.</p>
+              <p className="text-sm text-muted-foreground">{t('Välj ett prospekt för att se detaljer och åtgärder.')}</p>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-2">
@@ -506,20 +511,20 @@ const AdminProspects = () => {
                     <h2 className="font-display text-lg font-bold">{selected.company_name}</h2>
                     <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />{selected.city}</p>
                   </div>
-                  <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs font-semibold', statusColor[selected.status] || 'bg-muted')}>{statusLabel[selected.status] || selected.status}</span>
+                  <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs font-semibold', statusColor[selected.status] || 'bg-muted')}>{statusLabel(selected.status)}</span>
                 </div>
 
                 <div className="text-sm space-y-1">
                   {selected.website && <div className="flex items-center gap-2"><a href={selected.website} target="_blank" rel="noreferrer noopener" className="underline truncate flex-1"><ExternalLink className="h-3 w-3 inline mr-1" />{selected.website}</a></div>}
-                  {selected.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3" /><span className="flex-1 truncate">{selected.email}</span><button className="text-xs underline" onClick={() => copyToClipboard(selected.email!, 'E-post')}><Copy className="h-3 w-3" /></button></div>}
-                  {selected.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3" /><span className="flex-1">{selected.phone}</span><button className="text-xs underline" onClick={() => copyToClipboard(selected.phone!, 'Telefon')}><Copy className="h-3 w-3" /></button></div>}
+                  {selected.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3" /><span className="flex-1 truncate">{selected.email}</span><button className="text-xs underline" onClick={() => copyToClipboard(selected.email!, t('E-post'))}><Copy className="h-3 w-3" /></button></div>}
+                  {selected.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3" /><span className="flex-1">{selected.phone}</span><button className="text-xs underline" onClick={() => copyToClipboard(selected.phone!, t('Telefon'))}><Copy className="h-3 w-3" /></button></div>}
                   {selected.address && <div className="text-xs text-muted-foreground">{selected.address}</div>}
-                  {selected.opening_hours && <div className="text-xs text-muted-foreground">Öppet: {selected.opening_hours}</div>}
-                  {selected.last_contacted_at && <div className="text-xs text-muted-foreground">Senast kontaktad: {new Date(selected.last_contacted_at).toLocaleString('sv-SE')} · totalt {selected.contact_count}</div>}
+                  {selected.opening_hours && <div className="text-xs text-muted-foreground">{t('Öppet: {hours}', { hours: selected.opening_hours })}</div>}
+                  {selected.last_contacted_at && <div className="text-xs text-muted-foreground">{t('Senast kontaktad: {date} · totalt {count}', { date: new Date(selected.last_contacted_at).toLocaleString('sv-SE'), count: selected.contact_count })}</div>}
                   {prospectClicks[selected.id] && (
                     <div className="text-xs font-medium text-green-800 flex items-center gap-1">
                       <MousePointerClick className="h-3 w-3" />
-                      Har klickat på registreringslänken {prospectClicks[selected.id].count} {prospectClicks[selected.id].count === 1 ? 'gång' : 'gånger'} – senast {new Date(prospectClicks[selected.id].last).toLocaleString('sv-SE')}
+                      {t('Har klickat på registreringslänken {count} {times} – senast {date}', { count: prospectClicks[selected.id].count, times: prospectClicks[selected.id].count === 1 ? t('gång') : t('gånger'), date: new Date(prospectClicks[selected.id].last).toLocaleString('sv-SE') })}
                     </div>
                   )}
                 </div>
@@ -528,16 +533,16 @@ const AdminProspects = () => {
 
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t">
                   <Button size="sm" variant="default" onClick={() => performAction('approve')} disabled={busyAction || selected.do_not_contact}>
-                    <Check className="h-4 w-4 mr-1" /> Godkänn prospekt
+                    <Check className="h-4 w-4 mr-1" /> {t('Godkänn prospekt')}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => performAction('reject')} disabled={busyAction}><X className="h-4 w-4 mr-1" /> Avvisa</Button>
-                  <Button size="sm" variant="outline" onClick={() => performAction('do_not_contact')} disabled={busyAction} className="text-red-700 border-red-300"><Ban className="h-4 w-4 mr-1" /> Do-not-contact</Button>
-                  <Button size="sm" variant="outline" onClick={() => performAction('convert')} disabled={busyAction || selected.do_not_contact}>Konvertera</Button>
+                  <Button size="sm" variant="outline" onClick={() => performAction('reject')} disabled={busyAction}><X className="h-4 w-4 mr-1" /> {t('Avvisa')}</Button>
+                  <Button size="sm" variant="outline" onClick={() => performAction('do_not_contact')} disabled={busyAction} className="text-red-700 border-red-300"><Ban className="h-4 w-4 mr-1" /> {t('Do-not-contact')}</Button>
+                  <Button size="sm" variant="outline" onClick={() => performAction('convert')} disabled={busyAction || selected.do_not_contact}>{t('Konvertera')}</Button>
                   <Button size="sm" variant="outline" onClick={() => performAction('prepare_draft', { channel: 'email' })} disabled={busyAction || selected.do_not_contact || !selected.email || selected.status !== 'approved_for_contact'}>
-                    <Mail className="h-4 w-4 mr-1" /> Skapa e-postutkast
+                    <Mail className="h-4 w-4 mr-1" /> {t('Skapa e-postutkast')}
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => performAction('prepare_draft', { channel: 'sms' })} disabled={busyAction || selected.do_not_contact || !selected.phone}>
-                    <Phone className="h-4 w-4 mr-1" /> Utkast SMS (inaktivt)
+                    <Phone className="h-4 w-4 mr-1" /> {t('Utkast SMS (inaktivt)')}
                   </Button>
                   <Button
                     size="sm"
@@ -545,18 +550,18 @@ const AdminProspects = () => {
                     className="border-green-300 text-green-800"
                     onClick={() => performAction('prepare_followup')}
                     disabled={busyAction || selected.do_not_contact || !selected.email || selected.status !== 'contacted' || !prospectClicks[selected.id]}
-                    title={prospectClicks[selected.id] ? 'Skapar ett uppföljningsutkast till prospektet som klickat på länken' : 'Aktiveras när prospektet klickat på registreringslänken'}
+                    title={prospectClicks[selected.id] ? t('Skapar ett uppföljningsutkast till prospektet som klickat på länken') : t('Aktiveras när prospektet klickat på registreringslänken')}
                   >
-                    <MousePointerClick className="h-4 w-4 mr-1" /> Uppföljning till klickare
+                    <MousePointerClick className="h-4 w-4 mr-1" /> {t('Uppföljning till klickare')}
                   </Button>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  E-postutkast kan skickas skarpt via Resend efter godkänn. SMS skickas aldrig automatiskt.
+                  {t('E-postutkast kan skickas skarpt via Resend efter godkänn. SMS skickas aldrig automatiskt.')}
                 </p>
 
                 {activities.length > 0 && (
                   <div className="pt-3 border-t space-y-3">
-                    <h3 className="text-xs font-semibold uppercase tracking-wide">Utkast & aktiviteter</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-wide">{t('Utkast & aktiviteter')}</h3>
                     {activities.map((activity) => {
                       const edit = editing[activity.id]
                       const isEditable = ['draft', 'pending_approval', 'approved', 'failed'].includes(activity.status)
@@ -567,35 +572,35 @@ const AdminProspects = () => {
                             <div className="flex items-center gap-2">
                               <span className="uppercase font-semibold text-[10px] px-1.5 py-0.5 rounded bg-muted">{activity.channel}</span>
                               <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-semibold', activityStatusColor[activity.status] || 'bg-muted')}>
-                                {activityStatusLabel[activity.status] || activity.status}
+                                {activityStatusLabel(activity.status)}
                               </span>
                               {activity.kind === 'followup' && (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-800">Uppföljning</span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-800">{t('Uppföljning')}</span>
                               )}
                             </div>
                             <span className="text-muted-foreground text-[10px]">{new Date(activity.created_at).toLocaleString('sv-SE')}</span>
                           </div>
-                          <div className="text-muted-foreground">→ {activity.recipient}</div>
+                          <div className="text-muted-foreground">{t('→ {recipient}', { recipient: activity.recipient })}</div>
 
                           {edit ? (
                             <>
-                              {isEmail && <Input value={edit.subject} onChange={(e) => setEditing((prev) => ({ ...prev, [activity.id]: { ...prev[activity.id], subject: e.target.value } }))} placeholder="Ämne" />}
+                              {isEmail && <Input value={edit.subject} onChange={(e) => setEditing((prev) => ({ ...prev, [activity.id]: { ...prev[activity.id], subject: e.target.value } }))} placeholder={t('Ämne')} />}
                               <Textarea rows={10} value={edit.message} onChange={(e) => setEditing((prev) => ({ ...prev, [activity.id]: { ...prev[activity.id], message: e.target.value } }))} className="text-[11px] font-mono" />
                               <div className="flex gap-2">
-                                <Button size="sm" onClick={() => saveDraft(activity)} disabled={savingId === activity.id}><Save className="h-3 w-3 mr-1" /> Spara utkast</Button>
-                                <Button size="sm" variant="ghost" onClick={() => setEditing((prev) => { const next = { ...prev }; delete next[activity.id]; return next })}>Avbryt</Button>
+                                <Button size="sm" onClick={() => saveDraft(activity)} disabled={savingId === activity.id}><Save className="h-3 w-3 mr-1" /> {t('Spara utkast')}</Button>
+                                <Button size="sm" variant="ghost" onClick={() => setEditing((prev) => { const next = { ...prev }; delete next[activity.id]; return next })}>{t('Avbryt')}</Button>
                               </div>
                             </>
                           ) : (
                             <>
                               {isEmail && activity.subject && <div className="font-semibold">{activity.subject}</div>}
                               <div className="text-[11px] whitespace-pre-wrap text-muted-foreground max-h-40 overflow-y-auto border rounded p-2 bg-muted/30">{activity.message}</div>
-                              {activity.error && <div className="text-[11px] text-red-700 bg-red-50 rounded p-2 border border-red-200">Fel: {activity.error}</div>}
-                              {activity.provider_message_id && <div className="text-[10px] text-muted-foreground">Resend-id: {activity.provider_message_id}</div>}
+                              {activity.error && <div className="text-[11px] text-red-700 bg-red-50 rounded p-2 border border-red-200">{t('Fel: {error}', { error: activity.error })}</div>}
+                              {activity.provider_message_id && <div className="text-[10px] text-muted-foreground">{t('Resend-id: {id}', { id: activity.provider_message_id })}</div>}
                               {activityClicks[activity.id] && (
                                 <div className="text-[11px] font-medium text-green-800 bg-green-50 rounded p-2 border border-green-200 flex items-center gap-1.5">
                                   <MousePointerClick className="h-3 w-3 shrink-0" />
-                                  Klickade på registreringslänken {activityClicks[activity.id].count} {activityClicks[activity.id].count === 1 ? 'gång' : 'gånger'} – senast {new Date(activityClicks[activity.id].last).toLocaleString('sv-SE')}
+                                  {t('Klickade på registreringslänken {count} {times} – senast {date}', { count: activityClicks[activity.id].count, times: activityClicks[activity.id].count === 1 ? t('gång') : t('gånger'), date: new Date(activityClicks[activity.id].last).toLocaleString('sv-SE') })}
                                 </div>
                               )}
 
@@ -603,10 +608,10 @@ const AdminProspects = () => {
                                 <div className="flex flex-wrap gap-2 pt-1">
                                   {isEditable && (
                                     <>
-                                      <Button size="sm" variant="outline" onClick={() => startEditing(activity)}><Pencil className="h-3 w-3 mr-1" /> Redigera</Button>
+                                      <Button size="sm" variant="outline" onClick={() => startEditing(activity)}><Pencil className="h-3 w-3 mr-1" /> {t('Redigera')}</Button>
                                       {(activity.status === 'draft' || activity.status === 'pending_approval') && (
                                         <Button size="sm" variant="outline" onClick={() => approveDraft(activity)} disabled={savingId === activity.id}>
-                                          <Check className="h-3 w-3 mr-1" /> Godkänn
+                                          <Check className="h-3 w-3 mr-1" /> {t('Godkänn')}
                                         </Button>
                                       )}
                                       {(activity.status === 'approved' || activity.status === 'failed') && (
@@ -614,10 +619,10 @@ const AdminProspects = () => {
                                           size="sm"
                                           onClick={() => setConfirmSend(activity)}
                                           disabled={savingId === activity.id || sendBlocked || selected.do_not_contact}
-                                          title={sendBlocked ? 'Blockerad: Resend-nyckel eller domän saknas' : ''}
+                                          title={sendBlocked ? t('Blockerad: Resend-nyckel eller domän saknas') : ''}
                                         >
                                           {savingId === activity.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
-                                          {activity.status === 'failed' ? 'Försök igen' : 'Skicka via Resend'}
+                                          {activity.status === 'failed' ? t('Försök igen') : t('Skicka via Resend')}
                                         </Button>
                                       )}
                                     </>
@@ -634,11 +639,11 @@ const AdminProspects = () => {
 
                 {sources.length > 0 && (
                   <div className="pt-3 border-t space-y-1">
-                    <h3 className="text-xs font-semibold">Källor</h3>
+                    <h3 className="text-xs font-semibold">{t('Källor')}</h3>
                     {sources.map((source) => (
                       <div key={source.id} className="text-[11px] text-muted-foreground">
                         <a href={source.source_url || '#'} target="_blank" rel="noreferrer noopener" className="underline truncate block">{source.source_url}</a>
-                        <span>{source.source_type} · {source.search_term || '—'} · {new Date(source.fetched_at).toLocaleDateString('sv-SE')}</span>
+                        <span>{t('{type} · {term} · {date}', { type: source.source_type, term: source.search_term || '—', date: new Date(source.fetched_at).toLocaleDateString('sv-SE') })}</span>
                       </div>
                     ))}
                   </div>
@@ -649,28 +654,28 @@ const AdminProspects = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Endast publika affärskontakter lagras. Prospects som markeras do-not-contact läggs automatiskt i suppression-listan och kontaktas aldrig igen.
-          Rättelse/radering: <a className="underline" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a>.
+          {t('Endast publika affärskontakter lagras. Prospects som markeras do-not-contact läggs automatiskt i suppression-listan och kontaktas aldrig igen.')}
+          {' '}{t('Rättelse/radering:')} <a className="underline" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a>.
         </p>
       </div>
 
       <AlertDialog open={!!confirmSend} onOpenChange={(open) => { if (!open) setConfirmSend(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Skicka rekryteringsmejl?</AlertDialogTitle>
+            <AlertDialogTitle>{t('Skicka rekryteringsmejl?')}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-sm">
-                <div><span className="font-semibold">Till:</span> {confirmSend?.recipient}</div>
-                <div><span className="font-semibold">Från:</span> {resendStatus?.from}</div>
-                <div><span className="font-semibold">Reply-To:</span> {resendStatus?.reply_to}</div>
-                <div><span className="font-semibold">Ämne:</span> {confirmSend?.subject || '(genereras automatiskt)'}</div>
-                <div className="text-xs text-muted-foreground">Mejlet skickas via Resend. En avregistreringslänk läggs alltid till automatiskt.</div>
+                <div><span className="font-semibold">{t('Till:')}</span> {confirmSend?.recipient}</div>
+                <div><span className="font-semibold">{t('Från:')}</span> {resendStatus?.from}</div>
+                <div><span className="font-semibold">{t('Reply-To:')}</span> {resendStatus?.reply_to}</div>
+                <div><span className="font-semibold">{t('Ämne:')}</span> {confirmSend?.subject || t('(genereras automatiskt)')}</div>
+                <div className="text-xs text-muted-foreground">{t('Mejlet skickas via Resend. En avregistreringslänk läggs alltid till automatiskt.')}</div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-            <AlertDialogAction onClick={() => confirmSend && sendNow(confirmSend)}>Skicka nu</AlertDialogAction>
+            <AlertDialogCancel>{t('Avbryt')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirmSend && sendNow(confirmSend)}>{t('Skicka nu')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

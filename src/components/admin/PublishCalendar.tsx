@@ -11,6 +11,7 @@ import { CalendarDays, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 interface QueueItem {
   id: string;
@@ -37,6 +38,7 @@ export const PublishCalendar = ({
   publishedItems: PublishedItem[];
   onChanged: () => void;
 }) => {
+  const t = useT();
   const [selected, setSelected] = useState<Date | undefined>(new Date());
 
   // Map: ISO date -> { scheduled, published }
@@ -77,7 +79,7 @@ export const PublishCalendar = ({
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" /> Publiceringskalender
+            <CalendarDays className="h-4 w-4" /> {t("Publiceringskalender")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -98,10 +100,10 @@ export const PublishCalendar = ({
           />
           <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-amber-500/20" /> Schemalagd
+              <span className="w-3 h-3 rounded bg-amber-500/20" /> {t("Schemalagd")}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-primary/15" /> Publicerad
+              <span className="w-3 h-3 rounded bg-primary/15" /> {t("Publicerad")}
             </span>
           </div>
         </CardContent>
@@ -111,17 +113,17 @@ export const PublishCalendar = ({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {selected ? format(selected, "d MMMM yyyy", { locale: sv }) : "Välj ett datum"}
+              {selected ? format(selected, "d MMMM yyyy", { locale: sv }) : t("Välj ett datum")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {!dayContent || (dayContent.scheduled.length === 0 && dayContent.published.length === 0) ? (
-              <p className="text-sm text-muted-foreground">Inget schemalagt eller publicerat denna dag.</p>
+              <p className="text-sm text-muted-foreground">{t("Inget schemalagt eller publicerat denna dag.")}</p>
             ) : (
               <>
                 {dayContent.published.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Publicerade</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">{t("Publicerade")}</p>
                     <div className="space-y-1.5">
                       {dayContent.published.map((p) => (
                         <a
@@ -140,7 +142,7 @@ export const PublishCalendar = ({
                 )}
                 {dayContent.scheduled.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Schemalagda</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">{t("Schemalagda")}</p>
                     <div className="space-y-1.5">
                       {dayContent.scheduled.map((q) => (
                         <ScheduledRow key={q.id} item={q} onChanged={onChanged} />
@@ -156,11 +158,11 @@ export const PublishCalendar = ({
         {selected && unscheduled.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Schemalägg från kön</CardTitle>
+              <CardTitle className="text-base">{t("Schemalägg från kön")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-3">
-                {unscheduled.length} oplanerade i kön. Klicka för att schemalägga till {format(selected, "d MMMM", { locale: sv })}.
+                {t("{n} oplanerade i kön. Klicka för att schemalägga till {date}.", { n: unscheduled.length, date: format(selected, "d MMMM", { locale: sv }) })}
               </p>
               <div className="space-y-1.5 max-h-60 overflow-y-auto">
                 {unscheduled.map((q) => (
@@ -176,13 +178,14 @@ export const PublishCalendar = ({
 };
 
 const ScheduledRow = ({ item, onChanged }: { item: QueueItem; onChanged: () => void }) => {
+  const t = useT();
   const unschedule = async () => {
     const { error } = await (supabase as any)
       .from("article_queue")
       .update({ publish_at: null })
       .eq("id", item.id);
-    if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
-    else { toast({ title: "Avschemalagd" }); onChanged(); }
+    if (error) toast({ title: t("Fel"), description: error.message, variant: "destructive" });
+    else { toast({ title: t("Avschemalagd") }); onChanged(); }
   };
 
   return (
@@ -191,7 +194,7 @@ const ScheduledRow = ({ item, onChanged }: { item: QueueItem; onChanged: () => v
         <div className="truncate">{item.topic}</div>
         <div className="text-xs text-muted-foreground">{item.category}{item.city ? ` · ${item.city}` : ""}</div>
       </div>
-      <Button size="icon" variant="ghost" onClick={unschedule} aria-label="Avschemalägg">
+      <Button size="icon" variant="ghost" onClick={unschedule} aria-label={t("Avschemalägg")}>
         <X className="h-4 w-4" />
       </Button>
     </div>
@@ -199,14 +202,15 @@ const ScheduledRow = ({ item, onChanged }: { item: QueueItem; onChanged: () => v
 };
 
 const UnscheduledRow = ({ item, date, onChanged }: { item: QueueItem; date: Date; onChanged: () => void }) => {
+  const t = useT();
   const schedule = async () => {
     const iso = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 9, 0, 0).toISOString();
     const { error } = await (supabase as any)
       .from("article_queue")
       .update({ publish_at: iso })
       .eq("id", item.id);
-    if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
-    else { toast({ title: "Schemalagd" }); onChanged(); }
+    if (error) toast({ title: t("Fel"), description: error.message, variant: "destructive" });
+    else { toast({ title: t("Schemalagd") }); onChanged(); }
   };
 
   return (

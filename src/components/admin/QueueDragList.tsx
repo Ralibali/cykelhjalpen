@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useT } from "@/lib/i18n";
 
 export interface QueueRow {
   id: string;
@@ -37,7 +38,7 @@ export interface QueueRow {
   last_error: string | null;
 }
 
-const STATUS_LABEL: Record<string, string> = {
+const STATUS_LABEL_SV: Record<string, string> = {
   queued: "I kö",
   generating: "Genererar…",
   ready_for_review: "Klar för granskning",
@@ -56,11 +57,12 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 const SortableItem = ({ row, onChanged }: { row: QueueRow; onChanged: () => void }) => {
+  const t = useT();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
 
   const remove = async () => {
-    if (!confirm("Ta bort detta köelement?")) return;
+    if (!confirm(t("Ta bort detta köelement?"))) return;
     const { error } = await (supabase as any).from("article_queue").delete().eq("id", row.id);
     if (error) toast({ title: "Fel", description: error.message, variant: "destructive" });
     else onChanged();
@@ -85,30 +87,30 @@ const SortableItem = ({ row, onChanged }: { row: QueueRow; onChanged: () => void
         {...attributes}
         {...listeners}
         className="touch-none p-1 -ml-1 mt-1 rounded hover:bg-muted text-muted-foreground cursor-grab active:cursor-grabbing"
-        aria-label="Dra för att ändra prioritet"
+        aria-label={t("Dra för att ändra prioritet")}
       >
         <GripVertical className="h-4 w-4" />
       </button>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge className={cn("border-0", STATUS_STYLE[row.status])}>{STATUS_LABEL[row.status] || row.status}</Badge>
+          <Badge className={cn("border-0", STATUS_STYLE[row.status])}>{t(STATUS_LABEL_SV[row.status]) || row.status}</Badge>
           <Badge variant="outline">{TYPE_LABEL[row.article_type] || row.article_type}</Badge>
           <Badge variant="outline">{row.category}</Badge>
           {row.city && <Badge variant="outline">{row.city}</Badge>}
-          <Badge variant="secondary">Prio {row.priority}</Badge>
+          <Badge variant="secondary">{t("Prio {n}", { n: row.priority })}</Badge>
         </div>
         <h4 className="font-medium mt-2 truncate">{row.topic}</h4>
         <code className="text-xs text-muted-foreground font-mono">{row.target_keyword}</code>
-        {row.last_error && <p className="text-xs text-destructive mt-1">Fel: {row.last_error}</p>}
+        {row.last_error && <p className="text-xs text-destructive mt-1">{t("Fel: {msg}", { msg: row.last_error })}</p>}
       </div>
       <div className="flex items-center gap-1.5">
         {row.status === "ready_for_review" && row.generated_article_id && (
           <Button size="sm" variant="outline" asChild>
-            <a href={`/admin/artikelgenerator?id=${row.generated_article_id}`}>Granska</a>
+            <a href={`/admin/artikelgenerator?id=${row.generated_article_id}`}>{t("Granska")}</a>
           </Button>
         )}
         {(row.status === "skipped" || row.status === "ready_for_review") && (
-          <Button size="sm" variant="ghost" onClick={() => setStatus("queued")}>Återställ</Button>
+          <Button size="sm" variant="ghost" onClick={() => setStatus("queued")}>{t("Återställ")}</Button>
         )}
         <Button size="icon" variant="ghost" onClick={remove}><Trash2 className="h-4 w-4" /></Button>
       </div>
@@ -123,6 +125,7 @@ export const QueueDragList = ({
   rows: QueueRow[];
   onChanged: () => void;
 }) => {
+  const t = useT();
   // Lokal state för optimistisk drag-omsortering
   const [items, setItems] = useState<QueueRow[]>(rows);
   useEffect(() => setItems(rows), [rows]);
@@ -154,7 +157,7 @@ export const QueueDragList = ({
       if (failed?.error) throw failed.error;
       onChanged();
     } catch (e: any) {
-      toast({ title: "Kunde inte spara prioritet", description: e?.message, variant: "destructive" });
+      toast({ title: t("Kunde inte spara prioritet"), description: e?.message, variant: "destructive" });
       onChanged(); // återställ från server
     }
   };

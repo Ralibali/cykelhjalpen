@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { useT } from '@/lib/i18n'
 import { supabase } from '@/integrations/supabase/client'
 
-const TURNSTILE_ERROR_MESSAGE = 'Säkerhetskontrollen kunde inte laddas. Stäng gärna av annonsblockerare för den här sidan eller prova en annan webbläsare, och försök sedan igen.'
+const TURNSTILE_ERROR_MESSAGE_SV = 'Säkerhetskontrollen kunde inte laddas. Stäng gärna av annonsblockerare för den här sidan eller prova en annan webbläsare, och försök sedan igen.'
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
 
 declare global {
@@ -67,6 +68,8 @@ interface Props {
 }
 
 const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_request' }: Props) => {
+  const t = useT()
+  const TURNSTILE_ERROR_MESSAGE = t(TURNSTILE_ERROR_MESSAGE_SV)
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetIdRef = useRef<string | null>(null)
   const onVerifyRef = useRef(onVerify)
@@ -148,7 +151,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_req
         'expired-callback': () => onExpireRef.current?.(),
         'timeout-callback': () => onExpireRef.current?.(),
         'error-callback': () => {
-          setError('Säkerhetskontrollen misslyckades. Försök igen.')
+          setError(t('Säkerhetskontrollen misslyckades. Försök igen.'))
           onExpireRef.current?.()
         },
         theme: 'auto',
@@ -173,7 +176,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_req
   return (
     <div className="space-y-2">
       {!siteKey && !error && (
-        <div className="text-xs text-muted-foreground" aria-live="polite">Laddar säkerhetskontroll…</div>
+        <div className="text-xs text-muted-foreground" aria-live="polite">{t('Laddar säkerhetskontroll…')}</div>
       )}
       <div ref={containerRef} />
       {error && (
@@ -184,7 +187,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_req
             onClick={retry}
             className="mt-2 text-sm font-medium underline underline-offset-4"
           >
-            Försök igen
+            {t('Försök igen')}
           </button>
         </div>
       )}

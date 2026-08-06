@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
+import { useT } from '@/lib/i18n'
 
 type Theme = 'light' | 'dark'
 
@@ -12,6 +13,7 @@ const getInitial = (): Theme => {
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('light')
+  const t = useT()
 
   useEffect(() => {
     setTheme(getInitial())
@@ -28,7 +30,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      aria-label={theme === 'dark' ? 'Byt till ljust tema' : 'Byt till mörkt tema'}
+      aria-label={theme === 'dark' ? t('Byt till ljust tema') : t('Byt till mörkt tema')}
       className="inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-[hsl(var(--ink))] bg-card hover:bg-accent hover:text-accent-foreground transition-colors"
     >
       {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

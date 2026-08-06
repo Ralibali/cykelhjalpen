@@ -4,8 +4,10 @@ import { supabase } from '@/integrations/supabase/client'
 import { Bike, Receipt, Send, Gift, Loader2 } from 'lucide-react'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { FreeLeadsBanner } from '@/components/workshop/FreeLeadsBanner'
+import { useT } from '@/lib/i18n'
 
 const WorkshopDashboard = () => {
+  const t = useT()
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const [stats, setStats] = useState({ sent: 0, paidTotal: 0 })
   const [loading, setLoading] = useState(true)
@@ -28,8 +30,8 @@ const WorkshopDashboard = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-display text-3xl font-bold">Hej {workshop.company_name}!</h1>
-        <p className="text-muted-foreground mt-1">Din verkstad är ansluten i {workshop.city}.</p>
+        <h1 className="font-display text-3xl font-bold">{t('Hej {name}!', { name: workshop.company_name })}</h1>
+        <p className="text-muted-foreground mt-1">{t('Din verkstad är ansluten i {city}.', { city: workshop.city })}</p>
       </div>
 
       <FreeLeadsBanner />
@@ -38,29 +40,29 @@ const WorkshopDashboard = () => {
         <div className="flex justify-center py-10"><Loader2 className="animate-spin" /></div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <Stat icon={<Send className="h-5 w-5" />} label="Skickade offerter" value={stats.sent} />
-          <Stat icon={<Receipt className="h-5 w-5" />} label="Betalat totalt" value={`${stats.paidTotal.toLocaleString('sv-SE')} kr`} link="/dashboard/verkstad/betalningar" />
-          <Stat icon={<Gift className="h-5 w-5" />} label="Gratis-leads kvar" value={workshop.free_leads_remaining || 0} />
+          <Stat icon={<Send className="h-5 w-5" />} label={t('Skickade offerter')} value={stats.sent} />
+          <Stat icon={<Receipt className="h-5 w-5" />} label={t('Betalat totalt')} value={`${stats.paidTotal.toLocaleString('sv-SE')} kr`} link="/dashboard/verkstad/betalningar" />
+          <Stat icon={<Gift className="h-5 w-5" />} label={t('Gratis-leads kvar')} value={workshop.free_leads_remaining || 0} />
         </div>
       )}
 
       <div className="grid md:grid-cols-[1fr_auto] gap-5 items-center sticker rounded-3xl bg-card p-6 mb-6">
         <div>
-          <h2 className="font-display text-xl font-bold mb-1">Se nya ärenden i {workshop.city}</h2>
-          <p className="text-sm text-muted-foreground">Välj bara de jobb som passar er kapacitet och kompetens.</p>
+          <h2 className="font-display text-xl font-bold mb-1">{t('Se nya ärenden i {city}', { city: workshop.city })}</h2>
+          <p className="text-sm text-muted-foreground">{t('Välj bara de jobb som passar er kapacitet och kompetens.')}</p>
         </div>
         <Link to="/dashboard/verkstad/arenden" className="inline-flex items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-3 font-medium shadow-brand cta-playful">
-          <Bike className="h-4 w-4" /> Öppna ärenden
+          <Bike className="h-4 w-4" /> {t('Öppna ärenden')}
         </Link>
       </div>
 
       <div className="sticker rounded-3xl bg-card p-6">
-        <h2 className="font-display text-xl font-bold mb-2">Så fungerar det</h2>
+        <h2 className="font-display text-xl font-bold mb-2">{t('Så fungerar det')}</h2>
         <ol className="list-decimal pl-5 space-y-2 text-sm text-foreground/85">
-          <li>Välj bland ärenden från cyklister i {workshop.city}.</li>
-          <li>Skriv pris, beräknad tid och ett tydligt meddelande.</li>
-          <li>Granska offerten och betala via Stripe först när du vill skicka den.</li>
-          <li>Max tre verkstäder kan lämna prisförslag per ärende.</li>
+          <li>{t('Välj bland ärenden från cyklister i {city}.', { city: workshop.city })}</li>
+          <li>{t('Skriv pris, beräknad tid och ett tydligt meddelande.')}</li>
+          <li>{t('Granska offerten och betala via Stripe först när du vill skicka den.')}</li>
+          <li>{t('Max tre verkstäder kan lämna prisförslag per ärende.')}</li>
         </ol>
       </div>
     </div>
