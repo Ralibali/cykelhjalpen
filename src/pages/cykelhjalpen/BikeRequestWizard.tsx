@@ -453,7 +453,7 @@ const BikeRequestWizard = () => {
               )}
 
               <div className="flex justify-between gap-3 mt-6 sticky bottom-3 z-10 rounded-2xl bg-background/95 backdrop-blur p-2 border-2 border-border shadow-md lg:static lg:bg-transparent lg:border-0 lg:shadow-none lg:p-0">
-                <Button variant="outline" onClick={() => goToStep(Math.max(0, step - 1))} disabled={step === 0 || submitting} className="rounded-xl border-2">
+                <Button variant="outline" onClick={() => goToStep(prevStepFrom(step))} disabled={step === 0 || submitting} className="rounded-xl border-2">
                   <ArrowLeft className="h-4 w-4 mr-1" /> {t('Tillbaka')}
                 </Button>
                 {step < BIKE_REQUEST_STEPS.length - 1 ? (
