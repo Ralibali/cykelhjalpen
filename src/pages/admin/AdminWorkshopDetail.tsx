@@ -241,7 +241,7 @@ const AdminWorkshopDetail = () => {
             </div>
             {grants.length > 0 && (
               <div className="border-t pt-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t('Tidigare påfyllningar')}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t('Lead-justeringar')}</p>
                 <div className="space-y-1.5">
                   {grants.map((grant) => (
                     <div key={grant.id} className="flex items-center justify-between text-sm">
