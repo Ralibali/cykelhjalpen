@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { usePageTracking } from "@/hooks/usePageTracking";
+import { usePageTracking, trackClick } from "@/hooks/usePageTracking";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -84,7 +84,12 @@ const RedirectKeepSearch = ({ to }: { to: string }) => {
 /** Gamla verkstads-URL:er -> rätt sida i aktuellt språk (canonical sätts i prerender-headen). */
 const LegacyWorkshopRedirect = () => {
   const { lang } = useLanguage();
-  return <RedirectKeepSearch to={lang === "en" ? "/for-bike-shops" : "/for-cykelverkstader"} />;
+  const { pathname, search } = useLocation();
+  const target = lang === "en" ? "/for-bike-shops" : "/for-cykelverkstader";
+  useEffect(() => {
+    trackClick("legacy_redirect", pathname, { from: pathname, to: target, search });
+  }, [pathname, target, search]);
+  return <RedirectKeepSearch to={target} />;
 };
 
 /** /for-cykelverkstader under /en är en dubblett av /en/for-bike-shops. */
@@ -149,6 +154,7 @@ const AdminStripeLog = lazy(() => import("./pages/admin/AdminStripeLog"));
 const AdminAuditLog = lazy(() => import("./pages/admin/AdminAuditLog"));
 const AdminVisitors = lazy(() => import("./pages/admin/AdminVisitors"));
 const AdminMarketplaceHealth = lazy(() => import("./pages/admin/AdminMarketplaceHealth"));
+const AdminRedirects = lazy(() => import("./pages/admin/AdminRedirects"));
 
 const queryClient = new QueryClient();
 
@@ -398,6 +404,7 @@ const AppRoutes = () => {
           <Route path="/admin/anvandare" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
           <Route path="/admin/anvandare/:id" element={<ProtectedRoute role="admin"><AdminUserDetail /></ProtectedRoute>} />
           <Route path="/admin/besokare" element={<ProtectedRoute role="admin"><AdminVisitors /></ProtectedRoute>} />
+          <Route path="/admin/redirects" element={<ProtectedRoute role="admin"><AdminRedirects /></ProtectedRoute>} />
           <Route path="/admin/statistik" element={<ProtectedRoute role="admin"><AdminAnalytics /></ProtectedRoute>} />
           <Route path="/admin/guider" element={<ProtectedRoute role="admin"><AdminGuides /></ProtectedRoute>} />
           <Route path="/admin/artikelgenerator" element={<ProtectedRoute role="admin"><AdminArticleGenerator /></ProtectedRoute>} />
