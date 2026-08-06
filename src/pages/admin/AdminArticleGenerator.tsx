@@ -73,7 +73,7 @@ const AdminArticleGenerator = () => {
 
   useEffect(() => {
     setSEOMeta({
-      title: "Artikelgenerator – Admin | Updro",
+      title: "Artikelgenerator – Admin | Cykelhjälpen",
       description: "Generera artiklar med AI",
       noindex: true,
     });
