@@ -459,6 +459,74 @@ export type Database = {
         }
         Relationships: []
       }
+      inbound_emails: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          from_email: string
+          from_name: string | null
+          headers: Json | null
+          html_body: string | null
+          id: string
+          message_id: string | null
+          prospect_id: string | null
+          raw: Json | null
+          read_at: string | null
+          received_at: string
+          replied_at: string | null
+          resend_email_id: string | null
+          subject: string | null
+          text_body: string | null
+          to_emails: string[]
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          from_email: string
+          from_name?: string | null
+          headers?: Json | null
+          html_body?: string | null
+          id?: string
+          message_id?: string | null
+          prospect_id?: string | null
+          raw?: Json | null
+          read_at?: string | null
+          received_at?: string
+          replied_at?: string | null
+          resend_email_id?: string | null
+          subject?: string | null
+          text_body?: string | null
+          to_emails?: string[]
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          from_email?: string
+          from_name?: string | null
+          headers?: Json | null
+          html_body?: string | null
+          id?: string
+          message_id?: string | null
+          prospect_id?: string | null
+          raw?: Json | null
+          read_at?: string | null
+          received_at?: string
+          replied_at?: string | null
+          resend_email_id?: string | null
+          subject?: string | null
+          text_body?: string | null
+          to_emails?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbound_emails_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "workshop_prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_charges: {
         Row: {
           amount: number
@@ -1249,6 +1317,69 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sent_emails: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error: string | null
+          from_email: string
+          html_body: string | null
+          id: string
+          in_reply_to: string | null
+          prospect_id: string | null
+          resend_email_id: string | null
+          status: string
+          subject: string
+          text_body: string
+          to_emails: string[]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          from_email?: string
+          html_body?: string | null
+          id?: string
+          in_reply_to?: string | null
+          prospect_id?: string | null
+          resend_email_id?: string | null
+          status?: string
+          subject: string
+          text_body: string
+          to_emails: string[]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          from_email?: string
+          html_body?: string | null
+          id?: string
+          in_reply_to?: string | null
+          prospect_id?: string | null
+          resend_email_id?: string | null
+          status?: string
+          subject?: string
+          text_body?: string
+          to_emails?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sent_emails_in_reply_to_fkey"
+            columns: ["in_reply_to"]
+            isOneToOne: false
+            referencedRelation: "inbound_emails"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sent_emails_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "workshop_prospects"
             referencedColumns: ["id"]
           },
         ]
