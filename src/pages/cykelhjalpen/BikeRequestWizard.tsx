@@ -66,7 +66,8 @@ const BikeRequestWizard = () => {
   const t = useT()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const requestedCity = isCykelCity(searchParams.get('stad')) ? searchParams.get('stad') as CykelCityName : null
+  const requestedCity = resolveCykelCityParam(searchParams.get('stad'))
+  const cityLocked = requestedCity !== null
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [files, setFiles] = useState<File[]>([])
