@@ -89,7 +89,7 @@ const WorkshopBilling = () => {
       </div>
 
       <div className="sticker rounded-3xl bg-card p-6 mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h2 className="font-display text-xl mb-1 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" /> {t('Lead credits')}
@@ -97,10 +97,14 @@ const WorkshopBilling = () => {
             <p className="text-sm text-muted-foreground">
               {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt först när kunden väljer dig som vinnare.', { price: LEAD_FEE_KR })}
             </p>
+            <p className="text-sm mt-3">
+              {t('Saldo just nu:')} <span className="font-display text-lg font-bold">{credits}</span>
+            </p>
           </div>
-          <BuyLeadsButton quantity={10} />
+          <BuyLeadsPicker onSuccess={refresh} />
         </div>
       </div>
+
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>
