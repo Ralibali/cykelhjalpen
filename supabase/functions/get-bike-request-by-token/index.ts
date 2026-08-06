@@ -66,33 +66,8 @@ serve(async (req) => {
     if (responseError) throw responseError;
     if (imageError) throw imageError;
 
-    // Monetiseringsspärr: verkstadens kontaktvägar (telefon, e-post, webbplats)
-    // får aldrig lämna backend innan kunden valt verkstaden OCH vinsten är
-    // reglerad (betald vinstavgift eller draget gratis-lead). Företagsnamnet
-    // visas alltid så kunden kan jämföra offerterna.
-    const mapped = (responses || []).map((row: any) => {
-      const unlocked = row.status === "won" && row.paid === true;
-      return {
-        id: row.id,
-        message: row.message,
-        estimated_price_min: row.estimated_price_min,
-        estimated_price_max: row.estimated_price_max,
-        estimated_time: row.estimated_time,
-        can_pickup: row.can_pickup,
-        status: row.status,
-        created_at: row.created_at,
-        contact_unlocked: unlocked,
-        workshop: row.workshops
-          ? {
-            id: row.workshops.id,
-            company_name: row.workshops.company_name,
-            phone: unlocked ? row.workshops.phone : null,
-            email: unlocked ? row.workshops.email : null,
-            website: unlocked ? row.workshops.website : null,
-          }
-          : null,
-      };
-    });
+    const mapped = (responses || []).map((row: any) => toCustomerResponse(row));
+
 
 
     const paths = (imageRows || []).map((row) => storagePath(row.image_url));
