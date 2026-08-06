@@ -6,19 +6,7 @@ import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { notifyCustomerOfNewResponse } from '../_shared/customer-response.ts'
 
-// Stödjer två former:
-//  1. { response_id }                       – skickar ett redan sparat utkast (bakåtkompatibelt)
-//  2. { request_id, message, ... }          – skapar OCH skickar offerten i ett enda anrop
-const QuoteSchema = z.object({
-  request_id: z.string().uuid(),
-  message: z.string().trim().min(20, 'Beskriv ditt svar lite mer, minst tjugo tecken.').max(4000),
-  estimated_price_min: z.number().int().min(0).max(1000000).nullable().optional(),
-  estimated_price_max: z.number().int().min(0).max(1000000).nullable().optional(),
-  estimated_time: z.string().trim().max(200).nullable().optional(),
-  can_pickup: z.boolean().optional(),
-})
-const BodySchema = z.union([z.object({ response_id: z.string().uuid() }), QuoteSchema])
-
+const BodySchema = z.object({ response_id: z.string().uuid() })
 
 const friendlyDatabaseError = (message: string) => {
   if (message.includes('bike_request_full')) return 'Ärendet är fullt – tre verkstäder har redan svarat.'
@@ -55,10 +43,7 @@ Deno.serve(async (req) => {
     if (userError || !userData.user) throw new Error('Du behöver logga in igen')
 
     const parsed = BodySchema.safeParse(await req.json())
-    if (!parsed.success) {
-      throw new Error(parsed.error.issues[0]?.message || 'Ogiltiga uppgifter i offerten.')
-    }
-    const body = parsed.data
+    if (!parsed.success) throw new Error('Ogiltigt offert-id')
 
     const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
     const { data: workshop, error: workshopError } = await admin
@@ -69,70 +54,21 @@ Deno.serve(async (req) => {
     if (workshopError) throw workshopError
     if (!workshop?.approved) throw new Error('Verkstaden är inte godkänd ännu')
 
-    type ResponseRow = { id: string; request_id: string; workshop_id: string; paid: boolean; status: string }
-    let response: ResponseRow | null = null
-
-    if ('response_id' in body) {
-      const { data, error: responseError } = await admin
-        .from('workshop_responses')
-        .select('id, request_id, workshop_id, paid, status')
-        .eq('id', body.response_id)
-        .maybeSingle()
-      if (responseError) throw responseError
-      response = (data as ResponseRow | null)
-      if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
-    } else {
-      const priceMin = body.estimated_price_min ?? null
-      const priceMax = body.estimated_price_max ?? null
-      if (priceMin !== null && priceMax !== null && priceMax < priceMin) {
-        throw new Error('Pris till måste vara samma som eller högre än pris från.')
-      }
-
-      const fields = {
-        message: body.message,
-        estimated_price_min: priceMin,
-        estimated_price_max: priceMax,
-        estimated_time: body.estimated_time || null,
-        can_pickup: body.can_pickup ?? false,
-      }
-
-      // Ett svar per verkstad och ärende – återanvänd eventuellt utkast.
-      const { data: existing, error: existingError } = await admin
-        .from('workshop_responses')
-        .select('id, request_id, workshop_id, paid, status')
-        .eq('request_id', body.request_id)
-        .eq('workshop_id', workshop.id)
-        .maybeSingle()
-      if (existingError) throw existingError
-
-      if (existing) {
-        response = existing as ResponseRow
-        if (response.status !== 'sent' && response.status !== 'won' && response.status !== 'lost') {
-          const { error: fieldsError } = await admin
-            .from('workshop_responses')
-            .update(fields)
-            .eq('id', response.id)
-          if (fieldsError) throw new Error(friendlyDatabaseError(fieldsError.message))
-        }
-      } else {
-        const { data: created, error: createError } = await admin
-          .from('workshop_responses')
-          .insert({ ...fields, request_id: body.request_id, workshop_id: workshop.id, status: 'draft' })
-          .select('id, request_id, workshop_id, paid, status')
-          .single()
-        if (createError) throw new Error(friendlyDatabaseError(createError.message))
-        response = created as ResponseRow
-      }
-    }
+    const { data: response, error: responseError } = await admin
+      .from('workshop_responses')
+      .select('id, request_id, workshop_id, paid, status')
+      .eq('id', parsed.data.response_id)
+      .maybeSingle()
+    if (responseError) throw responseError
+    if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
 
     // Idempotent: redan skickade svar rapporteras som klara utan ny notis.
     if (response.status === 'sent' || response.status === 'won') {
-      return new Response(JSON.stringify({ ok: true, already_sent: true, response_id: response.id }), {
+      return new Response(JSON.stringify({ ok: true, already_sent: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
       })
     }
     if (response.status === 'lost') throw new Error('Kunden har redan valt en annan verkstad för det här ärendet.')
-
 
     // Ärendet måste fortfarande vara öppet och i verkstadens stad.
     const { data: request, error: requestError } = await admin
@@ -171,7 +107,7 @@ Deno.serve(async (req) => {
     if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(notifyTask)
     else await notifyTask
 
-    return new Response(JSON.stringify({ ok: true, response_id: response.id }), {
+    return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   } catch (error) {

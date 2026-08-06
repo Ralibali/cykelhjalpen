@@ -30,9 +30,6 @@ const ProtectedRoute = ({ children, role }: ProtectedRouteProps) => {
       return
     }
     let cancelled = false
-    // Viktigt: markera som "ej kontrollerad" så länge uppslaget pågår, annars
-    // hinner vyn redirecta till registreringen innan verkstaden är hämtad.
-    setWorkshopChecked(false)
     ;(async () => {
       const { data } = await supabase
         .from('workshops')
@@ -48,7 +45,6 @@ const ProtectedRoute = ({ children, role }: ProtectedRouteProps) => {
       cancelled = true
     }
   }, [role, user])
-
 
   if (loading) return <Spinner />
   if (!isAuthenticated) return <Navigate to="/logga-in" replace />

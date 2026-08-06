@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { AlertTriangle, X, ShoppingCart } from 'lucide-react'
-import { BuyLeadsPicker } from './BuyLeadsPicker'
+import { BuyLeadsButton } from './BuyLeadsButton'
 import { useT } from '@/lib/i18n'
 
 export function LowBalanceAlert() {
@@ -60,10 +60,10 @@ export function LowBalanceAlert() {
               <p className="text-sm text-amber-700 mt-1">
                 {t('Du har bara')} <strong>{t('{n} lead', { n: workshop.free_leads_remaining })}</strong> {t('kvar. Köp credits nu så du inte missar några förfrågningar.')}
               </p>
-              <div className="mt-3">
-                <BuyLeadsPicker defaultQuantity={5} />
+              <div className="mt-3 flex flex-wrap gap-2">
+                <BuyLeadsButton quantity={5} />
+                <BuyLeadsButton quantity={10} variant="outline" />
               </div>
-
             </div>
           </div>
           <button 

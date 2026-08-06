@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, Receipt, Sparkles } from 'lucide-react'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
-import { BuyLeadsPicker } from '@/components/workshop/BuyLeadsPicker'
+import { BuyLeadsButton } from '@/components/workshop/BuyLeadsButton'
 import { LeadCreditsInvoiceHistory } from '@/components/workshop/LeadCreditsInvoiceHistory'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { useT } from '@/lib/i18n'
@@ -72,7 +72,7 @@ const WorkshopBilling = () => {
               {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt först när kunden väljer dig som vinnare.', { price: LEAD_FEE_KR })}
             </p>
           </div>
-          <BuyLeadsPicker defaultQuantity={5} />
+          <BuyLeadsButton quantity={10} />
         </div>
       </div>
 
