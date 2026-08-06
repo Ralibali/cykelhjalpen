@@ -186,13 +186,15 @@ export const notifyCustomerOfPick = async (
     customerName: string
     workshopName: string
     requestUrl: string
+    settled: boolean
   },
 ): Promise<ChannelResult> =>
   sendIdempotentEmail(admin, ctx, {
     idempotencyKey: `customer_pick_email:${args.requestId}`,
     to: args.customerEmail,
     subject: buildCustomerPickSubject(args.workshopName),
-    html: buildCustomerPickEmailHtml(args.customerName, args.workshopName, args.requestUrl),
-    text: buildCustomerPickEmailText(args.customerName, args.workshopName, args.requestUrl),
+    html: buildCustomerPickEmailHtml(args.customerName, args.workshopName, args.requestUrl, args.settled),
+    text: buildCustomerPickEmailText(args.customerName, args.workshopName, args.requestUrl, args.settled),
+
     payload: { reason: 'customer_picked_winner', request_id: args.requestId },
   })
