@@ -215,8 +215,9 @@ Deno.serve(async (req) => {
             <p>Hej ${escapeHtml(body.company_name)}!</p>
             <p>Tack för att du registrerade din verkstad hos oss.</p>
             <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:20px;margin:20px 0">
-              <h3 style="margin-top:0;color:#166534">🎁 2 gratis leads väntar på dig</h3>
-              <p style="margin-bottom:0">Som ny verkstad får du <strong>2 gratis leads</strong> att svara på helt utan kostnad. Efter det är priset 50 kr per offert.</p>
+              <h3 style="margin-top:0;color:#166534">🎁 2 gratis vunna uppdrag väntar på dig</h3>
+              <p style="margin-bottom:0">Det är <strong>alltid gratis att lämna offert</strong>. Du betalar bara när kunden väljer just din verkstad. Dina <strong>två första vunna uppdrag</strong> regleras med gratis-leads – därefter kostar ett vunnet uppdrag 50 kr exkl. moms. Förlorade offerter kostar aldrig något.</p>
+
             </div>
             <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:20px;margin:20px 0">
               <h3 style="margin-top:0;color:#1e40af">📋 Viktigt att komma ihåg</h3>

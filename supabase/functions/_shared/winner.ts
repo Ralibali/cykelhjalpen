@@ -54,21 +54,29 @@ export const buildCustomerPickSubject = (workshopName: string): string =>
   `Du har valt ${workshopName}`
 
 export const buildCustomerPickEmailHtml = (
-  customerName: string, workshopName: string, requestUrl: string,
+  customerName: string, workshopName: string, requestUrl: string, settled = true,
 ): string =>
   `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">` +
   `<h2>Tack ${escapeCustomerHtml(customerName)}!</h2>` +
-  `<p>Du har valt <strong>${escapeCustomerHtml(workshopName)}</strong> för ditt cykelärende. Verkstaden får dina kontaktuppgifter och hör av sig till dig inom kort.</p>` +
+  `<p>Du har valt <strong>${escapeCustomerHtml(workshopName)}</strong> för ditt cykelärende. ` +
+  (settled
+    ? `Verkstaden har fått dina kontaktuppgifter och hör av sig till dig inom kort.`
+    : `Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.`) +
+  `</p>` +
   `<p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se ditt ärende</a></p>` +
   `<p style="color:#6b7280;font-size:13px">Du får det här mejlet för att du lagt upp ett ärende på Cykelhjälpen.</p>` +
   `</div>`
 
 export const buildCustomerPickEmailText = (
-  customerName: string, workshopName: string, requestUrl: string,
+  customerName: string, workshopName: string, requestUrl: string, settled = true,
 ): string =>
-  `Tack ${customerName}!\n\nDu har valt ${workshopName} för ditt cykelärende. Verkstaden får dina kontaktuppgifter och hör av sig till dig inom kort.\n\n` +
+  `Tack ${customerName}!\n\nDu har valt ${workshopName} för ditt cykelärende. ` +
+  (settled
+    ? `Verkstaden har fått dina kontaktuppgifter och hör av sig till dig inom kort.\n\n`
+    : `Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.\n\n`) +
   `Se ditt ärende: ${requestUrl}\n\n` +
   `Du får det här mejlet för att du lagt upp ett ärende på Cykelhjälpen.`
+
 
 type ChannelResult = 'sent' | 'failed' | 'skipped'
 
@@ -178,13 +186,15 @@ export const notifyCustomerOfPick = async (
     customerName: string
     workshopName: string
     requestUrl: string
+    settled: boolean
   },
 ): Promise<ChannelResult> =>
   sendIdempotentEmail(admin, ctx, {
     idempotencyKey: `customer_pick_email:${args.requestId}`,
     to: args.customerEmail,
     subject: buildCustomerPickSubject(args.workshopName),
-    html: buildCustomerPickEmailHtml(args.customerName, args.workshopName, args.requestUrl),
-    text: buildCustomerPickEmailText(args.customerName, args.workshopName, args.requestUrl),
+    html: buildCustomerPickEmailHtml(args.customerName, args.workshopName, args.requestUrl, args.settled),
+    text: buildCustomerPickEmailText(args.customerName, args.workshopName, args.requestUrl, args.settled),
+
     payload: { reason: 'customer_picked_winner', request_id: args.requestId },
   })

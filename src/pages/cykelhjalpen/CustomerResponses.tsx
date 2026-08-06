@@ -21,14 +21,17 @@ interface WorkshopResponse {
   estimated_time: string | null
   can_pickup: boolean
   status: string
+  /** Backend sätter true först när vinsten är reglerad – då finns kontaktvägar. */
+  contact_unlocked?: boolean
   workshop: {
     id?: string
     company_name: string
     phone: string | null
-    email: string
+    email: string | null
     website: string | null
   } | null
 }
+
 
 interface RequestData {
   id: string
@@ -79,6 +82,9 @@ const CustomerResponses = () => {
 
   const winner = responses.find((response) => response.status === 'won') || null
   const hasWinner = Boolean(winner) || request?.status === 'completed'
+  // Vinsten är reglerad först när backend släppt kontaktuppgifterna.
+  const winnerSettled = Boolean(winner?.contact_unlocked)
+
 
   const load = useCallback(async (showSpinner = false) => {
     if (!token) return
@@ -156,8 +162,11 @@ const CustomerResponses = () => {
       if (data?.error) throw new Error(data.error)
 
       toast.success(t('Du har valt {name}!', { name: response.workshop?.company_name || t('verkstaden') }), {
-        description: t('Verkstaden får dina kontaktuppgifter och hör av sig till dig inom kort.'),
+        description: data?.settled
+          ? t('Verkstaden har fått dina kontaktuppgifter och hör av sig till dig inom kort.')
+          : t('Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.'),
       })
+
       if (request?.city) trackEvent('Winner Selected', { city: request.city })
       setConfirmingId(null)
       await load()
@@ -216,10 +225,11 @@ const CustomerResponses = () => {
             <h1 className="font-display text-2xl">{t('Du har valt verkstad')}</h1>
           </div>
           <p className="text-sm">
-            {winner
-              ? t('{name} har fått dina kontaktuppgifter och hör av sig till dig inom kort.', { name: winner.workshop?.company_name || t('Verkstaden') })
-              : t('Verkstaden du valt har fått dina kontaktuppgifter och hör av sig till dig inom kort.')}
+            {winnerSettled
+              ? t('{name} har fått dina kontaktuppgifter och hör av sig till dig inom kort.', { name: winner?.workshop?.company_name || t('Verkstaden') })
+              : t('{name} har meddelats och hör av sig så snart uppdraget är aktiverat.', { name: winner?.workshop?.company_name || t('Verkstaden') })}
           </p>
+
         </div>
       )
     }
@@ -334,7 +344,10 @@ const CustomerResponses = () => {
                       const company = response.workshop?.company_name
                       const isWinner = response.status === 'won'
                       const isLoser = hasWinner && !isWinner
+                      // Kontaktvägar visas bara för en vald verkstad vars vinst är reglerad.
+                      const contactUnlocked = isWinner && Boolean(response.contact_unlocked)
                       const isCheapest = response.id === cheapestId && sorted.length > 1 && !hasWinner
+
                       return (
                         <motion.li
                           key={response.id}
@@ -391,24 +404,30 @@ const CustomerResponses = () => {
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
-                              {!isLoser && phone && (
+                              {contactUnlocked && phone && (
                                 <Button asChild size="sm" className="rounded-full shadow-brand" onClick={() => handleContact(response, 'phone')}>
                                   <a href={`tel:${phone}`} aria-label={t('Ring {name}', { name: company || t('verkstaden') })}><Phone className="h-4 w-4 mr-1.5" /> {t('Ring')}</a>
                                 </Button>
                               )}
-                              {!isLoser && email && (
+                              {contactUnlocked && email && (
                                 <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'email')}>
                                   <a href={`mailto:${email}?subject=${mailSubject(company)}`} aria-label={t('Mejla {name}', { name: company || t('verkstaden') })}><Mail className="h-4 w-4 mr-1.5" /> {t('Mejla')}</a>
                                 </Button>
                               )}
-                              {!isLoser && website && (
+                              {contactUnlocked && website && (
                                 <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'website')}>
                                   <a href={website} target="_blank" rel="noreferrer" aria-label={t('Öppna webbplatsen för {name}', { name: company || t('verkstaden') })}><ExternalLink className="h-4 w-4 mr-1.5" /> {t('Webbplats')}</a>
                                 </Button>
                               )}
+                              {isWinner && !contactUnlocked && (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground">
+                                  <Clock3 className="h-3.5 w-3.5" /> {t('Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.')}
+                                </span>
+                              )}
                               {!hasWinner && request.admin_status === 'approved' && response.status === 'sent' && (
                                 confirmingId === response.id ? (
                                   <span className="flex flex-wrap items-center gap-2 rounded-2xl bg-[hsl(var(--brand-mint)/0.1)] px-3 py-2">
+
                                     <span className="text-xs font-medium">{t('Valet är slutgiltigt. Gå vidare med {name}?', { name: company || t('verkstaden') })}</span>
                                     <Button size="sm" className="rounded-full" disabled={selectingId === response.id} onClick={() => pickWinner(response)}>
                                       {selectingId === response.id ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}

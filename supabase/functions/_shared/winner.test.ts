@@ -56,3 +56,22 @@ Deno.test('kundens bekräftelsemejl nämner vald verkstad', () => {
   assertStringIncludes(text, 'hör av sig')
   assertEquals(buildCustomerPickSubject('Cykelverkstan AB'), 'Du har valt Cykelverkstan AB')
 })
+
+Deno.test('kundens bekräftelse ljuger inte när vinsten inte är reglerad', () => {
+  const url = 'https://cykelhjalpen.se/mitt-arende/abc'
+  const html = buildCustomerPickEmailHtml('Anna', 'Cykelverkstan AB', url, false)
+  assertStringIncludes(html, 'så snart uppdraget är aktiverat')
+  if (html.includes('har fått dina kontaktuppgifter')) {
+    throw new Error('oreglerad vinst får inte påstå att kontaktuppgifter delats')
+  }
+  const text = buildCustomerPickEmailText('Anna', 'Cykelverkstan AB', url, false)
+  assertStringIncludes(text, 'så snart uppdraget är aktiverat')
+})
+
+Deno.test('kundens bekräftelse bekräftar delning när vinsten är reglerad', () => {
+  const url = 'https://cykelhjalpen.se/mitt-arende/abc'
+  const html = buildCustomerPickEmailHtml('Anna', 'Cykelverkstan AB', url, true)
+  assertStringIncludes(html, 'har fått dina kontaktuppgifter')
+  const text = buildCustomerPickEmailText('Anna', 'Cykelverkstan AB', url, true)
+  assertStringIncludes(text, 'har fått dina kontaktuppgifter')
+})

@@ -2119,6 +2119,13 @@ export type Database = {
       }
     }
     Functions: {
+      choose_bike_winner: {
+        Args: { p_request_id: string; p_response_id: string }
+        Returns: {
+          already_chosen: boolean
+          winner_workshop_id: string
+        }[]
+      }
       consume_free_lead_for_response: {
         Args: { p_response_id: string; p_workshop_id: string }
         Returns: {
@@ -2200,6 +2207,13 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      settle_winner_free_lead: {
+        Args: { p_response_id: string; p_workshop_id: string }
+        Returns: {
+          already_processed: boolean
+          remaining_free_leads: number
+        }[]
       }
       submit_bike_repair_request:
         | {

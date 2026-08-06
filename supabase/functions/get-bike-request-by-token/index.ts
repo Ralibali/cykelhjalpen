@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://esm.sh/zod@3.25.76";
 import { corsFor } from "../_shared/cors.ts";
+import { toCustomerResponse } from "../_shared/token-view.ts";
 
 const BodySchema = z.object({ token: z.string().uuid() });
 
@@ -51,7 +52,7 @@ serve(async (req) => {
     const [{ data: responses, error: responseError }, { data: imageRows, error: imageError }] = await Promise.all([
       admin
         .from("workshop_responses")
-        .select("id, message, estimated_price_min, estimated_price_max, estimated_time, can_pickup, status, created_at, workshops(id, company_name, phone, email, website)")
+        .select("id, message, estimated_price_min, estimated_price_max, estimated_time, can_pickup, status, paid, created_at, workshops(id, company_name, phone, email, website)")
         .eq("request_id", request.id)
         .in("status", ["sent", "won", "lost"])
         .order("created_at", { ascending: true })
@@ -66,17 +67,9 @@ serve(async (req) => {
     if (responseError) throw responseError;
     if (imageError) throw imageError;
 
-    const mapped = (responses || []).map((row: any) => ({
-      id: row.id,
-      message: row.message,
-      estimated_price_min: row.estimated_price_min,
-      estimated_price_max: row.estimated_price_max,
-      estimated_time: row.estimated_time,
-      can_pickup: row.can_pickup,
-      status: row.status,
-      created_at: row.created_at,
-      workshop: row.workshops,
-    }));
+    const mapped = (responses || []).map((row: any) => toCustomerResponse(row));
+
+
 
     const paths = (imageRows || []).map((row) => storagePath(row.image_url));
     const images: { id: string; url: string }[] = [];

@@ -169,6 +169,12 @@ export const EN_WIZARD: Record<string, string> = {
   'Ja, välj verkstaden': 'Yes, choose the bike shop',
   'Du har valt {name}!': 'You have chosen {name}!',
   'Verkstaden får dina kontaktuppgifter och hör av sig till dig inom kort.': 'The bike shop receives your contact details and will get in touch with you shortly.',
+  'Verkstaden har fått dina kontaktuppgifter och hör av sig till dig inom kort.': 'The bike shop has received your contact details and will get in touch with you shortly.',
+  'Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.': 'The bike shop has been notified and will get in touch as soon as the job is activated.',
+  '{name} har meddelats och hör av sig så snart uppdraget är aktiverat.': '{name} has been notified and will get in touch as soon as the job is activated.',
+  'Aktiverat': 'Activated',
+  'Väntar på betalning/aktivering': 'Awaiting payment/activation',
+
   'Kunde inte registrera valet.': 'Could not register your choice.',
   'inkl. moms': 'incl. VAT',
   'Kan hämta cykeln': 'Can pick up the bike',
