@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Loader2, Check, X, RefreshCw, Gift } from 'lucide-react'
+import { Loader2, Check, X, RefreshCw, Gift, Minus } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
