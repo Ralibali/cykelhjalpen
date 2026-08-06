@@ -323,6 +323,10 @@ const AppRoutes = () => {
               {/* English routes (served under /en/ via router basename) */}
               <Route path="/submit-request" element={<BikeRequestWizard />} />
               <Route path="/for-bike-shops" element={<ForVerkstaderPage />} />
+              {/* Gamla engelska varianter -> rätt engelsk slug */}
+              <Route path="/for-verkstader" element={<RedirectKeepSearch to="/for-bike-shops" />} />
+              <Route path="/for-cykelverkstader" element={<RedirectKeepSearch to="/for-bike-shops" />} />
+
               {/* /en/bike-repair-<stad> är stadshubben och ägs av CYKEL_SEO_PAGES nedan,
                   precis som /cykelverkstad-<stad> gör på svenska. */}
 
