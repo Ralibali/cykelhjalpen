@@ -2,6 +2,8 @@ import { CYKEL_CITIES, slugify, type CykelCity, type CykelCityName } from './cyk
 
 export interface CykelSeoPage {
   slug: string
+  /** English slug — the page lives on /en/<enSlug>. */
+  enSlug: string
   city: CykelCityName
   h1: string
   title: string
@@ -13,6 +15,29 @@ export interface CykelSeoPage {
   /** Markerar sidan som speciell — t.ex. prissida som renderar extra data */
   variant?: 'price-stats'
 }
+
+/** Swedish slug stem -> English slug stem. Every SERVICES entry must be listed here. */
+export const EN_SLUG_STEMS: Record<string, string> = {
+  // 'bike-repair-<city>' is the English city hub — it must stay on the already
+  // indexed URL, so it maps from the Swedish city hub stem 'cykelverkstad'.
+  'cykelverkstad': 'bike-repair',
+  'cykelreparation': 'bike-repair-service',
+
+  'punktering': 'puncture-repair',
+  'cykelservice': 'bike-service',
+  'elcykel-reparation': 'electric-bike-repair',
+  'elsparkcykel-reparation': 'e-scooter-repair',
+  'mobil-cykelreparation': 'mobile-bike-repair',
+  'vaxeljustering': 'gear-adjustment',
+  'bromsservice': 'brake-service',
+  'kedjebyte': 'chain-replacement',
+  'dackbyte-cykel': 'bike-tyre-change',
+  'hjul-och-ekrar': 'wheels-and-spokes',
+  'cykelmontering': 'bike-assembly',
+  'varservice-cykel': 'spring-bike-service',
+  'vad-kostar-cykelreparation': 'bike-repair-cost',
+}
+
 
 type Tfn = (sv: string, vars?: Record<string, string | number>) => string
 const identity: Tfn = (s) => s
@@ -285,7 +310,9 @@ const SERVICES: ServiceDef[] = [
 
 const buildService = (c: CykelCity, svc: ServiceDef, t: Tfn): CykelSeoPage => ({
   slug: `${svc.slugStem}-${c.slug}`,
+  enSlug: `${EN_SLUG_STEMS[svc.slugStem] ?? svc.slugStem}-${c.slug}`,
   city: c.name,
+
   h1: svc.h1(c, t),
   title: svc.title(c, t),
   description: svc.description(c, t),
@@ -298,7 +325,9 @@ const buildService = (c: CykelCity, svc: ServiceDef, t: Tfn): CykelSeoPage => ({
 
 const buildDistrict = (c: CykelCity, district: string, t: Tfn): CykelSeoPage => ({
   slug: `cykelverkstad-${slugify(district)}-${c.slug}`,
+  enSlug: `bike-shop-${slugify(district)}-${c.slug}`,
   city: c.name,
+
   h1: t('Cykelverkstad i {district}, {city}', { district, city: c.name }),
   title: t('Cykelverkstad {district} {city} — lokala offerter', { district, city: c.name }),
   description: t('Behöver du en cykelverkstad i {district}, {city}? Skicka gratis ärende och få upp till fem prisförslag inom ett dygn.', { district, city: c.name }),
@@ -320,3 +349,12 @@ export const buildCykelSeoPages = (t: Tfn = identity): CykelSeoPage[] =>
   ])
 
 export const CYKEL_SEO_PAGES: CykelSeoPage[] = buildCykelSeoPages()
+
+/** In-router path for a SEO page in the given language (English pages use the /en basename). */
+export const seoPagePath = (page: Pick<CykelSeoPage, 'slug' | 'enSlug'>, lang: 'sv' | 'en') =>
+  `/${lang === 'en' ? page.enSlug : page.slug}`
+
+/** Full site path (including the /en prefix) for a SEO page. */
+export const seoPageHref = (page: Pick<CykelSeoPage, 'slug' | 'enSlug'>, lang: 'sv' | 'en') =>
+  lang === 'en' ? `/en/${page.enSlug}` : `/${page.slug}`
+

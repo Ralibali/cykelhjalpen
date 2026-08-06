@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
-import { buildCykelSeoPages, type CykelSeoPage as CykelSeoPageType } from '@/lib/cykelSeoPages'
+import { buildCykelSeoPages, seoPagePath, type CykelSeoPage as CykelSeoPageType } from '@/lib/cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { getCityImage } from '@/lib/cykelCityImages'
 import elsparkBanner1200 from '@/assets/cykel-elsparkcykel-1200.webp'
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Bike, CheckCircle2, MapPin } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { trackClick } from '@/hooks/usePageTracking'
-import { useT } from '@/lib/i18n'
+import { useT, useLanguage } from '@/lib/i18n'
 
 type PriceRow = {
   repair_category: string
@@ -85,7 +85,9 @@ const PriceStatsTable = ({ city }: { city: CykelCityName }) => {
 
 const RelatedPages = ({ currentSlug, city, seoPages }: { currentSlug: string; city: CykelCityName; seoPages: CykelSeoPageType[] }) => {
   const t = useT()
+  const { lang } = useLanguage()
   const related = useMemo(() => {
+
     const priorityStems = [
       'cykelverkstad',
       'cykelreparation',
@@ -123,7 +125,7 @@ const RelatedPages = ({ currentSlug, city, seoPages }: { currentSlug: string; ci
         {related.map((page) => (
           <Link
             key={page.slug}
-            to={`/${page.slug}`}
+            to={seoPagePath(page, lang)}
             onClick={() => trackClick('seo_related_page_clicked', page.h1, { from: currentSlug, to: page.slug })}
             className="sticker bg-card p-4 rounded-xl hover:-translate-y-0.5 transition-transform"
           >
@@ -139,20 +141,33 @@ const RelatedPages = ({ currentSlug, city, seoPages }: { currentSlug: string; ci
 const CykelSeoPage = () => {
   const { pathname } = useLocation()
   const t = useT()
+  const { lang } = useLanguage()
   const seoPages = useMemo(() => buildCykelSeoPages(t), [t])
   const slug = pathname.replace(/^\//, '').replace(/\/$/, '')
-  const page = seoPages.find((candidate) => candidate.slug === slug) as CykelSeoPageType | undefined
+  const page = seoPages.find(
+    (candidate) => (lang === 'en' ? candidate.enSlug : candidate.slug) === slug,
+  ) as CykelSeoPageType | undefined
   if (!page) return <Navigate to="/" replace />
 
-  const canonical = `https://cykelhjalpen.se/${page.slug}`
+  const svUrl = `https://cykelhjalpen.se/${page.slug}`
+  const enUrl = `https://cykelhjalpen.se/en/${page.enSlug}`
+  const canonical = lang === 'en' ? enUrl : svUrl
   const city = page.city
   const ogImage = page.ogImage ?? `/og/stad-${getCykelCity(city).slug}.jpg`
   const isElspark = page.slug.startsWith('elsparkcykel-reparation-')
   const cityImage = getCityImage(city)
   const bannerImage = isElspark
-    ? { large: elsparkBanner1200, small: elsparkBanner640, alt: 'Elsparkcykel på reparationsstativ i en varm cykelverkstad' }
+    ? { large: elsparkBanner1200, small: elsparkBanner640, alt: t('Elsparkcykel på reparationsstativ i en varm cykelverkstad') }
     : cityImage
-  const requestHref = cityQuery(city)
+  const citySlug = getCykelCity(city).slug
+  // In-router path — the /en basename is applied automatically on English URLs.
+  const requestHref = lang === 'en' ? `/submit-request?stad=${citySlug}` : cityQuery(city)
+  const cityHubUrl = lang === 'en'
+    ? `https://cykelhjalpen.se/en/bike-repair-${citySlug}`
+    : `https://cykelhjalpen.se${cityLandingPath(city)}`
+  const homeUrl = lang === 'en' ? 'https://cykelhjalpen.se/en' : 'https://cykelhjalpen.se/'
+
+
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -164,7 +179,7 @@ const CykelSeoPage = () => {
         name: page.title,
         headline: page.h1,
         description: page.description,
-        inLanguage: 'sv-SE',
+        inLanguage: lang === 'en' ? 'en' : 'sv-SE',
         isPartOf: { '@id': 'https://cykelhjalpen.se/#website' },
       },
       {
@@ -179,8 +194,9 @@ const CykelSeoPage = () => {
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Cykelhjälpen', item: 'https://cykelhjalpen.se/' },
-          { '@type': 'ListItem', position: 2, name: t('Cykelverkstad {city}', { city }), item: `https://cykelhjalpen.se${cityLandingPath(city)}` },
+          { '@type': 'ListItem', position: 1, name: 'Cykelhjälpen', item: homeUrl },
+          { '@type': 'ListItem', position: 2, name: t('Cykelverkstad {city}', { city }), item: cityHubUrl },
+
           { '@type': 'ListItem', position: 3, name: page.h1, item: canonical },
         ],
       },
@@ -208,9 +224,14 @@ const CykelSeoPage = () => {
         <meta name="description" content={page.description} />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <link rel="canonical" href={canonical} />
+        <link rel="alternate" hrefLang="sv" href={svUrl} />
+        <link rel="alternate" hrefLang="en" href={enUrl} />
+        <link rel="alternate" hrefLang="x-default" href={svUrl} />
         <meta property="og:type" content="article" />
-        <meta property="og:locale" content="sv_SE" />
+        <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'sv_SE'} />
+        <meta property="og:locale:alternate" content={lang === 'en' ? 'sv_SE' : 'en_US'} />
         <meta property="og:site_name" content="Cykelhjälpen" />
+
         <meta property="og:title" content={page.title} />
         <meta property="og:description" content={page.description} />
         <meta property="og:url" content={canonical} />

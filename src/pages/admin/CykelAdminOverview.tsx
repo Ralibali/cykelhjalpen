@@ -97,7 +97,7 @@ const CykelAdminOverview = () => {
       supabase.from('lead_charges').select('id, amount, status, created_at').order('created_at', { ascending: false }),
       supabase.from('workshop_prospects').select('status'),
       supabase.from('outreach_clicks').select('prospect_id'),
-      supabase.from('inbound_emails').select('*', { count: 'exact', head: true }).is('read_at', null).is('archived_at', null),
+      (supabase as any).from('inbound_emails').select('*', { count: 'exact', head: true }).is('read_at', null).is('archived_at', null),
       supabase.from('notification_events').select('*', { count: 'exact', head: true }).eq('status', 'failed').gte('created_at', sevenDaysAgo),
     ])
 

@@ -284,9 +284,9 @@ const AppRoutes = () => {
               {/* English routes (served under /en/ via router basename) */}
               <Route path="/submit-request" element={<BikeRequestWizard />} />
               <Route path="/for-bike-shops" element={<ForVerkstaderPage />} />
-              {CYKEL_CITIES.map((c) => (
-                <Route key={`en-${c.slug}`} path={`/bike-repair-${c.slug}`} element={<CykelCityLandingPage city={c.name} />} />
-              ))}
+              {/* /en/bike-repair-<stad> är stadshubben och ägs av CYKEL_SEO_PAGES nedan,
+                  precis som /cykelverkstad-<stad> gör på svenska. */}
+
               {/* Google Ads: rekryteringssida per stad för verkstäder (noindex) */}
               <Route path="/annons/verkstad/:citySlug" element={<WorkshopAdCityPage />} />
               <Route path="/avregistrera/:token" element={<UnsubscribePage />} />
@@ -312,10 +312,14 @@ const AppRoutes = () => {
               <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
 
-              {/* Local SEO — dynamiska routes från CYKEL_SEO_PAGES */}
+              {/* Local SEO — dynamiska routes från CYKEL_SEO_PAGES (sv + en) */}
               {CYKEL_SEO_PAGES.map((p) => (
                 <Route key={p.slug} path={`/${p.slug}`} element={<CykelSeoPage />} />
               ))}
+              {CYKEL_SEO_PAGES.map((p) => (
+                <Route key={`en-${p.enSlug}`} path={`/${p.enSlug}`} element={<CykelSeoPage />} />
+              ))}
+
 
               {/* City landing pages — skip Linköping (owned by CYKEL_SEO_PAGES 'cykelverkstad-linkoping') */}
               {CYKEL_CITIES

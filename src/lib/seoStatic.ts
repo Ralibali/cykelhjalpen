@@ -1,6 +1,15 @@
-import { CYKEL_SEO_PAGES } from './cykelSeoPages'
-import { CYKEL_CITIES, cityLandingPath } from './cykelCities'
+import { CYKEL_SEO_PAGES, buildCykelSeoPages } from './cykelSeoPages'
+import { CYKEL_CITIES, cityLandingPath, getCykelCity } from './cykelCities'
+import { EN } from '@/locales/en'
 import type { SiteHost } from './hostConfig'
+
+/** English rendering of every generated local SEO page. */
+const enT = (sv: string, vars?: Record<string, string | number>) => {
+  const text = EN[sv] ?? sv
+  return vars ? text.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : text
+}
+const EN_CYKEL_SEO_PAGES = buildCykelSeoPages(enT)
+
 
 export const SITE_URL = 'https://cykelhjalpen.se'
 export const UPDRO_SITE_URL = 'https://updro.se'
@@ -246,34 +255,34 @@ const englishRoutes = (): StaticSeoRoute[] => [
       { q: 'Do we have to answer every request?', a: 'No. You choose which requests you want to answer.' },
     ],
   },
-  ...CYKEL_CITIES.map<StaticSeoRoute>((city) => ({
-    path: `/en/bike-repair-${city.slug}`,
-    altPath: cityLandingPath(city.name),
-    lang: 'en',
-    title: `Bike repair in ${city.name} – compare local bike shops | Cykelhjälpen`,
-    description: `Free and no account needed. Describe your bike problem and compare up to 5 quotes from local bike shops in ${city.name}.`,
-    h1: `Bike repair in ${city.name}`,
-    city: city.name,
-    priority: 0.85,
-    changefreq: 'weekly',
-    lastmod: today(),
-    ogImage: '/og/hem.jpg',
-    sections: [
-      { h2: `Local bike shops in ${city.name}`, body: `We cover ${city.areas}. Add your area or postal code so the bike shops can judge the distance and possible pick-up.` },
-      { h2: 'Common repairs', body: 'Local bike shops can help with punctures, tyres, brakes, gears, chain, wheels, full service and electric bike problems.' },
-      { h2: 'Free, no account needed', body: 'Sending a request is free and you decide if you want to accept any of the quotes.' },
-    ],
-    links: [
-      { label: `Get quotes in ${city.name}`, href: `/en/submit-request?stad=${city.slug}` },
-      ...enCityLinks.filter((link) => link.href !== `/en/bike-repair-${city.slug}`),
-      { label: 'For bike shops', href: '/en/for-bike-shops' },
-    ],
-    faq: [
-      { q: `What does a bike repair in ${city.name} cost?`, a: 'The price depends on the repair. You compare up to 5 quotes for free before you decide.' },
-      { q: 'Can I write in English?', a: 'Yes. The bike shop sees that you want the answer in English.' },
-    ],
-  })),
+  // Every local SEO page (city hubs, services and districts) in English.
+  ...EN_CYKEL_SEO_PAGES.map<StaticSeoRoute>((page) => {
+    const citySlug = getCykelCity(page.city).slug
+    const cityHub = `/en/bike-repair-${citySlug}`
+    return {
+      path: `/en/${page.enSlug}`,
+      altPath: `/${page.slug}`,
+      lang: 'en' as const,
+      title: page.title,
+      description: trunc(page.description),
+      h1: page.h1,
+      city: page.city,
+      priority: page.enSlug === `bike-repair-${citySlug}` ? 0.85 : page.variant === 'price-stats' ? 0.8 : 0.7,
+      changefreq: page.variant === 'price-stats' ? 'weekly' as const : 'monthly' as const,
+      lastmod: today(),
+      sections: page.sections,
+      faq: page.faq,
+      ogImage: page.ogImage ?? '/og/hem.jpg',
+      links: [
+        { label: `Get free quotes in ${page.city}`, href: `/en/submit-request?stad=${citySlug}` },
+        ...(`/en/${page.enSlug}` === cityHub ? [] : [{ label: `Bike repair in ${page.city}`, href: cityHub }]),
+        ...enCityLinks.filter((link) => link.href !== cityHub && link.href !== `/en/${page.enSlug}`),
+        { label: 'For bike shops', href: '/en/for-bike-shops' },
+      ],
+    }
+  }),
 ]
+
 
 
 
