@@ -344,7 +344,10 @@ const CustomerResponses = () => {
                       const company = response.workshop?.company_name
                       const isWinner = response.status === 'won'
                       const isLoser = hasWinner && !isWinner
+                      // Kontaktvägar visas bara för en vald verkstad vars vinst är reglerad.
+                      const contactUnlocked = isWinner && Boolean(response.contact_unlocked)
                       const isCheapest = response.id === cheapestId && sorted.length > 1 && !hasWinner
+
                       return (
                         <motion.li
                           key={response.id}
