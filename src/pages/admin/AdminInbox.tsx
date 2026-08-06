@@ -199,6 +199,8 @@ const AdminInbox = () => {
 
   const senderLabel = (m: InboundEmail) => m.from_name || m.from_email
 
+
+
   return (
     <AdminLayout>
       <div className="max-w-6xl mx-auto">
