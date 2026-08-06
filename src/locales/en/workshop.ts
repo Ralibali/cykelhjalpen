@@ -195,4 +195,8 @@ export const EN_WORKSHOP: Record<string, string> = {
   '{n} månader sedan': '{n} months ago',
   'Svara på engelska': 'Answer in English',
   'Kunden skickade ärendet på engelska och förväntar sig svar på engelska.': 'The customer submitted the request in English and expects an answer in English.',
+  '{count} st': '{count} pcs',
+  'Totalt {total} kr exkl. moms': 'Total {total} SEK excl. VAT',
+  'Saldo just nu:': 'Current balance:',
+  'Tillåt popup-fönster för att slutföra betalningen': 'Allow pop-ups to complete the payment',
 }

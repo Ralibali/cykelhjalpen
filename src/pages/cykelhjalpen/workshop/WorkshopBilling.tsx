@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, Receipt, Sparkles } from 'lucide-react'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
-import { BuyLeadsButton } from '@/components/workshop/BuyLeadsButton'
+import { BuyLeadsPicker } from '@/components/workshop/BuyLeadsPicker'
 import { LeadCreditsInvoiceHistory } from '@/components/workshop/LeadCreditsInvoiceHistory'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { useT } from '@/lib/i18n'
@@ -29,25 +29,51 @@ const WorkshopBilling = () => {
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const [charges, setCharges] = useState<ChargeRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [credits, setCredits] = useState<number>(workshop.free_leads_remaining ?? 0)
 
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase
+  const refresh = useCallback(async () => {
+    const [{ data: chargeRows }, { data: workshopRow }] = await Promise.all([
+      supabase
         .from('lead_charges')
         .select('id, created_at, amount, status, stripe_session_id')
         .eq('workshop_id', workshop.id)
-        .order('created_at', { ascending: false })
-      setCharges((data as ChargeRow[]) || [])
-      setLoading(false)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('workshops')
+        .select('free_leads_remaining')
+        .eq('id', workshop.id)
+        .maybeSingle(),
+    ])
+    setCharges((chargeRows as ChargeRow[]) || [])
+    if (typeof workshopRow?.free_leads_remaining === 'number') {
+      setCredits(workshopRow.free_leads_remaining)
     }
-    load()
+    setLoading(false)
   }, [workshop.id])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  // Uppdatera saldot när användaren kommer tillbaka från Stripe-fliken
+  useEffect(() => {
+    const onFocus = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onFocus)
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onFocus)
+    }
+  }, [refresh])
 
   const totals = useMemo(() => ({
     paidExVat: charges.filter((charge) => charge.status === 'paid').reduce((sum, charge) => sum + charge.amount, 0) / 100,
     paidCount: charges.filter((charge) => charge.status === 'paid').length,
     freeCount: charges.filter((charge) => charge.status === 'free_lead').length,
   }), [charges])
+
 
   return (
     <div>
@@ -63,7 +89,7 @@ const WorkshopBilling = () => {
       </div>
 
       <div className="sticker rounded-3xl bg-card p-6 mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h2 className="font-display text-xl mb-1 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" /> {t('Lead credits')}
@@ -71,10 +97,14 @@ const WorkshopBilling = () => {
             <p className="text-sm text-muted-foreground">
               {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt först när kunden väljer dig som vinnare.', { price: LEAD_FEE_KR })}
             </p>
+            <p className="text-sm mt-3">
+              {t('Saldo just nu:')} <span className="font-display text-lg font-bold">{credits}</span>
+            </p>
           </div>
-          <BuyLeadsButton quantity={10} />
+          <BuyLeadsPicker onSuccess={refresh} />
         </div>
       </div>
+
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="animate-spin" /></div>
