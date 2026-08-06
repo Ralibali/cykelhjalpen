@@ -140,6 +140,49 @@ const WorkshopSettings = () => {
           {saving ? t('Sparar…') : t('Spara')}
         </Button>
       </div>
+
+      <div className="sticker rounded-3xl bg-card p-6 space-y-5 max-w-xl mt-6">
+        <div>
+          <h2 className="font-display text-xl font-bold">{t('Byt lösenord')}</h2>
+          <p className="text-xs text-muted-foreground mt-1">{t('Minst åtta tecken.')}</p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="new-password">{t('Nytt lösenord')}</Label>
+            <PasswordInput
+              id="new-password"
+              autoComplete="new-password"
+              minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              wrapperClassName="mt-1"
+              placeholder="••••••••"
+              showLabel={t('Visa lösenord')}
+              hideLabel={t('Dölj lösenord')}
+            />
+          </div>
+          <div>
+            <Label htmlFor="confirm-password">{t('Bekräfta lösenord')}</Label>
+            <PasswordInput
+              id="confirm-password"
+              autoComplete="new-password"
+              minLength={8}
+              value={confirmation}
+              onChange={(event) => setConfirmation(event.target.value)}
+              wrapperClassName="mt-1"
+              placeholder="••••••••"
+              showLabel={t('Visa lösenord')}
+              hideLabel={t('Dölj lösenord')}
+            />
+          </div>
+        </div>
+
+        <Button onClick={changePassword} disabled={changing} variant="outline" className="min-w-28">
+          {changing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {changing ? t('Sparar…') : t('Byt lösenord')}
+        </Button>
+      </div>
     </div>
   )
 }
