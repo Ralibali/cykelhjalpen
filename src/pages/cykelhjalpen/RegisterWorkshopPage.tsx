@@ -141,12 +141,12 @@ const RegisterWorkshopPage = () => {
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>{t('Registrera cykelverkstad | Cykelhjälpen')}</title>
-        <meta name="description" content={t('Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift och betalning endast när ni väljer att skicka en offert.')} />
+        <meta name="description" content={t('Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift – ni lämnar offert gratis och betalar först när kunden väljer er.')} />
         <meta name="robots" content="noindex, follow" />
         <link rel="canonical" href="https://cykelhjalpen.se/registrera/verkstad" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={t('Registrera cykelverkstad | Cykelhjälpen')} />
-        <meta property="og:description" content={t('Kostnadsfri registrering. Betala bara när ni väljer att skicka en offert.')} />
+        <meta property="og:description" content={t('Kostnadsfri registrering. Lämna offert gratis och betala bara när kunden väljer er.')} />
         <meta property="og:url" content="https://cykelhjalpen.se/registrera/verkstad" />
         <meta property="og:image" content="https://cykelhjalpen.se/og/registrera-verkstad.jpg" />
         <meta name="twitter:card" content="summary_large_image" />

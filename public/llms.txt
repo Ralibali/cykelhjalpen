@@ -7,7 +7,7 @@ Cykelhjälpen samlar lokala prisförslag på ett ställe så att cyklisten slipp
 
 ## Hur det fungerar
 1. Cyklisten beskriver felet, anger stad och kan bifoga bilder.
-2. Anslutna verkstäder som tar den typen av jobb kan lämna pris och tid.
+2. Anslutna verkstäder som tar den typen av jobb kan lämna pris och tid – upp till tre verkstäder kan svara per ärende. Det kostar inget för verkstaden att lämna offert.
 3. Cyklisten jämför svaren och väljer själv om någon verkstad ska anlitas.
 
 ## Viktiga sidor
@@ -28,6 +28,9 @@ För varje stad finns sidor för centrala sökintentioner som cykelverkstad, cyk
 
 ## Fakta om tjänsten
 - Kostnad för cyklisten: 0 SEK
+- Max antal prisförslag per ärende: 3
+- Kostnad för verkstaden: 0 SEK att lämna offert, 50 SEK exkl. moms först när kunden väljer verkstadens offert
+- Städer: Linköping, Norrköping, Uppsala, Lund
 - Konto krävs för offertförfrågan: Nej
 - Språk: Svenska
 - Land: Sverige

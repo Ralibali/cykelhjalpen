@@ -45,7 +45,7 @@ const identity: Tfn = (s) => s
 const spotlights = (c: CykelCity, n = 3) => c.districts.slice(0, n)
 
 const localIntro = (t: Tfn, what: string, c: CykelCity) =>
-  t('Behöver du {what} i {city}? {localIntro} Cykelhjälpen kopplar dig till lokala, anslutna cykelverkstäder som täcker bland annat {areas}. Skicka ett kostnadsfritt ärende — du får upp till fem prisförslag inom ett dygn.', {
+  t('Behöver du {what} i {city}? {localIntro} Cykelhjälpen kopplar dig till lokala, anslutna cykelverkstäder som täcker bland annat {areas}. Skicka ett kostnadsfritt ärende — du får upp till tre prisförslag inom ett dygn.', {
     what: t(what),
     city: c.name,
     localIntro: t(c.localIntro),
@@ -82,7 +82,7 @@ const SERVICES: ServiceDef[] = [
     what: 'en cykelverkstad',
     h1: (c, t) => t('Cykelverkstad i {city}', { city: c.name }),
     title: (c, t) => t('Cykelverkstad {city} — jämför lokala priser', { city: c.name }),
-    description: (c, t) => t('Hitta en cykelverkstad i {city}. Skicka gratis ärende och få upp till fem offerter på reparation, service eller punktering.', { city: c.name }),
+    description: (c, t) => t('Hitta en cykelverkstad i {city}. Skicka gratis ärende och få upp till tre offerter på reparation, service eller punktering.', { city: c.name }),
     sections: (c, t) => [
       { h2: t('Hur fungerar Cykelhjälpen?'), body: t('Du beskriver felet på två minuter. Vi skickar ärendet till anslutna cykelverkstäder i {city} som lämnar pris och tid. Du väljer själv vilken verkstad du vill anlita.', { city: c.name }) },
       { h2: t('Vad kostar det?'), body: t('Det är helt gratis för dig som cyklist. Verkstaden betalar en liten avgift för att lämna offert.') },
@@ -301,7 +301,7 @@ const SERVICES: ServiceDef[] = [
       { h2: t('Varför skiljer priserna?'), body: `${t('Cykeltyp, slitdelar och hur snabbt du behöver hjälp påverkar priset. En elcykel kostar oftast mer än en stadscykel eftersom det krävs mer tid och rätt verktyg.')} ${districtLine(t, c)}` },
     ],
     faq: (_c, t) => [
-      { q: t('Är det här ett fast pris?'), a: t('Nej, det är ett spann från riktiga offerter. För exakt pris för just din cykel — skicka ärende så får du upp till fem offerter.') },
+      { q: t('Är det här ett fast pris?'), a: t('Nej, det är ett spann från riktiga offerter. För exakt pris för just din cykel — skicka ärende så får du upp till tre offerter.') },
       { q: t('Hur ofta uppdateras priserna?'), a: t('Statistiken hämtas live varje gång du laddar sidan, så fort en ny offert lämnas räknas den in.') },
     ],
     variant: 'price-stats',
@@ -330,8 +330,8 @@ const buildDistrict = (c: CykelCity, district: string, t: Tfn): CykelSeoPage => 
 
   h1: t('Cykelverkstad i {district}, {city}', { district, city: c.name }),
   title: t('Cykelverkstad {district} {city} — lokala offerter', { district, city: c.name }),
-  description: t('Behöver du en cykelverkstad i {district}, {city}? Skicka gratis ärende och få upp till fem prisförslag inom ett dygn.', { district, city: c.name }),
-  intro: t('Behöver du en cykelverkstad i {district}, {city}? {localIntro} Skicka ett kostnadsfritt ärende och få upp till fem prisförslag från verkstäder som täcker {district} och närliggande områden.', { district, city: c.name, localIntro: t(c.localIntro) }),
+  description: t('Behöver du en cykelverkstad i {district}, {city}? Skicka gratis ärende och få upp till tre prisförslag inom ett dygn.', { district, city: c.name }),
+  intro: t('Behöver du en cykelverkstad i {district}, {city}? {localIntro} Skicka ett kostnadsfritt ärende och få upp till tre prisförslag från verkstäder som täcker {district} och närliggande områden.', { district, city: c.name, localIntro: t(c.localIntro) }),
   sections: [
     { h2: t('Lokalt i {district}', { district }), body: t('{district} är en av stadsdelarna i {city} där cykeln används dagligen. Verkstäder i närområdet hjälper till med både vardagscyklar, elcyklar och racer — beskriv problemet så matchas rätt verkstad.', { district, city: c.name }) },
     { h2: t('Vad kan en verkstad hjälpa till med?'), body: t('Punktering, växeljustering, bromsservice, kedjebyte, helservice och elcykel-reparation är de vanligaste jobben. Lägg gärna en bild i ärendet så blir offerten mer exakt.') },
