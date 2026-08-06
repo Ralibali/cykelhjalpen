@@ -201,6 +201,106 @@ const WorkshopSettings = () => {
           <Input id="address" autoComplete="street-address" value={form.address || ''} onChange={(event) => setForm({ ...form, address: event.target.value })} />
         </div>
 
+        <div className="pt-4 border-t space-y-4">
+          <div>
+            <h2 className="font-display text-lg font-bold">{t('Verkstadens profil')}</h2>
+            <p className="text-xs text-muted-foreground mt-1">{t('Frivilligt, men gör att kunder väljer er oftare.')}</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="h-20 w-20 shrink-0 rounded-2xl border bg-muted/40 overflow-hidden flex items-center justify-center">
+              {form.logo_url
+                ? <img src={form.logo_url} alt={t('Verkstadens logotyp')} className="h-full w-full object-contain" />
+                : <span className="text-[11px] text-muted-foreground text-center px-2">{t('Ingen logotyp')}</span>}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <input
+                ref={fileInput}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  if (file) uploadLogo(file)
+                  event.target.value = ''
+                }}
+              />
+              <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileInput.current?.click()}>
+                {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                {t('Ladda upp logotyp')}
+              </Button>
+              {form.logo_url && (
+                <Button type="button" variant="ghost" size="sm" onClick={removeLogo}>
+                  <Trash2 className="h-4 w-4 mr-2" /> {t('Ta bort')}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="description">{t('Presentation av verkstaden')}</Label>
+            <Textarea
+              id="description"
+              rows={4}
+              maxLength={1200}
+              value={form.description || ''}
+              onChange={(event) => setForm({ ...form, description: event.target.value })}
+              placeholder={t('Berätta kort om verkstaden, erfarenhet och vad ni är bäst på.')}
+            />
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="opening_hours">{t('Öppettider')}</Label>
+              <Input id="opening_hours" value={form.opening_hours || ''} onChange={(event) => setForm({ ...form, opening_hours: event.target.value })} placeholder={t('Vardagar nio till sjutton')} />
+            </div>
+            <div>
+              <Label htmlFor="price_info">{t('Prisinformation')}</Label>
+              <Input id="price_info" value={form.price_info || ''} onChange={(event) => setForm({ ...form, price_info: event.target.value })} placeholder={t('Exempel: service från 495 kr')} />
+            </div>
+            <div>
+              <Label htmlFor="org_number">{t('Organisationsnummer')}</Label>
+              <Input id="org_number" value={form.org_number || ''} onChange={(event) => setForm({ ...form, org_number: event.target.value })} placeholder="556677-8899" />
+            </div>
+            <div>
+              <Label htmlFor="founded_year">{t('Grundat år')}</Label>
+              <Input
+                id="founded_year"
+                type="number"
+                min={1900}
+                max={new Date().getFullYear()}
+                value={form.founded_year ?? ''}
+                onChange={(event) => setForm({ ...form, founded_year: event.target.value ? Number(event.target.value) : null })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="facebook_url">Facebook</Label>
+              <Input id="facebook_url" value={form.facebook_url || ''} onChange={(event) => setForm({ ...form, facebook_url: event.target.value })} placeholder="facebook.com/verkstad" />
+            </div>
+            <div>
+              <Label htmlFor="instagram_url">Instagram</Label>
+              <Input id="instagram_url" value={form.instagram_url || ''} onChange={(event) => setForm({ ...form, instagram_url: event.target.value })} placeholder="instagram.com/verkstad" />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="booking_url">{t('Länk till bokning')}</Label>
+            <Input id="booking_url" value={form.booking_url || ''} onChange={(event) => setForm({ ...form, booking_url: event.target.value })} placeholder="https://boka.verkstad.se" />
+          </div>
+
+          <div>
+            <Label htmlFor="services">{t('Tjänster (kommaseparerat)')}</Label>
+            <Input
+              id="services"
+              value={(form.services || []).join(', ')}
+              onChange={(event) => setForm({ ...form, services: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })}
+              placeholder={t('Service, punktering, växeljustering, elcykel')}
+            />
+          </div>
+        </div>
+
+
+
         <div className="flex items-start justify-between gap-4 pt-4 border-t">
           <div>
             <Label htmlFor="sms_notifications" className="cursor-pointer">{t('SMS vid nytt ärende')}</Label>
