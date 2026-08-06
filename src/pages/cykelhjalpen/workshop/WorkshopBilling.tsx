@@ -29,25 +29,51 @@ const WorkshopBilling = () => {
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const [charges, setCharges] = useState<ChargeRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [credits, setCredits] = useState<number>(workshop.free_leads_remaining ?? 0)
 
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase
+  const refresh = useCallback(async () => {
+    const [{ data: chargeRows }, { data: workshopRow }] = await Promise.all([
+      supabase
         .from('lead_charges')
         .select('id, created_at, amount, status, stripe_session_id')
         .eq('workshop_id', workshop.id)
-        .order('created_at', { ascending: false })
-      setCharges((data as ChargeRow[]) || [])
-      setLoading(false)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('workshops')
+        .select('free_leads_remaining')
+        .eq('id', workshop.id)
+        .maybeSingle(),
+    ])
+    setCharges((chargeRows as ChargeRow[]) || [])
+    if (typeof workshopRow?.free_leads_remaining === 'number') {
+      setCredits(workshopRow.free_leads_remaining)
     }
-    load()
+    setLoading(false)
   }, [workshop.id])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  // Uppdatera saldot när användaren kommer tillbaka från Stripe-fliken
+  useEffect(() => {
+    const onFocus = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onFocus)
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onFocus)
+    }
+  }, [refresh])
 
   const totals = useMemo(() => ({
     paidExVat: charges.filter((charge) => charge.status === 'paid').reduce((sum, charge) => sum + charge.amount, 0) / 100,
     paidCount: charges.filter((charge) => charge.status === 'paid').length,
     freeCount: charges.filter((charge) => charge.status === 'free_lead').length,
   }), [charges])
+
 
   return (
     <div>
