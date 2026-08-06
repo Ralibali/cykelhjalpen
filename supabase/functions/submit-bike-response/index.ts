@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
     if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(notifyTask)
     else await notifyTask
 
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(JSON.stringify({ ok: true, response_id: response.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     })
   } catch (error) {
