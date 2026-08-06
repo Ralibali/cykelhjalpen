@@ -46,7 +46,18 @@ export const getCykelCity = (value: unknown): CykelCity => (
   CYKEL_CITIES.find((city) => city.name === value || city.slug === value) || CYKEL_CITIES[0]
 )
 
-export const cityQuery = (city: CykelCityName) => `/skicka-arende?stad=${encodeURIComponent(city)}`
+export const cityQuery = (city: CykelCityName) => `/skicka-arende?stad=${getCykelCity(city).slug}`
+
+/** Resolves a ?stad= value (slug or city name, case-insensitive) to a city name, or null. */
+export const resolveCykelCityParam = (value: unknown): CykelCityName | null => {
+  if (typeof value !== 'string') return null
+  const needle = value.trim().toLowerCase()
+  if (!needle) return null
+  const match = CYKEL_CITIES.find(
+    (city) => city.slug === needle || city.name.toLowerCase() === needle,
+  )
+  return match ? match.name : null
+}
 
 export const slugify = (value: string) =>
   value.toLowerCase().replace(/å|ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '-')
