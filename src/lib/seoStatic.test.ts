@@ -98,17 +98,30 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     }
   })
 
-  it('indexerar verkstadssidan men inte formulär eller privata kundsidor', () => {
+  it('indexerar verkstadssidan och formuläret men inte privata kundsidor', () => {
     const indexablePaths = getIndexableSeoRoutes('cykelhjalpen').map((route) => route.path)
     const noindexPaths = getNoindexSeoRoutes('cykelhjalpen').map((route) => route.path)
 
     expect(indexablePaths).toContain('/for-cykelverkstader')
-    expect(indexablePaths).not.toContain('/skicka-arende')
+    expect(indexablePaths).toContain('/skicka-arende')
     expect(indexablePaths).not.toContain('/registrera/verkstad')
     expect(noindexPaths).toContain('/mitt-arende')
     expect(noindexPaths).toContain('/avregistrera')
     expect(noindexPaths).toContain('/annons/verkstad')
   })
+
+  it('ger varje engelsk SEO-sida en svensk hreflang-motsvarighet', () => {
+    const routes = getIndexableSeoRoutes('cykelhjalpen')
+    const svPaths = new Set(routes.filter((r) => r.lang !== 'en').map((r) => r.path))
+    const enRoutes = routes.filter((r) => r.lang === 'en')
+
+    expect(enRoutes.length).toBeGreaterThan(80)
+    for (const route of enRoutes) {
+      expect(route.altPath, `saknar altPath: ${route.path}`).toBeTruthy()
+      expect(svPaths.has(route.altPath!), `saknar svensk motsvarighet: ${route.path}`).toBe(true)
+    }
+  })
+
 
   it('har inga dubbla URL:er i sitemap', () => {
     const sitemap = generateSitemapXml('cykelhjalpen')

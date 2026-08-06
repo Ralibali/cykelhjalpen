@@ -5,16 +5,21 @@
  * The router runs with basename "/en" on English URLs, so the values below are the
  * *in-router* paths for the English version.
  */
+import { CYKEL_SEO_PAGES } from '@/lib/cykelSeoPages'
+
 export const EN_PREFIX = '/en'
 
-export const SV_TO_EN_ROUTES: Record<string, string> = {
+const CORE_ROUTES: Record<string, string> = {
   '/': '/',
   '/skicka-arende': '/submit-request',
   '/for-cykelverkstader': '/for-bike-shops',
-  '/cykelverkstad-linkoping': '/bike-repair-linkoping',
-  '/cykelverkstad-norrkoping': '/bike-repair-norrkoping',
-  '/cykelverkstad-uppsala': '/bike-repair-uppsala',
-  '/cykelverkstad-lund': '/bike-repair-lund',
+}
+
+export const SV_TO_EN_ROUTES: Record<string, string> = {
+  ...CORE_ROUTES,
+  // Every local SEO page (city hubs, services and districts) has an English twin.
+  ...Object.fromEntries(CYKEL_SEO_PAGES.map((p) => [`/${p.slug}`, `/${p.enSlug}`])),
+
 }
 
 export const EN_TO_SV_ROUTES: Record<string, string> = Object.fromEntries(

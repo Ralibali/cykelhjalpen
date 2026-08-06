@@ -176,9 +176,11 @@ const HreflangTags = () => {
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    // Run after Helmet has flushed its own head tags so de-duplication sticks.
-    const timer = window.setTimeout(() => {
+    // Helmet flushes its head tags asynchronously, so run a few passes: the last
+    // one wins and removes whatever duplicate Helmet re-added in between.
+    const apply = () => {
     const origin = window.location.origin;
+
     const routerPath = location.pathname || '/';
 
     // Swedish path is canonical; English pages use their own translated slug.
@@ -195,6 +197,12 @@ const HreflangTags = () => {
       ? `${origin}${routerPath === '/' ? EN_PREFIX : `${EN_PREFIX}${routerPath}`}`
       : `${origin}${routerPath}`;
 
+    // Pages that render their own canonical/hreflang through Helmet (data-rh) own
+    // those tags. We only strip the static prerendered duplicates in that case,
+    // otherwise Helmet keeps re-adding its tag and the page ships two canonicals.
+    const helmetCanonical = document.querySelector('link[rel="canonical"][data-rh]') as HTMLLinkElement | null;
+    const helmetAlternate = document.querySelector('link[rel="alternate"][data-rh]');
+
     const alternates: Array<[string, string]> = [];
     if (svPath && enPath) {
       alternates.push(['sv', `${origin}${svPath}`]);
@@ -203,26 +211,38 @@ const HreflangTags = () => {
     }
 
     document.querySelectorAll('link[rel="alternate"][data-i18n]').forEach((el) => el.remove());
-    for (const [hreflang, href] of alternates) {
-      const link = document.createElement('link');
-      link.rel = 'alternate';
-      link.hreflang = hreflang;
-      link.href = href;
-      link.setAttribute('data-i18n', 'true');
-      document.head.appendChild(link);
+    if (helmetAlternate) {
+      document
+        .querySelectorAll('link[rel="alternate"]:not([data-rh])')
+        .forEach((el) => el.remove());
+    } else {
+      for (const [hreflang, href] of alternates) {
+        const link = document.createElement('link');
+        link.rel = 'alternate';
+        link.hreflang = hreflang;
+        link.href = href;
+        link.setAttribute('data-i18n', 'true');
+        document.head.appendChild(link);
+      }
     }
 
-    const canonicals = Array.from(
-      document.querySelectorAll('link[rel="canonical"]'),
-    ) as HTMLLinkElement[];
-    let canonical = canonicals.shift();
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.rel = 'canonical';
-      document.head.appendChild(canonical);
+    if (helmetCanonical) {
+      document
+        .querySelectorAll('link[rel="canonical"]:not([data-rh])')
+        .forEach((el) => el.remove());
+    } else {
+      const canonicals = Array.from(
+        document.querySelectorAll('link[rel="canonical"]'),
+      ) as HTMLLinkElement[];
+      let canonical = canonicals.shift();
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.rel = 'canonical';
+        document.head.appendChild(canonical);
+      }
+      canonicals.forEach((el) => el.remove());
+      canonical.href = selfUrl;
     }
-    canonicals.forEach((el) => el.remove());
-    canonical.href = selfUrl;
 
     // og:locale per language version. Helmet may already render these per page,
     // so reuse whatever tag exists and keep exactly one of each.
@@ -230,28 +250,39 @@ const HreflangTags = () => {
       const tags = Array.from(
         document.querySelectorAll(`meta[property="${property}"]`),
       ) as HTMLMetaElement[];
-      let tag = tags.shift();
+      // Prefer Helmet's tag when it exists so it is not fought over on re-render.
+      const preferred = tags.find((el) => el.hasAttribute('data-rh')) ?? tags[0];
+      tags.filter((el) => el !== preferred).forEach((el) => el.remove());
+      let tag = preferred;
       if (!tag) {
         tag = document.createElement('meta');
         tag.setAttribute('property', property);
         tag.setAttribute('data-i18n', 'true');
         document.head.appendChild(tag);
       }
-      tags.forEach((el) => el.remove());
-      tag.content = content;
+      if (!tag.hasAttribute('data-rh')) tag.content = content;
     };
     setOg('og:locale', lang === 'en' ? 'en_US' : 'sv_SE');
     setOg('og:locale:alternate', lang === 'en' ? 'sv_SE' : 'en_US');
 
-    let ogUrl = document.querySelector('meta[property="og:url"]') as HTMLMetaElement | null;
+
+    const ogUrls = Array.from(
+      document.querySelectorAll('meta[property="og:url"]'),
+    ) as HTMLMetaElement[];
+    const helmetOgUrl = ogUrls.find((el) => el.hasAttribute('data-rh'));
+    let ogUrl = helmetOgUrl ?? ogUrls[0];
+    ogUrls.filter((el) => el !== ogUrl).forEach((el) => el.remove());
     if (!ogUrl) {
       ogUrl = document.createElement('meta');
       ogUrl.setAttribute('property', 'og:url');
       document.head.appendChild(ogUrl);
     }
-    ogUrl.content = selfUrl;
-    }, 0);
-    return () => window.clearTimeout(timer);
+    if (!helmetOgUrl) ogUrl.content = selfUrl;
+
+    };
+    const timers = [0, 200, 800].map((delay) => window.setTimeout(apply, delay));
+    return () => timers.forEach((id) => window.clearTimeout(id));
+
   }, [location.pathname, lang]);
 
   return null;
@@ -284,9 +315,9 @@ const AppRoutes = () => {
               {/* English routes (served under /en/ via router basename) */}
               <Route path="/submit-request" element={<BikeRequestWizard />} />
               <Route path="/for-bike-shops" element={<ForVerkstaderPage />} />
-              {CYKEL_CITIES.map((c) => (
-                <Route key={`en-${c.slug}`} path={`/bike-repair-${c.slug}`} element={<CykelCityLandingPage city={c.name} />} />
-              ))}
+              {/* /en/bike-repair-<stad> är stadshubben och ägs av CYKEL_SEO_PAGES nedan,
+                  precis som /cykelverkstad-<stad> gör på svenska. */}
+
               {/* Google Ads: rekryteringssida per stad för verkstäder (noindex) */}
               <Route path="/annons/verkstad/:citySlug" element={<WorkshopAdCityPage />} />
               <Route path="/avregistrera/:token" element={<UnsubscribePage />} />
@@ -312,10 +343,14 @@ const AppRoutes = () => {
               <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
 
-              {/* Local SEO — dynamiska routes från CYKEL_SEO_PAGES */}
+              {/* Local SEO — dynamiska routes från CYKEL_SEO_PAGES (sv + en) */}
               {CYKEL_SEO_PAGES.map((p) => (
                 <Route key={p.slug} path={`/${p.slug}`} element={<CykelSeoPage />} />
               ))}
+              {CYKEL_SEO_PAGES.map((p) => (
+                <Route key={`en-${p.enSlug}`} path={`/${p.enSlug}`} element={<CykelSeoPage />} />
+              ))}
+
 
               {/* City landing pages — skip Linköping (owned by CYKEL_SEO_PAGES 'cykelverkstad-linkoping') */}
               {CYKEL_CITIES
