@@ -1828,14 +1828,23 @@ export type Database = {
           address: string | null
           approved: boolean
           areas_served: string[] | null
+          booking_url: string | null
           city: string
           company_name: string
           created_at: string
+          description: string | null
           dpa_accepted_at: string | null
           email: string
+          facebook_url: string | null
+          founded_year: number | null
           free_leads_remaining: number
           id: string
+          instagram_url: string | null
+          logo_url: string | null
+          opening_hours: string | null
+          org_number: string | null
           phone: string | null
+          price_info: string | null
           rejected_reason: string | null
           reviewed_at: string | null
           services: string[] | null
@@ -1852,14 +1861,23 @@ export type Database = {
           address?: string | null
           approved?: boolean
           areas_served?: string[] | null
+          booking_url?: string | null
           city?: string
           company_name: string
           created_at?: string
+          description?: string | null
           dpa_accepted_at?: string | null
           email: string
+          facebook_url?: string | null
+          founded_year?: number | null
           free_leads_remaining?: number
           id?: string
+          instagram_url?: string | null
+          logo_url?: string | null
+          opening_hours?: string | null
+          org_number?: string | null
           phone?: string | null
+          price_info?: string | null
           rejected_reason?: string | null
           reviewed_at?: string | null
           services?: string[] | null
@@ -1876,14 +1894,23 @@ export type Database = {
           address?: string | null
           approved?: boolean
           areas_served?: string[] | null
+          booking_url?: string | null
           city?: string
           company_name?: string
           created_at?: string
+          description?: string | null
           dpa_accepted_at?: string | null
           email?: string
+          facebook_url?: string | null
+          founded_year?: number | null
           free_leads_remaining?: number
           id?: string
+          instagram_url?: string | null
+          logo_url?: string | null
+          opening_hours?: string | null
+          org_number?: string | null
           phone?: string | null
+          price_info?: string | null
           rejected_reason?: string | null
           reviewed_at?: string | null
           services?: string[] | null
