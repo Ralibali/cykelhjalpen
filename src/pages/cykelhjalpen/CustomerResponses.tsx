@@ -21,14 +21,17 @@ interface WorkshopResponse {
   estimated_time: string | null
   can_pickup: boolean
   status: string
+  /** Backend sätter true först när vinsten är reglerad – då finns kontaktvägar. */
+  contact_unlocked?: boolean
   workshop: {
     id?: string
     company_name: string
     phone: string | null
-    email: string
+    email: string | null
     website: string | null
   } | null
 }
+
 
 interface RequestData {
   id: string
