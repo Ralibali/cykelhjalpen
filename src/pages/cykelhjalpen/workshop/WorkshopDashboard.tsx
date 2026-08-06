@@ -214,13 +214,19 @@ const WorkshopDashboard = () => {
                 <div key={row.id} className="rounded-2xl border bg-muted/30 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium">{priceLabel(row)}</p>
+                      <p className="text-sm font-medium flex flex-wrap items-center gap-2">
+                        {priceLabel(row)}
+                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${row.paid ? 'bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))]' : 'bg-amber-100 text-amber-800'}`}>
+                          {row.paid ? t('Aktiverat') : t('Väntar på betalning/aktivering')}
+                        </span>
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(row.created_at).toLocaleDateString('sv-SE')}
                         {row.estimated_time ? ` · ${row.estimated_time}` : ''}
                         {row.paid && row.used_free_lead ? ` · ${t('reglerad med gratis-lead')}` : ''}
                       </p>
                     </div>
+
                     {row.paid ? (
                       contact ? null : (
                         <Button size="sm" variant="outline" onClick={() => revealContact(row.id)} disabled={revealingId === row.id}>
