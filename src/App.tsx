@@ -176,9 +176,11 @@ const HreflangTags = () => {
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    // Run after Helmet has flushed its own head tags so de-duplication sticks.
-    const timer = window.setTimeout(() => {
+    // Helmet flushes its head tags asynchronously, so run a few passes: the last
+    // one wins and removes whatever duplicate Helmet re-added in between.
+    const apply = () => {
     const origin = window.location.origin;
+
     const routerPath = location.pathname || '/';
 
     // Swedish path is canonical; English pages use their own translated slug.
