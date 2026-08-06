@@ -34,6 +34,8 @@ export interface StaticSeoRoute {
   lang?: 'sv' | 'en'
   /** Path of the same page in the other language (used for hreflang alternates). */
   altPath?: string
+  /** Legacy/duplicate URL: canonical points at this live path instead of itself. */
+  canonicalPath?: string
 }
 
 const today = () => new Date().toISOString().split('T')[0]
@@ -449,15 +451,19 @@ const alternateLinks = (host: SiteHost, route: StaticSeoRoute) => {
   ]
 }
 
+const robotsContent = (route: StaticSeoRoute) => route.noindex
+  ? (route.canonicalPath ? 'noindex, follow' : 'noindex, nofollow')
+  : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+
 const head = (host: SiteHost, route: StaticSeoRoute) => {
   const image = imageFor(host, route.ogImage)
-  const url = absFor(host, route.path)
+  const url = absFor(host, route.canonicalPath || route.path)
   const isEnglish = route.lang === 'en'
   return [
     ...alternateLinks(host, route),
     `<title>${esc(route.title)}</title>`,
     `<meta name="description" content="${esc(route.description)}" />`,
-    `<meta name="robots" content="${route.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}" />`,
+    `<meta name="robots" content="${robotsContent(route)}" />`,
     `<link rel="canonical" href="${url}" />`,
     '<meta property="og:type" content="website" />',
     `<meta property="og:locale" content="${isEnglish ? 'en_US' : 'sv_SE'}" />`,
@@ -513,7 +519,7 @@ export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: 
   let html = template
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(route.title)}</title>`)
     .replace(/<meta name="description" content="[^"]*"\s*\/?>/, `<meta name="description" content="${esc(route.description)}" />`)
-    .replace(/<meta name="robots" content="[^"]*"\s*\/?>/, `<meta name="robots" content="${route.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}" />`)
+    .replace(/<meta name="robots" content="[^"]*"\s*\/?>/, `<meta name="robots" content="${robotsContent(route)}" />`)
     .replace(/<link rel="canonical" href="[^"]*"\s*\/?>\s*/g, '')
 
   html = html
