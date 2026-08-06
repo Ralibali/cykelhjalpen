@@ -72,7 +72,7 @@ const WorkshopBilling = () => {
               {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt först när kunden väljer dig som vinnare.', { price: LEAD_FEE_KR })}
             </p>
           </div>
-          <BuyLeadsButton quantity={10} />
+          <BuyLeadsPicker defaultQuantity={5} />
         </div>
       </div>
 
