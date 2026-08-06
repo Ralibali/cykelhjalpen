@@ -17,6 +17,8 @@ import {
   DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import { useT } from '@/lib/i18n'
+import InboundWebhookCard from '@/components/admin/InboundWebhookCard'
+
 
 // Tables not present in generated types yet (inbound_emails / sent_emails).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -199,6 +201,8 @@ const AdminInbox = () => {
 
   const senderLabel = (m: InboundEmail) => m.from_name || m.from_email
 
+
+
   return (
     <AdminLayout>
       <div className="max-w-6xl mx-auto">
@@ -218,6 +222,10 @@ const AdminInbox = () => {
             </Button>
           </div>
         </div>
+
+        <InboundWebhookCard />
+
+
 
         <div className="flex gap-2 mb-4">
           <Button variant={tab === 'inbox' ? 'default' : 'outline'} size="sm" onClick={() => setTab('inbox')}>
