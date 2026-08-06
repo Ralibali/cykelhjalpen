@@ -133,7 +133,17 @@ const WorkshopRequests = () => {
     setSubmitting(null)
 
     if (error || result?.error) {
-      const msg = String(result?.error || error?.message || '')
+      // supabase-js kastar ett generiskt fel vid non-2xx – läs ut serverns text.
+      let serverMessage = ''
+      const ctx = (error as { context?: Response } | null)?.context
+      if (ctx && typeof ctx.json === 'function') {
+        try {
+          const body = await ctx.clone().json()
+          serverMessage = String(body?.error ?? '')
+        } catch { /* ignorera parsefel */ }
+      }
+      const msg = String(result?.error || serverMessage || error?.message || '')
+
       const isFull = /bike_request_full|ärendet är fullt/i.test(msg)
       const isCompleted = /valt en (annan )?verkstad/i.test(msg)
 
