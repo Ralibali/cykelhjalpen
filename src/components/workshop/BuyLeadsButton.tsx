@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Loader2, ShoppingCart } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { useT } from '@/lib/i18n'
 
 interface BuyLeadsButtonProps {
   quantity: number
@@ -10,6 +11,7 @@ interface BuyLeadsButtonProps {
 }
 
 export function BuyLeadsButton({ quantity, onSuccess, variant = 'default' }: BuyLeadsButtonProps) {
+  const t = useT()
   const [loading, setLoading] = useState(false)
 
   const handlePurchase = async () => {
@@ -17,7 +19,7 @@ export function BuyLeadsButton({ quantity, onSuccess, variant = 'default' }: Buy
     try {
       const { data: session } = await supabase.auth.getSession()
       if (!session.session?.access_token) {
-        toast.error('Du måste logga in först')
+        toast.error(t('Du måste logga in först'))
         return
       }
 
@@ -31,13 +33,13 @@ export function BuyLeadsButton({ quantity, onSuccess, variant = 'default' }: Buy
       })
 
       const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Kunde inte skapa betalning')
+      if (!response.ok) throw new Error(data.error || t('Kunde inte skapa betalning'))
 
       if (data.url) {
         window.location.href = data.url
       }
     } catch (error: any) {
-      toast.error(error.message || 'Något gick fel')
+      toast.error(error.message || t('Något gick fel'))
     } finally {
       setLoading(false)
     }
@@ -56,7 +58,7 @@ export function BuyLeadsButton({ quantity, onSuccess, variant = 'default' }: Buy
       className={`${baseClasses} ${variantClasses} disabled:opacity-50`}
     >
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-      {quantity} leads – {totalPrice} kr
+      {t('{quantity} leads – {price} kr', { quantity, price: totalPrice })}
     </button>
   )
 }

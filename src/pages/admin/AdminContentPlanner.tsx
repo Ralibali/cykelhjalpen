@@ -23,6 +23,7 @@ import { CITIES, SERVICE_CATEGORIES } from "@/lib/seoCities";
 import { cn } from "@/lib/utils";
 import { QueueDragList } from "@/components/admin/QueueDragList";
 import { PublishCalendar } from "@/components/admin/PublishCalendar";
+import { useT } from "@/lib/i18n";
 
 // Inline types until supabase types regenerate
 interface QueueRow {
@@ -68,9 +69,9 @@ const FOCUS_OPTIONS = [
   { value: "e-handel", label: "E-handel" },
   { value: "startup", label: "Startups" },
   { value: "nybörjare", label: "Nybörjare" },
-];
+] as const;
 
-const STATUS_LABEL: Record<string, string> = {
+const STATUS_LABEL_SV: Record<string, string> = {
   queued: "I kö",
   generating: "Genererar…",
   ready_for_review: "Klar för granskning",
@@ -92,11 +93,12 @@ const DIFFICULTY_STYLE: Record<string, string> = {
   "hög": "bg-rose-500/15 text-rose-700 dark:text-rose-400",
 };
 
-const TYPE_LABEL: Record<string, string> = {
+const TYPE_LABEL_SV: Record<string, string> = {
   guide: "Guide", news: "Nyhet", comparison: "Jämförelse", "case-study": "Case",
 };
 
 const AdminContentPlanner = () => {
+  const t = useT();
   const queryClient = useQueryClient();
   const [count, setCount] = useState(10);
   const [focus, setFocus] = useState("all");
@@ -152,59 +154,59 @@ const AdminContentPlanner = () => {
       if (error) throw error;
       const topics = (data?.topics || []) as SuggestedTopic[];
       if (topics.length === 0) {
-        toast({ title: "Inga topics returnerades", description: "Försök igen eller byt fokus.", variant: "destructive" });
+        toast({ title: t("Inga topics returnerades"), description: t("Försök igen eller byt fokus."), variant: "destructive" });
       } else {
         setSuggested(topics);
-        toast({ title: `${topics.length} topics genererade` });
+        toast({ title: t("{n} topics genererade", { n: topics.length }) });
       }
     } catch (e: any) {
-      toast({ title: "Kunde inte generera topics", description: e?.message || "Okänt fel", variant: "destructive" });
+      toast({ title: t("Kunde inte generera topics"), description: e?.message || t("Okänt fel"), variant: "destructive" });
     } finally {
       setSuggesting(false);
     }
   };
 
-  const saveToQueue = async (t: SuggestedTopic, priority = 0) => {
+  const saveToQueue = async (topic: SuggestedTopic, priority = 0) => {
     const { error } = await (supabase as any).from("article_queue").insert({
-      topic: t.topic,
-      target_keyword: t.targetKeyword,
-      category: t.category,
-      city: t.city || null,
-      article_type: t.articleType,
-      search_intent: t.searchIntent,
-      estimated_difficulty: t.estimatedDifficulty,
-      why_this_topic: t.whyThisTopic,
-      suggested_length: t.suggestedLength,
+      topic: topic.topic,
+      target_keyword: topic.targetKeyword,
+      category: topic.category,
+      city: topic.city || null,
+      article_type: topic.articleType,
+      search_intent: topic.searchIntent,
+      estimated_difficulty: topic.estimatedDifficulty,
+      why_this_topic: topic.whyThisTopic,
+      suggested_length: topic.suggestedLength,
       priority,
     });
     if (error) {
-      toast({ title: "Kunde inte spara", description: error.message, variant: "destructive" });
+      toast({ title: t("Kunde inte spara"), description: error.message, variant: "destructive" });
       return false;
     }
     return true;
   };
 
-  const handleSaveOne = async (t: SuggestedTopic, idx: number) => {
-    const ok = await saveToQueue(t);
+  const handleSaveOne = async (topic: SuggestedTopic, idx: number) => {
+    const ok = await saveToQueue(topic);
     if (ok) {
       setSuggested((prev) => prev.filter((_, i) => i !== idx));
       queryClient.invalidateQueries({ queryKey: ["article-queue"] });
-      toast({ title: "Sparad i kön" });
+      toast({ title: t("Sparad i kön") });
     }
   };
 
   const handleSkip = (idx: number) => setSuggested((prev) => prev.filter((_, i) => i !== idx));
 
-  const handleGenerateNow = async (t: SuggestedTopic, idx: number) => {
+  const handleGenerateNow = async (topic: SuggestedTopic, idx: number) => {
     const tmpId = `tmp-${idx}`;
     setGeneratingIds((s) => new Set(s).add(tmpId));
     try {
       // Save to queue with high priority and process immediately
-      const ok = await saveToQueue(t, 100);
+      const ok = await saveToQueue(topic, 100);
       if (!ok) return;
       setSuggested((prev) => prev.filter((_, i) => i !== idx));
       queryClient.invalidateQueries({ queryKey: ["article-queue"] });
-      toast({ title: "Sparad – startar generering" });
+      toast({ title: t("Sparad – startar generering") });
       await runQueueProcessor();
     } finally {
       setGeneratingIds((s) => { const n = new Set(s); n.delete(tmpId); return n; });
@@ -216,20 +218,20 @@ const AdminContentPlanner = () => {
     try {
       const { data, error } = await supabase.functions.invoke("process-article-queue", { body: {} });
       if (error) throw error;
-      toast({ title: `Bearbetade ${data?.processed ?? 0} artiklar` });
+      toast({ title: t("Bearbetade {n} artiklar", { n: data?.processed ?? 0 }) });
       queryClient.invalidateQueries({ queryKey: ["article-queue"] });
       queryClient.invalidateQueries({ queryKey: ["all-article-slugs"] });
     } catch (e: any) {
-      toast({ title: "Fel vid bearbetning", description: e?.message, variant: "destructive" });
+      toast({ title: t("Fel vid bearbetning"), description: e?.message, variant: "destructive" });
     } finally {
       setProcessing(false);
     }
   };
 
   const filteredSuggestions = useMemo(() => {
-    return suggested.filter((t) => {
-      if (filterDifficulty !== "all" && t.estimatedDifficulty !== filterDifficulty) return false;
-      if (filterType !== "all" && t.articleType !== filterType) return false;
+    return suggested.filter((topic) => {
+      if (filterDifficulty !== "all" && topic.estimatedDifficulty !== filterDifficulty) return false;
+      if (filterType !== "all" && topic.articleType !== filterType) return false;
       return true;
     });
   }, [suggested, filterDifficulty, filterType]);
@@ -260,48 +262,48 @@ const AdminContentPlanner = () => {
     <AdminLayout>
       <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
         <div>
-          <h1 className="font-display text-2xl font-bold">Innehållsplanering</h1>
-          <p className="text-sm text-muted-foreground mt-1">Planera och bulk-generera artiklar</p>
+          <h1 className="font-display text-2xl font-bold">{t("Innehållsplanering")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("Planera och bulk-generera artiklar")}</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={runQueueProcessor} disabled={processing} variant="outline">
             {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
-            Bearbeta kö nu
+            {t("Bearbeta kö nu")}
           </Button>
           <Button onClick={() => setAutopilotOpen(true)}>
-            <Rocket className="h-4 w-4 mr-2" /> Starta autopilot
+            <Rocket className="h-4 w-4 mr-2" /> {t("Starta autopilot")}
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="suggest">
         <TabsList>
-          <TabsTrigger value="suggest">Föreslå topics</TabsTrigger>
-          <TabsTrigger value="queue">Artikelkö ({queue.filter((q) => q.status !== "published").length})</TabsTrigger>
-          <TabsTrigger value="schedule">Publiceringsschema</TabsTrigger>
+          <TabsTrigger value="suggest">{t("Föreslå topics")}</TabsTrigger>
+          <TabsTrigger value="queue">{t("Artikelkö ({n})", { n: queue.filter((q) => q.status !== "published").length })}</TabsTrigger>
+          <TabsTrigger value="schedule">{t("Publiceringsschema")}</TabsTrigger>
         </TabsList>
 
         {/* TAB 1: SUGGEST */}
         <TabsContent value="suggest" className="space-y-6">
           <Card>
-            <CardHeader><CardTitle className="text-base">Generera topic-förslag</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t("Generera topic-förslag")}</CardTitle></CardHeader>
             <CardContent className="space-y-5">
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Label>Antal topics: {count}</Label>
+                  <Label>{t("Antal topics: {n}", { n: count })}</Label>
                   <Slider value={[count]} onValueChange={(v) => setCount(v[0])} min={5} max={20} step={1} className="mt-3" />
                 </div>
                 <div>
-                  <Label>Fokus</Label>
+                  <Label>{t("Fokus")}</Label>
                   <Select value={focus} onValueChange={setFocus}>
                     <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                    <SelectContent>{FOCUS_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                    <SelectContent>{FOCUS_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{t(o.label)}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
               <Button onClick={handleSuggest} disabled={suggesting} size="lg" className="w-full md:w-auto">
                 {suggesting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Generera förslag
+                {t("Generera förslag")}
               </Button>
             </CardContent>
           </Card>
@@ -309,56 +311,56 @@ const AdminContentPlanner = () => {
           {suggested.length > 0 && (
             <>
               <div className="flex flex-wrap items-center gap-3 text-sm">
-                <span className="text-muted-foreground">Filter:</span>
+                <span className="text-muted-foreground">{t("Filter:")}</span>
                 <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
-                  <SelectTrigger className="w-40 h-8"><SelectValue placeholder="Svårighet" /></SelectTrigger>
+                  <SelectTrigger className="w-40 h-8"><SelectValue placeholder={t("Svårighet")} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alla svårigheter</SelectItem>
-                    <SelectItem value="låg">Låg</SelectItem>
-                    <SelectItem value="medel">Medel</SelectItem>
-                    <SelectItem value="hög">Hög</SelectItem>
+                    <SelectItem value="all">{t("Alla svårigheter")}</SelectItem>
+                    <SelectItem value="låg">{t("Låg")}</SelectItem>
+                    <SelectItem value="medel">{t("Medel")}</SelectItem>
+                    <SelectItem value="hög">{t("Hög")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-40 h-8"><SelectValue placeholder="Typ" /></SelectTrigger>
+                  <SelectTrigger className="w-40 h-8"><SelectValue placeholder={t("Typ")} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alla typer</SelectItem>
-                    <SelectItem value="guide">Guide</SelectItem>
-                    <SelectItem value="news">Nyhet</SelectItem>
-                    <SelectItem value="comparison">Jämförelse</SelectItem>
-                    <SelectItem value="case-study">Case</SelectItem>
+                    <SelectItem value="all">{t("Alla typer")}</SelectItem>
+                    <SelectItem value="guide">{t("Guide")}</SelectItem>
+                    <SelectItem value="news">{t("Nyhet")}</SelectItem>
+                    <SelectItem value="comparison">{t("Jämförelse")}</SelectItem>
+                    <SelectItem value="case-study">{t("Case")}</SelectItem>
                   </SelectContent>
                 </Select>
-                <span className="text-muted-foreground ml-auto">{filteredSuggestions.length} av {suggested.length}</span>
+                <span className="text-muted-foreground ml-auto">{t("{shown} av {total}", { shown: filteredSuggestions.length, total: suggested.length })}</span>
               </div>
 
               <div className="grid lg:grid-cols-2 gap-4">
-                {filteredSuggestions.map((t, idx) => {
-                  const realIdx = suggested.indexOf(t);
+                {filteredSuggestions.map((topic, idx) => {
+                  const realIdx = suggested.indexOf(topic);
                   return (
-                    <Card key={`${t.topic}-${idx}`} className="overflow-hidden">
+                    <Card key={`${topic.topic}-${idx}`} className="overflow-hidden">
                       <CardContent className="p-5 space-y-3">
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="font-display font-semibold leading-snug">{t.topic}</h3>
+                          <h3 className="font-display font-semibold leading-snug">{topic.topic}</h3>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
-                          <Badge variant="secondary">{TYPE_LABEL[t.articleType]}</Badge>
-                          <Badge variant="outline">{t.searchIntent}</Badge>
-                          <Badge className={cn("border-0", DIFFICULTY_STYLE[t.estimatedDifficulty])}>{t.estimatedDifficulty}</Badge>
-                          <Badge variant="outline">{t.category}</Badge>
-                          {t.city && <Badge variant="outline">{t.city}</Badge>}
+                          <Badge variant="secondary">{t(TYPE_LABEL_SV[topic.articleType])}</Badge>
+                          <Badge variant="outline">{topic.searchIntent}</Badge>
+                          <Badge className={cn("border-0", DIFFICULTY_STYLE[topic.estimatedDifficulty])}>{topic.estimatedDifficulty}</Badge>
+                          <Badge variant="outline">{topic.category}</Badge>
+                          {topic.city && <Badge variant="outline">{topic.city}</Badge>}
                         </div>
-                        <code className="block text-xs bg-muted px-2 py-1 rounded font-mono text-muted-foreground">{t.targetKeyword}</code>
-                        {t.whyThisTopic && <p className="text-sm text-muted-foreground leading-relaxed">{t.whyThisTopic}</p>}
+                        <code className="block text-xs bg-muted px-2 py-1 rounded font-mono text-muted-foreground">{topic.targetKeyword}</code>
+                        {topic.whyThisTopic && <p className="text-sm text-muted-foreground leading-relaxed">{topic.whyThisTopic}</p>}
                         <div className="flex flex-wrap gap-2 pt-2">
-                          <Button size="sm" onClick={() => handleGenerateNow(t, realIdx)}>
-                            <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Generera nu
+                          <Button size="sm" onClick={() => handleGenerateNow(topic, realIdx)}>
+                            <Sparkles className="h-3.5 w-3.5 mr-1.5" /> {t("Generera nu")}
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleSaveOne(t, realIdx)}>
-                            <Plus className="h-3.5 w-3.5 mr-1.5" /> Spara till kö
+                          <Button size="sm" variant="outline" onClick={() => handleSaveOne(topic, realIdx)}>
+                            <Plus className="h-3.5 w-3.5 mr-1.5" /> {t("Spara till kö")}
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => handleSkip(realIdx)}>
-                            <SkipForward className="h-3.5 w-3.5 mr-1.5" /> Hoppa över
+                            <SkipForward className="h-3.5 w-3.5 mr-1.5" /> {t("Hoppa över")}
                           </Button>
                         </div>
                       </CardContent>
@@ -374,23 +376,25 @@ const AdminContentPlanner = () => {
         <TabsContent value="queue" className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="text-sm text-muted-foreground">
-              {queue.filter((q) => q.status === "queued").length} i kö ·{" "}
-              {queue.filter((q) => q.status === "ready_for_review").length} klara för granskning
+              {t("{n} i kö · {m} klara för granskning", {
+                n: queue.filter((q) => q.status === "queued").length,
+                m: queue.filter((q) => q.status === "ready_for_review").length,
+              })}
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={exportQueue}><Download className="h-4 w-4 mr-2" />Exportera CSV</Button>
+              <Button size="sm" variant="outline" onClick={exportQueue}><Download className="h-4 w-4 mr-2" />{t("Exportera CSV")}</Button>
               <Button size="sm" onClick={runQueueProcessor} disabled={processing}>
                 {processing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
-                Generera alla queued
+                {t("Generera alla queued")}
               </Button>
             </div>
           </div>
 
           {queue.length === 0 ? (
-            <Card><CardContent className="p-12 text-center text-muted-foreground">Kön är tom. Generera förslag och spara dem hit.</CardContent></Card>
+            <Card><CardContent className="p-12 text-center text-muted-foreground">{t("Kön är tom. Generera förslag och spara dem hit.")}</CardContent></Card>
           ) : (
             <>
-              <p className="text-xs text-muted-foreground">Dra och släpp för att ändra prioritet (högst överst körs först).</p>
+              <p className="text-xs text-muted-foreground">{t("Dra och släpp för att ändra prioritet (högst överst körs först).")}</p>
               <QueueDragList
                 rows={queue as any}
                 onChanged={() => queryClient.invalidateQueries({ queryKey: ["article-queue"] })}
@@ -402,10 +406,10 @@ const AdminContentPlanner = () => {
         {/* TAB 3: SCHEDULE */}
         <TabsContent value="schedule" className="space-y-6">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatBox label="Totalt publicerade" value={coverage.total} />
-            <StatBox label="Klara för granskning" value={queue.filter((q) => q.status === "ready_for_review").length} />
-            <StatBox label="I kö" value={queue.filter((q) => q.status === "queued").length} />
-            <StatBox label="Schemalagda" value={queue.filter((q) => q.publish_at).length} />
+            <StatBox label={t("Totalt publicerade")} value={coverage.total} />
+            <StatBox label={t("Klara för granskning")} value={queue.filter((q) => q.status === "ready_for_review").length} />
+            <StatBox label={t("I kö")} value={queue.filter((q) => q.status === "queued").length} />
+            <StatBox label={t("Schemalagda")} value={queue.filter((q) => q.publish_at).length} />
           </div>
 
           <PublishCalendar
@@ -424,7 +428,7 @@ const AdminContentPlanner = () => {
           />
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Täckning per kategori</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t("Täckning per kategori")}</CardTitle></CardHeader>
             <CardContent className="grid sm:grid-cols-2 gap-2 text-sm">
               {SERVICE_CATEGORIES.map((c) => {
                 const n = coverage.byCategory[c.name] || 0;
@@ -432,17 +436,17 @@ const AdminContentPlanner = () => {
                 return (
                   <div key={c.slug} className="flex items-center justify-between p-2 rounded-md bg-muted/40">
                     <span>{c.name}</span>
-                    <span className={cn("text-xs font-medium", weak ? "text-destructive" : "text-primary")}>{n} artikl{n === 1 ? "el" : "ar"}</span>
+                    <span className={cn("text-xs font-medium", weak ? "text-destructive" : "text-primary")}>{t("{n} artiklar", { n })}</span>
                   </div>
                 );
               })}
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-base">Städer utan artiklar ({coverage.weakCities.length}/{CITIES.length})</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t("Städer utan artiklar ({n}/{total})", { n: coverage.weakCities.length, total: CITIES.length })}</CardTitle></CardHeader>
             <CardContent>
               {coverage.weakCities.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Alla städer har minst en artikel.</p>
+                <p className="text-sm text-muted-foreground">{t("Alla städer har minst en artikel.")}</p>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {coverage.weakCities.map((c) => <Badge key={c} variant="outline">{c}</Badge>)}
@@ -483,6 +487,7 @@ const AutopilotDialog = ({
   weakCategories: string[];
   onComplete: () => void;
 }) => {
+  const t = useT();
   const [target, setTarget] = useState(25);
   const [autopilotFocus, setAutopilotFocus] = useState("all");
   const [running, setRunning] = useState(false);
@@ -510,30 +515,30 @@ const AutopilotDialog = ({
         const topics = (data?.topics || []) as SuggestedTopic[];
         if (topics.length === 0) break;
 
-        const rows = topics.map((t) => ({
-          topic: t.topic,
-          target_keyword: t.targetKeyword,
-          category: t.category,
-          city: t.city || null,
-          article_type: t.articleType,
-          search_intent: t.searchIntent,
-          estimated_difficulty: t.estimatedDifficulty,
-          why_this_topic: t.whyThisTopic,
-          suggested_length: t.suggestedLength,
+        const rows = topics.map((topic) => ({
+          topic: topic.topic,
+          target_keyword: topic.targetKeyword,
+          category: topic.category,
+          city: topic.city || null,
+          article_type: topic.articleType,
+          search_intent: topic.searchIntent,
+          estimated_difficulty: topic.estimatedDifficulty,
+          why_this_topic: topic.whyThisTopic,
+          suggested_length: topic.suggestedLength,
         }));
         const { error: insertErr } = await (supabase as any).from("article_queue").insert(rows);
         if (insertErr) throw insertErr;
         totalAdded += topics.length;
-        topics.forEach((t) => usedSlugs.push(t.targetKeyword.replace(/\s+/g, "-").toLowerCase()));
+        topics.forEach((topic) => usedSlugs.push(topic.targetKeyword.replace(/\s+/g, "-").toLowerCase()));
       }
 
       toast({
-        title: `Autopilot startad`,
-        description: `${totalAdded} topics i kön. Klicka "Bearbeta kö nu" eller vänta på cron-jobbet.`,
+        title: t("Autopilot startad"),
+        description: t('{n} topics i kön. Klicka "Bearbeta kö nu" eller vänta på cron-jobbet.', { n: totalAdded }),
       });
       onComplete();
     } catch (e: any) {
-      toast({ title: "Autopilot misslyckades", description: e?.message, variant: "destructive" });
+      toast({ title: t("Autopilot misslyckades"), description: e?.message, variant: "destructive" });
     } finally {
       setRunning(false);
     }
@@ -543,33 +548,33 @@ const AutopilotDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Starta autopilot</DialogTitle>
+          <DialogTitle>{t("Starta autopilot")}</DialogTitle>
           <DialogDescription>
-            Fyller kön med Gemini-föreslagna topics. Alla artiklar kräver manuell granskning före publicering.
+            {t("Fyller kön med Gemini-föreslagna topics. Alla artiklar kräver manuell granskning före publicering.")}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-5 py-2">
           <div>
-            <Label>Antal artiklar att planera: {target}</Label>
+            <Label>{t("Antal artiklar att planera: {n}", { n: target })}</Label>
             <Slider value={[target]} onValueChange={(v) => setTarget(v[0])} min={10} max={100} step={5} className="mt-3" />
-            <p className="text-xs text-muted-foreground mt-2">Max 100 per körning. Genereringen körs sedan i bakgrunden (5 åt gången, var 6:e timme).</p>
+            <p className="text-xs text-muted-foreground mt-2">{t("Max 100 per körning. Genereringen körs sedan i bakgrunden (5 åt gången, var 6:e timme).")}</p>
           </div>
           <div>
-            <Label>Fokus</Label>
+            <Label>{t("Fokus")}</Label>
             <Select value={autopilotFocus} onValueChange={setAutopilotFocus}>
               <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-              <SelectContent>{FOCUS_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+              <SelectContent>{FOCUS_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{t(o.label)}</SelectItem>)}</SelectContent>
             </Select>
             {autopilotFocus === "all" && weakCategories.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-2">Auto-väger mot svaga kategorier: {weakCategories.slice(0, 3).join(", ")}</p>
+              <p className="text-xs text-muted-foreground mt-2">{t("Auto-väger mot svaga kategorier: {list}", { list: weakCategories.slice(0, 3).join(", ") })}</p>
             )}
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("Avbryt")}</Button>
           <Button onClick={start} disabled={running}>
             {running ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Rocket className="h-4 w-4 mr-2" />}
-            Starta
+            {t("Starta")}
           </Button>
         </DialogFooter>
       </DialogContent>

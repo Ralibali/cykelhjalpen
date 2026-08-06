@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { Gift, Zap } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useT } from '@/lib/i18n'
 
 export function FreeLeadsBanner() {
+  const t = useT()
   const { user } = useAuth()
 
   const { data: workshop } = useQuery({
@@ -31,14 +33,16 @@ export function FreeLeadsBanner() {
           </div>
           <div>
             <h3 className="font-semibold text-green-900">
-              {workshop.free_leads_remaining} gratis {workshop.free_leads_remaining === 1 ? 'lead' : 'leads'} kvar
+              {workshop.free_leads_remaining === 1
+                ? t('{n} gratis lead kvar', { n: workshop.free_leads_remaining })
+                : t('{n} gratis leads kvar', { n: workshop.free_leads_remaining })}
             </h3>
             <p className="mt-0.5 text-sm text-green-700">
-              Svara på cykelförfrågningar helt utan kostnad. Efter dina gratis leads är priset 50 kr per offert.
+              {t('Svara på cykelförfrågningar helt utan kostnad. Efter dina gratis leads är priset 50 kr per offert.')}
             </p>
             {!workshop.approved && (
               <p className="mt-1.5 text-xs text-amber-700 bg-amber-100 inline-block px-2 py-0.5 rounded">
-                Väntar på godkännande från admin innan du kan börja svara
+                {t('Väntar på godkännande från admin innan du kan börja svara')}
               </p>
             )}
           </div>

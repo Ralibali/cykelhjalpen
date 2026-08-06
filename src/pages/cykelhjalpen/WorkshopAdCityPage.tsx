@@ -20,10 +20,12 @@ import {
 } from 'lucide-react'
 import verkstadHero1200 from '@/assets/cykel-verkstad-hero-1200.webp'
 import verkstadHero640 from '@/assets/cykel-verkstad-hero-640.webp'
+import { useT } from '@/lib/i18n'
 
 type Stats = { workshops: number; requests: number; responses: number }
 
 const WorkshopAdCityPage = () => {
+  const t = useT()
   const { citySlug } = useParams<{ citySlug: string }>()
   const city = useMemo(() => CYKEL_CITIES.find((c) => c.slug === citySlug), [citySlug])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -43,24 +45,24 @@ const WorkshopAdCityPage = () => {
   if (!city) return <Navigate to="/" replace />
 
   const registerHref = `/registrera/verkstad?stad=${encodeURIComponent(city.name)}&utm_source=google&utm_medium=cpc&utm_campaign=verkstad-${city.slug}`
-  const pageTitle = `Cykelverkstad i ${city.name}? Få nya kunder via Cykelhjälpen`
-  const pageDesc = `Anslut din verkstad i ${city.name} till Cykelhjälpen. Få kvalificerade leads direkt i inboxen – du betalar bara ${LEAD_FEE_KR} kr per lead du väljer att svara på. Ingen månadskostnad, ingen bindning.`
+  const pageTitle = t('Cykelverkstad i {city}? Få nya kunder via Cykelhjälpen', { city: city.name })
+  const pageDesc = t('Anslut din verkstad i {city} till Cykelhjälpen. Få kvalificerade leads direkt i inboxen – du betalar bara {fee} kr per lead du väljer att svara på. Ingen månadskostnad, ingen bindning.', { city: city.name, fee: LEAD_FEE_KR })
   const canonical = `https://cykelhjalpen.se/annons/verkstad/${city.slug}`
 
   const benefits = [
-    { icon: Sparkles, title: 'Två gratis leads', body: 'Du får testa två kundförfrågningar utan kostnad när du är godkänd. Fungerar det – fortsätt. Passar det inte – ingen bindning.' },
-    { icon: Wrench, title: `Kunder i ${city.name}`, body: `Vi visar dig bara förfrågningar från cyklister i ${city.name} och närområdet. Ingen tid slösas på fel jobb.` },
-    { icon: Clock, title: 'Svara på tio sekunder', body: 'Ring, mejla eller lämna en offert direkt från dashboarden. Kunden ser ditt svar med logotyp och recensioner.' },
-    { icon: TrendingUp, title: `Bara ${LEAD_FEE_KR} kr per lead`, body: 'Ingen månadskostnad. Ingen provision. Du betalar bara för de leads du faktiskt vill jobba med.' },
-    { icon: ShieldCheck, title: 'Kvalitetsgranskade förfrågningar', body: 'Varje förfrågan granskas av oss innan den skickas till dig – inga botar, inga skämt, bara riktiga cyklister som behöver hjälp.' },
-    { icon: BadgeCheck, title: 'Bli synlig i sökningar', body: `Godkända verkstäder listas på våra stadssidor som rankar högt för sökningar som "cykelreparation ${city.name}".` },
+    { icon: Sparkles, title: t('Två gratis leads'), body: t('Du får testa två kundförfrågningar utan kostnad när du är godkänd. Fungerar det – fortsätt. Passar det inte – ingen bindning.') },
+    { icon: Wrench, title: t('Kunder i {city}', { city: city.name }), body: t('Vi visar dig bara förfrågningar från cyklister i {city} och närområdet. Ingen tid slösas på fel jobb.', { city: city.name }) },
+    { icon: Clock, title: t('Svara på tio sekunder'), body: t('Ring, mejla eller lämna en offert direkt från dashboarden. Kunden ser ditt svar med logotyp och recensioner.') },
+    { icon: TrendingUp, title: t('Bara {fee} kr per lead', { fee: LEAD_FEE_KR }), body: t('Ingen månadskostnad. Ingen provision. Du betalar bara för de leads du faktiskt vill jobba med.') },
+    { icon: ShieldCheck, title: t('Kvalitetsgranskade förfrågningar'), body: t('Varje förfrågan granskas av oss innan den skickas till dig – inga botar, inga skämt, bara riktiga cyklister som behöver hjälp.') },
+    { icon: BadgeCheck, title: t('Bli synlig i sökningar'), body: t('Godkända verkstäder listas på våra stadssidor som rankar högt för sökningar som "cykelreparation {city}".', { city: city.name }) },
   ]
 
   const steps = [
-    { title: 'Anslut din verkstad', body: `Fyll i uppgifterna om din verkstad i ${city.name}. Vi granskar och godkänner inom ett dygn.` },
-    { title: 'Få förfrågningar', body: 'Vi mejlar (och SMS:ar om du vill) så fort en cyklist i ditt område behöver hjälp.' },
-    { title: 'Svara på det som passar', body: `Lämna offert med ett klick. De två första leadsen är gratis – därefter ${LEAD_FEE_KR} kr per lead du väljer att svara på.` },
-    { title: 'Ta jobbet', body: 'Kunden hör av sig direkt till dig – du fakturerar som vanligt, vi tar ingen provision.' },
+    { title: t('Anslut din verkstad'), body: t('Fyll i uppgifterna om din verkstad i {city}. Vi granskar och godkänner inom ett dygn.', { city: city.name }) },
+    { title: t('Få förfrågningar'), body: t('Vi mejlar (och SMS:ar om du vill) så fort en cyklist i ditt område behöver hjälp.') },
+    { title: t('Svara på det som passar'), body: t('Lämna offert med ett klick. De två första leadsen är gratis – därefter {fee} kr per lead du väljer att svara på.', { fee: LEAD_FEE_KR }) },
+    { title: t('Ta jobbet'), body: t('Kunden hör av sig direkt till dig – du fakturerar som vanligt, vi tar ingen provision.') },
   ]
 
   return (
@@ -80,7 +82,7 @@ const WorkshopAdCityPage = () => {
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="font-display text-xl tracking-tight">Cykelhjälpen</Link>
           <Button asChild size="sm" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-5">
-            <Link to={registerHref}>Anslut din verkstad</Link>
+            <Link to={registerHref}>{t('Anslut din verkstad')}</Link>
           </Button>
         </div>
       </header>
@@ -91,26 +93,26 @@ const WorkshopAdCityPage = () => {
           <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-10 items-center">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-1.5 text-sm font-semibold mb-6">
-                <MapPin className="w-4 h-4" /> För cykelverkstäder i {city.name}
+                <MapPin className="w-4 h-4" /> {t('För cykelverkstäder i {city}', { city: city.name })}
               </div>
               <h1 className="font-display text-4xl md:text-6xl tracking-tight mb-5">
-                Fyll kalendern med nya cykeljobb i {city.name}
+                {t('Fyll kalendern med nya cykeljobb i {city}', { city: city.name })}
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8">
-                Vi skickar kvalificerade kundförfrågningar direkt till din verkstad. Du väljer vilka du svarar på – betalar bara <strong className="text-foreground">{LEAD_FEE_KR} kr per lead</strong>. Ingen månadskostnad, ingen bindning.
+                {t('Vi skickar kvalificerade kundförfrågningar direkt till din verkstad. Du väljer vilka du svarar på – betalar bara')} <strong className="text-foreground">{t('{fee} kr per lead', { fee: LEAD_FEE_KR })}</strong>. {t('Ingen månadskostnad, ingen bindning.')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-14 px-8 text-base shadow-brand">
                   <Link to={registerHref}>
-                    Anslut din verkstad gratis <ArrowRight className="w-4 h-4 ml-2" />
+                    {t('Anslut din verkstad gratis')} <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="rounded-full h-14 px-7 border-2">
-                  <Link to="/for-cykelverkstader">Läs mer om upplägget</Link>
+                  <Link to="/for-cykelverkstader">{t('Läs mer om upplägget')}</Link>
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-5">
-                Två gratis leads när du blir godkänd · Godkännande sker inom ett dygn
+                {t('Två gratis leads när du blir godkänd · Godkännande sker inom ett dygn')}
               </p>
             </motion.div>
 
@@ -125,7 +127,7 @@ const WorkshopAdCityPage = () => {
                   src={verkstadHero1200}
                   srcSet={`${verkstadHero640} 640w, ${verkstadHero1200} 1200w`}
                   sizes="45vw"
-                  alt="Cykelmekaniker i sin verkstad"
+                  alt={t('Cykelmekaniker i sin verkstad')}
                   width={1200}
                   height={725}
                   className="w-full aspect-[4/3] object-cover"
@@ -134,7 +136,7 @@ const WorkshopAdCityPage = () => {
               </div>
               <div className="absolute -bottom-5 left-6 sticker rounded-2xl bg-card px-5 py-4">
                 <p className="font-display text-3xl leading-none">{LEAD_FEE_KR} kr</p>
-                <p className="text-xs text-muted-foreground mt-1">per lead du själv väljer</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('per lead du själv väljer')}</p>
               </div>
             </motion.div>
           </div>
@@ -143,9 +145,9 @@ const WorkshopAdCityPage = () => {
           {stats && stats.workshops >= 3 && stats.requests >= 10 && (
             <div className="grid grid-cols-3 gap-3 md:gap-5 max-w-2xl mt-14">
               {[
-                { label: 'Godkända verkstäder', value: stats.workshops },
-                { label: 'Förfrågningar hittills', value: stats.requests },
-                ...(openCount && openCount > 0 ? [{ label: `Öppna jobb i ${city.name}`, value: openCount }] : []),
+                { label: t('Godkända verkstäder'), value: stats.workshops },
+                { label: t('Förfrågningar hittills'), value: stats.requests },
+                ...(openCount && openCount > 0 ? [{ label: t('Öppna jobb i {city}', { city: city.name }), value: openCount }] : []),
               ].map((s) => (
                 <div key={s.label} className="sticker rounded-2xl bg-card p-4 md:p-5">
                   <div className="font-display text-2xl md:text-3xl text-primary">{s.value}</div>
@@ -161,10 +163,10 @@ const WorkshopAdCityPage = () => {
       <section className="py-16 md:py-20">
         <div className="max-w-6xl mx-auto px-4">
           <Reveal>
-            <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">Fördelar</p>
-            <h2 className="font-display text-3xl md:text-5xl text-center mb-3">Vad du vinner hos oss</h2>
+            <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">{t('Fördelar')}</p>
+            <h2 className="font-display text-3xl md:text-5xl text-center mb-3">{t('Vad du vinner hos oss')}</h2>
             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-              Cykelhjälpen är gjort för verkstäder som vill växa i {city.name} utan att lägga tid och pengar på marknadsföring.
+              {t('Cykelhjälpen är gjort för verkstäder som vill växa i {city} utan att lägga tid och pengar på marknadsföring.', { city: city.name })}
             </p>
           </Reveal>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -187,8 +189,8 @@ const WorkshopAdCityPage = () => {
       <section className="bg-muted/40 py-16 md:py-20">
         <div className="max-w-3xl mx-auto px-4">
           <Reveal>
-            <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">Kom igång</p>
-            <h2 className="font-display text-3xl md:text-5xl text-center mb-12">Så fungerar det</h2>
+            <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">{t('Kom igång')}</p>
+            <h2 className="font-display text-3xl md:text-5xl text-center mb-12">{t('Så fungerar det')}</h2>
           </Reveal>
           <ol className="relative space-y-6 before:absolute before:left-[27px] before:top-4 before:bottom-4 before:w-0.5 before:bg-border">
             {steps.map((step, index) => (
@@ -214,16 +216,16 @@ const WorkshopAdCityPage = () => {
           <Reveal>
             <div className="sticker rounded-[2rem] bg-[hsl(var(--brand-dark))] p-8 md:p-12 text-center text-background">
               <div className="inline-flex items-center gap-2 rounded-full bg-background/10 px-4 py-1.5 text-sm font-semibold mb-5">
-                <Sparkles className="w-4 h-4 text-[hsl(var(--brand-sun))]" /> Ingen bindning · Ingen månadskostnad
+                <Sparkles className="w-4 h-4 text-[hsl(var(--brand-sun))]" /> {t('Ingen bindning · Ingen månadskostnad')}
               </div>
               <div className="font-display text-6xl mb-2">{LEAD_FEE_KR} kr</div>
-              <div className="text-background/70 mb-8">per lead du väljer att svara på</div>
+              <div className="text-background/70 mb-8">{t('per lead du väljer att svara på')}</div>
               <ul className="text-left space-y-3 mb-9 max-w-sm mx-auto">
                 {[
-                  'Två gratis leads när du blir godkänd',
-                  `Bara kunder i ${city.name} och närområdet`,
-                  'Full kontroll: du väljer vilka du svarar på',
-                  'Ingen provision på jobbet du utför',
+                  t('Två gratis leads när du blir godkänd'),
+                  t('Bara kunder i {city} och närområdet', { city: city.name }),
+                  t('Full kontroll: du väljer vilka du svarar på'),
+                  t('Ingen provision på jobbet du utför'),
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm">
                     <CheckCircle2 className="w-5 h-5 text-[hsl(var(--brand-sun))] shrink-0 mt-0.5" /> {f}
@@ -232,7 +234,7 @@ const WorkshopAdCityPage = () => {
               </ul>
               <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-14 px-10 w-full sm:w-auto text-base">
                 <Link to={registerHref}>
-                  Anslut din verkstad i {city.name} <ArrowRight className="w-4 h-4 ml-2" />
+                  {t('Anslut din verkstad i {city}', { city: city.name })} <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
             </div>
@@ -245,9 +247,9 @@ const WorkshopAdCityPage = () => {
         <div className="max-w-5xl mx-auto px-4 py-6 text-xs text-muted-foreground flex flex-wrap gap-4 justify-between">
           <span>© {new Date().getFullYear()} Cykelhjälpen</span>
           <span>
-            <Link to="/integritetspolicy" className="hover:underline">Integritetspolicy</Link>
+            <Link to="/integritetspolicy" className="hover:underline">{t('Integritetspolicy')}</Link>
             {' · '}
-            <Link to="/villkor" className="hover:underline">Villkor</Link>
+            <Link to="/villkor" className="hover:underline">{t('Villkor')}</Link>
           </span>
         </div>
       </footer>

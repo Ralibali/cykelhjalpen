@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
-import { CYKEL_SEO_PAGES, type CykelSeoPage as CykelSeoPageType } from '@/lib/cykelSeoPages'
+import { buildCykelSeoPages, type CykelSeoPage as CykelSeoPageType } from '@/lib/cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { getCityImage } from '@/lib/cykelCityImages'
 import elsparkBanner1200 from '@/assets/cykel-elsparkcykel-1200.webp'
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Bike, CheckCircle2, MapPin } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { trackClick } from '@/hooks/usePageTracking'
+import { useT } from '@/lib/i18n'
 
 type PriceRow = {
   repair_category: string
@@ -32,6 +33,7 @@ const FALLBACK_PRICES: PriceRow[] = [
 ]
 
 const PriceStatsTable = ({ city }: { city: CykelCityName }) => {
+  const t = useT()
   const { data, isLoading } = useQuery({
     queryKey: ['cykel-price-stats'],
     queryFn: async () => {
@@ -49,15 +51,15 @@ const PriceStatsTable = ({ city }: { city: CykelCityName }) => {
 
   return (
     <section className="mt-10 mb-10" aria-labelledby="prisstatistik-rubrik">
-      <h2 id="prisstatistik-rubrik" className="font-display text-2xl font-bold mb-4">Prisstatistik per reparationstyp</h2>
+      <h2 id="prisstatistik-rubrik" className="font-display text-2xl font-bold mb-4">{t('Prisstatistik per reparationstyp')}</h2>
       <div className="overflow-x-auto sticker bg-card p-4 rounded-2xl">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left border-b">
-              <th className="py-2 pr-4">Reparationstyp</th>
-              <th className="py-2 pr-4">Prisspann</th>
-              <th className="py-2 pr-4">Typiskt pris</th>
-              <th className="py-2">Underlag</th>
+              <th className="py-2 pr-4">{t('Reparationstyp')}</th>
+              <th className="py-2 pr-4">{t('Prisspann')}</th>
+              <th className="py-2 pr-4">{t('Typiskt pris')}</th>
+              <th className="py-2">{t('Underlag')}</th>
             </tr>
           </thead>
           <tbody>
@@ -65,8 +67,8 @@ const PriceStatsTable = ({ city }: { city: CykelCityName }) => {
               <tr key={row.repair_category} className="border-b last:border-0">
                 <td className="py-2 pr-4 font-medium">{row.repair_category}</td>
                 <td className="py-2 pr-4">{row.price_low}–{row.price_high} kr</td>
-                <td className="py-2 pr-4">cirka {row.price_typical} kr</td>
-                <td className="py-2 text-muted-foreground">{isFallback ? 'riktpris' : `${row.sample_count} offerter`}</td>
+                <td className="py-2 pr-4">{t('cirka {n} kr', { n: row.price_typical })}</td>
+                <td className="py-2 text-muted-foreground">{isFallback ? t('riktpris') : t('{n} offerter', { n: row.sample_count })}</td>
               </tr>
             ))}
           </tbody>
@@ -74,14 +76,15 @@ const PriceStatsTable = ({ city }: { city: CykelCityName }) => {
       </div>
       <p className="text-sm text-muted-foreground mt-3">
         {isFallback
-          ? 'Riktpriser. Faktisk offertstatistik visas när underlaget är tillräckligt stort.'
-          : `Priserna bygger på offerter från godkända verkstäder i ${city} och uppdateras löpande.`}
+          ? t('Riktpriser. Faktisk offertstatistik visas när underlaget är tillräckligt stort.')
+          : t('Priserna bygger på offerter från godkända verkstäder i {city} och uppdateras löpande.', { city })}
       </p>
     </section>
   )
 }
 
-const RelatedPages = ({ currentSlug, city }: { currentSlug: string; city: CykelCityName }) => {
+const RelatedPages = ({ currentSlug, city, seoPages }: { currentSlug: string; city: CykelCityName; seoPages: CykelSeoPageType[] }) => {
+  const t = useT()
   const related = useMemo(() => {
     const priorityStems = [
       'cykelverkstad',
@@ -92,7 +95,7 @@ const RelatedPages = ({ currentSlug, city }: { currentSlug: string; city: CykelC
       'elsparkcykel-reparation',
       'vad-kostar-cykelreparation',
     ]
-    const sameCity = CYKEL_SEO_PAGES
+    const sameCity = seoPages
       .filter((p) => p.city === city && p.slug !== currentSlug)
       .sort((a, b) => {
         const stem = (s: string) => priorityStems.find((st) => s.startsWith(`${st}-`)) ?? ''
@@ -107,15 +110,15 @@ const RelatedPages = ({ currentSlug, city }: { currentSlug: string; city: CykelC
 
     const otherCityHubs = CYKEL_CITIES
       .filter((c) => c.name !== city)
-      .map((c) => CYKEL_SEO_PAGES.find((p) => p.city === c.name && p.slug === `cykelverkstad-${c.slug}`))
+      .map((c) => seoPages.find((p) => p.city === c.name && p.slug === `cykelverkstad-${c.slug}`))
       .filter((p): p is CykelSeoPageType => Boolean(p))
 
     return [...sameCity, ...otherCityHubs]
-  }, [currentSlug, city])
+  }, [currentSlug, city, seoPages])
 
   return (
     <section className="mt-12" aria-labelledby="relaterade-sidor">
-      <h2 id="relaterade-sidor" className="font-display text-2xl font-bold mb-4">Mer cykelhjälp i {city}</h2>
+      <h2 id="relaterade-sidor" className="font-display text-2xl font-bold mb-4">{t('Mer cykelhjälp i {city}', { city })}</h2>
       <div className="grid sm:grid-cols-2 gap-3">
         {related.map((page) => (
           <Link
@@ -135,8 +138,10 @@ const RelatedPages = ({ currentSlug, city }: { currentSlug: string; city: CykelC
 
 const CykelSeoPage = () => {
   const { pathname } = useLocation()
+  const t = useT()
+  const seoPages = useMemo(() => buildCykelSeoPages(t), [t])
   const slug = pathname.replace(/^\//, '').replace(/\/$/, '')
-  const page = CYKEL_SEO_PAGES.find((candidate) => candidate.slug === slug) as CykelSeoPageType | undefined
+  const page = seoPages.find((candidate) => candidate.slug === slug) as CykelSeoPageType | undefined
   if (!page) return <Navigate to="/" replace />
 
   const canonical = `https://cykelhjalpen.se/${page.slug}`
@@ -166,16 +171,16 @@ const CykelSeoPage = () => {
         '@type': 'Service',
         '@id': `${canonical}#service`,
         name: page.h1,
-        serviceType: 'Cykelreparation och cykelservice',
+        serviceType: t('Cykelreparation och cykelservice'),
         provider: { '@id': 'https://cykelhjalpen.se/#organization' },
         areaServed: { '@type': 'City', name: city },
-        offers: { '@type': 'Offer', price: '0', priceCurrency: 'SEK', description: 'Kostnadsfri offertförfrågan för cyklister' },
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'SEK', description: t('Kostnadsfri offertförfrågan för cyklister') },
       },
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Cykelhjälpen', item: 'https://cykelhjalpen.se/' },
-          { '@type': 'ListItem', position: 2, name: `Cykelverkstad ${city}`, item: `https://cykelhjalpen.se${cityLandingPath(city)}` },
+          { '@type': 'ListItem', position: 2, name: t('Cykelverkstad {city}', { city }), item: `https://cykelhjalpen.se${cityLandingPath(city)}` },
           { '@type': 'ListItem', position: 3, name: page.h1, item: canonical },
         ],
       },
@@ -191,7 +196,7 @@ const CykelSeoPage = () => {
   }
 
   const trackCta = (placement: string) => {
-    trackClick('seo_request_cta_clicked', 'Få prisförslag gratis', { page: page.slug, placement, city })
+    trackClick('seo_request_cta_clicked', t('Få prisförslag gratis'), { page: page.slug, placement, city })
     const gtag = (window as any).gtag
     if (typeof gtag === 'function') gtag('event', 'select_content', { content_type: 'seo_cta', item_id: page.slug, placement })
   }
@@ -223,7 +228,7 @@ const CykelSeoPage = () => {
       <CykelNavbar />
       <main className="container mx-auto px-4 py-12 max-w-3xl">
         <article>
-          <nav aria-label="Brödsmulor" className="text-sm text-muted-foreground mb-6">
+          <nav aria-label={t('Brödsmulor')} className="text-sm text-muted-foreground mb-6">
             <Link to="/" className="hover:underline">Cykelhjälpen</Link> <span aria-hidden="true">/</span> <span>{page.h1}</span>
           </nav>
 
@@ -250,18 +255,18 @@ const CykelSeoPage = () => {
 
           <div className="sticker rounded-3xl bg-brand-sun/30 p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="font-display text-xl">{page.variant === 'price-stats' ? 'Få pris för just din cykel' : 'Jämför lokala prisförslag'}</p>
-              <p className="text-sm">Gratis · Inget konto · Ingen köpplikt</p>
+              <p className="font-display text-xl">{page.variant === 'price-stats' ? t('Få pris för just din cykel') : t('Jämför lokala prisförslag')}</p>
+              <p className="text-sm">{t('Gratis · Inget konto · Ingen köpplikt')}</p>
             </div>
             <Button asChild className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-6">
-              <Link to={requestHref} onClick={() => trackCta('top')}>Få prisförslag gratis</Link>
+              <Link to={requestHref} onClick={() => trackCta('top')}>{t('Få prisförslag gratis')}</Link>
             </Button>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-2 mb-10 text-sm">
-            <div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> Kostnadsfritt</div>
-            <div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> Granskade verkstäder</div>
-            <div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> Du väljer själv</div>
+            <div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {t('Kostnadsfritt')}</div>
+            <div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {t('Granskade verkstäder')}</div>
+            <div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {t('Du väljer själv')}</div>
           </div>
 
           {page.sections.map((section) => (
@@ -274,7 +279,7 @@ const CykelSeoPage = () => {
           {page.variant === 'price-stats' && <PriceStatsTable city={city} />}
 
           <section className="mt-12">
-            <h2 className="font-display text-2xl font-bold mb-4">Vanliga frågor</h2>
+            <h2 className="font-display text-2xl font-bold mb-4">{t('Vanliga frågor')}</h2>
             <div className="space-y-3">
               {page.faq.map((item) => (
                 <details key={item.q} className="group rounded-2xl bg-card p-5 sticker">
@@ -285,13 +290,13 @@ const CykelSeoPage = () => {
             </div>
           </section>
 
-          <RelatedPages currentSlug={page.slug} city={city} />
+          <RelatedPages currentSlug={page.slug} city={city} seoPages={seoPages} />
 
           <div className="mt-12 sticker rounded-3xl bg-[hsl(var(--brand-dark))] p-8 text-center text-background">
-            <p className="font-display text-2xl mb-2">Beskriv problemet och jämför alternativen</p>
-            <p className="text-sm text-background/70 mb-6">Det tar omkring två minuter att skicka ett kostnadsfritt ärende.</p>
+            <p className="font-display text-2xl mb-2">{t('Beskriv problemet och jämför alternativen')}</p>
+            <p className="text-sm text-background/70 mb-6">{t('Det tar omkring två minuter att skicka ett kostnadsfritt ärende.')}</p>
             <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8">
-              <Link to={requestHref} onClick={() => trackCta('bottom')}>Skicka cykelärende gratis</Link>
+              <Link to={requestHref} onClick={() => trackCta('bottom')}>{t('Skicka cykelärende gratis')}</Link>
             </Button>
           </div>
         </article>

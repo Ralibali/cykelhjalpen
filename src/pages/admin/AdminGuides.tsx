@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { Plus, Pencil, Trash2, Eye, EyeOff, Wand2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n'
 
 interface Guide {
   id: string
@@ -27,6 +28,7 @@ const emptyGuide: Omit<Guide, 'id'> = {
 }
 
 const AdminGuides = () => {
+  const t = useT()
   const [guides, setGuides] = useState<Guide[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -57,22 +59,22 @@ const AdminGuides = () => {
 
     if (editing) {
       const { error } = await supabase.from('guides').update(payload).eq('id', editing.id)
-      if (error) { toast.error('Kunde inte uppdatera: ' + error.message); return }
-      toast.success('Guide uppdaterad')
+      if (error) { toast.error(t('Kunde inte uppdatera: {msg}', { msg: error.message })); return }
+      toast.success(t('Guide uppdaterad'))
     } else {
       const { error } = await supabase.from('guides').insert(payload)
-      if (error) { toast.error('Kunde inte skapa: ' + error.message); return }
-      toast.success('Guide skapad')
+      if (error) { toast.error(t('Kunde inte skapa: {msg}', { msg: error.message })); return }
+      toast.success(t('Guide skapad'))
     }
     setDialogOpen(false)
     fetchGuides()
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Radera denna guide?')) return
+    if (!confirm(t('Radera denna guide?'))) return
     const { error } = await supabase.from('guides').delete().eq('id', id)
-    if (error) { toast.error('Kunde inte radera'); return }
-    toast.success('Guide raderad')
+    if (error) { toast.error(t('Kunde inte radera')); return }
+    toast.success(t('Guide raderad'))
     fetchGuides()
   }
 
@@ -83,7 +85,7 @@ const AdminGuides = () => {
   }
 
   const handleGenerateArticle = async () => {
-    if (!aiTopic.trim()) { toast.error('Ange ett ämne'); return }
+    if (!aiTopic.trim()) { toast.error(t('Ange ett ämne')); return }
     setAiLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke('generate-article', {
@@ -105,9 +107,9 @@ const AdminGuides = () => {
       setAiOpen(false)
       setDialogOpen(true)
       setEditing(null)
-      toast.success('Artikelutkast genererat! Granska och redigera innan publicering. ✨')
+      toast.success(t('Artikelutkast genererat! Granska och redigera innan publicering. ✨'))
     } catch (e: any) {
-      toast.error('Kunde inte generera artikel just nu.')
+      toast.error(t('Kunde inte generera artikel just nu.'))
       console.error(e)
     } finally {
       setAiLoading(false)
@@ -117,19 +119,19 @@ const AdminGuides = () => {
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl font-bold">Guider</h1>
+        <h1 className="font-display text-2xl font-bold">{t('Guider')}</h1>
         <div className="flex gap-2">
           <Button onClick={() => { setAiTopic(''); setAiKeywords(''); setAiCategory(''); setAiOpen(true) }} size="sm" variant="outline" className="gap-1.5">
-            <Wand2 className="h-4 w-4" />Generera med AI
+            <Wand2 className="h-4 w-4" />{t('Generera med AI')}
           </Button>
-          <Button onClick={openNew} size="sm"><Plus className="h-4 w-4 mr-1" />Ny guide</Button>
+          <Button onClick={openNew} size="sm"><Plus className="h-4 w-4 mr-1" />{t('Ny guide')}</Button>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground">Laddar...</p>
+        <p className="text-muted-foreground">{t('Laddar...')}</p>
       ) : guides.length === 0 ? (
-        <p className="text-muted-foreground">Inga guider ännu.</p>
+        <p className="text-muted-foreground">{t('Inga guider ännu.')}</p>
       ) : (
         <div className="space-y-2">
           {guides.map(g => (
@@ -139,10 +141,10 @@ const AdminGuides = () => {
                   <p className="font-medium text-sm truncate">{g.title}</p>
                   <span className={cn('text-[10px] font-semibold rounded-full px-2 py-0.5',
                     g.is_published ? 'bg-emerald-50 text-emerald-700' : 'bg-muted text-muted-foreground'
-                  )}>{g.is_published ? 'Publicerad' : 'Utkast'}</span>
+                  )}>{g.is_published ? t('Publicerad') : t('Utkast')}</span>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">{g.description}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">/{g.slug} · {g.category || 'Ingen kategori'} · {g.reading_time_minutes} min</p>
+                <p className="text-[10px] text-muted-foreground mt-1">/{g.slug} · {g.category || t('Ingen kategori')} · {g.reading_time_minutes} {t('min')}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => togglePublish(g)}>
@@ -166,39 +168,39 @@ const AdminGuides = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Wand2 className="h-5 w-5 text-primary" />
-              Generera artikel med AI
+              {t('Generera artikel med AI')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div>
-              <label className="text-sm font-medium">Ämne / rubrik *</label>
+              <label className="text-sm font-medium">{t('Ämne / rubrik *')}</label>
               <Input
                 value={aiTopic}
                 onChange={e => setAiTopic(e.target.value)}
-                placeholder="T.ex. Så väljer du rätt webbyrå 2025"
+                placeholder={t('T.ex. Så väljer du rätt webbyrå 2025')}
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Kategori (valfritt)</label>
+              <label className="text-sm font-medium">{t('Kategori (valfritt)')}</label>
               <Input
                 value={aiCategory}
                 onChange={e => setAiCategory(e.target.value)}
-                placeholder="T.ex. Webbutveckling, SEO, E-handel"
+                placeholder={t('T.ex. Webbutveckling, SEO, E-handel')}
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Nyckelord (valfritt)</label>
+              <label className="text-sm font-medium">{t('Nyckelord (valfritt)')}</label>
               <Input
                 value={aiKeywords}
                 onChange={e => setAiKeywords(e.target.value)}
-                placeholder="T.ex. webbyrå, offert, pris"
+                placeholder={t('T.ex. webbyrå, offert, pris')}
               />
             </div>
             <Button onClick={handleGenerateArticle} disabled={aiLoading || !aiTopic.trim()} className="w-full gap-2">
               {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-              {aiLoading ? 'Genererar artikel...' : 'Generera utkast'}
+              {aiLoading ? t('Genererar artikel...') : t('Generera utkast')}
             </Button>
-            <p className="text-xs text-muted-foreground text-center">Artikeln skapas som utkast – granska innan publicering.</p>
+            <p className="text-xs text-muted-foreground text-center">{t('Artikeln skapas som utkast – granska innan publicering.')}</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -207,38 +209,38 @@ const AdminGuides = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Redigera guide' : 'Ny guide'}</DialogTitle>
+            <DialogTitle>{editing ? t('Redigera guide') : t('Ny guide')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             <div>
-              <label className="text-sm font-medium">Titel</label>
+              <label className="text-sm font-medium">{t('Titel')}</label>
               <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value, slug: form.slug || slugify(e.target.value) })} />
             </div>
             <div>
-              <label className="text-sm font-medium">Slug</label>
+              <label className="text-sm font-medium">{t('Slug')}</label>
               <Input value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} />
             </div>
             <div>
-              <label className="text-sm font-medium">Beskrivning</label>
+              <label className="text-sm font-medium">{t('Beskrivning')}</label>
               <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} />
             </div>
             <div>
-              <label className="text-sm font-medium">Kategori</label>
+              <label className="text-sm font-medium">{t('Kategori')}</label>
               <Input value={form.category || ''} onChange={e => setForm({ ...form, category: e.target.value })} />
             </div>
             <div>
-              <label className="text-sm font-medium">Lästid (minuter)</label>
+              <label className="text-sm font-medium">{t('Lästid (minuter)')}</label>
               <Input type="number" value={form.reading_time_minutes || 5} onChange={e => setForm({ ...form, reading_time_minutes: parseInt(e.target.value) || 5 })} />
             </div>
             <div>
-              <label className="text-sm font-medium">Innehåll (Markdown)</label>
+              <label className="text-sm font-medium">{t('Innehåll (Markdown)')}</label>
               <Textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={12} className="font-mono text-sm" />
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.is_published ?? true} onCheckedChange={v => setForm({ ...form, is_published: v })} />
-              <span className="text-sm">Publicerad</span>
+              <span className="text-sm">{t('Publicerad')}</span>
             </div>
-            <Button onClick={handleSave} className="w-full">{editing ? 'Spara ändringar' : 'Skapa guide'}</Button>
+            <Button onClick={handleSave} className="w-full">{editing ? t('Spara ändringar') : t('Skapa guide')}</Button>
           </div>
         </DialogContent>
       </Dialog>

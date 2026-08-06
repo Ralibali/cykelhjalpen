@@ -4,6 +4,7 @@ import { AdminLayout } from './AdminDashboard'
 import { CreditCard, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n'
 
 interface StripeEvent {
   id: string
@@ -17,6 +18,7 @@ interface StripeEvent {
 }
 
 const AdminStripeLog = () => {
+  const t = useT()
   const [events, setEvents] = useState<StripeEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [supplierNames, setSupplierNames] = useState<Map<string, string>>(new Map())
@@ -32,7 +34,7 @@ const AdminStripeLog = () => {
         const { data: profiles } = await supabase.from('profiles').select('id, full_name, company_name').in('id', ids)
         if (profiles) {
           const map = new Map<string, string>()
-          profiles.forEach(p => map.set(p.id, p.company_name || p.full_name || 'Okänd'))
+          profiles.forEach(p => map.set(p.id, p.company_name || p.full_name || t('Okänd')))
           setSupplierNames(map)
         }
       }
@@ -43,10 +45,10 @@ const AdminStripeLog = () => {
   useEffect(() => { fetchEvents() }, [])
 
   const eventLabel = (type: string) => {
-    if (type.includes('completed')) return 'Betalning genomförd'
-    if (type.includes('created')) return 'Skapad'
-    if (type.includes('updated')) return 'Uppdaterad'
-    if (type.includes('deleted') || type.includes('canceled')) return 'Avbruten'
+    if (type.includes('completed')) return t('Betalning genomförd')
+    if (type.includes('created')) return t('Skapad')
+    if (type.includes('updated')) return t('Uppdaterad')
+    if (type.includes('deleted') || type.includes('canceled')) return t('Avbruten')
     return type
   }
 
@@ -59,16 +61,16 @@ const AdminStripeLog = () => {
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl font-bold">Stripe-händelser</h1>
+        <h1 className="font-display text-2xl font-bold">{t('Stripe-händelser')}</h1>
         <Button variant="outline" size="sm" onClick={fetchEvents} disabled={loading}>
-          <RefreshCw className={cn('h-4 w-4 mr-1', loading && 'animate-spin')} />Uppdatera
+          <RefreshCw className={cn('h-4 w-4 mr-1', loading && 'animate-spin')} />{t('Uppdatera')}
         </Button>
       </div>
 
       {loading && events.length === 0 ? (
-        <p className="text-muted-foreground">Laddar...</p>
+        <p className="text-muted-foreground">{t('Laddar...')}</p>
       ) : events.length === 0 ? (
-        <p className="text-muted-foreground">Inga Stripe-händelser ännu.</p>
+        <p className="text-muted-foreground">{t('Inga Stripe-händelser ännu.')}</p>
       ) : (
         <div className="space-y-2">
           {events.map(e => (
@@ -84,7 +86,7 @@ const AdminStripeLog = () => {
                   {e.plan && <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 bg-violet-50 text-violet-700">{e.plan}</span>}
                 </div>
                 <p className="text-sm font-medium mt-1">
-                  {e.supplier_id ? supplierNames.get(e.supplier_id) || e.supplier_id.slice(0, 8) : 'Okänd leverantör'}
+                  {e.supplier_id ? supplierNames.get(e.supplier_id) || e.supplier_id.slice(0, 8) : t('Okänd leverantör')}
                 </p>
                 <p className="text-[10px] text-muted-foreground font-mono">{e.stripe_event_id}</p>
               </div>

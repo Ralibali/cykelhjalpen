@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Activity, AlertTriangle, ShieldCheck, TrendingDown } from 'lucide-react'
+import { useT } from '@/lib/i18n'
 
 type HealthStatus = 'healthy' | 'watch' | 'low_supply' | 'pause_or_recruit'
 
@@ -11,14 +12,22 @@ interface CategoryHealth {
   health_status: HealthStatus
 }
 
-const STATUS_META: Record<HealthStatus, { label: string; cls: string; Icon: typeof Activity }> = {
-  healthy: { label: 'Sund', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', Icon: ShieldCheck },
-  watch: { label: 'Bevaka', cls: 'bg-amber-50 text-amber-700 border-amber-200', Icon: Activity },
-  low_supply: { label: 'Låg täckning', cls: 'bg-orange-50 text-orange-700 border-orange-200', Icon: TrendingDown },
-  pause_or_recruit: { label: 'Pausa eller rekrytera', cls: 'bg-rose-50 text-rose-700 border-rose-200', Icon: AlertTriangle },
+const STATUS_LABELS: Record<HealthStatus, string> = {
+  healthy: 'Sund',
+  watch: 'Bevaka',
+  low_supply: 'Låg täckning',
+  pause_or_recruit: 'Pausa eller rekrytera',
+}
+
+const STATUS_META: Record<HealthStatus, { cls: string; Icon: typeof Activity }> = {
+  healthy: { cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', Icon: ShieldCheck },
+  watch: { cls: 'bg-amber-50 text-amber-700 border-amber-200', Icon: Activity },
+  low_supply: { cls: 'bg-orange-50 text-orange-700 border-orange-200', Icon: TrendingDown },
+  pause_or_recruit: { cls: 'bg-rose-50 text-rose-700 border-rose-200', Icon: AlertTriangle },
 }
 
 const MarketplaceHealthPanel = () => {
+  const t = useT()
   const [rows, setRows] = useState<CategoryHealth[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,30 +53,30 @@ const MarketplaceHealthPanel = () => {
   }, [])
 
   if (loading) return <div className="animate-pulse h-40 bg-muted rounded-xl" />
-  if (error) return <div className="text-sm text-destructive">Kunde inte läsa marketplace-data: {error}</div>
+  if (error) return <div className="text-sm text-destructive">{t('Kunde inte läsa marketplace-data: {error}', { error })}</div>
 
   return (
     <div className="bg-card rounded-xl border p-5">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div>
           <h2 className="font-display font-semibold flex items-center gap-2">
-            <Activity className="h-4 w-4 text-primary" /> Marketplace health
+            <Activity className="h-4 w-4 text-primary" /> {t('Marketplace health')}
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Utbud vs efterfrågan per kategori.</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('Utbud vs efterfrågan per kategori.')}</p>
         </div>
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Inga kategorier att visa ännu.</p>
+        <p className="text-sm text-muted-foreground">{t('Inga kategorier att visa ännu.')}</p>
       ) : (
         <div className="overflow-x-auto -mx-1">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-muted-foreground uppercase tracking-wider">
-                <th className="text-left font-medium px-1 py-2">Kategori</th>
-                <th className="text-right font-medium px-1 py-2">Öppna uppdrag</th>
-                <th className="text-right font-medium px-1 py-2">Aktiva byråer</th>
-                <th className="text-right font-medium px-1 py-2">Status</th>
+                <th className="text-left font-medium px-1 py-2">{t('Kategori')}</th>
+                <th className="text-right font-medium px-1 py-2">{t('Öppna uppdrag')}</th>
+                <th className="text-right font-medium px-1 py-2">{t('Aktiva byråer')}</th>
+                <th className="text-right font-medium px-1 py-2">{t('Status')}</th>
               </tr>
             </thead>
             <tbody>
@@ -81,7 +90,7 @@ const MarketplaceHealthPanel = () => {
                     <td className="px-1 py-2 text-right tabular-nums">{r.active_suppliers}</td>
                     <td className="px-1 py-2 text-right">
                       <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${meta.cls}`}>
-                        <Icon className="h-3 w-3" /> {meta.label}
+                        <Icon className="h-3 w-3" /> {t(STATUS_LABELS[r.health_status] || STATUS_LABELS.watch)}
                       </span>
                     </td>
                   </tr>

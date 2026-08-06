@@ -14,6 +14,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell
 } from 'recharts'
+import { useT } from '@/lib/i18n'
 
 type Period = '24h' | '7d' | '30d' | '90d'
 
@@ -60,6 +61,7 @@ function DeltaBadge({ current, previous }: { current: number; previous: number }
 }
 
 export default function VisitorAnalytics() {
+  const t = useT()
   const [period, setPeriod] = useState<Period>('30d')
   const since = getDateSince(period)
   const prevSince = getPreviousPeriodSince(period)
@@ -174,7 +176,7 @@ export default function VisitorAnalytics() {
   const topReferrers = useMemo(() => {
     const counts: Record<string, number> = {}
     pageViews.forEach(pv => {
-      let source = 'Direkt'
+      let source = t('Direkt')
       if (pv.referrer) {
         try { source = new URL(pv.referrer).hostname.replace('www.', '') } catch { source = pv.referrer }
       }
@@ -240,7 +242,7 @@ export default function VisitorAnalytics() {
             className="text-xs h-8 rounded-lg"
             onClick={() => setPeriod(p)}
           >
-            {p === '24h' ? '24 timmar' : p === '7d' ? '7 dagar' : p === '30d' ? '30 dagar' : '90 dagar'}
+            {p === '24h' ? t('24 timmar') : p === '7d' ? t('7 dagar') : p === '30d' ? t('30 dagar') : t('90 dagar')}
           </Button>
         ))}
       </div>
@@ -248,12 +250,12 @@ export default function VisitorAnalytics() {
       {/* KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { icon: Eye, label: 'Sidvisningar', value: metrics.totalViews, color: 'text-primary', bg: 'bg-primary/10' },
-          { icon: Users, label: 'Unika besökare', value: metrics.uniqueSessions, color: 'text-accent-foreground', bg: 'bg-accent/10', delta: { current: metrics.uniqueSessions, previous: metrics.prevUnique } },
-          { icon: BarChart3, label: 'Sidor/besök', value: metrics.avgPages, color: 'text-orange-500', bg: 'bg-orange-100' },
-          { icon: Zap, label: 'CTA-klick', value: metrics.ctaClicks, color: 'text-green-600', bg: 'bg-green-100' },
-          { icon: MousePointerClick, label: 'CTA-rate', value: `${metrics.ctaRate}%`, color: 'text-violet-600', bg: 'bg-violet-100' },
-          { icon: TrendingUp, label: 'Avvisningsfrekvens', value: `${metrics.bounceRate}%`, color: 'text-red-500', bg: 'bg-red-100' },
+          { icon: Eye, label: t('Sidvisningar'), value: metrics.totalViews, color: 'text-primary', bg: 'bg-primary/10' },
+          { icon: Users, label: t('Unika besökare'), value: metrics.uniqueSessions, color: 'text-accent-foreground', bg: 'bg-accent/10', delta: { current: metrics.uniqueSessions, previous: metrics.prevUnique } },
+          { icon: BarChart3, label: t('Sidor/besök'), value: metrics.avgPages, color: 'text-orange-500', bg: 'bg-orange-100' },
+          { icon: Zap, label: t('CTA-klick'), value: metrics.ctaClicks, color: 'text-green-600', bg: 'bg-green-100' },
+          { icon: MousePointerClick, label: t('CTA-rate'), value: `${metrics.ctaRate}%`, color: 'text-violet-600', bg: 'bg-violet-100' },
+          { icon: TrendingUp, label: t('Avvisningsfrekvens'), value: `${metrics.bounceRate}%`, color: 'text-red-500', bg: 'bg-red-100' },
         ].map(({ icon: Icon, label, value, color, bg, delta }) => (
           <Card key={label} className="border-border/50">
             <CardContent className="p-3 text-center">
@@ -276,7 +278,7 @@ export default function VisitorAnalytics() {
           <CardHeader className="px-4 py-3">
             <CardTitle className="font-display text-sm flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              {period === '24h' ? 'Trafik per timme (senaste 24h)' : 'Trafik över tid'}
+              {period === '24h' ? t('Trafik per timme (senaste 24h)') : t('Trafik över tid')}
             </CardTitle>
           </CardHeader>
           <CardContent className="px-2 pb-3">
@@ -309,7 +311,7 @@ export default function VisitorAnalytics() {
         <Card className="border-border/50">
           <CardHeader className="px-4 py-3">
             <CardTitle className="font-display text-sm flex items-center gap-2">
-              <Clock className="h-4 w-4 text-green-500" /> Senaste händelser
+              <Clock className="h-4 w-4 text-green-500" /> {t('Senaste händelser')}
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-3">
@@ -317,13 +319,13 @@ export default function VisitorAnalytics() {
               {recentEvents.map((ev, i) => {
                 const time = new Date(ev.time)
                 const ago = Math.round((Date.now() - time.getTime()) / 60000)
-                const agoText = ago < 1 ? 'Just nu' : ago < 60 ? `${ago}m sedan` : `${Math.round(ago / 60)}h sedan`
+                const agoText = ago < 1 ? t('Just nu') : ago < 60 ? t('{n}m sedan', { n: ago }) : t('{n}h sedan', { n: Math.round(ago / 60) })
                 return (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${ev.type === 'click' ? 'bg-violet-500' : 'bg-green-500'}`} />
                     <span className="text-muted-foreground w-16 shrink-0">{agoText}</span>
                     <Badge variant="outline" className="text-[9px] shrink-0">
-                      {ev.type === 'click' ? 'Klick' : 'Besök'}
+                      {ev.type === 'click' ? t('Klick') : t('Besök')}
                     </Badge>
                     <span className="text-foreground truncate">{ev.text}</span>
                   </div>
@@ -336,11 +338,11 @@ export default function VisitorAnalytics() {
 
       <Tabs defaultValue="pages" className="w-full">
         <TabsList className="flex overflow-x-auto w-full justify-start gap-1 bg-muted/50 p-1 rounded-xl">
-          <TabsTrigger value="pages" className="text-xs rounded-lg">Sidor</TabsTrigger>
-          <TabsTrigger value="clicks" className="text-xs rounded-lg">Klick</TabsTrigger>
-          <TabsTrigger value="cta" className="text-xs rounded-lg">CTA</TabsTrigger>
-          <TabsTrigger value="sources" className="text-xs rounded-lg">Källor</TabsTrigger>
-          <TabsTrigger value="devices" className="text-xs rounded-lg">Enheter</TabsTrigger>
+          <TabsTrigger value="pages" className="text-xs rounded-lg">{t('Sidor')}</TabsTrigger>
+          <TabsTrigger value="clicks" className="text-xs rounded-lg">{t('Klick')}</TabsTrigger>
+          <TabsTrigger value="cta" className="text-xs rounded-lg">{t('CTA')}</TabsTrigger>
+          <TabsTrigger value="sources" className="text-xs rounded-lg">{t('Källor')}</TabsTrigger>
+          <TabsTrigger value="devices" className="text-xs rounded-lg">{t('Enheter')}</TabsTrigger>
         </TabsList>
 
         {/* Pages tab */}
@@ -348,12 +350,12 @@ export default function VisitorAnalytics() {
           <Card className="border-border/50">
             <CardHeader className="px-4 py-3">
               <CardTitle className="font-display text-sm flex items-center gap-2">
-                <FileText className="h-4 w-4 text-primary" /> Populära sidor
+                <FileText className="h-4 w-4 text-primary" /> {t('Populära sidor')}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-3">
               {topPages.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Ingen data ännu</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('Ingen data ännu')}</p>
               ) : (
                 <div className="space-y-1">
                   {topPages.map(([path, count], i) => {
@@ -384,12 +386,12 @@ export default function VisitorAnalytics() {
           <Card className="border-border/50">
             <CardHeader className="px-4 py-3">
               <CardTitle className="font-display text-sm flex items-center gap-2">
-                <MousePointerClick className="h-4 w-4 text-violet-500" /> Klickhändelser
+                <MousePointerClick className="h-4 w-4 text-violet-500" /> {t('Klickhändelser')}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-3">
               {clickAnalysis.topEvents.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Inga klickhändelser ännu</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('Inga klickhändelser ännu')}</p>
               ) : (
                 <div className="space-y-1.5">
                   {clickAnalysis.topEvents.map(([event, data]) => (
@@ -412,12 +414,12 @@ export default function VisitorAnalytics() {
           <Card className="border-border/50">
             <CardHeader className="px-4 py-3">
               <CardTitle className="font-display text-sm flex items-center gap-2">
-                <Zap className="h-4 w-4 text-green-500" /> CTA-klick per knapptext
+                <Zap className="h-4 w-4 text-green-500" /> {t('CTA-klick per knapptext')}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-3">
               {clickAnalysis.topCtas.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Inga CTA-klick ännu</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('Inga CTA-klick ännu')}</p>
               ) : (
                 <div className="space-y-2">
                   {clickAnalysis.topCtas.map(([text, count]) => (
@@ -437,12 +439,12 @@ export default function VisitorAnalytics() {
           <Card className="border-border/50">
             <CardHeader className="px-4 py-3">
               <CardTitle className="font-display text-sm flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" /> Trafikkällor
+                <TrendingUp className="h-4 w-4 text-primary" /> {t('Trafikkällor')}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-3">
               {topReferrers.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Ingen data ännu</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('Ingen data ännu')}</p>
               ) : (
                 <div className="space-y-2">
                   {topReferrers.map(([source, count]) => {
@@ -470,12 +472,12 @@ export default function VisitorAnalytics() {
           <Card className="border-border/50">
             <CardHeader className="px-4 py-3">
               <CardTitle className="font-display text-sm flex items-center gap-2">
-                <Monitor className="h-4 w-4 text-primary" /> Enheter
+                <Monitor className="h-4 w-4 text-primary" /> {t('Enheter')}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-3">
               {deviceData.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Ingen data ännu</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('Ingen data ännu')}</p>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <ResponsiveContainer width="100%" height={200}>

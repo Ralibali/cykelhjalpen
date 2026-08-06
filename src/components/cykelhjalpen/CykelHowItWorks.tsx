@@ -1,18 +1,21 @@
 import { motion } from 'framer-motion'
 import { Heart, MessageSquare, Wrench } from 'lucide-react'
+import { useT } from '@/lib/i18n'
 
-const steps = [
-  { icon: Wrench, title: 'Beskriv cykeln', text: 'Välj stad, cykeltyp och problem. Lägg gärna till bilder.' },
-  { icon: MessageSquare, title: 'Ta emot prisförslag', text: 'Godkända verkstäder i den valda staden kan svara med pris och möjlig tid.' },
-  { icon: Heart, title: 'Välj helt fritt', text: 'Jämför alternativen och kontakta den verkstad som passar dig bäst.' },
-]
+const CykelHowItWorks = () => {
+  const t = useT()
+  const steps = [
+    { icon: Wrench, title: t('Beskriv cykeln'), text: t('Välj stad, cykeltyp och problem. Lägg gärna till bilder.') },
+    { icon: MessageSquare, title: t('Ta emot prisförslag'), text: t('Godkända verkstäder i den valda staden kan svara med pris och möjlig tid.') },
+    { icon: Heart, title: t('Välj helt fritt'), text: t('Jämför alternativen och kontakta den verkstad som passar dig bäst.') },
+  ]
 
-const CykelHowItWorks = () => (
+  return (
   <section id="sa-fungerar-det" className="py-20 bg-background/60 scroll-mt-20">
     <div className="container mx-auto px-4 max-w-6xl">
       <div className="text-center max-w-2xl mx-auto mb-12">
-        <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3">Så fungerar det</p>
-        <h2 className="font-display text-4xl md:text-5xl">Från problem till rätt verkstad i tre steg</h2>
+        <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3">{t('Så fungerar det')}</p>
+        <h2 className="font-display text-4xl md:text-5xl">{t('Från problem till rätt verkstad i tre steg')}</h2>
       </div>
       <div className="grid md:grid-cols-3 gap-5">
         {steps.map(({ icon: Icon, title, text }, index) => (
@@ -38,6 +41,7 @@ const CykelHowItWorks = () => (
       </div>
     </div>
   </section>
-)
+  )
+}
 
 export default CykelHowItWorks

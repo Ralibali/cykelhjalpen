@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackEvent } from '@/lib/analytics'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
+import { useT } from '@/lib/i18n'
 
 interface RequestImage {
   id: string
@@ -42,6 +43,7 @@ interface ExistingResponse {
 const emptyForm = { message: '', estimated_price_min: '', estimated_price_max: '', estimated_time: '', can_pickup: false }
 
 const WorkshopRequests = () => {
+  const t = useT()
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const location = useLocation()
   const navigate = useNavigate()
@@ -69,13 +71,13 @@ const WorkshopRequests = () => {
 
     if (openError || openData?.error) {
       setRequests([])
-      setLoadError(openData?.error || openError?.message || 'Kunde inte läsa öppna ärenden.')
+      setLoadError(openData?.error || openError?.message || t('Kunde inte läsa öppna ärenden.'))
     } else {
       // The Edge Function now enforces the workshop city before returning any request details.
       setRequests((openData?.requests || []) as RequestRow[])
     }
 
-    if (mineError) toast.error('Kunde inte läsa dina tidigare offerter.')
+    if (mineError) toast.error(t('Kunde inte läsa dina tidigare offerter.'))
     setResponses((mine || []) as ExistingResponse[])
     setLoading(false)
   }
@@ -86,7 +88,7 @@ const WorkshopRequests = () => {
     // Poll ENDAST den response som betalningen avsåg – aldrig acceptera en annan
     // nyligen betald offert. response_id kommer från success_url:en som Stripe
     // omdirigerar tillbaka till (skickad av create-bike-response-payment).
-    const toastId = toast.loading('Väntar på bekräftelse från Stripe…')
+    const toastId = toast.loading(t('Väntar på bekräftelse från Stripe…'))
     const started = Date.now()
     const timeoutMs = 15000
     while (Date.now() - started < timeoutMs) {
@@ -97,16 +99,16 @@ const WorkshopRequests = () => {
         .eq('workshop_id', workshop.id)
         .maybeSingle()
       if (data?.paid) {
-        toast.success('Betalning bekräftad – offerten är skickad till kunden. ✅', { id: toastId })
+        toast.success(t('Betalning bekräftad – offerten är skickad till kunden. ✅'), { id: toastId })
         trackEvent('Offer Submitted', { city: workshop.city, source: 'paid' })
         await load()
         return
       }
       await new Promise((resolve) => setTimeout(resolve, 1500))
     }
-    toast.warning('Betalningen registrerades men Stripe-webhooken har inte bekräftat den ännu.', {
+    toast.warning(t('Betalningen registrerades men Stripe-webhooken har inte bekräftat den ännu.'), {
       id: toastId,
-      description: 'Kolla att STRIPE_WEBHOOK_SECRET_BIKE och endpointen i Stripe Dashboard är korrekt konfigurerade. Offerten skickas så snart webhook når fram.',
+      description: t('Kolla att STRIPE_WEBHOOK_SECRET_BIKE och endpointen i Stripe Dashboard är korrekt konfigurerade. Offerten skickas så snart webhook når fram.'),
       duration: 12000,
     })
     await load()
@@ -118,8 +120,8 @@ const WorkshopRequests = () => {
     if (params.get('paid') === 'true') {
       navigate(location.pathname, { replace: true })
       if (params.get('free') === '1') {
-        toast.success('Offerten är skickad med en gratis-lead. ✅', {
-          description: 'Kunden har fått ett mejl med ditt prisförslag.',
+        toast.success(t('Offerten är skickad med en gratis-lead. ✅'), {
+          description: t('Kunden har fått ett mejl med ditt prisförslag.'),
         })
         trackEvent('Offer Submitted', { city: workshop.city, source: 'free' })
         load()
@@ -127,12 +129,12 @@ const WorkshopRequests = () => {
         confirmWebhookPaid(responseId)
       } else {
         // Bakåtkompatibelt fallback för äldre success_url utan response_id.
-        toast.info('Betalningen registrerades. Uppdaterar listan…')
+        toast.info(t('Betalningen registrerades. Uppdaterar listan…'))
         load()
       }
     } else if (params.get('canceled') === 'true') {
-      toast.info('Betalningen avbröts.', {
-        description: 'Din offert är sparad som utkast och kan skickas när du är redo.',
+      toast.info(t('Betalningen avbröts.'), {
+        description: t('Din offert är sparad som utkast och kan skickas när du är redo.'),
       })
       navigate(location.pathname, { replace: true })
     }
@@ -145,17 +147,17 @@ const WorkshopRequests = () => {
 
   const validateOffer = () => {
     if (form.message.trim().length < 20) {
-      toast.error('Beskriv ditt svar lite mer, minst tjugo tecken.')
+      toast.error(t('Beskriv ditt svar lite mer, minst tjugo tecken.'))
       return false
     }
     const min = form.estimated_price_min ? Number(form.estimated_price_min) : null
     const max = form.estimated_price_max ? Number(form.estimated_price_max) : null
     if ((min !== null && min < 0) || (max !== null && max < 0)) {
-      toast.error('Priset kan inte vara negativt.')
+      toast.error(t('Priset kan inte vara negativt.'))
       return false
     }
     if (min !== null && max !== null && max < min) {
-      toast.error('Pris till måste vara samma som eller högre än pris från.')
+      toast.error(t('Pris till måste vara samma som eller högre än pris från.'))
       return false
     }
     return true
@@ -175,18 +177,18 @@ const WorkshopRequests = () => {
       const isStripeConfig = /stripe/i.test(msg) && /konfig|configuration|not set/i.test(msg)
 
       if (isFull) {
-        toast.error('Ärendet är fullt – tre verkstäder har redan svarat.', {
-          description: 'Ditt utkast är sparat men kan inte skickas. Vi tar bort ärendet från listan.',
+        toast.error(t('Ärendet är fullt – tre verkstäder har redan svarat.'), {
+          description: t('Ditt utkast är sparat men kan inte skickas. Vi tar bort ärendet från listan.'),
           duration: 10000,
         })
       } else if (isStripeConfig) {
-        toast.error('Stripe är inte korrekt konfigurerat.', {
-          description: 'Kontrollera att STRIPE_SECRET_KEY är sparad som secret.',
+        toast.error(t('Stripe är inte korrekt konfigurerat.'), {
+          description: t('Kontrollera att STRIPE_SECRET_KEY är sparad som secret.'),
           duration: 10000,
         })
       } else {
-        toast.error('Kunde inte starta betalningen.', {
-          description: msg || 'Något gick fel. Offerten är sparad och kan skickas senare.',
+        toast.error(t('Kunde inte starta betalningen.'), {
+          description: msg || t('Något gick fel. Offerten är sparad och kan skickas senare.'),
           duration: 8000,
         })
       }
@@ -194,18 +196,18 @@ const WorkshopRequests = () => {
       return
     }
     if (payment?.free) {
-      toast.success('Offerten skickades med en gratis-lead. ✅', {
-        description: 'Kunden ser ditt prisförslag direkt.',
+      toast.success(t('Offerten skickades med en gratis-lead. ✅'), {
+        description: t('Kunden ser ditt prisförslag direkt.'),
       })
       await load()
       return
     }
     if (payment?.url) {
-      toast.success('Öppnar Stripe-checkout…')
+      toast.success(t('Öppnar Stripe-checkout…'))
       window.location.assign(payment.url)
     } else {
-      toast.error('Ingen betalningslänk skapades.', {
-        description: 'Stripe returnerade inget URL. Försök igen eller kontakta support om felet återkommer.',
+      toast.error(t('Ingen betalningslänk skapades.'), {
+        description: t('Stripe returnerade inget URL. Försök igen eller kontakta support om felet återkommer.'),
       })
     }
   }
@@ -236,8 +238,8 @@ const WorkshopRequests = () => {
 
     if (error || !response) {
       setSubmitting(null)
-      toast.error('Kunde inte spara offerten.', {
-        description: error?.message || 'Försök igen om en stund.',
+      toast.error(t('Kunde inte spara offerten.'), {
+        description: error?.message || t('Försök igen om en stund.'),
       })
       return
     }
@@ -248,17 +250,17 @@ const WorkshopRequests = () => {
     await openPayment(response.id, requestId)
   }
 
-  if (!workshop.approved) return <div className="sticker bg-card p-6 text-center text-muted-foreground">Ditt konto väntar på godkännande.</div>
+  if (!workshop.approved) return <div className="sticker bg-card p-6 text-center text-muted-foreground">{t('Ditt konto väntar på godkännande.')}</div>
 
   return (
     <div>
       <div className="flex items-start justify-between gap-3 mb-6">
         <div>
-          <h1 className="font-display text-2xl font-bold">Öppna ärenden</h1>
-          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Endast {workshop.city}</p>
+          <h1 className="font-display text-2xl font-bold">{t('Öppna ärenden')}</h1>
+          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {t('Endast {city}', { city: workshop.city })}</p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Uppdatera
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('Uppdatera')}
         </Button>
       </div>
 
@@ -267,15 +269,15 @@ const WorkshopRequests = () => {
       ) : loadError ? (
         <div className="sticker bg-card p-6 text-center">
           <p className="text-destructive mb-4">{loadError}</p>
-          <Button onClick={load} variant="outline">Försök igen</Button>
+          <Button onClick={load} variant="outline">{t('Försök igen')}</Button>
         </div>
       ) : requests.length === 0 ? (
         <div className="sticker rounded-3xl bg-card p-10 text-center">
           <div className="inline-flex items-center justify-center rounded-2xl bg-muted p-4 mb-4">
             <Bike className="h-8 w-8 text-muted-foreground" />
           </div>
-          <p className="font-display text-xl mb-1">Inga öppna ärenden i {workshop.city} just nu</p>
-          <p className="text-sm text-muted-foreground">Nya ärenden dyker upp här så fort cyklister i din stad skickar in.</p>
+          <p className="font-display text-xl mb-1">{t('Inga öppna ärenden i {city} just nu', { city: workshop.city })}</p>
+          <p className="text-sm text-muted-foreground">{t('Nya ärenden dyker upp här så fort cyklister i din stad skickar in.')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -311,7 +313,7 @@ const WorkshopRequests = () => {
                       )}
                       {request.wants_pickup && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
-                          <Truck className="h-3 w-3" /> Önskar hämtning
+                          <Truck className="h-3 w-3" /> {t('Önskar hämtning')}
                         </span>
                       )}
                     </div>
@@ -319,7 +321,7 @@ const WorkshopRequests = () => {
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
                         {request.images.map((image) => (
                           <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-lg border bg-muted">
-                            <img src={image.url} alt="Bild på cykelproblemet" className="h-full w-full object-cover" loading="lazy" />
+                            <img src={image.url} alt={t('Bild på cykelproblemet')} className="h-full w-full object-cover" loading="lazy" />
                           </a>
                         ))}
                       </div>
@@ -327,44 +329,44 @@ const WorkshopRequests = () => {
                   </div>
 
                   {paid ? (
-                    <span className="text-sm flex items-center gap-1.5 rounded-full bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] font-medium px-3 py-1.5"><Check className="h-4 w-4" /> Offert skickad</span>
+                    <span className="text-sm flex items-center gap-1.5 rounded-full bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] font-medium px-3 py-1.5"><Check className="h-4 w-4" /> {t('Offert skickad')}</span>
                   ) : pendingPayment ? (
                     <Button size="sm" onClick={() => openPayment(existing!.id, request.id)} disabled={isSubmitting}>
                       {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                      Fortsätt till betalning
+                      {t('Fortsätt till betalning')}
                     </Button>
                   ) : (
                     <Button size="sm" onClick={() => toggleOffer(request.id)}>
-                      {active === request.id ? 'Stäng' : 'Lämna offert'}
+                      {active === request.id ? t('Stäng') : t('Lämna offert')}
                     </Button>
                   )}
                 </div>
 
                 {pendingPayment && (
-                  <p className="mt-3 text-xs text-amber-700 bg-amber-50 rounded-lg p-3">Offerten är sparad men ännu inte skickad till kunden. Slutför betalningen när du är redo.</p>
+                  <p className="mt-3 text-xs text-amber-700 bg-amber-50 rounded-lg p-3">{t('Offerten är sparad men ännu inte skickad till kunden. Slutför betalningen när du är redo.')}</p>
                 )}
 
                 {active === request.id && !existing && (
                   <div className="mt-5 space-y-4 rounded-2xl border-2 border-dashed border-border bg-muted/40 p-5">
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5"><Label htmlFor={`min-${request.id}`}>Pris från (kr, inkl. moms)</Label><Input id={`min-${request.id}`} type="number" min="0" value={form.estimated_price_min} onChange={(event) => setForm({ ...form, estimated_price_min: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
-                      <div className="space-y-1.5"><Label htmlFor={`max-${request.id}`}>Pris till (kr, inkl. moms)</Label><Input id={`max-${request.id}`} type="number" min="0" value={form.estimated_price_max} onChange={(event) => setForm({ ...form, estimated_price_max: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
+                      <div className="space-y-1.5"><Label htmlFor={`min-${request.id}`}>{t('Pris från (kr, inkl. moms)')}</Label><Input id={`min-${request.id}`} type="number" min="0" value={form.estimated_price_min} onChange={(event) => setForm({ ...form, estimated_price_min: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
+                      <div className="space-y-1.5"><Label htmlFor={`max-${request.id}`}>{t('Pris till (kr, inkl. moms)')}</Label><Input id={`max-${request.id}`} type="number" min="0" value={form.estimated_price_max} onChange={(event) => setForm({ ...form, estimated_price_max: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
                     </div>
-                    <div className="space-y-1.5"><Label htmlFor={`time-${request.id}`}>Beräknad tid</Label><Input id={`time-${request.id}`} value={form.estimated_time} onChange={(event) => setForm({ ...form, estimated_time: event.target.value })} placeholder="Exempel: cirka en timme eller två arbetsdagar" className="rounded-xl border-2 bg-background" /></div>
-                    <div className="space-y-1.5"><Label htmlFor={`message-${request.id}`}>Meddelande till kunden</Label><Textarea id={`message-${request.id}`} rows={4} value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} placeholder="Beskriv vad ni rekommenderar, vad priset omfattar och när ni kan ta emot cykeln." className="rounded-xl border-2 bg-background" /></div>
+                    <div className="space-y-1.5"><Label htmlFor={`time-${request.id}`}>{t('Beräknad tid')}</Label><Input id={`time-${request.id}`} value={form.estimated_time} onChange={(event) => setForm({ ...form, estimated_time: event.target.value })} placeholder={t('Exempel: cirka en timme eller två arbetsdagar')} className="rounded-xl border-2 bg-background" /></div>
+                    <div className="space-y-1.5"><Label htmlFor={`message-${request.id}`}>{t('Meddelande till kunden')}</Label><Textarea id={`message-${request.id}`} rows={4} value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} placeholder={t('Beskriv vad ni rekommenderar, vad priset omfattar och när ni kan ta emot cykeln.')} className="rounded-xl border-2 bg-background" /></div>
                     <p className="text-xs text-muted-foreground rounded-xl bg-background border border-border px-3 py-2">
-                      Offerten ska gälla det problem kunden beskrivit ovan. Avviker felet från beskrivningen ska kunden informeras och godkänna det nya priset innan arbetet fortsätter.
+                      {t('Offerten ska gälla det problem kunden beskrivit ovan. Avviker felet från beskrivningen ska kunden informeras och godkänna det nya priset innan arbetet fortsätter.')}
                     </p>
-                    <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="h-4 w-4 rounded" checked={form.can_pickup} onChange={(event) => setForm({ ...form, can_pickup: event.target.checked })} /> Vi kan hämta cykeln</label>
+                    <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="h-4 w-4 rounded" checked={form.can_pickup} onChange={(event) => setForm({ ...form, can_pickup: event.target.checked })} /> {t('Vi kan hämta cykeln')}</label>
                     <div className="rounded-xl bg-background p-3.5 text-xs text-muted-foreground border">
                       {workshop.free_leads_remaining > 0
-                        ? `En av era ${workshop.free_leads_remaining} gratis-leads används. Ingen Stripe-betalning behövs.`
-                        : `${LEAD_FEE_KR} kr exkl. moms debiteras via Stripe först när du går vidare. Kunden ser offerten efter genomförd betalning.`}
+                        ? t('En av era {n} gratis-leads används. Ingen Stripe-betalning behövs.', { n: workshop.free_leads_remaining })
+                        : t('{price} kr exkl. moms debiteras via Stripe först när du går vidare. Kunden ser offerten efter genomförd betalning.', { price: LEAD_FEE_KR })}
                     </div>
                     <QuoteDisclaimer variant="workshop" />
                     <Button onClick={() => submitOffer(request.id)} disabled={isSubmitting} className="w-full rounded-xl cta-playful bg-accent text-accent-foreground hover:bg-accent/90 h-11">
                       {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                      {workshop.free_leads_remaining > 0 ? 'Skicka med gratis-lead' : `Granska och betala ${LEAD_FEE_KR} kr`}
+                      {workshop.free_leads_remaining > 0 ? t('Skicka med gratis-lead') : t('Granska och betala {price} kr', { price: LEAD_FEE_KR })}
                     </Button>
                   </div>
                 )}

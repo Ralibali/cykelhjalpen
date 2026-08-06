@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client'
 import { AdminLayout } from './AdminDashboard'
 import { timeAgo } from '@/lib/dateUtils'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n'
 
 const AdminOffers = () => {
+  const t = useT()
   const [offers, setOffers] = useState<any[]>([])
 
   useEffect(() => {
@@ -24,16 +26,16 @@ const AdminOffers = () => {
 
   return (
     <AdminLayout>
-      <h1 className="font-display text-2xl font-bold mb-6">Offerter</h1>
+      <h1 className="font-display text-2xl font-bold mb-6">{t('Offerter')}</h1>
       <div className="bg-card rounded-xl border overflow-hidden overflow-x-auto">
         <table className="w-full min-w-[760px] text-sm">
           <thead><tr className="border-b bg-muted/50">
-            <th className="text-left p-3 font-medium">Offert</th>
-            <th className="text-left p-3 font-medium">Uppdrag</th>
-            <th className="text-left p-3 font-medium">Byrå</th>
-            <th className="text-left p-3 font-medium">Pris</th>
-            <th className="text-left p-3 font-medium">Status</th>
-            <th className="text-left p-3 font-medium">Skapad</th>
+            <th className="text-left p-3 font-medium">{t('Offert')}</th>
+            <th className="text-left p-3 font-medium">{t('Uppdrag')}</th>
+            <th className="text-left p-3 font-medium">{t('Byrå')}</th>
+            <th className="text-left p-3 font-medium">{t('Pris')}</th>
+            <th className="text-left p-3 font-medium">{t('Status')}</th>
+            <th className="text-left p-3 font-medium">{t('Skapad')}</th>
           </tr></thead>
           <tbody>
             {offers.map(o => (
@@ -52,7 +54,7 @@ const AdminOffers = () => {
             ))}
           </tbody>
         </table>
-        {offers.length === 0 && <p className="p-6 text-center text-muted-foreground">Inga offerter ännu.</p>}
+        {offers.length === 0 && <p className="p-6 text-center text-muted-foreground">{t('Inga offerter ännu.')}</p>}
       </div>
     </AdminLayout>
   )

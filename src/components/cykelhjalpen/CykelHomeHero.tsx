@@ -7,8 +7,11 @@ import hero960 from '@/assets/cykel-hero-960.webp'
 import hero1440 from '@/assets/cykel-hero-1440.webp'
 import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 import { trackClick } from '@/hooks/usePageTracking'
+import { useT } from '@/lib/i18n'
 
-const CykelHomeHero = () => (
+const CykelHomeHero = () => {
+  const t = useT()
+  return (
   <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28">
     <div className="container mx-auto px-4">
       <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-12 items-center max-w-7xl mx-auto">
@@ -18,14 +21,14 @@ const CykelHomeHero = () => (
           </div>
 
           <h1 className="font-display text-5xl md:text-7xl font-medium leading-[.96] tracking-tight">
-            Trasig cykel? <span className="italic text-accent">Jämför innan du väljer.</span>
+            {t('Trasig cykel?')} <span className="italic text-accent">{t('Jämför innan du väljer.')}</span>
           </h1>
 
           <p className="mt-7 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-            Beskriv problemet en gång och jämför pris och möjlig tid från anslutna cykelverkstäder i din stad — för cyklar <em>och</em> elsparkcyklar. <strong className="text-foreground">Gratis för dig som cyklist.</strong>
+            {t('Beskriv problemet en gång och jämför pris och möjlig tid från anslutna cykelverkstäder i din stad — för cyklar')} <em>{t('och')}</em> {t('elsparkcyklar.')} <strong className="text-foreground">{t('Gratis för dig som cyklist.')}</strong>
           </p>
 
-          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-2xl" aria-label="Välj stad">
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-2xl" aria-label={t('Välj stad')}>
             {CYKEL_CITIES.map((city) => (
               <Link
                 key={city.name}
@@ -44,18 +47,18 @@ const CykelHomeHero = () => (
                 to="/skicka-arende"
                 onClick={() => trackClick('home_primary_cta_clicked', 'Få prisförslag gratis')}
               >
-                Få prisförslag gratis <ArrowRight className="h-4 w-4 ml-2" />
+                {t('Få prisförslag gratis')} <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="h-14 px-7 rounded-full border-2">
-              <a href="#sa-fungerar-det" onClick={() => trackClick('home_how_it_works_clicked', 'Så fungerar det')}>Så fungerar det</a>
+              <a href="#sa-fungerar-det" onClick={() => trackClick('home_how_it_works_clicked', 'Så fungerar det')}>{t('Så fungerar det')}</a>
             </Button>
           </div>
 
           <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Inget konto</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Upp till tre svar</span>
-            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Ingen köpplikt</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Inget konto')}</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Upp till tre svar')}</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Ingen köpplikt')}</span>
           </div>
         </motion.div>
 
@@ -65,7 +68,7 @@ const CykelHomeHero = () => (
               src={hero960}
               srcSet={`${hero640} 640w, ${hero960} 960w, ${hero1440} 1440w`}
               sizes="(min-width: 1024px) 50vw, 100vw"
-              alt="Tealfärgad cykel på reparationsstativ i en varm, solig cykelverkstad"
+              alt={t('Tealfärgad cykel på reparationsstativ i en varm, solig cykelverkstad')}
               width={1536}
               height={928}
               fetchPriority="high"
@@ -73,13 +76,14 @@ const CykelHomeHero = () => (
             />
           </div>
           <div className="absolute -bottom-5 left-4 right-4 sm:left-8 sm:right-auto sm:w-80 rounded-2xl bg-background/95 backdrop-blur border-2 border-foreground p-4 sticker">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Så enkelt är det</p>
-            <p className="font-display text-lg">Ett formulär. Flera lokala alternativ. Du väljer själv.</p>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">{t('Så enkelt är det')}</p>
+            <p className="font-display text-lg">{t('Ett formulär. Flera lokala alternativ. Du väljer själv.')}</p>
           </div>
         </motion.div>
       </div>
     </div>
   </section>
-)
+  )
+}
 
 export default CykelHomeHero

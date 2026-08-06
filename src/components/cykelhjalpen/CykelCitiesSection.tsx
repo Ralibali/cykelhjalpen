@@ -3,16 +3,19 @@ import { ArrowRight } from 'lucide-react'
 import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 import { getCityImage } from '@/lib/cykelCityImages'
 import { trackClick } from '@/hooks/usePageTracking'
+import { useT } from '@/lib/i18n'
 
-const CykelCitiesSection = () => (
+const CykelCitiesSection = () => {
+  const t = useT()
+  return (
   <section id="stader" className="py-20 scroll-mt-20">
     <div className="container mx-auto px-4 max-w-6xl">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
         <div>
-          <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3">Välj stad</p>
-          <h2 className="font-display text-4xl md:text-5xl">Cykelhjälpen i fyra stora cykelstäder</h2>
+          <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3">{t('Välj stad')}</p>
+          <h2 className="font-display text-4xl md:text-5xl">{t('Cykelhjälpen i fyra stora cykelstäder')}</h2>
         </div>
-        <p className="text-muted-foreground max-w-md">Välj din stad, läs om lokal cykelhjälp och skicka sedan ett kostnadsfritt ärende.</p>
+        <p className="text-muted-foreground max-w-md">{t('Välj din stad, läs om lokal cykelhjälp och skicka sedan ett kostnadsfritt ärende.')}</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -37,9 +40,9 @@ const CykelCitiesSection = () => (
               </div>
               <div className="p-5">
                 <h3 className="font-display text-2xl">{city.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1.5">Lokala områden, vanliga reparationer och kostnadsfri offertförfrågan.</p>
+                <p className="text-sm text-muted-foreground mt-1.5">{t('Lokala områden, vanliga reparationer och kostnadsfri offertförfrågan.')}</p>
                 <span className="inline-flex items-center gap-1 text-sm font-medium text-primary mt-4">
-                  Cykelverkstad i {city.name}
+                  {t('Cykelverkstad i {city}', { city: city.name })}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </div>
@@ -49,6 +52,7 @@ const CykelCitiesSection = () => (
       </div>
     </div>
   </section>
-)
+  )
+}
 
 export default CykelCitiesSection

@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { timeAgo } from '@/lib/dateUtils'
+import { useT } from '@/lib/i18n'
 
 interface Notif {
   id: string
@@ -18,6 +19,7 @@ interface Notif {
 }
 
 const NotificationBell = () => {
+  const t = useT()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [notifications, setNotifications] = useState<Notif[]>([])
@@ -57,7 +59,7 @@ const NotificationBell = () => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label={unread > 0 ? `Notiser (${unread} olästa)` : 'Notiser'}>
+        <Button variant="ghost" size="icon" className="relative" aria-label={unread > 0 ? t('Notiser ({n} olästa)', { n: unread }) : t('Notiser')}>
           <Bell className="h-5 w-5" aria-hidden="true" />
           {unread > 0 && (
             <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center" aria-hidden="true">
@@ -67,10 +69,10 @@ const NotificationBell = () => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-3 border-b font-display font-semibold text-sm">Notiser</div>
+        <div className="p-3 border-b font-display font-semibold text-sm">{t('Notiser')}</div>
         <div className="max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
-            <p className="p-4 text-sm text-muted-foreground text-center">Inga notiser ännu</p>
+            <p className="p-4 text-sm text-muted-foreground text-center">{t('Inga notiser ännu')}</p>
           ) : notifications.map(n => (
             <button
               key={n.id}
@@ -79,7 +81,7 @@ const NotificationBell = () => {
             >
               <p className="text-sm font-medium">{n.title}</p>
               {n.message && <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>}
-              <p className="text-xs text-muted-foreground mt-1">{timeAgo(n.created_at || '')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{timeAgo(n.created_at || '', t)}</p>
             </button>
           ))}
         </div>

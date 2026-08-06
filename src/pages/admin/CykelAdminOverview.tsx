@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
+import { useT } from '@/lib/i18n'
 
 
 interface RequestRow {
@@ -63,6 +64,7 @@ const formatMoney = (ore: number) => new Intl.NumberFormat('sv-SE', {
 }).format((ore || 0) / 100)
 
 const CykelAdminOverview = () => {
+  const t = useT()
   const [requests, setRequests] = useState<RequestRow[]>([])
   const [workshops, setWorkshops] = useState<WorkshopRow[]>([])
   const [charges, setCharges] = useState<ChargeRow[]>([])
@@ -88,7 +90,7 @@ const CykelAdminOverview = () => {
 
     const errors = [requestResult.error, workshopResult.error, chargeResult.error].filter(Boolean)
     if (errors.length > 0) {
-      toast.error(`Admin kunde inte läsa all data: ${errors[0]?.message}`)
+      toast.error(t('Admin kunde inte läsa all data: {msg}', { msg: errors[0]?.message || '' }))
     }
 
     setRequests((requestResult.data as RequestRow[]) || [])
@@ -124,14 +126,14 @@ const CykelAdminOverview = () => {
     setBusy(null)
 
     if (error || data?.error) {
-      toast.error('Kunde inte godkänna ärendet.', {
-        description: data?.error || error?.message || 'Försök igen om en stund.',
+      toast.error(t('Kunde inte godkänna ärendet.'), {
+        description: data?.error || error?.message || t('Försök igen om en stund.'),
       })
       return
     }
 
     const workshopCount = data?.workshop_emails_sent ?? data?.workshops_notified ?? 0
-    toast.success(`Ärendet är publicerat. ${workshopCount} verkstäder notifierades.`)
+    toast.success(t('Ärendet är publicerat. {count} verkstäder notifierades.', { count: workshopCount }))
     load()
   }
 
@@ -139,8 +141,8 @@ const CykelAdminOverview = () => {
     if (!rejectTarget) return
     const trimmed = rejectReason.trim()
     if (trimmed.length < 10) {
-      toast.error('Anledningen är för kort.', {
-        description: 'Skriv minst tio tecken. Meddelandet skickas till kunden.',
+      toast.error(t('Anledningen är för kort.'), {
+        description: t('Skriv minst tio tecken. Meddelandet skickas till kunden.'),
       })
       return
     }
@@ -155,13 +157,13 @@ const CykelAdminOverview = () => {
     setBusy(null)
 
     if (error || data?.error) {
-      toast.error('Kunde inte avvisa ärendet.', {
-        description: data?.error || error?.message || 'Försök igen om en stund.',
+      toast.error(t('Kunde inte avvisa ärendet.'), {
+        description: data?.error || error?.message || t('Försök igen om en stund.'),
       })
       return
     }
 
-    toast.success('Ärendet är avvisat och kunden har meddelats.')
+    toast.success(t('Ärendet är avvisat och kunden har meddelats.'))
     setRejectTarget(null)
     setRejectReason('')
     load()
@@ -175,9 +177,9 @@ const CykelAdminOverview = () => {
     ].filter(Boolean).join(' · ')
     try {
       await navigator.clipboard.writeText(parts)
-      toast.success('Kontaktuppgifter kopierade.')
+      toast.success(t('Kontaktuppgifter kopierade.'))
     } catch {
-      toast.error('Kunde inte kopiera. Markera texten manuellt.')
+      toast.error(t('Kunde inte kopiera. Markera texten manuellt.'))
     }
   }
 
@@ -191,7 +193,7 @@ const CykelAdminOverview = () => {
       return
     }
 
-    toast.success(approved ? `${workshop.company_name} är godkänd` : `${workshop.company_name} är avaktiverad`)
+    toast.success(approved ? t('{name} är godkänd', { name: workshop.company_name }) : t('{name} är avaktiverad', { name: workshop.company_name }))
     load()
   }
 
@@ -221,12 +223,12 @@ const CykelAdminOverview = () => {
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <h1 className="font-display text-2xl font-bold flex items-center gap-2">
-            <Bike className="h-6 w-6 text-primary" /> Cykelhjälpen Admin
+            <Bike className="h-6 w-6 text-primary" /> {t('Cykelhjälpen Admin')}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Granska ärenden och verkstäder innan de publiceras.</p>
+          <p className="text-sm text-muted-foreground mt-1">{t('Granska ärenden och verkstäder innan de publiceras.')}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading} aria-label="Uppdatera admin-översikten">
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Uppdatera
+        <Button variant="outline" size="sm" onClick={load} disabled={loading} aria-label={t('Uppdatera admin-översikten')}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('Uppdatera')}
           {incomingPending > 0 && (
             <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
               +{incomingPending}
@@ -236,11 +238,11 @@ const CykelAdminOverview = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
-        <StatCard label="Väntar granskning" value={pendingRequests.length} icon={Clock} />
-        <StatCard label="Godkända ärenden" value={approvedRequests.length} icon={CheckCircle2} />
-        <StatCard label="Verkstäder väntar" value={pendingWorkshops.length} icon={Wrench} />
-        <StatCard label="Betalda offerter" value={paidResponses} icon={CreditCard} />
-        <StatCard label="Intäkter" value={formatMoney(revenue)} icon={CreditCard} />
+        <StatCard label={t('Väntar granskning')} value={pendingRequests.length} icon={Clock} />
+        <StatCard label={t('Godkända ärenden')} value={approvedRequests.length} icon={CheckCircle2} />
+        <StatCard label={t('Verkstäder väntar')} value={pendingWorkshops.length} icon={Wrench} />
+        <StatCard label={t('Betalda offerter')} value={paidResponses} icon={CreditCard} />
+        <StatCard label={t('Intäkter')} value={formatMoney(revenue)} icon={CreditCard} />
       </div>
 
       {loading ? (
@@ -250,14 +252,14 @@ const CykelAdminOverview = () => {
           <section className="rounded-xl border bg-card p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h2 className="font-display text-lg font-semibold">Ärenden att granska</h2>
-                <p className="text-xs text-muted-foreground">Verkstäder notifieras först efter godkännande.</p>
+                <h2 className="font-display text-lg font-semibold">{t('Ärenden att granska')}</h2>
+                <p className="text-xs text-muted-foreground">{t('Verkstäder notifieras först efter godkännande.')}</p>
               </div>
-              <Button asChild variant="outline" size="sm"><Link to="/admin/cykelarenden">Visa alla</Link></Button>
+              <Button asChild variant="outline" size="sm"><Link to="/admin/cykelarenden">{t('Visa alla')}</Link></Button>
             </div>
 
             {pendingRequests.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">Inga ärenden väntar på granskning.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('Inga ärenden väntar på granskning.')}</p>
             ) : (
               <div className="space-y-3">
                 {pendingRequests.slice(0, 8).map((request) => (
@@ -281,15 +283,15 @@ const CykelAdminOverview = () => {
                       )}
                     </div>
                     <div className="flex flex-wrap justify-end gap-2 mt-4">
-                      <Button size="sm" variant="ghost" onClick={() => copyContact(request)} aria-label="Kopiera kontaktuppgifter">
-                        <Copy className="h-4 w-4 mr-1" /> Kopiera kontakt
+                      <Button size="sm" variant="ghost" onClick={() => copyContact(request)} aria-label={t('Kopiera kontaktuppgifter')}>
+                        <Copy className="h-4 w-4 mr-1" /> {t('Kopiera kontakt')}
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => setRejectTarget(request)} disabled={busy === request.id}>
-                        <XCircle className="h-4 w-4 mr-1" /> Avvisa
+                        <XCircle className="h-4 w-4 mr-1" /> {t('Avvisa')}
                       </Button>
                       <Button size="sm" onClick={() => approveRequest(request)} disabled={busy === request.id}>
                         {busy === request.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
-                        Godkänn
+                        {t('Godkänn')}
                       </Button>
                     </div>
                   </div>
@@ -301,14 +303,14 @@ const CykelAdminOverview = () => {
           <section className="rounded-xl border bg-card p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
-                <h2 className="font-display text-lg font-semibold">Verkstäder att granska</h2>
-                <p className="text-xs text-muted-foreground">Endast godkända verkstäder får se öppna ärenden.</p>
+                <h2 className="font-display text-lg font-semibold">{t('Verkstäder att granska')}</h2>
+                <p className="text-xs text-muted-foreground">{t('Endast godkända verkstäder får se öppna ärenden.')}</p>
               </div>
-              <Button asChild variant="outline" size="sm"><Link to="/admin/verkstader">Visa alla</Link></Button>
+              <Button asChild variant="outline" size="sm"><Link to="/admin/verkstader">{t('Visa alla')}</Link></Button>
             </div>
 
             {pendingWorkshops.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">Inga verkstäder väntar på granskning.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('Inga verkstäder väntar på granskning.')}</p>
             ) : (
               <div className="space-y-3">
                 {pendingWorkshops.slice(0, 8).map((workshop) => (
@@ -318,7 +320,7 @@ const CykelAdminOverview = () => {
                       <p className="text-xs text-muted-foreground truncate">{workshop.email}{workshop.phone ? ` · ${workshop.phone}` : ''}</p>
                     </div>
                     <Button size="sm" onClick={() => setWorkshopApproved(workshop, true)} disabled={busy === workshop.id}>
-                      {busy === workshop.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Godkänn'}
+                      {busy === workshop.id ? <Loader2 className="h-4 w-4 animate-spin" /> : t('Godkänn')}
                     </Button>
                   </div>
                 ))}
@@ -331,28 +333,28 @@ const CykelAdminOverview = () => {
       <Dialog open={Boolean(rejectTarget)} onOpenChange={(open) => !open && setRejectTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Avvisa cykelärendet?</DialogTitle>
-            <DialogDescription>Anledningen skickas till kunden. Skriv minst tio tecken – kort och konkret.</DialogDescription>
+            <DialogTitle>{t('Avvisa cykelärendet?')}</DialogTitle>
+            <DialogDescription>{t('Anledningen skickas till kunden. Skriv minst tio tecken – kort och konkret.')}</DialogDescription>
           </DialogHeader>
           <Textarea
             value={rejectReason}
             onChange={(event) => setRejectReason(event.target.value)}
             rows={4}
-            placeholder="Exempel: Vi behöver en tydligare problembeskrivning eller en giltig kontaktadress."
-            aria-label="Anledning till avvisning"
+            placeholder={t('Exempel: Vi behöver en tydligare problembeskrivning eller en giltig kontaktadress.')}
+            aria-label={t('Anledning till avvisning')}
           />
           <p className={`text-xs ${rejectReason.trim().length < 10 ? 'text-muted-foreground' : 'text-emerald-700'}`}>
-            {rejectReason.trim().length}/10 tecken (minimum)
+            {t('{n}/10 tecken (minimum)', { n: rejectReason.trim().length })}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectTarget(null)}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setRejectTarget(null)}>{t('Avbryt')}</Button>
             <Button
               variant="destructive"
               onClick={rejectRequest}
               disabled={!rejectTarget || busy === rejectTarget.id || rejectReason.trim().length < 10}
             >
               {busy === rejectTarget?.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Avvisa och meddela kunden
+              {t('Avvisa och meddela kunden')}
             </Button>
           </DialogFooter>
         </DialogContent>

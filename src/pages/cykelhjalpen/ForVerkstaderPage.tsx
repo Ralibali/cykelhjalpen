@@ -10,21 +10,22 @@ import { Button } from '@/components/ui/button'
 import { CYKEL_CITIES } from '@/lib/cykelCities'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
+import { useT } from '@/lib/i18n'
 import verkstadHero1200 from '@/assets/cykel-verkstad-hero-1200.webp'
 import verkstadHero640 from '@/assets/cykel-verkstad-hero-640.webp'
 
-const benefits = [
-  { icon: Users, title: 'Lokala kunder', text: 'Ta emot relevanta förfrågningar från cyklister i den stad där ni arbetar.' },
-  { icon: Bell, title: 'Notiser direkt', text: 'Få mejl och valfria SMS när ett godkänt ärende matchar er stad.' },
-  { icon: TrendingUp, title: 'Fyll luckor i kalendern', text: 'Välj själv vilka jobb som passar er kapacitet, kompetens och säsong.' },
-  { icon: Wrench, title: 'En enkel verkstadsvy', text: 'Hantera ärenden, offerter, betalningar och kontaktuppgifter på ett ställe.' },
+const useBenefits = (t: ReturnType<typeof useT>) => [
+  { icon: Users, title: t('Lokala kunder'), text: t('Ta emot relevanta förfrågningar från cyklister i den stad där ni arbetar.') },
+  { icon: Bell, title: t('Notiser direkt'), text: t('Få mejl och valfria SMS när ett godkänt ärende matchar er stad.') },
+  { icon: TrendingUp, title: t('Fyll luckor i kalendern'), text: t('Välj själv vilka jobb som passar er kapacitet, kompetens och säsong.') },
+  { icon: Wrench, title: t('En enkel verkstadsvy'), text: t('Hantera ärenden, offerter, betalningar och kontaktuppgifter på ett ställe.') },
 ]
 
-const steps = [
-  { title: 'Registrera verkstaden', text: 'Kostnadsfritt och utan bindningstid. Välj vilken stad ni arbetar i.' },
-  { title: 'Vi granskar manuellt', text: 'Efter godkännande får ni tillgång till granskade ärenden i er stad.' },
-  { title: 'Svara på de jobb ni vill', text: `Skriv pris och möjlig tid. Ett lead (${LEAD_FEE_KR} kr exkl. moms) dras först när ni väljer att skicka – de två första är gratis.` },
-  { title: 'Kunden hör av sig', text: 'De får prisförslaget och era kontaktuppgifter. Fortsatt bokning sker direkt med er.' },
+const useSteps = (t: ReturnType<typeof useT>) => [
+  { title: t('Registrera verkstaden'), text: t('Kostnadsfritt och utan bindningstid. Välj vilken stad ni arbetar i.') },
+  { title: t('Vi granskar manuellt'), text: t('Efter godkännande får ni tillgång till granskade ärenden i er stad.') },
+  { title: t('Svara på de jobb ni vill'), text: t('Skriv pris och möjlig tid. Ett lead ({fee} kr exkl. moms) dras först när ni väljer att skicka – de två första är gratis.', { fee: LEAD_FEE_KR }) },
+  { title: t('Kunden hör av sig'), text: t('De får prisförslaget och era kontaktuppgifter. Fortsatt bokning sker direkt med er.') },
 ]
 
 const trackWorkshopCta = (placement: string) => {
@@ -33,18 +34,22 @@ const trackWorkshopCta = (placement: string) => {
   if (typeof gtag === 'function') gtag('event', 'workshop_registration_started', { placement })
 }
 
-const ForVerkstaderPage = () => (
+const ForVerkstaderPage = () => {
+  const t = useT()
+  const benefits = useBenefits(t)
+  const steps = useSteps(t)
+  return (
   <div className="min-h-screen bg-background">
     <Helmet>
-      <title>Få fler kunder till er cykelverkstad | Cykelhjälpen</title>
-      <meta name="description" content="Anslut er cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Två gratis kundförfrågningar att börja med – ingen månadsavgift, ingen bindningstid." />
+      <title>{t('Få fler kunder till er cykelverkstad')} | Cykelhjälpen</title>
+      <meta name="description" content={t('Anslut er cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Två gratis kundförfrågningar att börja med – ingen månadsavgift, ingen bindningstid.')} />
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <link rel="canonical" href="https://cykelhjalpen.se/for-cykelverkstader" />
       <meta property="og:type" content="website" />
       <meta property="og:locale" content="sv_SE" />
       <meta property="og:site_name" content="Cykelhjälpen" />
-      <meta property="og:title" content="Få fler lokala kunder till din cykelverkstad" />
-      <meta property="og:description" content="Ingen månadsavgift. Välj själv vilka lokala ärenden ni vill svara på." />
+      <meta property="og:title" content={t('Få fler lokala kunder till din cykelverkstad')} />
+      <meta property="og:description" content={t('Ingen månadsavgift. Välj själv vilka lokala ärenden ni vill svara på.')} />
       <meta property="og:url" content="https://cykelhjalpen.se/for-cykelverkstader" />
       <meta property="og:image" content="https://cykelhjalpen.se/og/for-cykelverkstader.jpg" />
       <meta name="twitter:card" content="summary_large_image" />
@@ -58,23 +63,23 @@ const ForVerkstaderPage = () => (
           <div className="grid lg:grid-cols-[1fr_.85fr] gap-10 items-center max-w-6xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/15 text-accent text-sm font-semibold mb-6">
-                <Wrench className="h-4 w-4" /> För cykelverkstäder
+                <Wrench className="h-4 w-4" /> {t('För cykelverkstäder')}
               </span>
               <h1 className="font-display text-4xl md:text-6xl tracking-tight mb-6">
-                Få fler lokala cykelkunder – <span className="italic text-accent">utan månadsavgift</span>
+                {t('Få fler lokala cykelkunder –')} <span className="italic text-accent">{t('utan månadsavgift')}</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl">
-                Cykelhjälpen skickar relevanta, manuellt granskade ärenden från cyklister i er stad. Ni väljer själva om och när ni vill lämna offert.
+                {t('Cykelhjälpen skickar relevanta, manuellt granskade ärenden från cyklister i er stad. Ni väljer själva om och när ni vill lämna offert.')}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button asChild size="lg" className="cta-playful rounded-full h-14 px-8 shadow-brand">
                   <Link to="/registrera/verkstad" onClick={() => trackWorkshopCta('hero')}>
-                    Registrera verkstaden <ArrowRight className="ml-2 h-4 w-4" />
+                    {t('Registrera verkstaden')} <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="rounded-full h-14 px-8 border-2"><a href="#sa-fungerar-det">Så fungerar det</a></Button>
+                <Button asChild variant="outline" size="lg" className="rounded-full h-14 px-8 border-2"><a href="#sa-fungerar-det">{t('Så fungerar det')}</a></Button>
               </div>
-              <p className="mt-5 text-sm text-muted-foreground">Kostnadsfri registrering · Två gratis kundförfrågningar · Ingen bindningstid</p>
+              <p className="mt-5 text-sm text-muted-foreground">{t('Kostnadsfri registrering · Två gratis kundförfrågningar · Ingen bindningstid')}</p>
             </motion.div>
 
             <motion.div
@@ -88,7 +93,7 @@ const ForVerkstaderPage = () => (
                   src={verkstadHero1200}
                   srcSet={`${verkstadHero640} 640w, ${verkstadHero1200} 1200w`}
                   sizes="(min-width: 1024px) 45vw, 100vw"
-                  alt="Cykelmekaniker i sin verkstad med cyklar på väggen"
+                  alt={t('Cykelmekaniker i sin verkstad med cyklar på väggen')}
                   width={1200}
                   height={725}
                   className="w-full aspect-[4/3] object-cover"
@@ -98,10 +103,10 @@ const ForVerkstaderPage = () => (
               <div className="absolute -bottom-5 left-4 right-4 sm:left-6 sm:right-auto sticker bg-card rounded-2xl px-5 py-4 flex items-center gap-4">
                 <div>
                   <p className="font-display text-3xl leading-none">{LEAD_FEE_KR} kr</p>
-                  <p className="text-xs text-muted-foreground mt-1">exkl. moms per skickad offert</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('exkl. moms per skickad offert')}</p>
                 </div>
                 <div className="hidden sm:block w-px self-stretch bg-border" />
-                <p className="hidden sm:block text-sm text-muted-foreground max-w-44">De två första förfrågningarna är gratis – sedan {LEAD_FEE_KR} kr per offert ni skickar.</p>
+                <p className="hidden sm:block text-sm text-muted-foreground max-w-44">{t('De två första förfrågningarna är gratis – sedan {fee} kr per offert ni skickar.', { fee: LEAD_FEE_KR })}</p>
               </div>
             </motion.div>
           </div>
@@ -113,8 +118,8 @@ const ForVerkstaderPage = () => (
       {/* Fördelar */}
       <section className="container mx-auto px-4 py-16 md:py-20 max-w-6xl">
         <Reveal>
-          <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">Fördelar</p>
-          <h2 className="font-display text-3xl md:text-5xl text-center mb-12">Därför ansluter verkstäder sig</h2>
+          <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">{t('Fördelar')}</p>
+          <h2 className="font-display text-3xl md:text-5xl text-center mb-12">{t('Därför ansluter verkstäder sig')}</h2>
         </Reveal>
         <div className="grid sm:grid-cols-2 gap-5">
           {benefits.map((benefit, index) => (
@@ -135,8 +140,8 @@ const ForVerkstaderPage = () => (
       <section id="sa-fungerar-det" className="bg-muted/40 py-16 md:py-20 scroll-mt-20">
         <div className="container mx-auto px-4 max-w-3xl">
           <Reveal>
-            <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">Kom igång</p>
-            <h2 className="font-display text-3xl md:text-5xl text-center mb-12">Så fungerar det</h2>
+            <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3 text-center">{t('Kom igång')}</p>
+            <h2 className="font-display text-3xl md:text-5xl text-center mb-12">{t('Så fungerar det')}</h2>
           </Reveal>
           <ol className="relative space-y-6 before:absolute before:left-[27px] before:top-4 before:bottom-4 before:w-0.5 before:bg-border">
             {steps.map((step, index) => (
@@ -163,20 +168,21 @@ const ForVerkstaderPage = () => (
             <span className="inline-flex items-center justify-center rounded-2xl bg-background/10 p-4 mb-6">
               <CheckCircle2 className="h-9 w-9 text-[hsl(var(--brand-sun))]" />
             </span>
-            <h2 className="font-display text-3xl md:text-5xl mb-4">Redo att ta emot fler lokala ärenden?</h2>
-            <p className="text-lg text-background/70 mb-8 max-w-xl mx-auto">Registreringen är kostnadsfri, de två första förfrågningarna är gratis och ni bestämmer helt själva vilka jobb ni vill svara på.</p>
+            <h2 className="font-display text-3xl md:text-5xl mb-4">{t('Redo att ta emot fler lokala ärenden?')}</h2>
+            <p className="text-lg text-background/70 mb-8 max-w-xl mx-auto">{t('Registreringen är kostnadsfri, de två första förfrågningarna är gratis och ni bestämmer helt själva vilka jobb ni vill svara på.')}</p>
             <Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-14 px-10 text-base">
               <Link to="/registrera/verkstad" onClick={() => trackWorkshopCta('bottom')}>
-                Kom igång nu <ArrowRight className="ml-2 h-4 w-4" />
+                {t('Kom igång nu')} <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <p className="mt-5 text-sm text-background/60">Tillgängligt i {CYKEL_CITIES.map((city) => city.name).join(', ')}</p>
+            <p className="mt-5 text-sm text-background/60">{t('Tillgängligt i {cities}', { cities: CYKEL_CITIES.map((city) => city.name).join(', ') })}</p>
           </div>
         </Reveal>
       </section>
     </main>
     <CykelFooter />
   </div>
-)
+  )
+}
 
 export default ForVerkstaderPage

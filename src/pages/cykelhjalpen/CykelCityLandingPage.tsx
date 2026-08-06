@@ -8,14 +8,16 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { getCityImage } from '@/lib/cykelCityImages'
 import { trackClick } from '@/hooks/usePageTracking'
+import { useT } from '@/lib/i18n'
 
 const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
+  const t = useT()
   const cityData = getCykelCity(city)
   const cityImage = getCityImage(city)
   const canonical = `https://cykelhjalpen.se${cityLandingPath(city)}`
 
   const trackCta = (placement: string) => {
-    trackClick('city_request_cta_clicked', `Få prisförslag i ${city}`, { city, placement })
+    trackClick('city_request_cta_clicked', t('Få prisförslag i {city}', { city }), { city, placement })
     const gtag = (window as any).gtag
     if (typeof gtag === 'function') gtag('event', 'select_content', { content_type: 'city_landing_cta', item_id: cityData.slug, placement })
   }
@@ -27,26 +29,26 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
         '@type': 'WebPage',
         '@id': `${canonical}#webpage`,
         url: canonical,
-        name: `Cykelverkstad ${city} – jämför lokala prisförslag`,
-        headline: `Cykelverkstad i ${city}`,
-        description: `Beskriv ditt cykelproblem och jämför pris och tid från anslutna cykelverkstäder i ${city}.`,
+        name: t('Cykelverkstad {city} – jämför lokala prisförslag', { city }),
+        headline: t('Cykelverkstad i {city}', { city }),
+        description: t('Beskriv ditt cykelproblem och jämför pris och tid från anslutna cykelverkstäder i {city}.', { city }),
         inLanguage: 'sv-SE',
         isPartOf: { '@id': 'https://cykelhjalpen.se/#website' },
       },
       {
         '@type': 'Service',
         '@id': `${canonical}#service`,
-        name: `Jämför cykelverkstäder i ${city}`,
-        serviceType: 'Förmedling av cykelreparation och cykelservice',
+        name: t('Jämför cykelverkstäder i {city}', { city }),
+        serviceType: t('Förmedling av cykelreparation och cykelservice'),
         areaServed: { '@type': 'City', name: city },
         provider: { '@id': 'https://cykelhjalpen.se/#organization' },
-        offers: { '@type': 'Offer', price: '0', priceCurrency: 'SEK', description: 'Kostnadsfri offertförfrågan för cyklister' },
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'SEK', description: t('Kostnadsfri offertförfrågan för cyklister') },
       },
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Cykelhjälpen', item: 'https://cykelhjalpen.se/' },
-          { '@type': 'ListItem', position: 2, name: `Cykelverkstad ${city}`, item: canonical },
+          { '@type': 'ListItem', position: 2, name: t('Cykelverkstad {city}', { city }), item: canonical },
         ],
       },
       {
@@ -54,13 +56,13 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
         mainEntity: [
           {
             '@type': 'Question',
-            name: `Vad kostar det att skicka ett cykelärende i ${city}?`,
-            acceptedAnswer: { '@type': 'Answer', text: 'Det är kostnadsfritt för dig som cyklist och du har ingen köpplikt.' },
+            name: t('Vad kostar det att skicka ett cykelärende i {city}?', { city }),
+            acceptedAnswer: { '@type': 'Answer', text: t('Det är kostnadsfritt för dig som cyklist och du har ingen köpplikt.') },
           },
           {
             '@type': 'Question',
-            name: `Vilka cykelproblem kan verkstäder i ${city} hjälpa till med?`,
-            acceptedAnswer: { '@type': 'Answer', text: 'Bland annat punktering, bromsar, växlar, kedja, service, hjul och elcykelproblem.' },
+            name: t('Vilka cykelproblem kan verkstäder i {city} hjälpa till med?', { city }),
+            acceptedAnswer: { '@type': 'Answer', text: t('Bland annat punktering, bromsar, växlar, kedja, service, hjul och elcykelproblem.') },
           },
         ],
       },
@@ -70,23 +72,23 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Cykelverkstad {city} – jämför lokala prisförslag</title>
-        <meta name="description" content={`Hitta cykelverkstad i ${city}. Beskriv problemet gratis och jämför pris och tid från anslutna verkstäder utan konto.`} />
+        <title>{t('Cykelverkstad {city} – jämför lokala prisförslag', { city })}</title>
+        <meta name="description" content={t('Hitta cykelverkstad i {city}. Beskriv problemet gratis och jämför pris och tid från anslutna verkstäder utan konto.', { city })} />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <link rel="canonical" href={canonical} />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="sv_SE" />
         <meta property="og:site_name" content="Cykelhjälpen" />
-        <meta property="og:title" content={`Cykelverkstad ${city} – jämför lokala prisförslag`} />
-        <meta property="og:description" content={`Få lokala prisförslag på cykelreparation i ${city}. Gratis och utan konto.`} />
+        <meta property="og:title" content={t('Cykelverkstad {city} – jämför lokala prisförslag', { city })} />
+        <meta property="og:description" content={t('Få lokala prisförslag på cykelreparation i {city}. Gratis och utan konto.', { city })} />
         <meta property="og:url" content={canonical} />
         <meta property="og:image" content={`https://cykelhjalpen.se/og/stad-${cityData.slug}.jpg`} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={`Cykelhjälpen i ${city}`} />
+        <meta property="og:image:alt" content={t('Cykelhjälpen i {city}', { city })} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`Cykelverkstad ${city} – jämför lokala prisförslag`} />
-        <meta name="twitter:description" content={`Få lokala prisförslag på cykelreparation i ${city}.`} />
+        <meta name="twitter:title" content={t('Cykelverkstad {city} – jämför lokala prisförslag', { city })} />
+        <meta name="twitter:description" content={t('Få lokala prisförslag på cykelreparation i {city}.', { city })} />
         <meta name="twitter:image" content={`https://cykelhjalpen.se/og/stad-${cityData.slug}.jpg`} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
@@ -95,7 +97,7 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
       <main>
         <section className="bg-hero-gradient">
           <div className="container mx-auto px-4 py-14 md:py-20 max-w-6xl">
-            <nav aria-label="Brödsmulor" className="text-sm text-muted-foreground mb-8">
+            <nav aria-label={t('Brödsmulor')} className="text-sm text-muted-foreground mb-8">
               <Link to="/" className="hover:underline">Cykelhjälpen</Link> <span aria-hidden="true">/</span> <span>{city}</span>
             </nav>
             <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-10 items-center">
@@ -104,18 +106,18 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
                   <MapPin className="h-4 w-4 text-primary" /> {city}
                 </div>
                 <h1 className="font-display text-4xl md:text-6xl tracking-tight max-w-2xl">
-                  Cykelverkstad i {city} – <span className="italic text-accent">jämför innan du väljer</span>
+                  {t('Cykelverkstad i {city} –', { city })} <span className="italic text-accent">{t('jämför innan du väljer')}</span>
                 </h1>
                 <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-                  Beskriv problemet en gång och jämför pris, möjlig tid och kontaktuppgifter från anslutna cykelverkstäder i {city}. Tjänsten är gratis för dig som cyklist.
+                  {t('Beskriv problemet en gång och jämför pris, möjlig tid och kontaktuppgifter från anslutna cykelverkstäder i {city}. Tjänsten är gratis för dig som cyklist.', { city })}
                 </p>
                 <Button asChild size="lg" className="mt-8 rounded-full h-14 px-8 cta-playful shadow-brand">
-                  <Link to={cityQuery(city)} onClick={() => trackCta('hero')}>Få prisförslag i {city} <ArrowRight className="h-4 w-4 ml-2" /></Link>
+                  <Link to={cityQuery(city)} onClick={() => trackCta('hero')}>{t('Få prisförslag i {city}', { city })} <ArrowRight className="h-4 w-4 ml-2" /></Link>
                 </Button>
                 <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Inget konto</span>
-                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Ingen köpplikt</span>
-                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> Lokala svar</span>
+                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Inget konto')}</span>
+                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Ingen köpplikt')}</span>
+                  <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Lokala svar')}</span>
                 </div>
               </motion.div>
 
@@ -143,9 +145,9 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
         <section className="bg-muted/40 py-16">
           <div className="container mx-auto px-4 max-w-5xl grid md:grid-cols-3 gap-5">
             {[
-              { icon: Bike, title: 'Beskriv cykeln', text: 'Välj problem, brådska och lägg gärna till bilder.' },
-              { icon: Wrench, title: 'Lokala verkstäder svarar', text: `Godkända verkstäder i ${city} kan svara med pris och möjlig tid.` },
-              { icon: CheckCircle2, title: 'Du väljer själv', text: 'Jämför alternativen utan konto, kostnad eller köpplikt.' },
+              { icon: Bike, title: t('Beskriv cykeln'), text: t('Välj problem, brådska och lägg gärna till bilder.') },
+              { icon: Wrench, title: t('Lokala verkstäder svarar'), text: t('Godkända verkstäder i {city} kan svara med pris och möjlig tid.', { city }) },
+              { icon: CheckCircle2, title: t('Du väljer själv'), text: t('Jämför alternativen utan konto, kostnad eller köpplikt.') },
             ].map(({ icon: Icon, title, text }) => (
               <div key={title} className="sticker bg-card rounded-2xl p-6">
                 <Icon className="h-7 w-7 text-primary mb-4" />
@@ -158,29 +160,29 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
 
         <section className="container mx-auto px-4 py-16 max-w-4xl space-y-10">
           <div>
-            <h2 className="font-display text-3xl font-bold">Lokal cykelhjälp i {city}</h2>
-            <p className="text-muted-foreground mt-3 leading-relaxed">Cykelhjälpen täcker bland annat {cityData.areas}. Ange område eller postnummer i formuläret så att verkstäderna kan bedöma avstånd, inlämning och eventuell hämtning.</p>
+            <h2 className="font-display text-3xl font-bold">{t('Lokal cykelhjälp i {city}', { city })}</h2>
+            <p className="text-muted-foreground mt-3 leading-relaxed">{t('Cykelhjälpen täcker bland annat {areas}. Ange område eller postnummer i formuläret så att verkstäderna kan bedöma avstånd, inlämning och eventuell hämtning.', { areas: cityData.areas })}</p>
           </div>
           <div>
-            <h2 className="font-display text-3xl font-bold">För studenter, familjer och pendlare</h2>
-            <p className="text-muted-foreground mt-3 leading-relaxed">{cityData.localIntro} Punktering, bromsar, växlar och kedjeproblem kan snabbt störa vardagen, därför är det värdefullt att kunna jämföra lokala alternativ.</p>
+            <h2 className="font-display text-3xl font-bold">{t('För studenter, familjer och pendlare')}</h2>
+            <p className="text-muted-foreground mt-3 leading-relaxed">{t(cityData.localIntro)} {t('Punktering, bromsar, växlar och kedjeproblem kan snabbt störa vardagen, därför är det värdefullt att kunna jämföra lokala alternativ.')}</p>
           </div>
           <div>
-            <h2 className="font-display text-3xl font-bold">Vanliga cykeljobb</h2>
-            <p className="text-muted-foreground mt-3 leading-relaxed">Anslutna verkstäder kan bland annat hjälpa till med punktering, däckbyte, bromsservice, växeljustering, kedjebyte, komplett service, hjul och elcyklar. Beskriv symptomen så tydligt du kan och bifoga gärna bilder.</p>
+            <h2 className="font-display text-3xl font-bold">{t('Vanliga cykeljobb')}</h2>
+            <p className="text-muted-foreground mt-3 leading-relaxed">{t('Anslutna verkstäder kan bland annat hjälpa till med punktering, däckbyte, bromsservice, växeljustering, kedjebyte, komplett service, hjul och elcyklar. Beskriv symptomen så tydligt du kan och bifoga gärna bilder.')}</p>
           </div>
 
           <div className="sticker bg-card rounded-2xl p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
             <div>
               <ShieldCheck className="h-7 w-7 text-primary mb-3" />
-              <h2 className="font-display text-2xl font-bold">Gratis, lokalt och utan konto</h2>
-              <p className="text-muted-foreground mt-2">Skicka ärendet på cirka två minuter och välj själv om du vill gå vidare.</p>
+              <h2 className="font-display text-2xl font-bold">{t('Gratis, lokalt och utan konto')}</h2>
+              <p className="text-muted-foreground mt-2">{t('Skicka ärendet på cirka två minuter och välj själv om du vill gå vidare.')}</p>
             </div>
-            <Button asChild><Link to={cityQuery(city)} onClick={() => trackCta('bottom')}>Starta förfrågan</Link></Button>
+            <Button asChild><Link to={cityQuery(city)} onClick={() => trackCta('bottom')}>{t('Starta förfrågan')}</Link></Button>
           </div>
 
           <section aria-labelledby="andra-stader">
-            <h2 id="andra-stader" className="font-display text-2xl font-bold mb-4">Cykelhjälpen i fler städer</h2>
+            <h2 id="andra-stader" className="font-display text-2xl font-bold mb-4">{t('Cykelhjälpen i fler städer')}</h2>
             <div className="grid sm:grid-cols-3 gap-4">
               {CYKEL_CITIES.filter((candidate) => candidate.name !== city).map((candidate) => {
                 const image = getCityImage(candidate.name)
@@ -201,7 +203,7 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
                       />
                     </div>
                     <span className="flex items-center justify-between gap-2 p-4 font-medium">
-                      Cykelverkstad {candidate.name}
+                      {t('Cykelverkstad {city}', { city: candidate.name })}
                       <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
                     </span>
                   </Link>

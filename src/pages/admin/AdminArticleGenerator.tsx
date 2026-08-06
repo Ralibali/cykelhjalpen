@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, Eye, ChevronLeft, ExternalLink, AlertCircle, CheckCircle2, FileEdit } from "lucide-react";
 import { setSEOMeta } from "@/lib/seoHelpers";
+import { useT } from "@/lib/i18n";
 
 interface Section { heading: string; content: string }
 interface FaqItem { q: string; a: string }
@@ -51,6 +52,7 @@ const ARTICLE_TYPES: { value: string; label: string }[] = [
 ];
 
 const AdminArticleGenerator = () => {
+  const t = useT();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const editId = searchParams.get("id");
@@ -111,9 +113,9 @@ const AdminArticleGenerator = () => {
         setArticleType(data.article_type);
         setTargetKeyword(data.target_keyword || "");
         setTopic(data.h1);
-        toast({ title: "Artikel laddad", description: "Granska och publicera när du är klar" });
+        toast({ title: t("Artikel laddad"), description: t("Granska och publicera när du är klar") });
       } catch (e: any) {
-        toast({ title: "Kunde inte ladda artikel", description: e.message, variant: "destructive" });
+        toast({ title: t("Kunde inte ladda artikel"), description: e.message, variant: "destructive" });
       } finally {
         setLoadingExisting(false);
       }
@@ -136,7 +138,7 @@ const AdminArticleGenerator = () => {
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
-      toast({ title: "Ämne saknas", description: "Fyll i ett ämne först", variant: "destructive" });
+      toast({ title: t("Ämne saknas"), description: t("Fyll i ett ämne först"), variant: "destructive" });
       return;
     }
     setGenerating(true);
@@ -157,9 +159,9 @@ const AdminArticleGenerator = () => {
       if (data?.error) throw new Error(data.error);
       setArticle(data.article);
       setMeta({ attempts: data.attempts, issues: data.issues });
-      toast({ title: "Artikel genererad", description: `${data.attempts} AI-anrop` });
+      toast({ title: t("Artikel genererad"), description: t("{n} AI-anrop", { n: data.attempts }) });
     } catch (e: any) {
-      toast({ title: "Fel", description: e.message || "Kunde inte generera", variant: "destructive" });
+      toast({ title: t("Fel"), description: e.message || t("Kunde inte generera"), variant: "destructive" });
     } finally {
       setGenerating(false);
     }
@@ -224,13 +226,13 @@ const AdminArticleGenerator = () => {
         if (error) throw error;
       }
       toast({
-        title: status === "published" ? "Publicerad" : "Sparad som utkast",
+        title: status === "published" ? t("Publicerad") : t("Sparad som utkast"),
         description: `/artiklar/${article.slug}`,
       });
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
       queryClient.invalidateQueries({ queryKey: ["article-queue"] });
     } catch (e: any) {
-      toast({ title: "Sparfel", description: e.message, variant: "destructive" });
+      toast({ title: t("Sparfel"), description: e.message, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -241,16 +243,16 @@ const AdminArticleGenerator = () => {
       <div className="container max-w-7xl py-8">
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/admin"><ChevronLeft className="h-4 w-4 mr-1" /> Admin</Link>
+            <Link to="/admin"><ChevronLeft className="h-4 w-4 mr-1" /> {t("Admin")}</Link>
           </Button>
         </div>
 
         <div className="flex items-center gap-3 mb-8">
           {editingId ? <FileEdit className="h-7 w-7 text-primary" /> : <Sparkles className="h-7 w-7 text-accent" />}
           <div>
-            <h1 className="font-display text-3xl">{editingId ? "Granska artikel" : "Artikelgenerator"}</h1>
+            <h1 className="font-display text-3xl">{editingId ? t("Granska artikel") : t("Artikelgenerator")}</h1>
             <p className="text-sm text-muted-foreground">
-              {editingId ? "Redigera AI-utkast – publicera när du är nöjd" : "Gemini 2.5 Pro – anti-AI röstregler aktiva"}
+              {editingId ? t("Redigera AI-utkast – publicera när du är nöjd") : t("Gemini 2.5 Pro – anti-AI röstregler aktiva")}
             </p>
           </div>
           {editingId && (
@@ -259,7 +261,7 @@ const AdminArticleGenerator = () => {
               setArticle(null);
               setSearchParams({});
             }}>
-              Avbryt granskning
+              {t("Avbryt granskning")}
             </Button>
           )}
         </div>
@@ -268,19 +270,19 @@ const AdminArticleGenerator = () => {
           {/* Form */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Generera ny artikel</CardTitle>
+              <CardTitle className="text-base">{t("Generera ny artikel")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="topic">Ämne</Label>
-                <Input id="topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Vad kostar SEO 2026" />
+                <Label htmlFor="topic">{t("Ämne")}</Label>
+                <Input id="topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder={t("Vad kostar SEO 2026")} />
               </div>
               <div>
-                <Label htmlFor="kw">Målkeyword</Label>
-                <Input id="kw" value={targetKeyword} onChange={(e) => setTargetKeyword(e.target.value)} placeholder="seo pris 2026" />
+                <Label htmlFor="kw">{t("Målkeyword")}</Label>
+                <Input id="kw" value={targetKeyword} onChange={(e) => setTargetKeyword(e.target.value)} placeholder={t("seo pris 2026")} />
               </div>
               <div>
-                <Label>Kategori</Label>
+                <Label>{t("Kategori")}</Label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -289,7 +291,7 @@ const AdminArticleGenerator = () => {
                 </Select>
               </div>
               <div>
-                <Label>Artikeltyp</Label>
+                <Label>{t("Artikeltyp")}</Label>
                 <Select value={articleType} onValueChange={setArticleType}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -298,17 +300,17 @@ const AdminArticleGenerator = () => {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="city">Stad (valfritt)</Label>
+                <Label htmlFor="city">{t("Stad (valfritt)")}</Label>
                 <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Linköping" />
               </div>
               <div>
-                <Label htmlFor="min">Minsta längd (tecken)</Label>
+                <Label htmlFor="min">{t("Minsta längd (tecken)")}</Label>
                 <Input id="min" type="number" value={minLength} onChange={(e) => setMinLength(Number(e.target.value) || 5000)} />
               </div>
               <Button onClick={handleGenerate} disabled={generating} className="w-full">
-                {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Genererar…</> : <><Sparkles className="h-4 w-4 mr-2" /> Generera</>}
+                {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("Genererar…")}</> : <><Sparkles className="h-4 w-4 mr-2" /> {t("Generera")}</>}
               </Button>
-              <p className="text-xs text-muted-foreground">Tar ofta 30–90 sek. Vid förbjudna fraser regenereras automatiskt (max 3 försök).</p>
+              <p className="text-xs text-muted-foreground">{t("Tar ofta 30–90 sek. Vid förbjudna fraser regenereras automatiskt (max 3 försök).")}</p>
             </CardContent>
           </Card>
 
@@ -316,7 +318,7 @@ const AdminArticleGenerator = () => {
           <div className="space-y-6">
             {loadingExisting && (
               <Card><CardContent className="py-12 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> Laddar artikel…
+                <Loader2 className="h-4 w-4 animate-spin" /> {t("Laddar artikel…")}
               </CardContent></Card>
             )}
             {meta && (
@@ -327,7 +329,7 @@ const AdminArticleGenerator = () => {
                   ) : (
                     <CheckCircle2 className="h-4 w-4 text-accent" />
                   )}
-                  <span>{meta.attempts} AI-anrop</span>
+                  <span>{t("{n} AI-anrop", { n: meta.attempts })}</span>
                   {meta.issues && meta.issues.length > 0 && (
                     <span className="text-muted-foreground truncate">· {meta.issues.join(" | ")}</span>
                   )}
@@ -339,52 +341,52 @@ const AdminArticleGenerator = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Eye className="h-4 w-4" /> Förhandsgranska & redigera
+                    <Eye className="h-4 w-4" /> {t("Förhandsgranska & redigera")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid sm:grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs">Slug</Label>
+                      <Label className="text-xs">{t("Slug")}</Label>
                       <Input value={article.slug} onChange={(e) => updateField("slug", e.target.value)} />
                     </div>
                     <div>
-                      <Label className="text-xs">Kategori</Label>
+                      <Label className="text-xs">{t("Kategori")}</Label>
                       <Input value={article.category} onChange={(e) => updateField("category", e.target.value)} />
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs">Meta title ({article.metaTitle.length}/60)</Label>
+                    <Label className="text-xs">{t("Meta title ({n}/60)", { n: article.metaTitle.length })}</Label>
                     <Input value={article.metaTitle} onChange={(e) => updateField("metaTitle", e.target.value)} />
                   </div>
                   <div>
-                    <Label className="text-xs">Meta description ({article.metaDesc.length}/160)</Label>
+                    <Label className="text-xs">{t("Meta description ({n}/160)", { n: article.metaDesc.length })}</Label>
                     <Textarea value={article.metaDesc} onChange={(e) => updateField("metaDesc", e.target.value)} rows={2} />
                   </div>
                   <div>
-                    <Label className="text-xs">H1</Label>
+                    <Label className="text-xs">{t("H1")}</Label>
                     <Input value={article.h1} onChange={(e) => updateField("h1", e.target.value)} />
                   </div>
                   <div>
-                    <Label className="text-xs">Intro</Label>
+                    <Label className="text-xs">{t("Intro")}</Label>
                     <Textarea value={article.intro} onChange={(e) => updateField("intro", e.target.value)} rows={4} />
                   </div>
 
                   <div>
-                    <Label className="text-xs">Sections ({article.sections.length})</Label>
+                    <Label className="text-xs">{t("Sections ({n})", { n: article.sections.length })}</Label>
                     <div className="space-y-3 mt-2">
                       {article.sections.map((s, i) => (
                         <div key={i} className="border rounded-lg p-3 bg-muted/30">
                           <Input className="font-semibold mb-2" value={s.heading} onChange={(e) => updateSection(i, "heading", e.target.value)} />
                           <Textarea value={s.content} onChange={(e) => updateSection(i, "content", e.target.value)} rows={6} className="font-mono text-xs" />
-                          <p className="text-xs text-muted-foreground mt-1">{s.content.length} tecken</p>
+                          <p className="text-xs text-muted-foreground mt-1">{t("{n} tecken", { n: s.content.length })}</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-xs">FAQ ({article.faq.length})</Label>
+                    <Label className="text-xs">{t("FAQ ({n})", { n: article.faq.length })}</Label>
                     <div className="space-y-2 mt-2">
                       {article.faq.map((f, i) => (
                         <div key={i} className="border rounded-lg p-3 bg-muted/30">
@@ -398,10 +400,10 @@ const AdminArticleGenerator = () => {
                   <div className="flex gap-2 pt-2">
                     <Button onClick={() => handleSave("published")} disabled={saving}>
                       {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                      Publicera
+                      {t("Publicera")}
                     </Button>
                     <Button onClick={() => handleSave("draft")} variant="outline" disabled={saving}>
-                      Spara utkast
+                      {t("Spara utkast")}
                     </Button>
                   </div>
                 </CardContent>
@@ -410,7 +412,7 @@ const AdminArticleGenerator = () => {
               !generating && (
                 <Card>
                   <CardContent className="py-12 text-center text-sm text-muted-foreground">
-                    Fyll i formuläret och tryck "Generera" för att skapa en artikel.
+                    {t('Fyll i formuläret och tryck "Generera" för att skapa en artikel.')}
                   </CardContent>
                 </Card>
               )
@@ -419,11 +421,11 @@ const AdminArticleGenerator = () => {
             {/* History */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Historik</CardTitle>
+                <CardTitle className="text-base">{t("Historik")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {!history || history.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Inga sparade artiklar än.</p>
+                  <p className="text-sm text-muted-foreground">{t("Inga sparade artiklar än.")}</p>
                 ) : (
                   <div className="divide-y">
                     {history.map((a: any) => (

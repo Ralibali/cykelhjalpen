@@ -10,8 +10,10 @@ import { Loader2, Lock, MapPin } from 'lucide-react'
 import { CYKEL_CITIES, isCykelCity } from '@/lib/cykelCities'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { useAuth } from '@/hooks/useAuth'
+import { useT } from '@/lib/i18n'
 
 const WorkshopSettings = () => {
+  const t = useT()
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const { user } = useAuth()
   const [form, setForm] = useState(workshop)
@@ -20,11 +22,11 @@ const WorkshopSettings = () => {
   useEffect(() => { setForm(workshop) }, [workshop])
 
   const save = async () => {
-    if (form.company_name.trim().length < 2) return toast.error('Ange verkstadens namn')
-    if (!isCykelCity(form.city)) return toast.error('Välj en giltig stad')
+    if (form.company_name.trim().length < 2) return toast.error(t('Ange verkstadens namn'))
+    if (!isCykelCity(form.city)) return toast.error(t('Välj en giltig stad'))
     if (workshop.approved && form.city !== workshop.city) {
       setForm((current) => ({ ...current, city: workshop.city }))
-      return toast.error('En godkänd verkstads serviceort ändras av Cykelhjälpen efter kontroll. Kontakta info@cykelhjalpen.se.')
+      return toast.error(t('En godkänd verkstads serviceort ändras av Cykelhjälpen efter kontroll. Kontakta info@cykelhjalpen.se.'))
     }
 
     setSaving(true)
@@ -55,35 +57,35 @@ const WorkshopSettings = () => {
 
     if (workshopError || profileError) {
       const message = workshopError?.message?.includes('approved_workshop_city_locked')
-        ? 'Serviceorten är låst för godkända verkstäder. Kontakta info@cykelhjalpen.se.'
-        : workshopError?.message || profileError?.message || 'Kunde inte spara'
+        ? t('Serviceorten är låst för godkända verkstäder. Kontakta info@cykelhjalpen.se.')
+        : workshopError?.message || profileError?.message || t('Kunde inte spara')
       toast.error(message)
       return
     }
 
     setForm((current) => ({ ...current, ...workshopUpdate }))
-    toast.success('Inställningarna är sparade')
+    toast.success(t('Inställningarna är sparade'))
   }
 
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold">Inställningar</h1>
-        <p className="text-sm text-muted-foreground mt-1">Håll kontaktuppgifter och serviceområde aktuella.</p>
+        <h1 className="font-display text-2xl font-bold">{t('Inställningar')}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('Håll kontaktuppgifter och serviceområde aktuella.')}</p>
       </div>
 
       <div className="sticker rounded-3xl bg-card p-6 space-y-5 max-w-xl">
         <div>
-          <Label htmlFor="company-name">Verkstadens namn</Label>
+          <Label htmlFor="company-name">{t('Verkstadens namn')}</Label>
           <Input id="company-name" value={form.company_name || ''} onChange={(event) => setForm({ ...form, company_name: event.target.value })} />
         </div>
 
         <div>
-          <Label>Stad</Label>
+          <Label>{t('Stad')}</Label>
           <p className="text-xs text-muted-foreground mt-1 mb-2">
             {workshop.approved
-              ? 'Serviceorten är låst efter godkännandet. Kontakta info@cykelhjalpen.se om verksamheten flyttar.'
-              : 'Ni får bara ärenden från den valda staden. Orten låses när verkstaden godkänns.'}
+              ? t('Serviceorten är låst efter godkännandet. Kontakta info@cykelhjalpen.se om verksamheten flyttar.')
+              : t('Ni får bara ärenden från den valda staden. Orten låses när verkstaden godkänns.')}
           </p>
           <div className="grid grid-cols-2 gap-2">
             {CYKEL_CITIES.map((city) => {
@@ -111,31 +113,31 @@ const WorkshopSettings = () => {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="phone">Telefon</Label>
+            <Label htmlFor="phone">{t('Telefon')}</Label>
             <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" value={form.phone || ''} onChange={(event) => setForm({ ...form, phone: event.target.value })} />
           </div>
           <div>
-            <Label htmlFor="website">Webbplats</Label>
+            <Label htmlFor="website">{t('Webbplats')}</Label>
             <Input id="website" inputMode="url" autoComplete="url" value={form.website || ''} onChange={(event) => setForm({ ...form, website: event.target.value })} placeholder="https://verkstad.se" />
           </div>
         </div>
 
         <div>
-          <Label htmlFor="address">Adress</Label>
+          <Label htmlFor="address">{t('Adress')}</Label>
           <Input id="address" autoComplete="street-address" value={form.address || ''} onChange={(event) => setForm({ ...form, address: event.target.value })} />
         </div>
 
         <div className="flex items-start justify-between gap-4 pt-4 border-t">
           <div>
-            <Label htmlFor="sms_notifications" className="cursor-pointer">SMS vid nytt ärende</Label>
-            <p className="text-xs text-muted-foreground mt-1">Kräver att telefonnummer är ifyllt. SMS skickas bara för ärenden i {form.city}.</p>
+            <Label htmlFor="sms_notifications" className="cursor-pointer">{t('SMS vid nytt ärende')}</Label>
+            <p className="text-xs text-muted-foreground mt-1">{t('Kräver att telefonnummer är ifyllt. SMS skickas bara för ärenden i {city}.', { city: form.city })}</p>
           </div>
           <Switch id="sms_notifications" checked={Boolean(form.sms_notifications)} onCheckedChange={(value) => setForm({ ...form, sms_notifications: value })} disabled={!form.phone} />
         </div>
 
         <Button onClick={save} disabled={saving} className="min-w-28">
           {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          {saving ? 'Sparar…' : 'Spara'}
+          {saving ? t('Sparar…') : t('Spara')}
         </Button>
       </div>
     </div>
