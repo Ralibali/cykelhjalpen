@@ -26,6 +26,7 @@ const useNavItems = () => {
     { label: t('Betalningar'), href: '/admin/cykelbetalningar', icon: CreditCard },
     { label: t('Användare'), href: '/admin/anvandare', icon: Users },
     { label: t('Besökare'), href: '/admin/besokare', icon: Eye },
+    { label: t('Redirects'), href: '/admin/redirects', icon: ArrowLeft },
     { label: t('Statistik'), href: '/admin/statistik', icon: TrendingUp },
     { label: t('Guider'), href: '/admin/guider', icon: BookOpen },
     { label: t('Artikelgenerator'), href: '/admin/artikelgenerator', icon: Sparkles },
