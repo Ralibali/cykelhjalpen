@@ -129,7 +129,9 @@ Deno.serve(async (req) => {
         customerName,
         workshopName,
         requestUrl: buildCustomerResponseUrl(request.view_token as string),
+        settled,
       })
+
     })().catch((notifyError) => console.error('winner notifications failed', notifyError))
 
     const edgeRuntime = (globalThis as any).EdgeRuntime
