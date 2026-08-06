@@ -17,7 +17,7 @@ import { Helmet } from 'react-helmet-async'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
-import { DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
+import { DEFAULT_CYKEL_CITY, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
 import {
   BIKE_REQUEST_STEPS,
   URGENCY_OPTIONS,
