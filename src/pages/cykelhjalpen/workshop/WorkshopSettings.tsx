@@ -58,6 +58,12 @@ const WorkshopSettings = () => {
       ? (/^https?:\/\//i.test(form.website) ? form.website : `https://${form.website}`)
       : null
 
+    const normalizeUrl = (value?: string | null) => {
+      const trimmed = value?.trim()
+      if (!trimmed) return null
+      return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+    }
+
     const workshopUpdate = {
       company_name: form.company_name.trim(),
       phone: form.phone?.trim() || null,
@@ -65,6 +71,15 @@ const WorkshopSettings = () => {
       website: normalizedWebsite,
       city: workshop.approved ? workshop.city : form.city,
       sms_notifications: Boolean(form.sms_notifications && form.phone),
+      description: form.description?.trim() || null,
+      opening_hours: form.opening_hours?.trim() || null,
+      org_number: form.org_number?.trim() || null,
+      founded_year: form.founded_year ? Number(form.founded_year) : null,
+      price_info: form.price_info?.trim() || null,
+      facebook_url: normalizeUrl(form.facebook_url),
+      instagram_url: normalizeUrl(form.instagram_url),
+      booking_url: normalizeUrl(form.booking_url),
+      services: (form.services || []).filter(Boolean),
     }
 
     const [{ error: workshopError }, { error: profileError }] = await Promise.all([
