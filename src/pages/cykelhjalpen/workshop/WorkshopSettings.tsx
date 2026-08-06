@@ -3,11 +3,13 @@ import { useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Loader2, Lock, MapPin } from 'lucide-react'
 import { CYKEL_CITIES, isCykelCity } from '@/lib/cykelCities'
+import { validateNewPassword } from '@/lib/authRecovery'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/lib/i18n'
@@ -18,6 +20,27 @@ const WorkshopSettings = () => {
   const { user } = useAuth()
   const [form, setForm] = useState(workshop)
   const [saving, setSaving] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmation, setConfirmation] = useState('')
+  const [changing, setChanging] = useState(false)
+
+  const changePassword = async () => {
+    if (changing) return
+    const validationError = validateNewPassword(password, confirmation)
+    if (validationError) return toast.error(t(validationError))
+
+    setChanging(true)
+    const { error } = await supabase.auth.updateUser({ password })
+    setChanging(false)
+
+    if (error) {
+      toast.error(t('Kunde inte uppdatera lösenordet. Försök igen.'))
+      return
+    }
+    setPassword('')
+    setConfirmation('')
+    toast.success(t('Lösenordet är uppdaterat.'))
+  }
 
   useEffect(() => { setForm(workshop) }, [workshop])
 
@@ -138,6 +161,49 @@ const WorkshopSettings = () => {
         <Button onClick={save} disabled={saving} className="min-w-28">
           {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {saving ? t('Sparar…') : t('Spara')}
+        </Button>
+      </div>
+
+      <div className="sticker rounded-3xl bg-card p-6 space-y-5 max-w-xl mt-6">
+        <div>
+          <h2 className="font-display text-xl font-bold">{t('Byt lösenord')}</h2>
+          <p className="text-xs text-muted-foreground mt-1">{t('Minst åtta tecken.')}</p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="new-password">{t('Nytt lösenord')}</Label>
+            <PasswordInput
+              id="new-password"
+              autoComplete="new-password"
+              minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              wrapperClassName="mt-1"
+              placeholder="••••••••"
+              showLabel={t('Visa lösenord')}
+              hideLabel={t('Dölj lösenord')}
+            />
+          </div>
+          <div>
+            <Label htmlFor="confirm-password">{t('Bekräfta lösenord')}</Label>
+            <PasswordInput
+              id="confirm-password"
+              autoComplete="new-password"
+              minLength={8}
+              value={confirmation}
+              onChange={(event) => setConfirmation(event.target.value)}
+              wrapperClassName="mt-1"
+              placeholder="••••••••"
+              showLabel={t('Visa lösenord')}
+              hideLabel={t('Dölj lösenord')}
+            />
+          </div>
+        </div>
+
+        <Button onClick={changePassword} disabled={changing} variant="outline" className="min-w-28">
+          {changing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {changing ? t('Sparar…') : t('Byt lösenord')}
         </Button>
       </div>
     </div>

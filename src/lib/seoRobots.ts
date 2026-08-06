@@ -14,6 +14,7 @@ const PRIVATE_EXACT_ROUTES = [
   '/registrera',
   '/registrera/byra',
   '/aterstall-losenord',
+  '/nytt-losenord',
   '/landing',
   '/landing/byra',
 ]

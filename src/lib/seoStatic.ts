@@ -294,7 +294,7 @@ const CYKEL_NOINDEX_PATHS = [
   '/publicera', '/byraer', '/priser', '/om-oss', '/artiklar', '/verktyg', '/stader',
   '/jamfor', '/hitta-webbyra', '/hitta-seo-byra', '/hitta-digital-byra',
   '/redaktionell-policy', '/metod', '/landing', '/landing/byra', '/sitemap',
-  '/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord',
+  '/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/nytt-losenord',
   '/updro', '/partna-alternativ',
   '/webbutveckling', '/ehandel', '/digital-marknadsforing', '/grafisk-design',
   '/seo', '/app-utveckling', '/mjukvaruutveckling', '/google-ads', '/ux-ui-design', '/ai-utveckling',
@@ -323,7 +323,7 @@ const UPDRO_NOINDEX_PATHS = [
   '/skicka-arende', '/registrera/verkstad', '/for-cykelverkstader', '/mitt-arende',
   ...CYKEL_SEO_PAGES.map((page) => `/${page.slug}`),
   ...CYKEL_CITIES.map((city) => cityLandingPath(city.name)),
-  '/dashboard', '/admin', '/logga-in', '/registrera', '/aterstall-losenord',
+  '/dashboard', '/admin', '/logga-in', '/registrera', '/aterstall-losenord', '/nytt-losenord',
 ]
 
 const noindexRoutesFor = (paths: string[]): StaticSeoRoute[] => paths.map((routePath) => ({

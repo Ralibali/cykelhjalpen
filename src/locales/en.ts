@@ -10,6 +10,7 @@ import { EN_ADMIN } from './en/admin'
 import { EN_ADMIN2 } from './en/admin2'
 import { EN_ADMIN3 } from './en/admin3'
 import { EN_SEO } from './en/seo'
+import { EN_AUTH } from './en/auth'
 
 export const EN: Record<string, string> = {
   ...EN_COMMON,
@@ -20,4 +21,5 @@ export const EN: Record<string, string> = {
   ...EN_ADMIN2,
   ...EN_ADMIN3,
   ...EN_SEO,
+  ...EN_AUTH,
 }

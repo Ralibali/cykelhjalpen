@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import Navbar from '@/components/Navbar'
@@ -180,12 +181,13 @@ const RegisterSupplierPage = () => {
 
                 <div>
                   <Label>Lösenord *</Label>
-                  <Input
-                    type="password"
+                  <PasswordInput
+                    autoComplete="new-password"
                     value={form.password}
                     onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
-                    className="rounded-xl mt-1"
-                    minLength={6}
+                    wrapperClassName="mt-1"
+                    className="rounded-xl"
+                    minLength={8}
                     required
                   />
                 </div>

@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -117,19 +118,19 @@ const LoginPage = () => {
 
               <div>
                 <Label htmlFor="password">{t('Lösenord')}</Label>
-                <div className="relative mt-1">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    className="pl-10 rounded-xl"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
+                <PasswordInput
+                  id="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  wrapperClassName="mt-1"
+                  className="rounded-xl"
+                  placeholder="••••••••"
+                  required
+                  leftIcon={<Lock className="h-4 w-4" />}
+                  showLabel={t('Visa lösenord')}
+                  hideLabel={t('Dölj lösenord')}
+                />
               </div>
 
               <Button type="submit" disabled={loading} className="w-full rounded-full py-6 text-base shadow-brand cta-playful">

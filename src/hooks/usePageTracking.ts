@@ -85,7 +85,7 @@ function routeShouldRemainNoindex(pathname: string): boolean {
   const host = getCurrentHost()
   const noindexPaths = new Set(getNoindexSeoRoutes(host).map((route) => route.path))
   const privatePrefixes = ['/admin', '/dashboard']
-  const privateExact = ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/landing', '/landing/byra']
+  const privateExact = ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/nytt-losenord', '/landing', '/landing/byra']
 
   return noindexPaths.has(path)
     || privateExact.includes(path)
