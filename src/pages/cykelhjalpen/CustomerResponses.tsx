@@ -424,8 +424,10 @@ const CustomerResponses = () => {
                                   <Clock3 className="h-3.5 w-3.5" /> {t('Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.')}
                                 </span>
                               )}
-
+                              {!hasWinner && request.admin_status === 'approved' && response.status === 'sent' && (
+                                confirmingId === response.id ? (
                                   <span className="flex flex-wrap items-center gap-2 rounded-2xl bg-[hsl(var(--brand-mint)/0.1)] px-3 py-2">
+
                                     <span className="text-xs font-medium">{t('Valet är slutgiltigt. Gå vidare med {name}?', { name: company || t('verkstaden') })}</span>
                                     <Button size="sm" className="rounded-full" disabled={selectingId === response.id} onClick={() => pickWinner(response)}>
                                       {selectingId === response.id ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
