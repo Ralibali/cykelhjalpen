@@ -77,16 +77,13 @@ serve(async (req) => {
         .eq("stripe_session_id", session.id)
         .eq("status", "pending");
 
-      const { data: workshop } = await admin.from("workshops")
-        .select("free_leads_remaining")
-        .eq("id", workshopId)
-        .single();
-
-      const newTotal = (workshop?.free_leads_remaining ?? 0) + quantity;
-
-      await admin.from("workshops")
-        .update({ free_leads_remaining: newTotal })
-        .eq("id", workshopId);
+      // Atomisk påfyllning i databasen – tål samtidiga betalningar och
+      // passerar skyddstriggarna på workshops.
+      const { data: newTotal, error: creditError } = await admin.rpc("grant_lead_credits", {
+        p_workshop_id: workshopId,
+        p_quantity: quantity,
+      });
+      if (creditError) throw creditError;
 
       try {
         const { data: ws } = await admin.from("workshops")

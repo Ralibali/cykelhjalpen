@@ -2150,6 +2150,10 @@ export type Database = {
       }
       get_cykel_public_stats: { Args: never; Returns: Json }
       get_workshop_id: { Args: { _user_id: string }; Returns: string }
+      grant_lead_credits: {
+        Args: { p_quantity: number; p_workshop_id: string }
+        Returns: number
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_workshop: { Args: { _user_id: string }; Returns: boolean }
       log_terms_acceptance: {
