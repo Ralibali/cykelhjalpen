@@ -313,6 +313,88 @@ const AdminBikeResponses = () => {
           })}
         </div>
       )}
+
+      <Dialog open={manualOpen} onOpenChange={setManualOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('Lägg till manuell offert')}</DialogTitle>
+            <DialogDescription>{t('Offerten skickas direkt till kunden i verkstadens namn, utan betalning.')}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+            <div>
+              <Label htmlFor="manual-request">{t('Ärende')}</Label>
+              <select
+                id="manual-request"
+                className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                value={manual.request_id}
+                onChange={(event) => setManual({ ...manual, request_id: event.target.value })}
+              >
+                <option value="">{t('Välj ärende')}</option>
+                {requests.map((request) => (
+                  <option key={request.id} value={request.id}>
+                    {request.repair_category} — {request.city} — {request.customer_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="manual-workshop">{t('Verkstad')}</Label>
+              <select
+                id="manual-workshop"
+                className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                value={manual.workshop_id}
+                onChange={(event) => setManual({ ...manual, workshop_id: event.target.value })}
+              >
+                <option value="">{t('Välj verkstad')}</option>
+                {workshops.map((workshop) => (
+                  <option key={workshop.id} value={workshop.id}>{workshop.company_name} — {workshop.city}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="manual-message">{t('Meddelande till kunden')}</Label>
+              <Textarea
+                id="manual-message"
+                rows={4}
+                value={manual.message}
+                onChange={(event) => setManual({ ...manual, message: event.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="manual-min">{t('Pris från (kr)')}</Label>
+                <Input id="manual-min" type="number" min={0} value={manual.price_min} onChange={(event) => setManual({ ...manual, price_min: event.target.value })} />
+              </div>
+              <div>
+                <Label htmlFor="manual-max">{t('Pris till (kr)')}</Label>
+                <Input id="manual-max" type="number" min={0} value={manual.price_max} onChange={(event) => setManual({ ...manual, price_max: event.target.value })} />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="manual-time">{t('Beräknad tid')}</Label>
+              <Input id="manual-time" value={manual.estimated_time} onChange={(event) => setManual({ ...manual, estimated_time: event.target.value })} placeholder={t('Två till tre dagar')} />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Switch id="manual-pickup" checked={manual.can_pickup} onCheckedChange={(checked) => setManual({ ...manual, can_pickup: checked })} />
+              <Label htmlFor="manual-pickup" className="cursor-pointer">{t('Kan hämta cykeln')}</Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setManualOpen(false)}>{t('Avbryt')}</Button>
+            <Button onClick={createManual} disabled={busy}>
+              {busy && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              {t('Skapa offert')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </CykelAdminLayout>
   )
 }
