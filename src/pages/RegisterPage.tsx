@@ -28,9 +28,9 @@ const RegisterPage = () => {
 
   useEffect(() => {
     setSEOMeta({
-      title: t('Registrera dig – Skapa gratis konto | Updro'),
-      description: t('Skapa ett gratis konto på Updro och börja publicera uppdrag eller registrera din byrå.'),
-      canonical: 'https://updro.se/registrera',
+      title: t('Registrera dig – Skapa gratis konto | Cykelhjälpen'),
+      description: t('Skapa ett gratis konto hos Cykelhjälpen och kom igång direkt.'),
+      canonical: 'https://cykelhjalpen.se/registrera',
       noindex: true,
     })
   }, [t])
