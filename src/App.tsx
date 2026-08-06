@@ -279,8 +279,10 @@ const HreflangTags = () => {
     }
     if (!helmetOgUrl) ogUrl.content = selfUrl;
 
-    }, 0);
-    return () => window.clearTimeout(timer);
+    };
+    const timers = [0, 200, 800].map((delay) => window.setTimeout(apply, delay));
+    return () => timers.forEach((id) => window.clearTimeout(id));
+
   }, [location.pathname, lang]);
 
   return null;
