@@ -9,7 +9,12 @@ export const buildCykelHomeFaqs = (t: TFunction = (s) => s) => [
   { q: t('Hur snabbt får jag svar?'), a: t('Svarstiden beror på stad, säsong, typ av reparation och vilka verkstäder som har kapacitet. Du får ett mejl när ett nytt prisförslag finns.') },
   { q: t('Måste jag lämna in cykeln själv?'), a: t('Inte alltid. En del verkstäder kan erbjuda hämtning. Markera önskemålet i formuläret så ser verkstäderna det.') },
   { q: t('Hur väljs verkstäderna ut?'), a: t('Verkstäder granskas manuellt innan de kan ta emot ärenden och lämna prisförslag.') },
+  { q: t('Vad kostar det för verkstaden att lämna offert?'), a: t('Ingenting. Det är helt gratis att svara på ett ärende. Verkstaden betalar femtio kronor exklusive moms först när du väljer deras offert som vinnare – vinner de inte kostar det inget.') },
+  { q: t('Vad händer när jag väljer en vinnare?'), a: t('Du väljer den offert du gillar bäst. Då får du verkstadens kontaktuppgifter och verkstaden får ditt ärende – först i det läget dras avgiften från verkstaden. Du betalar fortfarande ingenting till Cykelhjälpen.') },
+  { q: t('Hur många svar kan jag få?'), a: t('Upp till tre verkstäder kan skicka prisförslag på samma ärende. När tre svar kommit in stängs ärendet för fler svar, så att du får ett tydligt urval att jämföra utan att behöva sålla bland tiotals offerter.') },
+  { q: t('Vad händer om ingen verkstad svarar?'), a: t('Då kostar det dig ingenting och du kan skicka in ärendet igen eller justera beskrivningen. Vi hör av oss via mejl om ärendet blir liggande utan svar.') },
 ]
+
 
 // Kept for backwards compatibility with non-component consumers (Swedish only).
 export const CYKEL_HOME_FAQS = buildCykelHomeFaqs()
