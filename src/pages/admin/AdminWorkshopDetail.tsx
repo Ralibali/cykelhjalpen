@@ -83,6 +83,25 @@ const AdminWorkshopDetail = () => {
   const [grantMode, setGrantMode] = useState<'add' | 'remove'>('add')
   const [grantAmount, setGrantAmount] = useState(2)
   const [grantReason, setGrantReason] = useState('')
+  const [passwordOpen, setPasswordOpen] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+
+  const submitPassword = async () => {
+    if (!workshop) return
+    if (newPassword.trim().length < 8) return toast.error(t('Lösenordet måste vara minst åtta tecken.'))
+    setBusy(true)
+    const { data, error } = await supabase.functions.invoke('admin-tools', {
+      body: { action: 'set_password', workshop_id: workshop.id, password: newPassword.trim() },
+    })
+    setBusy(false)
+    if (error || data?.error) {
+      toast.error(data?.error || await functionError(error, t('Kunde inte byta lösenord.')))
+      return
+    }
+    setNewPassword('')
+    setPasswordOpen(false)
+    toast.success(t('Lösenordet är uppdaterat.'))
+  }
 
   const load = useCallback(async () => {
     if (!id) return
