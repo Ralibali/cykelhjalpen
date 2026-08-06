@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
-import { Bike, ListChecks, Receipt, Settings, LogOut, Loader2, Clock, MapPin } from 'lucide-react'
+import { Bike, BriefcaseBusiness, Receipt, Settings, LogOut, Loader2, Clock, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
 import NotificationBell from '@/components/NotificationBell'
@@ -198,10 +198,10 @@ const WorkshopLayout = () => {
       <div className="container mx-auto px-4 py-6 md:py-8 grid md:grid-cols-[230px_1fr] gap-6 md:gap-8">
         <aside className="overflow-x-auto">
           <nav className="flex md:block gap-2 md:space-y-2 text-sm min-w-max md:min-w-0 md:sticky md:top-24 md:rounded-3xl md:border-2 md:border-foreground md:bg-card md:p-3 md:shadow-[4px_4px_0_hsl(var(--ink))]">
-            <NavItem to="/dashboard/verkstad" end icon={<Bike className="h-4 w-4" />} className={disabledNavCls}>{t('Översikt')}</NavItem>
-            <NavItem to="/dashboard/verkstad/arenden" icon={<ListChecks className="h-4 w-4" />} className={disabledNavCls}>{t('Ärenden')}</NavItem>
-            <NavItem to="/dashboard/verkstad/betalningar" icon={<Receipt className="h-4 w-4" />} className={disabledNavCls}>{t('Betalningar')}</NavItem>
-            <NavItem to="/dashboard/verkstad/installningar" icon={<Settings className="h-4 w-4" />} className={disabledNavCls}>{t('Inställningar')}</NavItem>
+            <NavItem to="/dashboard/verkstad" end icon={<Bike className="h-4 w-4" />} className={disabledNavCls}>{t('Affärsöversikt')}</NavItem>
+            <NavItem to="/dashboard/verkstad/arenden" icon={<BriefcaseBusiness className="h-4 w-4" />} className={disabledNavCls}>{t('Nya uppdrag & offerter')}</NavItem>
+            <NavItem to="/dashboard/verkstad/betalningar" icon={<Receipt className="h-4 w-4" />} className={disabledNavCls}>{t('Leads & betalningar')}</NavItem>
+            <NavItem to="/dashboard/verkstad/installningar" icon={<Settings className="h-4 w-4" />} className={disabledNavCls}>{t('Verkstadsprofil')}</NavItem>
           </nav>
         </aside>
         <main>
@@ -212,7 +212,7 @@ const WorkshopLayout = () => {
               <Clock className="h-8 w-8 text-primary mb-4" />
               <h1 className="font-display text-2xl font-bold mb-3">{t('Väntar på godkännande')}</h1>
               <p className="text-muted-foreground mb-2">{t('Tack för att du registrerat')} <strong>{workshop.company_name}</strong> {t('i {city}. Vi granskar verkstaden manuellt för att hålla nätverket tryggt.', { city: workshop.city })}</p>
-              <p className="text-muted-foreground">{t('Vi mejlar dig när kontot aktiverats. Då får du tillgång till lokala ärenden, offerter och betalningar.')}</p>
+              <p className="text-muted-foreground">{t('Vi mejlar dig när kontot aktiverats. Då får du tillgång till nya uppdrag, offerter och leadköp.')}</p>
             </div>
           )}
         </main>
