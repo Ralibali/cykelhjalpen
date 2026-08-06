@@ -17,7 +17,7 @@ import { Helmet } from 'react-helmet-async'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
-import { DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
+import { DEFAULT_CYKEL_CITY, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
 import {
   BIKE_REQUEST_STEPS,
   URGENCY_OPTIONS,
@@ -66,7 +66,8 @@ const BikeRequestWizard = () => {
   const t = useT()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const requestedCity = isCykelCity(searchParams.get('stad')) ? searchParams.get('stad') as CykelCityName : null
+  const requestedCity = resolveCykelCityParam(searchParams.get('stad'))
+  const cityLocked = requestedCity !== null
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [files, setFiles] = useState<File[]>([])
@@ -90,6 +91,9 @@ const BikeRequestWizard = () => {
 
   const STEP_HINTS = STEP_HINTS_SV.map((hint) => t(hint))
   const stepLabels = BIKE_REQUEST_STEPS.map((label) => t(label))
+  const visibleSteps = stepLabels
+    .map((label, index) => ({ label, index }))
+    .filter(({ index }) => !(cityLocked && index === 2))
 
   const { data: stats } = useQuery({
     queryKey: ['cykel-public-stats'],
@@ -145,10 +149,20 @@ const BikeRequestWizard = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // När staden kommer från ?stad= hoppar vi över platssteget (2).
+  const nextStepFrom = (current: number) => {
+    const next = Math.min(BIKE_REQUEST_STEPS.length - 1, current + 1)
+    return cityLocked && next === 2 ? Math.min(BIKE_REQUEST_STEPS.length - 1, next + 1) : next
+  }
+  const prevStepFrom = (current: number) => {
+    const prev = Math.max(0, current - 1)
+    return cityLocked && prev === 2 ? Math.max(0, prev - 1) : prev
+  }
+
   const goNext = () => {
     if (!canContinue()) return
     trackClick('bike_request_step_completed', BIKE_REQUEST_STEPS[step], { step: step + 1, city: form.city })
-    setStep((current) => Math.min(BIKE_REQUEST_STEPS.length - 1, current + 1))
+    setStep((current) => nextStepFrom(current))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -346,7 +360,7 @@ const BikeRequestWizard = () => {
           {/* Stepper */}
           <nav aria-label={t('Steg {n} av {total}', { n: step + 1, total: BIKE_REQUEST_STEPS.length })} className="mb-8">
             <ol className="flex items-center gap-2 sm:gap-3">
-              {stepLabels.map((label, index) => {
+              {visibleSteps.map(({ label, index }, position) => {
                 const done = index < step
                 const active = index === step
                 return (
@@ -367,7 +381,7 @@ const BikeRequestWizard = () => {
                               : 'border-border bg-muted text-muted-foreground'
                         }`}
                       >
-                        {done ? <Check className="h-4 w-4" strokeWidth={3} /> : index + 1}
+                        {done ? <Check className="h-4 w-4" strokeWidth={3} /> : position + 1}
                       </span>
                       <span
                         className={`hidden md:block text-sm font-medium ${
@@ -377,7 +391,7 @@ const BikeRequestWizard = () => {
                         {label}
                       </span>
                     </button>
-                    {index < BIKE_REQUEST_STEPS.length - 1 && (
+                    {position < visibleSteps.length - 1 && (
                       <span className="relative h-1 flex-1 overflow-hidden rounded-full bg-muted">
                         <motion.span
                           className="absolute inset-y-0 left-0 rounded-full bg-[hsl(var(--brand-mint))]"
@@ -439,7 +453,7 @@ const BikeRequestWizard = () => {
               )}
 
               <div className="flex justify-between gap-3 mt-6 sticky bottom-3 z-10 rounded-2xl bg-background/95 backdrop-blur p-2 border-2 border-border shadow-md lg:static lg:bg-transparent lg:border-0 lg:shadow-none lg:p-0">
-                <Button variant="outline" onClick={() => goToStep(Math.max(0, step - 1))} disabled={step === 0 || submitting} className="rounded-xl border-2">
+                <Button variant="outline" onClick={() => goToStep(prevStepFrom(step))} disabled={step === 0 || submitting} className="rounded-xl border-2">
                   <ArrowLeft className="h-4 w-4 mr-1" /> {t('Tillbaka')}
                 </Button>
                 {step < BIKE_REQUEST_STEPS.length - 1 ? (
