@@ -391,6 +391,34 @@ const AdminWorkshopDetail = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('Sätt nytt lösenord')}</DialogTitle>
+            <DialogDescription>
+              {workshop ? t('Lösenordet byts direkt för {email}. Meddela verkstaden själv.', { email: workshop.email }) : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <label className="text-sm font-medium" htmlFor="admin-new-password">{t('Nytt lösenord (minst åtta tecken)')}</label>
+            <Input
+              id="admin-new-password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              placeholder="••••••••"
+              autoComplete="new-password"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPasswordOpen(false)}>{t('Avbryt')}</Button>
+            <Button onClick={submitPassword} disabled={busy}>
+              {busy && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              {t('Spara lösenord')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </CykelAdminLayout>
   )
 }
