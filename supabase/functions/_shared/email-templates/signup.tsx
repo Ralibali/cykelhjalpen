@@ -31,7 +31,7 @@ export const SignupEmail = ({
 }: SignupEmailProps) => (
   <Html lang="sv" dir="ltr">
     <Head />
-    <Preview>Bekräfta din e-post för Updro</Preview>
+    <Preview>Bekräfta din e-post för Cykelhjälpen</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
@@ -40,11 +40,11 @@ export const SignupEmail = ({
             <span style={logoPart2}>ro</span>
           </Text>
         </Section>
-        <Heading style={h1}>Välkommen till Updro!</Heading>
+        <Heading style={h1}>Välkommen till Cykelhjälpen!</Heading>
         <Text style={text}>
           Kul att du registrerat dig på{' '}
           <Link href={siteUrl} style={link}>
-            <strong>Updro</strong>
+            <strong>Cykelhjälpen</strong>
           </Link>
           ! Du är snart redo att hitta rätt byrå för ditt projekt.
         </Text>
@@ -62,7 +62,7 @@ export const SignupEmail = ({
         </Section>
         <Hr style={hr} />
         <Text style={footer}>
-          Har du inte skapat ett konto på Updro? Ignorera det här mailet.
+          Har du inte skapat ett konto på Cykelhjälpen? Ignorera det här mailet.
         </Text>
       </Container>
     </Body>
