@@ -1,3 +1,5 @@
+import { renderBrandedEmail } from '../_shared/email-layout.ts'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
