@@ -3,11 +3,13 @@ import { useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Loader2, Lock, MapPin } from 'lucide-react'
 import { CYKEL_CITIES, isCykelCity } from '@/lib/cykelCities'
+import { validateNewPassword } from '@/lib/authRecovery'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/lib/i18n'
@@ -18,6 +20,27 @@ const WorkshopSettings = () => {
   const { user } = useAuth()
   const [form, setForm] = useState(workshop)
   const [saving, setSaving] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmation, setConfirmation] = useState('')
+  const [changing, setChanging] = useState(false)
+
+  const changePassword = async () => {
+    if (changing) return
+    const validationError = validateNewPassword(password, confirmation)
+    if (validationError) return toast.error(t(validationError))
+
+    setChanging(true)
+    const { error } = await supabase.auth.updateUser({ password })
+    setChanging(false)
+
+    if (error) {
+      toast.error(t('Kunde inte uppdatera lösenordet. Försök igen.'))
+      return
+    }
+    setPassword('')
+    setConfirmation('')
+    toast.success(t('Lösenordet är uppdaterat.'))
+  }
 
   useEffect(() => { setForm(workshop) }, [workshop])
 
