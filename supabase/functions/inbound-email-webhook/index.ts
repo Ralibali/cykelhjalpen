@@ -90,7 +90,7 @@ const htmlToText = (html: string): string =>
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method === 'GET' || req.method === 'HEAD') {
-    return json({ ok: true, version: '2026-08-01-inbox' }, 405)
+    return json({ ok: true, version: '2026-08-01-inbox' }, 200)
   }
 
   // Fail-closed: utan konfigurerad hemlighet accepterar vi inga webhooks.
