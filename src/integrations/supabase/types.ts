@@ -1836,6 +1836,8 @@ export type Database = {
           free_leads_remaining: number
           id: string
           phone: string | null
+          rejected_reason: string | null
+          reviewed_at: string | null
           services: string[] | null
           slug: string | null
           sms_notifications: boolean
@@ -1858,6 +1860,8 @@ export type Database = {
           free_leads_remaining?: number
           id?: string
           phone?: string | null
+          rejected_reason?: string | null
+          reviewed_at?: string | null
           services?: string[] | null
           slug?: string | null
           sms_notifications?: boolean
@@ -1880,6 +1884,8 @@ export type Database = {
           free_leads_remaining?: number
           id?: string
           phone?: string | null
+          rejected_reason?: string | null
+          reviewed_at?: string | null
           services?: string[] | null
           slug?: string | null
           sms_notifications?: boolean
