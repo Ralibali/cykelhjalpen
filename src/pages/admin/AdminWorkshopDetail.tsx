@@ -249,7 +249,9 @@ const AdminWorkshopDetail = () => {
                         {new Date(grant.created_at).toLocaleDateString('sv-SE')}
                         {grant.reason ? ` · ${grant.reason}` : ''}
                       </span>
-                      <span className="font-medium text-emerald-700">+{grant.amount}</span>
+                      <span className={grant.amount < 0 ? 'font-medium text-destructive' : 'font-medium text-emerald-700'}>
+                        {grant.amount > 0 ? `+${grant.amount}` : grant.amount}
+                      </span>
                     </div>
                   ))}
                 </div>
