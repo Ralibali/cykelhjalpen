@@ -24,6 +24,41 @@ const WorkshopSettings = () => {
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [changing, setChanging] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInput = useRef<HTMLInputElement>(null)
+
+  const uploadLogo = async (file: File) => {
+    if (!user) return
+    if (!file.type.startsWith('image/')) return toast.error(t('Välj en bildfil (PNG, JPG eller SVG).'))
+    if (file.size > 2 * 1024 * 1024) return toast.error(t('Bilden får vara max 2 MB.'))
+
+    setUploading(true)
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'png'
+    const path = `${user.id}/logo-${Date.now()}.${extension}`
+    const { error: uploadError } = await supabase.storage.from('logos').upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      setUploading(false)
+      toast.error(t('Kunde inte ladda upp logotypen.'))
+      return
+    }
+
+    const { data: publicUrl } = supabase.storage.from('logos').getPublicUrl(path)
+    const { error } = await supabase.from('workshops').update({ logo_url: publicUrl.publicUrl }).eq('id', workshop.id)
+    setUploading(false)
+
+    if (error) return toast.error(t('Kunde inte spara logotypen.'))
+    setForm((current) => ({ ...current, logo_url: publicUrl.publicUrl }))
+    toast.success(t('Logotypen är uppdaterad.'))
+  }
+
+  const removeLogo = async () => {
+    const { error } = await supabase.from('workshops').update({ logo_url: null }).eq('id', workshop.id)
+    if (error) return toast.error(t('Kunde inte ta bort logotypen.'))
+    setForm((current) => ({ ...current, logo_url: null }))
+    toast.success(t('Logotypen är borttagen.'))
+  }
+
 
   const changePassword = async () => {
     if (changing) return
