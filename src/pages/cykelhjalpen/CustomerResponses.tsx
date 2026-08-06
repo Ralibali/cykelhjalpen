@@ -404,23 +404,27 @@ const CustomerResponses = () => {
                               )}
                             </div>
                             <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
-                              {!isLoser && phone && (
+                              {contactUnlocked && phone && (
                                 <Button asChild size="sm" className="rounded-full shadow-brand" onClick={() => handleContact(response, 'phone')}>
                                   <a href={`tel:${phone}`} aria-label={t('Ring {name}', { name: company || t('verkstaden') })}><Phone className="h-4 w-4 mr-1.5" /> {t('Ring')}</a>
                                 </Button>
                               )}
-                              {!isLoser && email && (
+                              {contactUnlocked && email && (
                                 <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'email')}>
                                   <a href={`mailto:${email}?subject=${mailSubject(company)}`} aria-label={t('Mejla {name}', { name: company || t('verkstaden') })}><Mail className="h-4 w-4 mr-1.5" /> {t('Mejla')}</a>
                                 </Button>
                               )}
-                              {!isLoser && website && (
+                              {contactUnlocked && website && (
                                 <Button asChild size="sm" variant="outline" className="rounded-full border-2" onClick={() => handleContact(response, 'website')}>
                                   <a href={website} target="_blank" rel="noreferrer" aria-label={t('Öppna webbplatsen för {name}', { name: company || t('verkstaden') })}><ExternalLink className="h-4 w-4 mr-1.5" /> {t('Webbplats')}</a>
                                 </Button>
                               )}
-                              {!hasWinner && request.admin_status === 'approved' && response.status === 'sent' && (
-                                confirmingId === response.id ? (
+                              {isWinner && !contactUnlocked && (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground">
+                                  <Clock3 className="h-3.5 w-3.5" /> {t('Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.')}
+                                </span>
+                              )}
+
                                   <span className="flex flex-wrap items-center gap-2 rounded-2xl bg-[hsl(var(--brand-mint)/0.1)] px-3 py-2">
                                     <span className="text-xs font-medium">{t('Valet är slutgiltigt. Gå vidare med {name}?', { name: company || t('verkstaden') })}</span>
                                     <Button size="sm" className="rounded-full" disabled={selectingId === response.id} onClick={() => pickWinner(response)}>
