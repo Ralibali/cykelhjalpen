@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate, useOutletContext } from 'react-router-dom'
+import { useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
-import { Bike, Loader2, Send, Check, MapPin, RefreshCw, Clock3, Truck } from 'lucide-react'
+import { Bike, Loader2, Send, Check, MapPin, RefreshCw, Clock3, Truck, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { QuoteDisclaimer } from '@/components/legal/QuoteDisclaimer'
@@ -41,28 +41,41 @@ interface ExistingResponse {
   status: string
 }
 
-const emptyForm = { message: '', estimated_price_min: '', estimated_price_max: '', estimated_time: '', can_pickup: false }
+interface QuoteForm {
+  message: string
+  estimated_price_min: string
+  estimated_price_max: string
+  estimated_time: string
+  can_pickup: boolean
+}
+
+const emptyForm: QuoteForm = { message: '', estimated_price_min: '', estimated_price_max: '', estimated_time: '', can_pickup: false }
 
 const WorkshopRequests = () => {
   const t = useT()
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
-  const location = useLocation()
-  const navigate = useNavigate()
   const [requests, setRequests] = useState<RequestRow[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [active, setActive] = useState<string | null>(null)
   const [responses, setResponses] = useState<ExistingResponse[]>([])
-  const [form, setForm] = useState(emptyForm)
+  // Formulärvärden hålls per ärende så inget tappas vid tillfälligt fel.
+  const [forms, setForms] = useState<Record<string, QuoteForm>>({})
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState<string | null>(null)
+  const [justSent, setJustSent] = useState<Record<string, boolean>>({})
 
   const responseByRequest = useMemo(
     () => new Map(responses.map((response) => [response.request_id, response])),
     [responses],
   )
 
-  const load = async () => {
-    setLoading(true)
+  const getForm = (requestId: string): QuoteForm => forms[requestId] ?? emptyForm
+  const patchForm = (requestId: string, patch: Partial<QuoteForm>) =>
+    setForms((current) => ({ ...current, [requestId]: { ...(current[requestId] ?? emptyForm), ...patch } }))
+
+  const load = async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) setLoading(true)
     setLoadError(null)
 
     const [{ data: openData, error: openError }, { data: mine, error: mineError }] = await Promise.all([
@@ -71,66 +84,60 @@ const WorkshopRequests = () => {
     ])
 
     if (openError || openData?.error) {
-      setRequests([])
-      setLoadError(openData?.error || openError?.message || t('Kunde inte läsa öppna ärenden.'))
+      if (!silent) {
+        setRequests([])
+        setLoadError(openData?.error || openError?.message || t('Kunde inte läsa öppna ärenden.'))
+      }
     } else {
       // The Edge Function now enforces the workshop city before returning any request details.
       setRequests((openData?.requests || []) as RequestRow[])
     }
 
-    if (mineError) toast.error(t('Kunde inte läsa dina tidigare offerter.'))
-    setResponses((mine || []) as ExistingResponse[])
-    setLoading(false)
+    if (mineError && !silent) toast.error(t('Kunde inte läsa dina tidigare offerter.'))
+    if (!mineError) setResponses((mine || []) as ExistingResponse[])
+    if (!silent) setLoading(false)
   }
 
   useEffect(() => { load() }, [workshop.id, workshop.city])
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search)
-    if (params.get('paid') === 'true' || params.get('canceled') === 'true') {
-      // Äldre Stripe-sessioner från den tidigare modellen kan fortfarande leda hit.
-      navigate(location.pathname, { replace: true })
-      if (params.get('paid') === 'true') {
-        toast.info(t('Betalningen registrerades. Uppdaterar listan…'))
-      } else {
-        toast.info(t('Betalningen avbröts.'), {
-          description: t('Din offert är sparad som utkast och kan skickas när du är redo.'),
-        })
-      }
-      load()
-    }
-  }, [location.search])
-
   const toggleOffer = (requestId: string) => {
-    setActive((current) => current === requestId ? null : requestId)
-    setForm(emptyForm)
+    setActive((current) => (current === requestId ? null : requestId))
   }
 
-  const validateOffer = () => {
-    if (form.message.trim().length < 20) {
-      toast.error(t('Beskriv ditt svar lite mer, minst tjugo tecken.'))
-      return false
-    }
+  const validateOffer = (requestId: string) => {
+    const form = getForm(requestId)
+    if (form.message.trim().length < 20) return t('Beskriv ditt svar lite mer, minst tjugo tecken.')
     const min = form.estimated_price_min ? Number(form.estimated_price_min) : null
     const max = form.estimated_price_max ? Number(form.estimated_price_max) : null
-    if ((min !== null && min < 0) || (max !== null && max < 0)) {
-      toast.error(t('Priset kan inte vara negativt.'))
-      return false
-    }
-    if (min !== null && max !== null && max < min) {
-      toast.error(t('Pris till måste vara samma som eller högre än pris från.'))
-      return false
-    }
-    return true
+    if ((min !== null && min < 0) || (max !== null && max < 0)) return t('Priset kan inte vara negativt.')
+    if (min !== null && max !== null && max < min) return t('Pris till måste vara samma som eller högre än pris från.')
+    return null
   }
 
-  // Skickar ett sparat utkast till kunden – kostnadsfritt i betala-vid-vinst-modellen.
-  const sendResponse = async (responseId: string, requestId: string) => {
+  // Ett enda klick: validera → skapa och skicka offerten i samma anrop → bekräfta i samma vy.
+  const submitOffer = async (requestId: string) => {
+    if (submitting) return
+    const validationError = validateOffer(requestId)
+    if (validationError) {
+      setFormErrors((current) => ({ ...current, [requestId]: validationError }))
+      toast.error(validationError)
+      return
+    }
+
+    const form = getForm(requestId)
+    setFormErrors((current) => ({ ...current, [requestId]: '' }))
     setSubmitting(requestId)
+
     const { data: result, error } = await supabase.functions.invoke('submit-bike-response', {
-      body: { response_id: responseId },
+      body: {
+        request_id: requestId,
+        message: form.message.trim(),
+        estimated_price_min: form.estimated_price_min ? Number(form.estimated_price_min) : null,
+        estimated_price_max: form.estimated_price_max ? Number(form.estimated_price_max) : null,
+        estimated_time: form.estimated_time.trim() || null,
+        can_pickup: form.can_pickup,
+      },
     })
-    setSubmitting(null)
 
     if (error || result?.error) {
       // supabase-js kastar ett generiskt fel vid non-2xx – läs ut serverns text.
@@ -143,26 +150,32 @@ const WorkshopRequests = () => {
         } catch { /* ignorera parsefel */ }
       }
       const msg = String(result?.error || serverMessage || error?.message || '')
-
       const isFull = /bike_request_full|ärendet är fullt/i.test(msg)
       const isCompleted = /valt en (annan )?verkstad/i.test(msg)
 
-      if (isFull) {
-        toast.error(t('Ärendet är fullt – tre verkstäder har redan svarat.'), {
-          description: t('Ditt utkast är sparat men kan inte skickas. Vi tar bort ärendet från listan.'),
-          duration: 10000,
-        })
-      } else if (isCompleted) {
-        toast.info(t('Kunden har redan valt en verkstad för det här ärendet.'), { duration: 8000 })
-      } else {
-        toast.error(t('Kunde inte skicka offerten.'), {
-          description: msg || t('Något gick fel. Offerten är sparad och kan skickas senare.'),
-          duration: 8000,
-        })
-      }
-      await load()
+      const friendly = isFull
+        ? t('Ärendet är fullt – tre verkstäder har redan svarat.')
+        : isCompleted
+          ? t('Kunden har redan valt en verkstad för det här ärendet.')
+          : msg || t('Något gick fel. Dina uppgifter är kvar – försök igen.')
+
+      setSubmitting(null)
+      setFormErrors((current) => ({ ...current, [requestId]: friendly }))
+      toast.error(t('Kunde inte skicka offerten.'), { description: friendly, duration: 8000 })
+      // Uppdatera listan i bakgrunden utan att stänga formuläret eller tappa värden.
+      load({ silent: true })
       return
     }
+
+    // Markera direkt i listan – ingen omladdning krävs.
+    setResponses((current) => {
+      const responseId = String(result?.response_id ?? `${requestId}-sent`)
+      const others = current.filter((item) => item.request_id !== requestId)
+      return [...others, { id: responseId, request_id: requestId, paid: false, status: 'sent' }]
+    })
+    setJustSent((current) => ({ ...current, [requestId]: true }))
+    setForms((current) => ({ ...current, [requestId]: emptyForm }))
+    setSubmitting(null)
 
     if (!result?.already_sent) {
       toast.success(t('Offerten är skickad! ✅'), {
@@ -170,45 +183,7 @@ const WorkshopRequests = () => {
       })
       trackEvent('Offer Submitted', { city: workshop.city, source: 'free_to_answer' })
     }
-    await load()
-  }
-
-  const submitOffer = async (requestId: string) => {
-    if (!validateOffer()) return
-    const existing = responseByRequest.get(requestId)
-    if (existing && (existing.status === 'draft' || existing.status === 'pending_payment')) {
-      await sendResponse(existing.id, requestId)
-      return
-    }
-
-    setSubmitting(requestId)
-    const { data: response, error } = await supabase
-      .from('workshop_responses')
-      .insert({
-        request_id: requestId,
-        workshop_id: workshop.id,
-        message: form.message.trim(),
-        estimated_price_min: form.estimated_price_min ? Number(form.estimated_price_min) : null,
-        estimated_price_max: form.estimated_price_max ? Number(form.estimated_price_max) : null,
-        estimated_time: form.estimated_time.trim() || null,
-        can_pickup: form.can_pickup,
-        status: 'pending_payment',
-      })
-      .select('id, request_id, paid, status')
-      .single()
-
-    if (error || !response) {
-      setSubmitting(null)
-      toast.error(t('Kunde inte spara offerten.'), {
-        description: error?.message || t('Försök igen om en stund.'),
-      })
-      return
-    }
-
-    setResponses((current) => [...current, response as ExistingResponse])
-    setForm(emptyForm)
-    setActive(null)
-    await sendResponse(response.id, requestId)
+    load({ silent: true })
   }
 
   if (!workshop.approved) return <div className="sticker bg-card p-6 text-center text-muted-foreground">{t('Ditt konto väntar på godkännande.')}</div>
@@ -220,7 +195,7 @@ const WorkshopRequests = () => {
           <h1 className="font-display text-2xl font-bold">{t('Öppna ärenden')}</h1>
           <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {t('Endast {city}', { city: workshop.city })}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={() => load()} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('Uppdatera')}
         </Button>
       </div>
@@ -230,7 +205,7 @@ const WorkshopRequests = () => {
       ) : loadError ? (
         <div className="sticker bg-card p-6 text-center">
           <p className="text-destructive mb-4">{loadError}</p>
-          <Button onClick={load} variant="outline">{t('Försök igen')}</Button>
+          <Button onClick={() => load()} variant="outline">{t('Försök igen')}</Button>
         </div>
       ) : requests.length === 0 ? (
         <div className="sticker rounded-3xl bg-card p-10 text-center">
@@ -244,9 +219,10 @@ const WorkshopRequests = () => {
         <div className="space-y-4">
           {requests.map((request) => {
             const existing = responseByRequest.get(request.id)
-            const sent = existing?.status === 'sent' || existing?.status === 'won' || (existing?.paid && existing?.status !== 'lost')
-            const isDraft = Boolean(existing && !sent && existing?.status !== 'lost')
+            const sent = justSent[request.id] || existing?.status === 'sent' || existing?.status === 'won' || (existing?.paid && existing?.status !== 'lost')
             const isSubmitting = submitting === request.id
+            const form = getForm(request.id)
+            const formError = formErrors[request.id]
 
             return (
               <div key={request.id} className="sticker rounded-3xl bg-card p-5 md:p-6">
@@ -295,42 +271,45 @@ const WorkshopRequests = () => {
                   </div>
 
                   {sent ? (
-                    <span className="text-sm flex items-center gap-1.5 rounded-full bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] font-medium px-3 py-1.5"><Check className="h-4 w-4" /> {t('Offert skickad')}</span>
-                  ) : isDraft ? (
-                    <Button size="sm" onClick={() => sendResponse(existing!.id, request.id)} disabled={isSubmitting}>
-                      {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                      {t('Skicka offerten')}
-                    </Button>
+                    <span className="shrink-0 text-sm flex items-center gap-1.5 rounded-full bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] font-medium px-3 py-1.5"><Check className="h-4 w-4" /> {t('Offert skickad')}</span>
                   ) : (
-                    <Button size="sm" onClick={() => toggleOffer(request.id)}>
+                    <Button size="sm" className="shrink-0" onClick={() => toggleOffer(request.id)} disabled={isSubmitting}>
                       {active === request.id ? t('Stäng') : t('Lämna offert')}
                     </Button>
                   )}
                 </div>
 
-                {isDraft && (
-                  <p className="mt-3 text-xs text-amber-700 bg-amber-50 rounded-lg p-3">{t('Offerten är sparad men ännu inte skickad till kunden. Skicka den när du är redo – det kostar inget.')}</p>
+                {sent && (
+                  <div className="mt-4 rounded-2xl border border-[hsl(var(--brand-mint)/0.35)] bg-[hsl(var(--brand-mint)/0.1)] p-4 text-sm">
+                    <p className="font-medium flex items-center gap-2"><Check className="h-4 w-4" /> {t('Offerten är skickad till kunden')}</p>
+                    <p className="text-muted-foreground mt-1">{t('Du betalar bara om kunden väljer dig. Vi hör av oss så fort kunden svarat.')}</p>
+                  </div>
                 )}
 
-                {active === request.id && !existing && (
-                  <div className="mt-5 space-y-4 rounded-2xl border-2 border-dashed border-border bg-muted/40 p-5">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5"><Label htmlFor={`min-${request.id}`}>{t('Pris från (kr, inkl. moms)')}</Label><Input id={`min-${request.id}`} type="number" min="0" value={form.estimated_price_min} onChange={(event) => setForm({ ...form, estimated_price_min: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
-                      <div className="space-y-1.5"><Label htmlFor={`max-${request.id}`}>{t('Pris till (kr, inkl. moms)')}</Label><Input id={`max-${request.id}`} type="number" min="0" value={form.estimated_price_max} onChange={(event) => setForm({ ...form, estimated_price_max: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
+                {active === request.id && !sent && (
+                  <div className="mt-5 space-y-4 rounded-2xl border-2 border-dashed border-border bg-muted/40 p-4 sm:p-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5"><Label htmlFor={`min-${request.id}`}>{t('Pris från (kr, inkl. moms)')}</Label><Input id={`min-${request.id}`} type="number" inputMode="numeric" min="0" value={form.estimated_price_min} onChange={(event) => patchForm(request.id, { estimated_price_min: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
+                      <div className="space-y-1.5"><Label htmlFor={`max-${request.id}`}>{t('Pris till (kr, inkl. moms)')}</Label><Input id={`max-${request.id}`} type="number" inputMode="numeric" min="0" value={form.estimated_price_max} onChange={(event) => patchForm(request.id, { estimated_price_max: event.target.value })} className="rounded-xl border-2 bg-background" /></div>
                     </div>
-                    <div className="space-y-1.5"><Label htmlFor={`time-${request.id}`}>{t('Beräknad tid')}</Label><Input id={`time-${request.id}`} value={form.estimated_time} onChange={(event) => setForm({ ...form, estimated_time: event.target.value })} placeholder={t('Exempel: cirka en timme eller två arbetsdagar')} className="rounded-xl border-2 bg-background" /></div>
-                    <div className="space-y-1.5"><Label htmlFor={`message-${request.id}`}>{t('Meddelande till kunden')}</Label><Textarea id={`message-${request.id}`} rows={4} value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} placeholder={t('Beskriv vad ni rekommenderar, vad priset omfattar och när ni kan ta emot cykeln.')} className="rounded-xl border-2 bg-background" /></div>
+                    <div className="space-y-1.5"><Label htmlFor={`time-${request.id}`}>{t('Beräknad tid')}</Label><Input id={`time-${request.id}`} value={form.estimated_time} onChange={(event) => patchForm(request.id, { estimated_time: event.target.value })} placeholder={t('Exempel: cirka en timme eller två arbetsdagar')} className="rounded-xl border-2 bg-background" /></div>
+                    <div className="space-y-1.5"><Label htmlFor={`message-${request.id}`}>{t('Meddelande till kunden')}</Label><Textarea id={`message-${request.id}`} rows={4} value={form.message} onChange={(event) => patchForm(request.id, { message: event.target.value })} placeholder={t('Beskriv vad ni rekommenderar, vad priset omfattar och när ni kan ta emot cykeln.')} className="rounded-xl border-2 bg-background" /></div>
                     <p className="text-xs text-muted-foreground rounded-xl bg-background border border-border px-3 py-2">
                       {t('Offerten ska gälla det problem kunden beskrivit ovan. Avviker felet från beskrivningen ska kunden informeras och godkänna det nya priset innan arbetet fortsätter.')}
                     </p>
-                    <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="h-4 w-4 rounded" checked={form.can_pickup} onChange={(event) => setForm({ ...form, can_pickup: event.target.checked })} /> {t('Vi kan hämta cykeln')}</label>
+                    <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" className="h-4 w-4 rounded" checked={form.can_pickup} onChange={(event) => patchForm(request.id, { can_pickup: event.target.checked })} /> {t('Vi kan hämta cykeln')}</label>
                     <div className="rounded-xl bg-background p-3.5 text-xs text-muted-foreground border">
                       {t('Det är kostnadsfritt att svara. Först om kunden väljer dig betalar du {price} kr exkl. moms – eller så dras ett gratis-lead automatiskt om du har kvar.', { price: LEAD_FEE_KR })}
                     </div>
                     <QuoteDisclaimer variant="workshop" />
-                    <Button onClick={() => submitOffer(request.id)} disabled={isSubmitting} className="w-full rounded-xl cta-playful bg-accent text-accent-foreground hover:bg-accent/90 h-11">
+                    {formError && (
+                      <p className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                        <AlertTriangle className="h-4 w-4 shrink-0" /> {formError}
+                      </p>
+                    )}
+                    <Button onClick={() => submitOffer(request.id)} disabled={isSubmitting || Boolean(submitting)} className="w-full rounded-xl cta-playful bg-accent text-accent-foreground hover:bg-accent/90 h-12">
                       {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                      {t('Skicka offerten – kostnadsfritt')}
+                      {isSubmitting ? t('Skickar offerten…') : t('Skicka offerten – kostnadsfritt')}
                     </Button>
                   </div>
                 )}
