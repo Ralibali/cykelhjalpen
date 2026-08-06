@@ -26,6 +26,18 @@ export const EN_HOME: Record<string, string> = {
   'Välj stad, cykeltyp och problem. Lägg gärna till bilder.': 'Choose city, bike type and problem. Feel free to add photos.',
 
   // CykelHomeTrust
+  'Vad kostar det för verkstaden att lämna offert?': 'What does it cost the bike shop to submit a quote?',
+  'Ingenting. Det är helt gratis att svara på ett ärende. Verkstaden betalar femtio kronor exklusive moms först när du väljer deras offert som vinnare – vinner de inte kostar det inget.':
+    'Nothing. Responding to a request is completely free. The shop pays fifty SEK excl. VAT only when you pick their quote as the winner — if they do not win, it costs them nothing.',
+  'Vad händer när jag väljer en vinnare?': 'What happens when I pick a winner?',
+  'Du väljer den offert du gillar bäst. Då får du verkstadens kontaktuppgifter och verkstaden får ditt ärende – först i det läget dras avgiften från verkstaden. Du betalar fortfarande ingenting till Cykelhjälpen.':
+    'You pick the quote you like best. You then get the shop\u2019s contact details and the shop gets your request — only at that point is the fee charged to the shop. You still pay nothing to Cykelhj\u00e4lpen.',
+  'Hur många svar kan jag få?': 'How many responses can I get?',
+  'Upp till tre verkstäder kan skicka prisförslag på samma ärende. När tre svar kommit in stängs ärendet för fler svar, så att du får ett tydligt urval att jämföra utan att behöva sålla bland tiotals offerter.':
+    'Up to three bike shops can send quotes for the same request. Once three responses have arrived, the request closes for further answers, so you get a clear set to compare instead of sifting through dozens of quotes.',
+  'Vad händer om ingen verkstad svarar?': 'What happens if no bike shop responds?',
+  'Då kostar det dig ingenting och du kan skicka in ärendet igen eller justera beskrivningen. Vi hör av oss via mejl om ärendet blir liggande utan svar.':
+    'Then it costs you nothing and you can resubmit the request or adjust the description. We email you if the request goes unanswered.',
   'Cykelhjälpen finns i Linköping, Norrköping, Uppsala och Lund.': 'Cykelhjälpen is available in Linköping, Norrköping, Uppsala and Lund.',
   'Det är helt gratis för dig som cyklist. Du förbinder dig inte att välja någon av verkstäderna som svarar.':
     "It's completely free for cyclists. You're not obligated to choose any of the bike shops that respond.",
