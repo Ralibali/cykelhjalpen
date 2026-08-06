@@ -6,7 +6,19 @@ import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { notifyCustomerOfNewResponse } from '../_shared/customer-response.ts'
 
-const BodySchema = z.object({ response_id: z.string().uuid() })
+// Stödjer två former:
+//  1. { response_id }                       – skickar ett redan sparat utkast (bakåtkompatibelt)
+//  2. { request_id, message, ... }          – skapar OCH skickar offerten i ett enda anrop
+const QuoteSchema = z.object({
+  request_id: z.string().uuid(),
+  message: z.string().trim().min(20, 'Beskriv ditt svar lite mer, minst tjugo tecken.').max(4000),
+  estimated_price_min: z.number().int().min(0).max(1000000).nullable().optional(),
+  estimated_price_max: z.number().int().min(0).max(1000000).nullable().optional(),
+  estimated_time: z.string().trim().max(200).nullable().optional(),
+  can_pickup: z.boolean().optional(),
+})
+const BodySchema = z.union([z.object({ response_id: z.string().uuid() }), QuoteSchema])
+
 
 const friendlyDatabaseError = (message: string) => {
   if (message.includes('bike_request_full')) return 'Ärendet är fullt – tre verkstäder har redan svarat.'
