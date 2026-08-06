@@ -191,9 +191,14 @@ const AdminBikeResponses = () => {
             {t('Alla svar som verkstäderna har skickat, med ärende, kund och meddelandetext.')}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} /> {t('Uppdatera')}
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={() => setManualOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" /> {t('Manuell offert')}
+          </Button>
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} /> {t('Uppdatera')}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
