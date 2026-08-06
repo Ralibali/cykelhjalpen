@@ -81,6 +81,19 @@ const RedirectKeepSearch = ({ to }: { to: string }) => {
   return <Navigate to={`${to}${search}`} replace />;
 };
 
+/** Gamla verkstads-URL:er -> rätt sida i aktuellt språk (canonical sätts i prerender-headen). */
+const LegacyWorkshopRedirect = () => {
+  const { lang } = useLanguage();
+  return <RedirectKeepSearch to={lang === "en" ? "/for-bike-shops" : "/for-cykelverkstader"} />;
+};
+
+/** /for-cykelverkstader under /en är en dubblett av /en/for-bike-shops. */
+const WorkshopPageOrEnRedirect = () => {
+  const { lang } = useLanguage();
+  if (lang === "en") return <RedirectKeepSearch to="/for-bike-shops" />;
+  return <ForVerkstaderPage />;
+};
+
 // SEO pages
 const PillarPage = lazy(() => import("./components/seo/PillarPage"));
 const SubPage = lazy(() => import("./components/seo/SubPage"));
@@ -316,16 +329,13 @@ const AppRoutes = () => {
               <Route path="/skicka-arende" element={<BikeRequestWizard />} />
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
-              <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
+              <Route path="/for-cykelverkstader" element={<WorkshopPageOrEnRedirect />} />
               {/* Gammal länk från rekryteringsmejl – behåll query (utm) vid redirect */}
-              <Route path="/for-verkstader" element={<RedirectKeepSearch to="/for-cykelverkstader" />} />
+              <Route path="/for-verkstader" element={<LegacyWorkshopRedirect />} />
 
               {/* English routes (served under /en/ via router basename) */}
               <Route path="/submit-request" element={<BikeRequestWizard />} />
               <Route path="/for-bike-shops" element={<ForVerkstaderPage />} />
-              {/* Gamla engelska varianter -> rätt engelsk slug */}
-              <Route path="/for-verkstader" element={<RedirectKeepSearch to="/for-bike-shops" />} />
-              <Route path="/for-cykelverkstader" element={<RedirectKeepSearch to="/for-bike-shops" />} />
 
               {/* /en/bike-repair-<stad> är stadshubben och ägs av CYKEL_SEO_PAGES nedan,
                   precis som /cykelverkstad-<stad> gör på svenska. */}
