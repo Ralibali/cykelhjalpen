@@ -25,6 +25,16 @@ export interface WorkshopContext {
   approved: boolean
   sms_notifications: boolean
   free_leads_remaining: number
+  logo_url: string | null
+  description: string | null
+  opening_hours: string | null
+  org_number: string | null
+  founded_year: number | null
+  facebook_url: string | null
+  instagram_url: string | null
+  price_info: string | null
+  booking_url: string | null
+  services: string[] | null
 }
 
 const WorkshopLayout = () => {
