@@ -226,8 +226,16 @@ const AdminWorkshopDetail = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-display text-3xl font-bold">{workshop.free_leads_remaining ?? 0}</span>
-                <Button size="sm" onClick={() => setGrantOpen(true)}>
+                <Button size="sm" onClick={() => { setGrantMode('add'); setGrantAmount(2); setGrantOpen(true) }}>
                   <Gift className="h-4 w-4 mr-1" /> {t('Fyll på')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={(workshop.free_leads_remaining ?? 0) === 0}
+                  onClick={() => { setGrantMode('remove'); setGrantAmount(1); setGrantOpen(true) }}
+                >
+                  <Minus className="h-4 w-4 mr-1" /> {t('Dra av')}
                 </Button>
               </div>
             </div>
