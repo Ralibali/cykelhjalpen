@@ -357,7 +357,7 @@ const BikeRequestWizard = () => {
           {/* Stepper */}
           <nav aria-label={t('Steg {n} av {total}', { n: step + 1, total: BIKE_REQUEST_STEPS.length })} className="mb-8">
             <ol className="flex items-center gap-2 sm:gap-3">
-              {stepLabels.map((label, index) => {
+              {visibleSteps.map(({ label, index }, position) => {
                 const done = index < step
                 const active = index === step
                 return (
