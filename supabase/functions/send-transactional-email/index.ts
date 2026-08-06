@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       to: Array.isArray(to) ? to : [to],
       subject,
     }
-    if (html) body.html = html
+    if (html) body.html = renderBrandedEmail(html, subject)
     if (text) body.text = text
     if (replyTo) body.reply_to = replyTo
 
