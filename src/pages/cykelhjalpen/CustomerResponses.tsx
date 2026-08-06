@@ -82,6 +82,9 @@ const CustomerResponses = () => {
 
   const winner = responses.find((response) => response.status === 'won') || null
   const hasWinner = Boolean(winner) || request?.status === 'completed'
+  // Vinsten är reglerad först när backend släppt kontaktuppgifterna.
+  const winnerSettled = Boolean(winner?.contact_unlocked)
+
 
   const load = useCallback(async (showSpinner = false) => {
     if (!token) return
