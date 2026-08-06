@@ -383,9 +383,17 @@ export const getAllStaticSeoRoutes = (host: SiteHost = 'cykelhjalpen') => {
 export const getIndexableSeoRoutes = (host: SiteHost = 'cykelhjalpen') => getAllStaticSeoRoutes(host).filter((route) => !route.noindex)
 export const getNoindexSeoRoutes = (host: SiteHost = 'cykelhjalpen') => getAllStaticSeoRoutes(host).filter((route) => route.noindex)
 
+const sitemapAlternates = (host: SiteHost, route: StaticSeoRoute) => {
+  if (!route.altPath) return ''
+  const isEnglish = route.lang === 'en'
+  const svUrl = absFor(host, isEnglish ? route.altPath : route.path)
+  const enUrl = absFor(host, isEnglish ? route.path : route.altPath)
+  return `<xhtml:link rel="alternate" hreflang="sv" href="${svUrl}"/><xhtml:link rel="alternate" hreflang="en" href="${enUrl}"/><xhtml:link rel="alternate" hreflang="x-default" href="${svUrl}"/>`
+}
+
 const urlset = (host: SiteHost, routes: StaticSeoRoute[]) =>
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes
-    .map((route) => `  <url><loc>${absFor(host, route.path)}</loc><lastmod>${route.lastmod || today()}</lastmod><changefreq>${route.changefreq}</changefreq><priority>${route.priority.toFixed(1)}</priority></url>`)
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${routes
+    .map((route) => `  <url><loc>${absFor(host, route.path)}</loc><lastmod>${route.lastmod || today()}</lastmod><changefreq>${route.changefreq}</changefreq><priority>${route.priority.toFixed(1)}</priority>${sitemapAlternates(host, route)}</url>`)
     .join('\n')}\n</urlset>`
 
 export const generateSitemapXml = (host: SiteHost = 'cykelhjalpen') => urlset(host, getIndexableSeoRoutes(host))
