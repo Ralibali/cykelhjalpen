@@ -34,6 +34,8 @@ export interface StaticSeoRoute {
   lang?: 'sv' | 'en'
   /** Path of the same page in the other language (used for hreflang alternates). */
   altPath?: string
+  /** Legacy/duplicate URL: canonical points at this live path instead of itself. */
+  canonicalPath?: string
 }
 
 const today = () => new Date().toISOString().split('T')[0]
@@ -334,10 +336,36 @@ const noindexRoutesFor = (paths: string[]): StaticSeoRoute[] => paths.map((route
   noindex: true,
 }))
 
+/**
+ * Legacy URLs that still get traffic (old outreach links) and redirect client-side.
+ * They must never be indexed themselves, but they point search engines at the
+ * live page through a self-non-referencing canonical.
+ */
+export const LEGACY_ALIAS_ROUTES: { path: string; canonicalPath: string; lang?: 'sv' | 'en' }[] = [
+  { path: '/for-verkstader', canonicalPath: '/for-cykelverkstader', lang: 'sv' },
+  { path: '/en/for-verkstader', canonicalPath: '/en/for-bike-shops', lang: 'en' },
+  { path: '/en/for-cykelverkstader', canonicalPath: '/en/for-bike-shops', lang: 'en' },
+]
+
+const legacyAliasRoutes = (): StaticSeoRoute[] => LEGACY_ALIAS_ROUTES.map((alias) => ({
+  path: alias.path,
+  canonicalPath: alias.canonicalPath,
+  title: '',
+  description: '',
+  h1: '',
+  priority: 0.1,
+  changefreq: 'yearly' as const,
+  noindex: true,
+  lang: alias.lang,
+}))
+
 const indexableFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro'
   ? updroIndexableRoutes()
   : [...cykelIndexableRoutes(), ...englishRoutes()]
-const noindexFor = (host: SiteHost): StaticSeoRoute[] => noindexRoutesFor(host === 'updro' ? UPDRO_NOINDEX_PATHS : CYKEL_NOINDEX_PATHS)
+const noindexFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro'
+  ? noindexRoutesFor(UPDRO_NOINDEX_PATHS)
+  : [...noindexRoutesFor(CYKEL_NOINDEX_PATHS), ...legacyAliasRoutes()]
+
 
 export const getAllStaticSeoRoutes = (host: SiteHost = 'cykelhjalpen') => {
   const map = new Map<string, StaticSeoRoute>()
@@ -355,9 +383,17 @@ export const getAllStaticSeoRoutes = (host: SiteHost = 'cykelhjalpen') => {
 export const getIndexableSeoRoutes = (host: SiteHost = 'cykelhjalpen') => getAllStaticSeoRoutes(host).filter((route) => !route.noindex)
 export const getNoindexSeoRoutes = (host: SiteHost = 'cykelhjalpen') => getAllStaticSeoRoutes(host).filter((route) => route.noindex)
 
+const sitemapAlternates = (host: SiteHost, route: StaticSeoRoute) => {
+  if (!route.altPath) return ''
+  const isEnglish = route.lang === 'en'
+  const svUrl = absFor(host, isEnglish ? route.altPath : route.path)
+  const enUrl = absFor(host, isEnglish ? route.path : route.altPath)
+  return `<xhtml:link rel="alternate" hreflang="sv" href="${svUrl}"/><xhtml:link rel="alternate" hreflang="en" href="${enUrl}"/><xhtml:link rel="alternate" hreflang="x-default" href="${svUrl}"/>`
+}
+
 const urlset = (host: SiteHost, routes: StaticSeoRoute[]) =>
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${routes
-    .map((route) => `  <url><loc>${absFor(host, route.path)}</loc><lastmod>${route.lastmod || today()}</lastmod><changefreq>${route.changefreq}</changefreq><priority>${route.priority.toFixed(1)}</priority></url>`)
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${routes
+    .map((route) => `  <url><loc>${absFor(host, route.path)}</loc><lastmod>${route.lastmod || today()}</lastmod><changefreq>${route.changefreq}</changefreq><priority>${route.priority.toFixed(1)}</priority>${sitemapAlternates(host, route)}</url>`)
     .join('\n')}\n</urlset>`
 
 export const generateSitemapXml = (host: SiteHost = 'cykelhjalpen') => urlset(host, getIndexableSeoRoutes(host))
@@ -423,15 +459,19 @@ const alternateLinks = (host: SiteHost, route: StaticSeoRoute) => {
   ]
 }
 
+const robotsContent = (route: StaticSeoRoute) => route.noindex
+  ? (route.canonicalPath ? 'noindex, follow' : 'noindex, nofollow')
+  : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+
 const head = (host: SiteHost, route: StaticSeoRoute) => {
   const image = imageFor(host, route.ogImage)
-  const url = absFor(host, route.path)
+  const url = absFor(host, route.canonicalPath || route.path)
   const isEnglish = route.lang === 'en'
   return [
     ...alternateLinks(host, route),
     `<title>${esc(route.title)}</title>`,
     `<meta name="description" content="${esc(route.description)}" />`,
-    `<meta name="robots" content="${route.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}" />`,
+    `<meta name="robots" content="${robotsContent(route)}" />`,
     `<link rel="canonical" href="${url}" />`,
     '<meta property="og:type" content="website" />',
     `<meta property="og:locale" content="${isEnglish ? 'en_US' : 'sv_SE'}" />`,
@@ -487,7 +527,7 @@ export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: 
   let html = template
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(route.title)}</title>`)
     .replace(/<meta name="description" content="[^"]*"\s*\/?>/, `<meta name="description" content="${esc(route.description)}" />`)
-    .replace(/<meta name="robots" content="[^"]*"\s*\/?>/, `<meta name="robots" content="${route.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}" />`)
+    .replace(/<meta name="robots" content="[^"]*"\s*\/?>/, `<meta name="robots" content="${robotsContent(route)}" />`)
     .replace(/<link rel="canonical" href="[^"]*"\s*\/?>\s*/g, '')
 
   html = html
