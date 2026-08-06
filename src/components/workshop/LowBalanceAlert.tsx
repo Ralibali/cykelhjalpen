@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { AlertTriangle, X, ShoppingCart } from 'lucide-react'
-import { BuyLeadsButton } from './BuyLeadsButton'
+import { BuyLeadsPicker } from './BuyLeadsPicker'
 import { useT } from '@/lib/i18n'
 
 export function LowBalanceAlert() {
