@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import Navbar from '@/components/Navbar'
@@ -96,7 +97,7 @@ const RegisterPage = () => {
               </div>
               <div>
                 <Label>{t('Lösenord *')}</Label>
-                <Input type="password" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} className="rounded-xl mt-1" minLength={6} required />
+                <PasswordInput autoComplete="new-password" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} wrapperClassName="mt-1" className="rounded-xl" minLength={8} required showLabel={t('Visa lösenord')} hideLabel={t('Dölj lösenord')} />
               </div>
               <div className="flex items-start gap-2 pt-2">
                 <Checkbox

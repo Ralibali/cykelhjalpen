@@ -49,6 +49,8 @@ const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
 
 // Lazy-loaded pages
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const RegisterSupplierPage = lazy(() => import("./pages/RegisterSupplierPage"));
 const ProjectWizard = lazy(() => import("./pages/ProjectWizard"));
@@ -401,7 +403,8 @@ const AppRoutes = () => {
           {/* Shared auth + admin entry — rendered on both hosts */}
           <Route path="/logga-in" element={<LoginPage />} />
           <Route path="/registrera" element={<RegisterPage />} />
-          <Route path="/aterstall-losenord" element={<PlaceholderPage title="Återställ lösenord" />} />
+          <Route path="/aterstall-losenord" element={<ForgotPasswordPage />} />
+          <Route path="/nytt-losenord" element={<ResetPasswordPage />} />
           <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
 
           {/* Shared admin sub-pages — available on both hosts */}

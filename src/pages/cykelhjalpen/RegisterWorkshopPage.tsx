@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Wrench, Loader2, CheckCircle2, ShieldCheck, MapPin } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
@@ -197,7 +198,7 @@ const RegisterWorkshopPage = () => {
             </div>
             <div>
               <Label htmlFor="pw">{t('Lösenord')}</Label>
-              <Input id="pw" type="password" autoComplete="new-password" required minLength={8} value={form.password} onChange={(event) => update('password', event.target.value)} className="rounded-xl border-2" />
+              <PasswordInput id="pw" autoComplete="new-password" required minLength={8} value={form.password} onChange={(event) => update('password', event.target.value)} className="rounded-xl border-2" showLabel={t('Visa lösenord')} hideLabel={t('Dölj lösenord')} />
               <p className="text-xs text-muted-foreground mt-1">{t('Minst åtta tecken.')}</p>
             </div>
           </div>
