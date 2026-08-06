@@ -220,6 +220,9 @@ const AdminWorkshopDetail = () => {
                 </span>
               </div>
               <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setPasswordOpen(true)} disabled={busy}>
+                  <KeyRound className="h-4 w-4 mr-1" /> {t('Byt lösenord')}
+                </Button>
                 <Button variant="outline" size="sm" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
                 {workshop.approved ? (
                   <Button variant="outline" size="sm" onClick={() => setApproved(false)} disabled={busy}>
