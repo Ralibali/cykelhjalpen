@@ -37,6 +37,8 @@ export const EN_COMMON: Record<string, string> = {
   'Endast nödvändiga': 'Necessary only',
   'Nuvarande val: {choice}.': 'Current choice: {choice}.',
   'Tillåt statistik och marknadsföring': 'Allow statistics and marketing',
+  'Tillåt alla': 'Allow all',
+  'Vi använder cookies för statistik och marknadsföring.': 'We use cookies for statistics and marketing.',
   'Vi använder nödvändiga lagringsfunktioner för att webbplatsen och tjänsten ska fungera. Med ditt aktiva samtycke använder vi även Google Analytics, Google Ads och vår egen anonymiserade produktstatistik för att förbättra tjänsten och mäta marknadsföring. Du kan neka utan att grundfunktionerna påverkas. Läs mer i vår':
     'We use necessary storage functions to make the website and service work. With your active consent, we also use Google Analytics, Google Ads and our own anonymized product statistics to improve the service and measure marketing. You can decline without affecting core functionality. Read more in our',
   'endast nödvändiga funktioner': 'necessary functions only',

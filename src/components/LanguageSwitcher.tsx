@@ -34,18 +34,18 @@ export default function LanguageSwitcher({ className = '' }: { className?: strin
 
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded-full border-2 border-[hsl(var(--ink))] bg-card px-1 h-9 ${className}`}
+      className={`inline-flex items-center gap-0.5 rounded-full border-2 border-[hsl(var(--ink))] bg-card px-1 h-11 sm:h-9 ${className}`}
       role="group"
       aria-label="Språk / Language"
     >
-      <Globe className="h-3.5 w-3.5 ml-1.5 text-muted-foreground" aria-hidden="true" />
+      <Globe className="h-3.5 w-3.5 ml-1 text-muted-foreground" aria-hidden="true" />
       {(['sv', 'en'] as Lang[]).map((code) => (
         <button
           key={code}
           type="button"
           onClick={() => go(code)}
           aria-current={lang === code ? 'true' : undefined}
-          className={`px-2 py-0.5 text-xs font-semibold rounded-full transition-colors ${
+          className={`inline-flex items-center justify-center min-w-9 h-9 sm:h-7 px-2 text-xs font-semibold rounded-full transition-colors ${
             lang === code ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
           }`}
         >
