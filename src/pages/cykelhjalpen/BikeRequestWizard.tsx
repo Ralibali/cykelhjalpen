@@ -91,6 +91,9 @@ const BikeRequestWizard = () => {
 
   const STEP_HINTS = STEP_HINTS_SV.map((hint) => t(hint))
   const stepLabels = BIKE_REQUEST_STEPS.map((label) => t(label))
+  const visibleSteps = stepLabels
+    .map((label, index) => ({ label, index }))
+    .filter(({ index }) => !(cityLocked && index === 2))
 
   const { data: stats } = useQuery({
     queryKey: ['cykel-public-stats'],
