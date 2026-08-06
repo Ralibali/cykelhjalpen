@@ -157,8 +157,6 @@ export const EN_WORKSHOP: Record<string, string> = {
   'Betala {price} kr – lås upp kontakten': 'Pay {price} SEK – unlock the contact',
   'Kunden väntar på att ni hör av er. Vinstavgiften {price} kr exkl. moms låser upp namn, mejl och telefon.': 'The customer is waiting to hear from you. The winner fee of {price} SEK excl. VAT unlocks name, e-mail and phone.',
   'Kunde inte läsa kontaktuppgifterna.': 'Could not load the contact details.',
-  'Kunde inte starta betalningen.': 'Could not start the payment.',
-  'Öppnar Stripe-checkout…': 'Opening Stripe checkout…',
   'Betalningen är klar – kontaktuppgifterna är upplåsta! ✅': 'Payment complete – the contact details are unlocked! ✅',
   'Betalningen registrerades men har inte bekräftats ännu.': 'The payment was registered but has not been confirmed yet.',
   'Kontaktuppgifterna låses upp automatiskt så snart Stripe bekräftar.': 'The contact details unlock automatically as soon as Stripe confirms.',

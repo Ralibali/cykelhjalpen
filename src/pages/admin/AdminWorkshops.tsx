@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Loader2, Check, X, RefreshCw, Gift } from 'lucide-react'
+import { Loader2, Check, X, RefreshCw, Gift, Minus } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -41,6 +41,7 @@ const AdminWorkshops = () => {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
   const [grantTarget, setGrantTarget] = useState<WorkshopRow | null>(null)
+  const [grantMode, setGrantMode] = useState<'add' | 'remove'>('add')
   const [grantAmount, setGrantAmount] = useState(2)
   const [grantReason, setGrantReason] = useState('')
 
@@ -82,9 +83,10 @@ const AdminWorkshops = () => {
     await load()
   }
 
-  const openGrantDialog = (workshop: WorkshopRow) => {
+  const openGrantDialog = (workshop: WorkshopRow, mode: 'add' | 'remove' = 'add') => {
     setGrantTarget(workshop)
-    setGrantAmount(2)
+    setGrantMode(mode)
+    setGrantAmount(mode === 'remove' ? Math.min(1, workshop.free_leads_remaining || 1) : 2)
     setGrantReason('')
   }
 
@@ -95,23 +97,24 @@ const AdminWorkshops = () => {
       toast.error(t('Ange ett antal mellan 1 och 50.'))
       return
     }
+    const delta = grantMode === 'remove' ? -amount : amount
     setBusy(grantTarget.id)
 
     const { data: userData } = await supabase.auth.getUser()
     const { error } = await supabase.from('free_lead_grants').insert({
       workshop_id: grantTarget.id,
       admin_id: userData?.user?.id || '',
-      amount,
+      amount: delta,
       reason: grantReason.trim() || null,
     })
 
     if (error) {
       setBusy(null)
-      toast.error(t('Kunde inte fylla på leads: {msg}', { msg: error.message }))
+      toast.error(t('Kunde inte uppdatera leads: {msg}', { msg: error.message }))
       return
     }
 
-    // Triggern höjer saldot – hämta det nya värdet för bekräftelsen.
+    // Triggern uppdaterar saldot – hämta det nya värdet för bekräftelsen.
     const { data: updated } = await supabase
       .from('workshops')
       .select('free_leads_remaining')
@@ -119,7 +122,9 @@ const AdminWorkshops = () => {
       .single()
     setBusy(null)
 
-    toast.success(t('{amount} gratis-leads tillagda', { amount }), {
+    toast.success(grantMode === 'remove'
+      ? t('{amount} gratis-leads borttagna', { amount })
+      : t('{amount} gratis-leads tillagda', { amount }), {
       description: t('{name} har nu {count} kvar.', {
         name: grantTarget.company_name,
         count: (updated as { free_leads_remaining?: number } | null)?.free_leads_remaining ?? '–',
@@ -175,8 +180,16 @@ const AdminWorkshops = () => {
                     <span className={`font-medium ${(workshop.free_leads_remaining || 0) === 0 ? 'text-muted-foreground' : ''}`}>
                       {workshop.free_leads_remaining ?? 0}
                     </span>
-                    <Button size="sm" variant="ghost" className="ml-1" onClick={() => openGrantDialog(workshop)} disabled={busy === workshop.id}>
+                    <Button size="sm" variant="ghost" className="ml-1" onClick={() => openGrantDialog(workshop, 'add')} disabled={busy === workshop.id}>
                       <Gift className="h-4 w-4 mr-1" /> {t('Fyll på')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => openGrantDialog(workshop, 'remove')}
+                      disabled={busy === workshop.id || (workshop.free_leads_remaining || 0) === 0}
+                    >
+                      <Minus className="h-4 w-4 mr-1" /> {t('Dra av')}
                     </Button>
                   </td>
                   <td className="p-3 whitespace-nowrap">{new Date(workshop.created_at).toLocaleDateString('sv-SE')}</td>
@@ -206,7 +219,7 @@ const AdminWorkshops = () => {
       <Dialog open={Boolean(grantTarget)} onOpenChange={(open) => !open && setGrantTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('Fyll på gratis-leads')}</DialogTitle>
+            <DialogTitle>{grantMode === 'remove' ? t('Dra av gratis-leads') : t('Fyll på gratis-leads')}</DialogTitle>
             <DialogDescription>
               {grantTarget
                 ? t('{name} har {count} gratis-leads kvar.', { name: grantTarget.company_name, count: grantTarget.free_leads_remaining ?? 0 })
@@ -215,7 +228,9 @@ const AdminWorkshops = () => {
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium" htmlFor="grant-amount">{t('Antal leads att lägga till')}</label>
+              <label className="text-sm font-medium" htmlFor="grant-amount">
+                {grantMode === 'remove' ? t('Antal leads att dra av') : t('Antal leads att lägga till')}
+              </label>
               <Input
                 id="grant-amount"
                 type="number"
@@ -224,6 +239,9 @@ const AdminWorkshops = () => {
                 value={grantAmount}
                 onChange={(event) => setGrantAmount(Number(event.target.value))}
               />
+              {grantMode === 'remove' && (
+                <p className="text-xs text-muted-foreground mt-1">{t('Saldot kan aldrig bli lägre än noll.')}</p>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium" htmlFor="grant-reason">{t('Anledning (valfritt)')}</label>
@@ -237,9 +255,15 @@ const AdminWorkshops = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setGrantTarget(null)}>{t('Avbryt')}</Button>
-            <Button onClick={submitGrant} disabled={!grantTarget || busy === grantTarget.id}>
-              {busy === grantTarget?.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Gift className="h-4 w-4 mr-1" />}
-              {t('Fyll på')}
+            <Button
+              onClick={submitGrant}
+              variant={grantMode === 'remove' ? 'destructive' : 'default'}
+              disabled={!grantTarget || busy === grantTarget.id}
+            >
+              {busy === grantTarget?.id
+                ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                : grantMode === 'remove' ? <Minus className="h-4 w-4 mr-1" /> : <Gift className="h-4 w-4 mr-1" />}
+              {grantMode === 'remove' ? t('Dra av') : t('Fyll på')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  ArrowLeft, Check, Copy, Gift, Loader2, Mail, MapPin, Phone, RefreshCw, X,
+  ArrowLeft, Check, Copy, Gift, Loader2, Mail, MapPin, Minus, Phone, RefreshCw, X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -80,6 +80,7 @@ const AdminWorkshopDetail = () => {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [grantOpen, setGrantOpen] = useState(false)
+  const [grantMode, setGrantMode] = useState<'add' | 'remove'>('add')
   const [grantAmount, setGrantAmount] = useState(2)
   const [grantReason, setGrantReason] = useState('')
 
@@ -139,20 +140,23 @@ const AdminWorkshopDetail = () => {
       toast.error(t('Ange ett antal mellan 1 och 50.'))
       return
     }
+    const delta = grantMode === 'remove' ? -amount : amount
     setBusy(true)
     const { data: userData } = await supabase.auth.getUser()
     const { error } = await supabase.from('free_lead_grants').insert({
       workshop_id: workshop.id,
       admin_id: userData?.user?.id || '',
-      amount,
+      amount: delta,
       reason: grantReason.trim() || null,
     })
     setBusy(false)
     if (error) {
-      toast.error(t('Kunde inte fylla på leads: {msg}', { msg: error.message }))
+      toast.error(t('Kunde inte uppdatera leads: {msg}', { msg: error.message }))
       return
     }
-    toast.success(t('{amount} gratis-leads tillagda', { amount }))
+    toast.success(grantMode === 'remove'
+      ? t('{amount} gratis-leads borttagna', { amount })
+      : t('{amount} gratis-leads tillagda', { amount }))
     setGrantOpen(false)
     setGrantReason('')
     setGrantAmount(2)
@@ -222,14 +226,22 @@ const AdminWorkshopDetail = () => {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-display text-3xl font-bold">{workshop.free_leads_remaining ?? 0}</span>
-                <Button size="sm" onClick={() => setGrantOpen(true)}>
+                <Button size="sm" onClick={() => { setGrantMode('add'); setGrantAmount(2); setGrantOpen(true) }}>
                   <Gift className="h-4 w-4 mr-1" /> {t('Fyll på')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={(workshop.free_leads_remaining ?? 0) === 0}
+                  onClick={() => { setGrantMode('remove'); setGrantAmount(1); setGrantOpen(true) }}
+                >
+                  <Minus className="h-4 w-4 mr-1" /> {t('Dra av')}
                 </Button>
               </div>
             </div>
             {grants.length > 0 && (
               <div className="border-t pt-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t('Tidigare påfyllningar')}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t('Lead-justeringar')}</p>
                 <div className="space-y-1.5">
                   {grants.map((grant) => (
                     <div key={grant.id} className="flex items-center justify-between text-sm">
@@ -237,7 +249,9 @@ const AdminWorkshopDetail = () => {
                         {new Date(grant.created_at).toLocaleDateString('sv-SE')}
                         {grant.reason ? ` · ${grant.reason}` : ''}
                       </span>
-                      <span className="font-medium text-emerald-700">+{grant.amount}</span>
+                      <span className={grant.amount < 0 ? 'font-medium text-destructive' : 'font-medium text-emerald-700'}>
+                        {grant.amount > 0 ? `+${grant.amount}` : grant.amount}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -336,14 +350,16 @@ const AdminWorkshopDetail = () => {
       <Dialog open={grantOpen} onOpenChange={setGrantOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('Fyll på gratis-leads')}</DialogTitle>
+            <DialogTitle>{grantMode === 'remove' ? t('Dra av gratis-leads') : t('Fyll på gratis-leads')}</DialogTitle>
             <DialogDescription>
               {workshop ? t('{name} har {count} gratis-leads kvar.', { name: workshop.company_name, count: workshop.free_leads_remaining ?? 0 }) : ''}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium" htmlFor="detail-grant-amount">{t('Antal leads att lägga till')}</label>
+              <label className="text-sm font-medium" htmlFor="detail-grant-amount">
+                {grantMode === 'remove' ? t('Antal leads att dra av') : t('Antal leads att lägga till')}
+              </label>
               <Input
                 id="detail-grant-amount"
                 type="number"
@@ -352,6 +368,9 @@ const AdminWorkshopDetail = () => {
                 value={grantAmount}
                 onChange={(event) => setGrantAmount(Number(event.target.value))}
               />
+              {grantMode === 'remove' && (
+                <p className="text-xs text-muted-foreground mt-1">{t('Saldot kan aldrig bli lägre än noll.')}</p>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium" htmlFor="detail-grant-reason">{t('Anledning (valfritt)')}</label>
@@ -365,9 +384,9 @@ const AdminWorkshopDetail = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setGrantOpen(false)}>{t('Avbryt')}</Button>
-            <Button onClick={submitGrant} disabled={busy}>
-              {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Gift className="h-4 w-4 mr-1" />}
-              {t('Fyll på')}
+            <Button onClick={submitGrant} disabled={busy} variant={grantMode === 'remove' ? 'destructive' : 'default'}>
+              {busy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : grantMode === 'remove' ? <Minus className="h-4 w-4 mr-1" /> : <Gift className="h-4 w-4 mr-1" />}
+              {grantMode === 'remove' ? t('Dra av') : t('Fyll på')}
             </Button>
           </DialogFooter>
         </DialogContent>
