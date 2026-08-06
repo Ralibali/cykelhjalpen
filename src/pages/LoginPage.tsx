@@ -25,17 +25,12 @@ const LoginPage = () => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const copy = useMemo(() => isCykel ? {
+  const copy = useMemo(() => ({
     title: t('Logga in | Cykelhjälpen'),
     description: t('Logga in på din verkstadssida hos Cykelhjälpen.'),
     canonical: 'https://cykelhjalpen.se/logga-in',
     welcome: t('Välkommen tillbaka till Cykelhjälpen'),
-  } : {
-    title: t('Logga in | Updro'),
-    description: t('Logga in på ditt Updro-konto för att hantera uppdrag, offerter och meddelanden.'),
-    canonical: 'https://updro.se/logga-in',
-    welcome: t('Välkommen tillbaka till Updro'),
-  }, [isCykel, t])
+  }), [t])
 
   useEffect(() => {
     setSEOMeta({
