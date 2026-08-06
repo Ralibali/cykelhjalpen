@@ -219,6 +219,10 @@ const AdminInbox = () => {
           </div>
         </div>
 
+        <WebhookCard />
+
+
+
         <div className="flex gap-2 mb-4">
           <Button variant={tab === 'inbox' ? 'default' : 'outline'} size="sm" onClick={() => setTab('inbox')}>
             <InboxIcon className="h-4 w-4 mr-1.5" /> {t('Inkorg')}
