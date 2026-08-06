@@ -370,6 +370,7 @@ const AppRoutes = () => {
 
               {/* Cykelhjälpen admin */}
               <Route path="/admin/cykelarenden" element={<ProtectedRoute role="admin"><AdminBikeRequests /></ProtectedRoute>} />
+              <Route path="/admin/offerter" element={<ProtectedRoute role="admin"><AdminBikeResponses /></ProtectedRoute>} />
               <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
               <Route path="/admin/verkstader/:id" element={<ProtectedRoute role="admin"><AdminWorkshopDetail /></ProtectedRoute>} />
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
