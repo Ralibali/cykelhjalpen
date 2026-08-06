@@ -60,6 +60,19 @@ const AdminBikeResponses = () => {
   const [filter, setFilter] = useState<Filter>('alla')
   const [search, setSearch] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [manualOpen, setManualOpen] = useState(false)
+  const [requests, setRequests] = useState<{ id: string; repair_category: string; city: string; customer_name: string }[]>([])
+  const [workshops, setWorkshops] = useState<{ id: string; company_name: string; city: string }[]>([])
+  const [manual, setManual] = useState({
+    request_id: '',
+    workshop_id: '',
+    message: '',
+    price_min: '',
+    price_max: '',
+    estimated_time: '',
+    can_pickup: false,
+  })
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -79,7 +92,62 @@ const AdminBikeResponses = () => {
     setLoading(false)
   }, [t])
 
-  useEffect(() => { load() }, [load])
+  const loadPickers = useCallback(async () => {
+    const [requestResult, workshopResult] = await Promise.all([
+      supabase.from('bike_repair_requests')
+        .select('id, repair_category, city, customer_name')
+        .order('created_at', { ascending: false }).limit(100),
+      supabase.from('workshops')
+        .select('id, company_name, city').eq('approved', true).order('company_name'),
+    ])
+    setRequests(requestResult.data || [])
+    setWorkshops(workshopResult.data || [])
+  }, [])
+
+  useEffect(() => { load(); loadPickers() }, [load, loadPickers])
+
+  const deleteResponse = async (id: string) => {
+    if (!window.confirm(t('Ta bort offerten permanent?'))) return
+    setBusy(true)
+    const { data, error } = await supabase.functions.invoke('admin-tools', {
+      body: { action: 'delete_response', response_id: id },
+    })
+    setBusy(false)
+    if (error || data?.error) {
+      toast.error(data?.error || t('Kunde inte ta bort offerten.'))
+      return
+    }
+    toast.success(t('Offerten är borttagen.'))
+    setRows((current) => current.filter((row) => row.id !== id))
+  }
+
+  const createManual = async () => {
+    if (!manual.request_id || !manual.workshop_id) return toast.error(t('Välj ärende och verkstad.'))
+    if (manual.message.trim().length < 5) return toast.error(t('Skriv ett meddelande till kunden.'))
+    setBusy(true)
+    const { data, error } = await supabase.functions.invoke('admin-tools', {
+      body: {
+        action: 'create_response',
+        request_id: manual.request_id,
+        workshop_id: manual.workshop_id,
+        message: manual.message.trim(),
+        estimated_price_min: manual.price_min ? Number(manual.price_min) : null,
+        estimated_price_max: manual.price_max ? Number(manual.price_max) : null,
+        estimated_time: manual.estimated_time.trim() || null,
+        can_pickup: manual.can_pickup,
+      },
+    })
+    setBusy(false)
+    if (error || data?.error) {
+      toast.error(data?.error || t('Kunde inte skapa offerten.'))
+      return
+    }
+    toast.success(t('Manuell offert är tillagd.'))
+    setManualOpen(false)
+    setManual({ request_id: '', workshop_id: '', message: '', price_min: '', price_max: '', estimated_time: '', can_pickup: false })
+    await load()
+  }
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
