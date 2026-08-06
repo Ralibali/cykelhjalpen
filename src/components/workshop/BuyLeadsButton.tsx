@@ -36,7 +36,20 @@ export function BuyLeadsButton({ quantity, onSuccess, variant = 'default' }: Buy
       if (!response.ok) throw new Error(data.error || t('Kunde inte skapa betalning'))
 
       if (data.url) {
-        window.location.href = data.url
+        const inIframe = window.self !== window.top
+        if (inIframe) {
+          // Stripe Checkout kan inte visas i iframe – öppna i ny flik
+          const win = window.open(data.url, '_blank', 'noopener,noreferrer')
+          if (!win) {
+            try {
+              window.top!.location.href = data.url
+            } catch {
+              toast.error(t('Tillåt popup-fönster för att slutföra betalningen'))
+            }
+          }
+        } else {
+          window.location.href = data.url
+        }
       }
     } catch (error: any) {
       toast.error(error.message || t('Något gick fel'))
