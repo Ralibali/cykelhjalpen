@@ -311,6 +311,8 @@ const AppRoutes = () => {
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
               <Route path="/for-cykelverkstader" element={<ForVerkstaderPage />} />
+              {/* Gammal länk från rekryteringsmejl – behåll query (utm) vid redirect */}
+              <Route path="/for-verkstader" element={<RedirectKeepSearch to="/for-cykelverkstader" />} />
 
               {/* English routes (served under /en/ via router basename) */}
               <Route path="/submit-request" element={<BikeRequestWizard />} />
