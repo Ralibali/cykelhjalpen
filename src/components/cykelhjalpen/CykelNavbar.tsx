@@ -16,7 +16,7 @@ const citiesLink = '/#stader'
 const CykelNavbar = () => {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { isAuthenticated, isAdmin } = useAuth()
+  const { isAuthenticated, isAdmin, signOut } = useAuth()
   const t = useT()
 
   useEffect(() => {
@@ -47,7 +47,10 @@ const CykelNavbar = () => {
           <LanguageSwitcher />
           {isAuthenticated && <NotificationBell />}
           {isAuthenticated ? (
-            <Button asChild variant="outline" size="sm"><Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>{t('Mitt konto')}</Link></Button>
+            <>
+              <Button asChild variant="outline" size="sm"><Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>{t('Mitt konto')}</Link></Button>
+              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => signOut()}>{t('Logga ut')}</Button>
+            </>
           ) : (
             <Button asChild variant="outline" size="sm"><Link to="/logga-in">{t('Logga in')}</Link></Button>
           )}
@@ -71,7 +74,10 @@ const CykelNavbar = () => {
             <NavLink to="/for-cykelverkstader" onClick={() => setOpen(false)} className={navLinkClass}>{t('För verkstäder')}</NavLink>
             <div className="flex flex-col gap-2 pt-3 border-t border-border">
               {isAuthenticated ? (
-                <Button asChild variant="outline" size="sm" onClick={() => setOpen(false)}><Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>{t('Mitt konto')}</Link></Button>
+                <>
+                  <Button asChild variant="outline" size="sm" onClick={() => setOpen(false)}><Link to={isAdmin ? '/admin' : '/dashboard/verkstad'}>{t('Mitt konto')}</Link></Button>
+                  <Button variant="ghost" size="sm" className="text-destructive" onClick={() => { signOut(); setOpen(false) }}>{t('Logga ut')}</Button>
+                </>
               ) : (
                 <Button asChild variant="outline" size="sm" onClick={() => setOpen(false)}><Link to="/logga-in">{t('Logga in')}</Link></Button>
               )}
