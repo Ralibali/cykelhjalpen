@@ -378,7 +378,7 @@ const BikeRequestWizard = () => {
                               : 'border-border bg-muted text-muted-foreground'
                         }`}
                       >
-                        {done ? <Check className="h-4 w-4" strokeWidth={3} /> : index + 1}
+                        {done ? <Check className="h-4 w-4" strokeWidth={3} /> : position + 1}
                       </span>
                       <span
                         className={`hidden md:block text-sm font-medium ${
@@ -388,7 +388,7 @@ const BikeRequestWizard = () => {
                         {label}
                       </span>
                     </button>
-                    {index < BIKE_REQUEST_STEPS.length - 1 && (
+                    {position < visibleSteps.length - 1 && (
                       <span className="relative h-1 flex-1 overflow-hidden rounded-full bg-muted">
                         <motion.span
                           className="absolute inset-y-0 left-0 rounded-full bg-[hsl(var(--brand-mint))]"
