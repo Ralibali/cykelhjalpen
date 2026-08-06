@@ -300,6 +300,12 @@ const AdminBikeResponses = () => {
                         {row.workshops.phone && <span>{row.workshops.phone}</span>}
                       </div>
                     )}
+
+                    <div className="pt-2 border-t">
+                      <Button variant="destructive" size="sm" disabled={busy} onClick={() => deleteResponse(row.id)}>
+                        <Trash2 className="h-4 w-4 mr-2" /> {t('Ta bort offerten')}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
