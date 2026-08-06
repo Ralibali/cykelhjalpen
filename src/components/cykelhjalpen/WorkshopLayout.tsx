@@ -51,7 +51,7 @@ const WorkshopLayout = () => {
       if (!user) return
       const { data, error } = await supabase
         .from('workshops')
-        .select('id, company_name, email, phone, address, website, city, approved, sms_notifications, free_leads_remaining')
+        .select('id, company_name, email, phone, address, website, city, approved, sms_notifications, free_leads_remaining, logo_url, description, opening_hours, org_number, founded_year, facebook_url, instagram_url, price_info, booking_url, services')
         .eq('user_id', user.id)
         .maybeSingle()
 
