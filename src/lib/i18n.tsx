@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
-import { EN } from '@/locales/en'
+import { EN } from '../locales/en'
 
 export type Lang = 'sv' | 'en'
 

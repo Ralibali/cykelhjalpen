@@ -5,7 +5,7 @@
 export const OUTREACH_FROM = 'Christoffer på Cykelhjälpen <info@cykelhjalpen.se>'
 export const OUTREACH_REPLY_TO = 'info@cykelhjalpen.se'
 export const OUTREACH_SITE_URL = 'https://cykelhjalpen.se'
-export const OUTREACH_WORKSHOP_URL = 'https://cykelhjalpen.se/for-verkstader'
+export const OUTREACH_WORKSHOP_URL = 'https://cykelhjalpen.se/for-cykelverkstader'
 export const OUTREACH_DAILY_CAP = 20
 export const OUTREACH_MIN_DAYS_BETWEEN_CONTACT = 30
 // Uppföljning till prospekt som klickat får skickas tidigare än vanlig
@@ -78,7 +78,7 @@ export const oneClickUnsubscribeUrl = (supabaseUrl: string, token: string) =>
 // spårningslänk per utskick. Edge functionen outreach-click loggar klicket i
 // outreach_clicks och 302-vidarebefordrar till den här adressen.
 export const CLICK_REDIRECT_URL =
-  'https://cykelhjalpen.se/for-verkstader?utm_source=outreach&utm_medium=email&utm_campaign=verkstadsrekrytering'
+  'https://cykelhjalpen.se/for-cykelverkstader?utm_source=outreach&utm_medium=email&utm_campaign=verkstadsrekrytering'
 
 export const buildClickTrackingUrl = (supabaseUrl: string, activityId: string, token: string): string =>
   `${supabaseUrl.replace(/\/+$/, '')}/functions/v1/outreach-click?a=${encodeURIComponent(activityId)}&t=${encodeURIComponent(token)}`
