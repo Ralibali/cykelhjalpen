@@ -113,7 +113,7 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
   {
     path: '/for-cykelverkstader',
     title: 'Få fler kunder till din cykelverkstad | Cykelhjälpen',
-    description: 'Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift och betalning endast per skickad offert.',
+    description: 'Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift. Det kostar inget att lämna offert – ni betalar först när kunden väljer er.',
     h1: 'Få fler lokala kunder till din cykelverkstad',
     priority: 0.8,
     changefreq: 'monthly',

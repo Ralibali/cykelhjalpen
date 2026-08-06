@@ -25,7 +25,7 @@ const useBenefits = (t: ReturnType<typeof useT>) => [
 const useSteps = (t: ReturnType<typeof useT>) => [
   { title: t('Registrera verkstaden'), text: t('Kostnadsfritt och utan bindningstid. Välj vilken stad ni arbetar i.') },
   { title: t('Vi granskar manuellt'), text: t('Efter godkännande får ni tillgång till granskade ärenden i er stad.') },
-  { title: t('Svara på de jobb ni vill'), text: t('Skriv pris och möjlig tid. Ett lead ({fee} kr exkl. moms) dras först när ni väljer att skicka – de två första är gratis.', { fee: LEAD_FEE_KR }) },
+  { title: t('Svara på de jobb ni vill'), text: t('Skriv pris och möjlig tid – det kostar inget att lämna offert. Ett lead ({fee} kr exkl. moms) dras först när kunden väljer er offert – de två första vinsterna är gratis.', { fee: LEAD_FEE_KR }) },
   { title: t('Kunden hör av sig'), text: t('De får prisförslaget och era kontaktuppgifter. Fortsatt bokning sker direkt med er.') },
 ]
 
@@ -104,7 +104,7 @@ const ForVerkstaderPage = () => {
               <div className="absolute -bottom-5 left-4 right-4 sm:left-6 sm:right-auto sticker bg-card rounded-2xl px-5 py-4 flex items-center gap-4">
                 <div>
                   <p className="font-display text-3xl leading-none">{LEAD_FEE_KR} kr</p>
-                  <p className="text-xs text-muted-foreground mt-1">{t('exkl. moms per skickad offert')}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('exkl. moms – bara när kunden väljer er')}</p>
                 </div>
                 <div className="hidden sm:block w-px self-stretch bg-border" />
                 <p className="hidden sm:block text-sm text-muted-foreground max-w-44">{t('Kostnadsfritt att svara – ni betalar {fee} kr exkl. moms först när kunden väljer er.', { fee: LEAD_FEE_KR })}</p>

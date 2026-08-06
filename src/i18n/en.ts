@@ -100,7 +100,7 @@ export const en: Dictionary = {
     submitTitle: 'Get free bike repair quotes | Cykelhjälpen',
     submitDescription: 'Describe your bike problem in two minutes and compare up to three quotes from local bike shops. Free, no account needed.',
     workshopsTitle: 'Get more customers to your bike shop | Cykelhjälpen',
-    workshopsDescription: 'Join with your bike shop in Linköping, Norrköping, Uppsala or Lund. No monthly fee — you only pay when you send a quote.',
+    workshopsDescription: 'Join with your bike shop in Linköping, Norrköping, Uppsala or Lund. No monthly fee. Quoting is free — you only pay when the customer picks you.',
   },
   request: {
     languageLabel: 'Customer language',

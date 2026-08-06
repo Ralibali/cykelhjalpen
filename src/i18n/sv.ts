@@ -98,7 +98,7 @@ export const sv = {
     submitTitle: 'Skicka cykelärende gratis | Cykelhjälpen',
     submitDescription: 'Beskriv problemet på två minuter och jämför prisförslag från lokala cykelverkstäder. Gratis och utan konto.',
     workshopsTitle: 'Få fler kunder till din cykelverkstad | Cykelhjälpen',
-    workshopsDescription: 'Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift och betalning endast per skickad offert.',
+    workshopsDescription: 'Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift. Det kostar inget att lämna offert – ni betalar först när kunden väljer er.',
   },
   request: {
     languageLabel: 'Kundens språk',
