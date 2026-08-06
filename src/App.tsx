@@ -84,7 +84,12 @@ const RedirectKeepSearch = ({ to }: { to: string }) => {
 /** Gamla verkstads-URL:er -> rätt sida i aktuellt språk (canonical sätts i prerender-headen). */
 const LegacyWorkshopRedirect = () => {
   const { lang } = useLanguage();
-  return <RedirectKeepSearch to={lang === "en" ? "/for-bike-shops" : "/for-cykelverkstader"} />;
+  const { pathname, search } = useLocation();
+  const target = lang === "en" ? "/for-bike-shops" : "/for-cykelverkstader";
+  useEffect(() => {
+    trackClick("legacy_redirect", pathname, { from: pathname, to: target, search });
+  }, [pathname, target, search]);
+  return <RedirectKeepSearch to={target} />;
 };
 
 /** /for-cykelverkstader under /en är en dubblett av /en/for-bike-shops. */
