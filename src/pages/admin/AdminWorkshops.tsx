@@ -83,9 +83,10 @@ const AdminWorkshops = () => {
     await load()
   }
 
-  const openGrantDialog = (workshop: WorkshopRow) => {
+  const openGrantDialog = (workshop: WorkshopRow, mode: 'add' | 'remove' = 'add') => {
     setGrantTarget(workshop)
-    setGrantAmount(2)
+    setGrantMode(mode)
+    setGrantAmount(mode === 'remove' ? Math.min(1, workshop.free_leads_remaining || 1) : 2)
     setGrantReason('')
   }
 
@@ -96,23 +97,24 @@ const AdminWorkshops = () => {
       toast.error(t('Ange ett antal mellan 1 och 50.'))
       return
     }
+    const delta = grantMode === 'remove' ? -amount : amount
     setBusy(grantTarget.id)
 
     const { data: userData } = await supabase.auth.getUser()
     const { error } = await supabase.from('free_lead_grants').insert({
       workshop_id: grantTarget.id,
       admin_id: userData?.user?.id || '',
-      amount,
+      amount: delta,
       reason: grantReason.trim() || null,
     })
 
     if (error) {
       setBusy(null)
-      toast.error(t('Kunde inte fylla på leads: {msg}', { msg: error.message }))
+      toast.error(t('Kunde inte uppdatera leads: {msg}', { msg: error.message }))
       return
     }
 
-    // Triggern höjer saldot – hämta det nya värdet för bekräftelsen.
+    // Triggern uppdaterar saldot – hämta det nya värdet för bekräftelsen.
     const { data: updated } = await supabase
       .from('workshops')
       .select('free_leads_remaining')
@@ -120,7 +122,9 @@ const AdminWorkshops = () => {
       .single()
     setBusy(null)
 
-    toast.success(t('{amount} gratis-leads tillagda', { amount }), {
+    toast.success(grantMode === 'remove'
+      ? t('{amount} gratis-leads borttagna', { amount })
+      : t('{amount} gratis-leads tillagda', { amount }), {
       description: t('{name} har nu {count} kvar.', {
         name: grantTarget.company_name,
         count: (updated as { free_leads_remaining?: number } | null)?.free_leads_remaining ?? '–',
