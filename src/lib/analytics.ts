@@ -17,6 +17,7 @@ export type PlausibleEventName =
   | 'Workshop Signup Completed'
   | 'Offer Submitted'
   | 'Offer Accepted'
+  | 'Winner Selected'
 
 /** Whitelist of low-cardinality property keys we allow through to Plausible. */
 type AllowedProp = 'city' | 'bike_type' | 'source' | 'user_type'
