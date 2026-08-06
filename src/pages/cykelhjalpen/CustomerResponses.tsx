@@ -225,10 +225,11 @@ const CustomerResponses = () => {
             <h1 className="font-display text-2xl">{t('Du har valt verkstad')}</h1>
           </div>
           <p className="text-sm">
-            {winner
-              ? t('{name} har fått dina kontaktuppgifter och hör av sig till dig inom kort.', { name: winner.workshop?.company_name || t('Verkstaden') })
-              : t('Verkstaden du valt har fått dina kontaktuppgifter och hör av sig till dig inom kort.')}
+            {winnerSettled
+              ? t('{name} har fått dina kontaktuppgifter och hör av sig till dig inom kort.', { name: winner?.workshop?.company_name || t('Verkstaden') })
+              : t('{name} har meddelats och hör av sig så snart uppdraget är aktiverat.', { name: winner?.workshop?.company_name || t('Verkstaden') })}
           </p>
+
         </div>
       )
     }
