@@ -264,13 +264,19 @@ const HreflangTags = () => {
     setOg('og:locale:alternate', lang === 'en' ? 'sv_SE' : 'en_US');
 
 
-    let ogUrl = document.querySelector('meta[property="og:url"]') as HTMLMetaElement | null;
+    const ogUrls = Array.from(
+      document.querySelectorAll('meta[property="og:url"]'),
+    ) as HTMLMetaElement[];
+    const helmetOgUrl = ogUrls.find((el) => el.hasAttribute('data-rh'));
+    let ogUrl = helmetOgUrl ?? ogUrls[0];
+    ogUrls.filter((el) => el !== ogUrl).forEach((el) => el.remove());
     if (!ogUrl) {
       ogUrl = document.createElement('meta');
       ogUrl.setAttribute('property', 'og:url');
       document.head.appendChild(ogUrl);
     }
-    ogUrl.content = selfUrl;
+    if (!helmetOgUrl) ogUrl.content = selfUrl;
+
     }, 0);
     return () => window.clearTimeout(timer);
   }, [location.pathname, lang]);
