@@ -17,6 +17,8 @@ import {
   DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import { useT } from '@/lib/i18n'
+import InboundWebhookCard from '@/components/admin/InboundWebhookCard'
+
 
 // Tables not present in generated types yet (inbound_emails / sent_emails).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
