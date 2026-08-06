@@ -162,8 +162,11 @@ const CustomerResponses = () => {
       if (data?.error) throw new Error(data.error)
 
       toast.success(t('Du har valt {name}!', { name: response.workshop?.company_name || t('verkstaden') }), {
-        description: t('Verkstaden får dina kontaktuppgifter och hör av sig till dig inom kort.'),
+        description: data?.settled
+          ? t('Verkstaden har fått dina kontaktuppgifter och hör av sig till dig inom kort.')
+          : t('Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.'),
       })
+
       if (request?.city) trackEvent('Winner Selected', { city: request.city })
       setConfirmingId(null)
       await load()
