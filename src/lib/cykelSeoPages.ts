@@ -40,7 +40,13 @@ export const EN_SLUG_STEMS: Record<string, string> = {
 
 
 type Tfn = (sv: string, vars?: Record<string, string | number>) => string
-const identity: Tfn = (s) => s
+// Interpolerar {city}, {district} osv. Tidigare returnerades strängen orörd,
+// vilket gjorde att alla svenska sidor renderade platshållarna literalt --
+// "Cykelreparation {city} — boka via lokala verkstäder" hamnade i <title>.
+// Den engelska varianten (enT i seoStatic.ts) gjorde substitutionen och
+// dolde därför buggen.
+const identity: Tfn = (s, vars) =>
+  vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m)) : s
 
 const spotlights = (c: CykelCity, n = 3) => c.districts.slice(0, n)
 
@@ -157,7 +163,7 @@ const SERVICES: ServiceDef[] = [
     slugStem: 'elsparkcykel-reparation',
     what: 'elsparkcykel-reparation',
     h1: (c, t) => t('Elsparkcykel-reparation i {city}', { city: c.name }),
-    title: (c, t) => t('Elsparkcykel reparation {city} — verkstäder som lagar din elscooter', { city: c.name }),
+    title: (c, t) => t('Elsparkcykel reparation {city} — lokala verkstäder', { city: c.name }),
     description: (c, t) => t('Elsparkcykel som krånglar i {city}? Punktering, bromsar eller batteri — få offert från verkstäder som lagar elsparkcyklar. Gratis och utan konto.', { city: c.name }),
     sections: (c, t) => [
       { h2: t('Vanliga problem'), body: t('Punktering på små hjul, bromsar som slirar, batteri som laddar ur fort eller felkoder i displayen. Beskriv symptomen så får du rätt offert.') },
@@ -279,7 +285,7 @@ const SERVICES: ServiceDef[] = [
     slugStem: 'varservice-cykel',
     what: 'vårservice av cykeln',
     h1: (c, t) => t('Vårservice för cykel i {city}', { city: c.name }),
-    title: (c, t) => t('Vårservice cykel {city} — gör cykeln redo efter vintern', { city: c.name }),
+    title: (c, t) => t('Vårservice cykel {city} — redo efter vintern', { city: c.name }),
     description: (c, t) => t('Vårservice av cykeln i {city}. Genomgång efter vintern — bromsar, växlar, däck och drivlina. Få offerter lokalt.', { city: c.name }),
     sections: (c, t) => [
       { h2: t('Vad ingår i vårservice?'), body: t('Genomgång av broms och växel, kontroll av däck och hjul, smörjning av drivlina och säkerhetskontroll av ram och styrlager.') },

@@ -116,7 +116,7 @@ export const EN_SEO: Record<string, string> = {
 
   // elsparkcykel
   'Elsparkcykel-reparation i {city}': 'E-scooter repair in {city}',
-  'Elsparkcykel reparation {city} — verkstäder som lagar din elscooter': 'E-scooter repair {city} — shops that fix your e-scooter',
+  'Elsparkcykel reparation {city} — lokala verkstäder': 'E-scooter repair {city} — local shops',
   'Elsparkcykel som krånglar i {city}? Punktering, bromsar eller batteri — få offert från verkstäder som lagar elsparkcyklar. Gratis och utan konto.':
     'E-scooter acting up in {city}? Flat tire, brakes or battery — get a quote from shops that repair e-scooters. Free, no account needed.',
   'Punktering på små hjul, bromsar som slirar, batteri som laddar ur fort eller felkoder i displayen. Beskriv symptomen så får du rätt offert.':
@@ -230,7 +230,7 @@ export const EN_SEO: Record<string, string> = {
 
   // varservice
   'Vårservice för cykel i {city}': 'Spring service for bikes in {city}',
-  'Vårservice cykel {city} — gör cykeln redo efter vintern': 'Spring service bike {city} — get your bike ready after winter',
+  'Vårservice cykel {city} — redo efter vintern': 'Spring bike service {city} — ready after winter',
   'Vårservice av cykeln i {city}. Genomgång efter vintern — bromsar, växlar, däck och drivlina. Få offerter lokalt.':
     'Spring service for your bike in {city}. A post-winter check-up — brakes, gears, tires and drivetrain. Get local quotes.',
   'Vad ingår i vårservice?': 'What\u2019s included in a spring service?',

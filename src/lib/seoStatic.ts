@@ -113,7 +113,7 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
   {
     path: '/for-cykelverkstader',
     title: 'Få fler kunder till din cykelverkstad | Cykelhjälpen',
-    description: 'Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift. Det kostar inget att lämna offert – ni betalar först när kunden väljer er.',
+    description: 'Anslut din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift – ni betalar först när kunden väljer er offert.',
     h1: 'Få fler lokala kunder till din cykelverkstad',
     priority: 0.8,
     changefreq: 'monthly',
@@ -190,7 +190,7 @@ const englishRoutes = (): StaticSeoRoute[] => [
     path: '/en',
     altPath: '/',
     lang: 'en',
-    title: 'Bike repair in Sweden – compare local bike shops | Cykelhjälpen',
+    title: 'Bike repair in Sweden – compare local shops | Cykelhjälpen',
     description: 'Free and no account needed. Describe your bike problem and compare up to three quotes from local bike shops in Linköping, Norrköping, Uppsala and Lund.',
     h1: 'Compare local bike shops in Sweden',
     priority: 0.95,

@@ -27,3 +27,33 @@ verify_jwt = false
 
 [functions.select-bike-winner]
 verify_jwt = false
+
+# --- Anropas utan inloggad användare -----------------------------------------
+# Utan verify_jwt = false svarar Supabase 401 innan funktionen ens körs.
+
+# Publik registrering av verkstad (/registrera/verkstad) — sökanden har
+# per definition inget konto ännu.
+[functions.register-workshop]
+verify_jwt = false
+
+# Stripe anropar webhooken utan JWT och signerar med webhook secret i stället.
+[functions.stripe-webhook-lead-credits]
+verify_jwt = false
+
+# Supabase Auth anropar hooken själv vid utskick av auth-mejl.
+[functions.auth-email-hook]
+verify_jwt = false
+
+# Schemalagda jobb har ingen användarsession.
+[functions.offer-reminder-cron]
+verify_jwt = false
+
+[functions.prospect-sync-cron]
+verify_jwt = false
+
+[functions.process-article-queue]
+verify_jwt = false
+
+# Serveras till sökmotorer och crawlers.
+[functions.sitemap]
+verify_jwt = false
