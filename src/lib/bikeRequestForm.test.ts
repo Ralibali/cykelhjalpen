@@ -9,6 +9,7 @@ const validRequest = () => ({
   postcode: '585 65',
   customer_name: 'Anna Andersson',
   customer_email: 'anna@example.com',
+  customer_phone: '070-123 45 67',
   consent: true,
 })
 
