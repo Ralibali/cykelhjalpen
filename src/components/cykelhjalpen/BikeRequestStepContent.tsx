@@ -454,7 +454,7 @@ const BikeRequestStepContent = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">{t('Telefon')} <span className="font-normal text-muted-foreground">({t('valfritt')})</span></Label>
+          <Label htmlFor="phone">{t('Mobilnummer')}</Label>
           <Input
             id="phone"
             type="tel"

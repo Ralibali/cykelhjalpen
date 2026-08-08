@@ -52,7 +52,8 @@ export const makeBikeRequestSchema = (t: TFunction = (s) => s) => z.object({
   wants_pickup: z.boolean(),
   customer_name: z.string().trim().min(2, t('Ange ditt namn')).max(80),
   customer_email: z.string().trim().email(t('Ange en giltig e-postadress')).max(160),
-  customer_phone: z.string().trim().max(40).optional(),
+  customer_phone: z.string().trim().max(40)
+    .refine((value) => /^(\+46|0046|0)\s?7[\d\s-]{8,}$/.test(value.replace(/\s+/g, ' ')), t('Ange ditt mobilnummer så vi kan sms:a dig när offerterna kommer')),
   consent: z.literal(true, { errorMap: () => ({ message: t('Du måste godkänna integritetspolicyn') }) }),
 }).refine((value) => value.can_drop_off || value.wants_pickup, {
   message: t('Välj om du kan lämna cykeln eller behöver hämtning'),
