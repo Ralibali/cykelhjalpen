@@ -288,7 +288,7 @@ const AdminBikeResponses = () => {
                               <Phone className="h-3.5 w-3.5" /> {request.customer_phone}
                             </a>
                           )}
-                          <Link to={`/mina-svar/${request.view_token}`} className="text-primary hover:underline">{t('Öppna kundvy')}</Link>
+                          <Link to={`/mitt-arende/${request.view_token}`} className="text-primary hover:underline">{t('Öppna kundvy')}</Link>
                         </div>
                       </div>
                     )}
