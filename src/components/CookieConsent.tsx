@@ -140,6 +140,27 @@ const CookieConsent = () => {
     return () => window.removeEventListener('cookie-settings:open', openSettings)
   }, [])
 
+  // Reserve space so the fixed banner never covers buttons/fields on small screens.
+  useEffect(() => {
+    if (!visible) {
+      document.body.style.paddingBottom = ''
+      return
+    }
+    const apply = () => {
+      const height = bannerRef.current?.getBoundingClientRect().height ?? 0
+      document.body.style.paddingBottom = height ? `${Math.ceil(height)}px` : ''
+    }
+    apply()
+    const observer = new ResizeObserver(apply)
+    if (bannerRef.current) observer.observe(bannerRef.current)
+    window.addEventListener('resize', apply)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', apply)
+      document.body.style.paddingBottom = ''
+    }
+  }, [visible])
+
   const accept = (nextLevel: ConsentLevel) => {
     localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({
       level: nextLevel,
