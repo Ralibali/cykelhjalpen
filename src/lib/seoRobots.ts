@@ -5,6 +5,7 @@ const PRIVATE_ROUTE_PREFIXES = [
   '/admin',
   '/dashboard',
   '/mitt-arende',
+  '/mina-svar',
   '/avregistrera',
   '/annons/verkstad',
 ]
