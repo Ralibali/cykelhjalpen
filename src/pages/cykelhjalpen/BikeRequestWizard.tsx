@@ -164,7 +164,7 @@ const BikeRequestWizard = () => {
 
   const canContinue = () => {
     if (step === 0) return Boolean(form.bike_type)
-    if (step === 1) return Boolean(form.repair_category) && form.description.trim().length >= 10
+    if (step === 1) return Boolean(form.repair_category) && form.description.trim().length >= 15
     if (step === 2) return Boolean(form.city) && Boolean(form.urgency) && (form.can_drop_off || form.wants_pickup)
     return form.customer_name.trim().length >= 2 && /\S+@\S+\.\S+/.test(form.customer_email) && form.consent
   }
