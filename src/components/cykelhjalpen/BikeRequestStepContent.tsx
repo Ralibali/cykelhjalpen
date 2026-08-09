@@ -255,8 +255,8 @@ const BikeRequestStepContent = ({
             className="rounded-xl border-2 focus-visible:ring-accent"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span className={form.description.trim().length >= 30 ? 'text-[hsl(var(--brand-mint))]' : ''}>
-              {form.description.trim().length >= 30 ? t('✓ Bra beskrivning!') : t('Minst 30 tecken – beskriv gärna mer')}
+            <span className={form.description.trim().length >= 15 ? 'text-[hsl(var(--brand-mint))]' : ''}>
+              {form.description.trim().length >= 15 ? t('✓ Tillräckligt – lägg gärna till mer') : t('Minst 15 tecken – tryck på förslagen ovan för snabbstart')}
             </span>
             <span>{form.description.length}/2000</span>
           </div>

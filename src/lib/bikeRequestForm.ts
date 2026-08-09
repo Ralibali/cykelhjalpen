@@ -43,7 +43,7 @@ type TFunction = (sv: string, vars?: Record<string, string | number>) => string
 export const makeBikeRequestSchema = (t: TFunction = (s) => s) => z.object({
   bike_type: z.enum(BIKE_TYPES, { errorMap: () => ({ message: t('Välj vilken typ av cykel du har') }) }),
   repair_category: z.enum(REPAIR_CATEGORIES, { errorMap: () => ({ message: t('Välj vad du behöver hjälp med') }) }),
-  description: z.string().trim().min(30, t('Beskriv felet med minst 30 tecken – det ger träffsäkrare pris')).max(2000),
+  description: z.string().trim().min(15, t('Beskriv felet med minst 15 tecken')).max(2000),
   city: z.string().refine(isCykelCity, t('Välj en stad som Cykelhjälpen finns i')),
   area: z.string().trim().max(80).optional(),
   postcode: z.string().trim().max(10).refine((value) => !value || /^\d{3}\s?\d{2}$/.test(value), t('Ange postnummer med fem siffror')).optional(),

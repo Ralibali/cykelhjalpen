@@ -21,6 +21,8 @@ import { trackAdsConversion } from '@/lib/googleAds'
 import { DEFAULT_CYKEL_CITY, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
 import {
   BIKE_REQUEST_STEPS,
+  BIKE_TYPES,
+  REPAIR_CATEGORIES,
   URGENCY_OPTIONS,
   makeBikeRequestSchema,
   makeDefaultBikeRequest,
@@ -71,26 +73,46 @@ const BikeRequestWizard = () => {
   const [searchParams] = useSearchParams()
   const requestedCity = resolveCykelCityParam(searchParams.get('stad'))
   const cityLocked = requestedCity !== null
-  const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const autoAdvanceRef = useRef<number | null>(null)
+
+  // Förifyllning via länk: /skicka-arende?problem=Bromsar&cykel=Elcykel&stad=Lund
+  const normalizeValue = (input: string) => input.toLowerCase().replace(/[^a-z0-9åäö]/g, '')
+  const matchParam = (value: string | null, options: readonly string[]) => {
+    if (!value) return ''
+    const target = normalizeValue(value)
+    return options.find((option) => normalizeValue(option).startsWith(target)) || ''
+  }
+  const prefillBikeType = matchParam(searchParams.get('cykel'), BIKE_TYPES)
+  const prefillCategory = matchParam(searchParams.get('problem'), REPAIR_CATEGORIES)
+
   const [form, setForm] = useState<BikeRequestFormState>(() => {
     const defaults = makeDefaultBikeRequest(requestedCity || DEFAULT_CYKEL_CITY)
-    if (typeof window === 'undefined') return defaults
-    try {
-      const stored = localStorage.getItem(DRAFT_KEY)
-      if (!stored) return defaults
-      const draft = JSON.parse(stored)
-      const city = requestedCity || (isCykelCity(draft?.city) ? draft.city : DEFAULT_CYKEL_CITY)
-      return { ...defaults, ...draft, city, consent: false }
-    } catch {
-      localStorage.removeItem(DRAFT_KEY)
-      return defaults
+    let base = defaults
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(DRAFT_KEY)
+        if (stored) {
+          const draft = JSON.parse(stored)
+          const city = requestedCity || (isCykelCity(draft?.city) ? draft.city : DEFAULT_CYKEL_CITY)
+          base = { ...defaults, ...draft, city, consent: false }
+        }
+      } catch {
+        localStorage.removeItem(DRAFT_KEY)
+      }
+    }
+    return {
+      ...base,
+      bike_type: prefillBikeType || base.bike_type,
+      repair_category: prefillCategory || base.repair_category,
     }
   })
+
+  // Hoppa direkt till första ofullständiga steget när valen redan är gjorda via länk.
+  const [step, setStep] = useState(() => (prefillBikeType ? 1 : 0))
 
   const STEP_HINTS = STEP_HINTS_SV.map((hint) => t(hint))
   const stepLabels = BIKE_REQUEST_STEPS.map((label) => t(label))
@@ -142,7 +164,7 @@ const BikeRequestWizard = () => {
 
   const canContinue = () => {
     if (step === 0) return Boolean(form.bike_type)
-    if (step === 1) return Boolean(form.repair_category) && form.description.trim().length >= 10
+    if (step === 1) return Boolean(form.repair_category) && form.description.trim().length >= 15
     if (step === 2) return Boolean(form.city) && Boolean(form.urgency) && (form.can_drop_off || form.wants_pickup)
     return form.customer_name.trim().length >= 2 && /\S+@\S+\.\S+/.test(form.customer_email) && form.consent
   }
