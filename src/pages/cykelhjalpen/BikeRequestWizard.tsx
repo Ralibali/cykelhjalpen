@@ -21,6 +21,8 @@ import { trackAdsConversion } from '@/lib/googleAds'
 import { DEFAULT_CYKEL_CITY, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
 import {
   BIKE_REQUEST_STEPS,
+  BIKE_TYPES,
+  REPAIR_CATEGORIES,
   URGENCY_OPTIONS,
   makeBikeRequestSchema,
   makeDefaultBikeRequest,
