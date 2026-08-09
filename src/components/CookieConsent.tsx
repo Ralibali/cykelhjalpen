@@ -87,6 +87,7 @@ const CookieConsent = () => {
   const t = useT()
   const [visible, setVisible] = useState(false)
   const [level, setLevel] = useState<ConsentLevel | null>(null)
+  const bannerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const gtag = ensureDataLayer()
