@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Cookie } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Link, useLocation } from 'react-router-dom'
@@ -87,6 +87,7 @@ const CookieConsent = () => {
   const t = useT()
   const [visible, setVisible] = useState(false)
   const [level, setLevel] = useState<ConsentLevel | null>(null)
+  const bannerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const gtag = ensureDataLayer()
@@ -140,6 +141,27 @@ const CookieConsent = () => {
     return () => window.removeEventListener('cookie-settings:open', openSettings)
   }, [])
 
+  // Reserve space so the fixed banner never covers buttons/fields on small screens.
+  useEffect(() => {
+    if (!visible) {
+      document.body.style.paddingBottom = ''
+      return
+    }
+    const apply = () => {
+      const height = bannerRef.current?.getBoundingClientRect().height ?? 0
+      document.body.style.paddingBottom = height ? `${Math.ceil(height)}px` : ''
+    }
+    apply()
+    const observer = new ResizeObserver(apply)
+    if (bannerRef.current) observer.observe(bannerRef.current)
+    window.addEventListener('resize', apply)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', apply)
+      document.body.style.paddingBottom = ''
+    }
+  }, [visible])
+
   const accept = (nextLevel: ConsentLevel) => {
     localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({
       level: nextLevel,
@@ -167,7 +189,7 @@ const CookieConsent = () => {
   }
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-50 p-2 md:p-4" role="dialog" aria-modal="true" aria-labelledby="cookie-heading">
+    <div ref={bannerRef} className="fixed bottom-0 inset-x-0 z-50 p-2 md:p-4" role="dialog" aria-modal="true" aria-labelledby="cookie-heading">
       <div className="max-w-3xl mx-auto bg-card border-2 border-foreground rounded-2xl md:rounded-3xl shadow-[6px_6px_0_hsl(var(--ink))] p-3 md:p-6 flex flex-col gap-3 md:gap-4">
         <div className="text-sm text-foreground/80">
           <p id="cookie-heading" className="font-display text-base md:text-lg text-foreground mb-1 md:mb-1.5 flex items-center gap-2">
