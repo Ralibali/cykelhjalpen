@@ -189,7 +189,7 @@ const CookieConsent = () => {
   }
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-50 p-2 md:p-4" role="dialog" aria-modal="true" aria-labelledby="cookie-heading">
+    <div ref={bannerRef} className="fixed bottom-0 inset-x-0 z-50 p-2 md:p-4" role="dialog" aria-modal="true" aria-labelledby="cookie-heading">
       <div className="max-w-3xl mx-auto bg-card border-2 border-foreground rounded-2xl md:rounded-3xl shadow-[6px_6px_0_hsl(var(--ink))] p-3 md:p-6 flex flex-col gap-3 md:gap-4">
         <div className="text-sm text-foreground/80">
           <p id="cookie-heading" className="font-display text-base md:text-lg text-foreground mb-1 md:mb-1.5 flex items-center gap-2">
