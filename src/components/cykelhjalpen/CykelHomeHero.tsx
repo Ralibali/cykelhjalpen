@@ -54,8 +54,30 @@ const CykelHomeHero = () => {
               <a href="#sa-fungerar-det" onClick={() => trackClick('home_how_it_works_clicked', 'Så fungerar det')}>{t('Så fungerar det')}</a>
             </Button>
           </div>
+          <div className="mt-7">
+            <p className="text-sm font-medium text-muted-foreground mb-2">{t('Vanligast just nu – ett klick startar ärendet:')}</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: t('Punktering'), param: 'Punktering' },
+                { label: t('Bromsar'), param: 'Bromsar' },
+                { label: t('Växlar / kedja'), param: 'Växlar' },
+                { label: t('Service'), param: 'Service' },
+                { label: t('Elcykel'), param: 'Elcykel-problem' },
+              ].map(({ label, param }) => (
+                <Link
+                  key={param}
+                  to={`/skicka-arende?problem=${encodeURIComponent(param)}`}
+                  onClick={() => trackClick('home_quickstart_clicked', label, { problem: param })}
+                  className="rounded-full border-2 border-foreground bg-card px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-accent hover:text-accent-foreground"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+
             <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Inget konto')}</span>
             <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Upp till tre svar')}</span>
             <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Ingen köpplikt')}</span>
