@@ -338,6 +338,8 @@ const AppRoutes = () => {
             <>
               <Route path="/skicka-arende" element={<BikeRequestWizard />} />
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
+              {/* Alias: äldre/felaktig länk till kundens ärendesida */}
+              <Route path="/mina-svar/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
               <Route path="/for-cykelverkstader" element={<WorkshopPageOrEnRedirect />} />
               {/* Gammal länk från rekryteringsmejl – behåll query (utm) vid redirect */}
