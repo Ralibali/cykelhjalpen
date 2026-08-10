@@ -5,6 +5,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { notifyCustomerOfNewResponse } from '../_shared/customer-response.ts'
+import { sendAdminAlert } from '../_shared/admin-alert.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
 
@@ -103,9 +104,30 @@ Deno.serve(async (req) => {
       workshopName: workshop.company_name,
     }).catch((notifyError) => console.error('Customer notification failed', notifyError))
 
+    // E-postnotis till admin om den nya offerten.
+    const adminAlertTask = sendAdminAlert({
+      supabaseUrl,
+      serviceRoleKey,
+      subject: `Ny offert från ${workshop.company_name} (${workshop.city})`,
+      heading: 'Ny offert skickad till kund',
+      rows: [
+        ['Verkstad', workshop.company_name],
+        ['Stad', workshop.city],
+        ['Ärende-ID', response.request_id],
+      ],
+      ctaUrl: 'https://cykelhjalpen.se/admin/offerter',
+      ctaLabel: 'Se offerten',
+    })
+
     const edgeRuntime = (globalThis as any).EdgeRuntime
-    if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(notifyTask)
-    else await notifyTask
+    if (edgeRuntime?.waitUntil) {
+      edgeRuntime.waitUntil(notifyTask)
+      edgeRuntime.waitUntil(adminAlertTask)
+    } else {
+      await Promise.all([notifyTask, adminAlertTask])
+    }
+
+
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
