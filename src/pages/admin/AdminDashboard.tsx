@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import Navbar from '@/components/Navbar'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
+import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
 import { getCurrentHost } from '@/lib/hostConfig'
 import { Home, Users, Bike, Wrench, CreditCard, Settings, TrendingUp, BookOpen, Receipt, Shield, Eye, MoreHorizontal, Sparkles, Building2, ClipboardList, BarChart3, ArrowLeft, Mail } from 'lucide-react'
 import MarketplaceHealthPanel from '@/components/admin/MarketplaceHealthPanel'
@@ -56,7 +57,7 @@ const useUnreadMailCount = (): number => {
   return count
 }
 
-export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+const UpdroAdminLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
   const unreadMail = useUnreadMailCount()
   const t = useT()
@@ -140,6 +141,15 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     </div>
   )
 }
+
+/** På Cykelhjälpen används den nya adminmenyn, på Updro den gamla. */
+export const AdminLayout = ({ children }: { children: React.ReactNode }) => (
+  getCurrentHost() === 'updro'
+    ? <UpdroAdminLayout>{children}</UpdroAdminLayout>
+    : <CykelAdminLayout>{children}</CykelAdminLayout>
+)
+
+
 
 const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: number; icon: any; color: string }) => (
   <div className="bg-card rounded-xl border p-5 flex items-center gap-4">
