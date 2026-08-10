@@ -56,7 +56,7 @@ const useUnreadMailCount = (): number => {
   return count
 }
 
-export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+const UpdroAdminLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
   const unreadMail = useUnreadMailCount()
   const t = useT()
