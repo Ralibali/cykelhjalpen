@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
         ['Telefon', body.customer_phone],
         ['Område', body.area],
       ],
-      ctaUrl: 'https://cykelhjalpen.se/admin/cykel/arenden',
+      ctaUrl: 'https://cykelhjalpen.se/admin/cykelarenden',
       ctaLabel: 'Granska ärendet',
     })
 
