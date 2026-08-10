@@ -141,6 +141,15 @@ const UpdroAdminLayout = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
+/** På Cykelhjälpen används den nya adminmenyn, på Updro den gamla. */
+export const AdminLayout = ({ children }: { children: React.ReactNode }) => (
+  getCurrentHost() === 'updro'
+    ? <UpdroAdminLayout>{children}</UpdroAdminLayout>
+    : <CykelAdminLayout>{children}</CykelAdminLayout>
+)
+
+
+
 const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: number; icon: any; color: string }) => (
   <div className="bg-card rounded-xl border p-5 flex items-center gap-4">
     <div className={cn('h-12 w-12 rounded-xl flex items-center justify-center', color)}>
