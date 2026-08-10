@@ -205,13 +205,35 @@ Deno.serve(async (req) => {
       request_id: (row as { id?: string } | null)?.id,
     }).catch((notifyError) => console.error('Admin notification insert failed', notifyError))
 
+    // E-postnotis till admin om det nya ärendet.
+    const adminEmailTask = sendAdminAlert({
+      supabaseUrl,
+      serviceRoleKey,
+      subject: `Nytt cykelärende i ${body.city} – ${body.repair_category}`,
+      heading: 'Nytt ärende väntar på granskning',
+      rows: [
+        ['Stad', body.city],
+        ['Problem', body.repair_category],
+        ['Cykeltyp', body.bike_type],
+        ['Beskrivning', body.description],
+        ['Kund', body.customer_name],
+        ['E-post', body.customer_email],
+        ['Telefon', body.customer_phone],
+        ['Område', body.area],
+      ],
+      ctaUrl: 'https://cykelhjalpen.se/admin/cykel/arenden',
+      ctaLabel: 'Granska ärendet',
+    })
+
     const edgeRuntime = (globalThis as any).EdgeRuntime
     if (edgeRuntime?.waitUntil) {
       edgeRuntime.waitUntil(customerEmailTask)
       edgeRuntime.waitUntil(adminNotifyTask)
+      edgeRuntime.waitUntil(adminEmailTask)
     } else {
-      await Promise.all([customerEmailTask, adminNotifyTask])
+      await Promise.all([customerEmailTask, adminNotifyTask, adminEmailTask])
     }
+
 
     return new Response(JSON.stringify(row), {
       status: 200,
