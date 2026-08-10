@@ -2,6 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { notifyAdminsOfPendingRequest } from '../_shared/notifications.ts'
+import { sendAdminAlert } from '../_shared/admin-alert.ts'
 
 
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
