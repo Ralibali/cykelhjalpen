@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
     }
 
     try {
-      const adminEmail = Deno.env.get('ADMIN_NOTIFY_EMAIL') || 'info@cykelhjalpen.se'
+      const adminEmail = Deno.env.get('ADMIN_NOTIFY_EMAIL') || 'info@auroramedia.se'
       const adminEmailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
