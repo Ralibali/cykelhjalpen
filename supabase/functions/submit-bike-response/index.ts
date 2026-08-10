@@ -5,6 +5,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { notifyCustomerOfNewResponse } from '../_shared/customer-response.ts'
+import { sendAdminAlert } from '../_shared/admin-alert.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
 
