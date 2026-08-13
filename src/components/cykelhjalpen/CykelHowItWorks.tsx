@@ -69,8 +69,8 @@ const CykelHowItWorks = () => {
             {repairs.map(({ icon: Icon, title, text, problem }) => (
               <Link
                 key={problem}
-                to={`/skicka-arende?problem=${encodeURIComponent(problem)}`}
-                onClick={() => trackClick('home_repair_shortcut_clicked', title, { problem })}
+                to={`/skicka-arende?stad=linkoping&problem=${encodeURIComponent(problem)}`}
+                onClick={() => trackClick('home_repair_shortcut_clicked', title, { problem, city: 'Linköping' })}
                 className="group rounded-[1.6rem] border border-border/70 bg-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-accent/50 hover:shadow-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -91,7 +91,7 @@ const CykelHowItWorks = () => {
               <p className="mt-1 text-muted-foreground">{t('Beskriv problemet med egna ord – formuläret guidar dig vidare.')}</p>
             </div>
             <Button asChild variant="outline" className="mt-4 md:mt-0 rounded-full shrink-0">
-              <Link to="/skicka-arende" onClick={() => trackClick('home_other_problem_clicked', 'Beskriv ett annat problem')}>
+              <Link to="/skicka-arende?stad=linkoping" onClick={() => trackClick('home_other_problem_clicked', 'Beskriv ett annat problem', { city: 'Linköping' })}>
                 {t('Beskriv ett annat problem')} <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
