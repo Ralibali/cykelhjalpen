@@ -125,7 +125,7 @@ const CustomerResponses = () => {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full' || request?.status === 'completed') return
+    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full' || request?.status === 'expired' || request?.status === 'completed') return
     const id = window.setInterval(() => { load() }, POLL_MS)
     const onVisible = () => { if (document.visibilityState === 'visible') load() }
     document.addEventListener('visibilitychange', onVisible)
@@ -243,11 +243,13 @@ const CustomerResponses = () => {
           <h1 className="font-display text-2xl">{t('Ärendet är publicerat')}</h1>
         </div>
         <p className="text-sm">
-          {(request.status === 'closed_for_responses' || request.status === 'full')
-            ? t('Du har fått maximalt tre prisförslag. Jämför dem nedan och välj den verkstad du vill gå vidare med.')
-            : responses.length > 0
-              ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat. Välj den verkstad du vill gå vidare med.')
-              : t('Anslutna verkstäder i {city} kan nu se ärendet. Nya prisförslag visas här automatiskt.', { city: request.city })}
+          {request.status === 'expired'
+            ? t('Svarstiden på tre dagar har gått ut och ingen verkstad hann svara. Du kan lägga upp ett nytt ärende när du vill.')
+            : (request.status === 'closed_for_responses' || request.status === 'full')
+              ? t('Ärendet är stängt för nya offerter. Jämför prisförslagen nedan och välj den verkstad du vill gå vidare med.')
+              : responses.length > 0
+                ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat eller svarstiden på tre dagar går ut. Välj den verkstad du vill gå vidare med.')
+                : t('Anslutna verkstäder i {city} kan nu se ärendet i tre dagar. Nya prisförslag visas här automatiskt.', { city: request.city })}
         </p>
       </div>
     )
@@ -309,7 +311,7 @@ const CustomerResponses = () => {
 
             <div className="flex items-center justify-between gap-3 mb-4">
               <h2 className="font-display text-xl">{t('Prisförslag ({count})', { count: responses.length })}</h2>
-              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && request.status !== 'completed' && (
+              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && request.status !== 'expired' && request.status !== 'completed' && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--brand-mint))] opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--brand-mint))]" /></span>
                   {t('Uppdateras automatiskt')}

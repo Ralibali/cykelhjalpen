@@ -54,6 +54,10 @@ verify_jwt = false
 [functions.process-article-queue]
 verify_jwt = false
 
+# Stänger cykelärenden vars tredagarsfönster löpt ut och mejlar kunden.
+[functions.close-stale-bike-requests]
+verify_jwt = false
+
 # Serveras till sökmotorer och crawlers.
 [functions.sitemap]
 verify_jwt = false
