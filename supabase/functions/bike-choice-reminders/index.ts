@@ -1,7 +1,7 @@
 // Påminner kunden om att välja offert.
 //
 // När ett ärende stängts för nya offerter (tre offerter inne eller
-// tredagarsfönstret slut) har kunden fem dagar på sig att välja verkstad.
+// femdagarsfönstret slut) har kunden fem dagar på sig att välja verkstad.
 // Kadensen räknas från `closed_at`:
 //
 //   dag 0  – SMS: offerterna är klara, dags att välja
