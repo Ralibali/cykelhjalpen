@@ -235,26 +235,49 @@ const AdminProspects = () => {
 
   const runDiscovery = async () => {
     setDiscovering(true)
+    const total = { queried: 0, inserted: 0, updated: 0, suppressed: 0 }
+    const failures: string[] = []
     try {
       const terms = discoverTerms.split(',').map((t) => t.trim()).filter(Boolean)
-      const { data, error } = await supabase.functions.invoke('prospect-discover', {
-        body: { city: discoverCity, terms, limit_per_term: 8, scrape_top: 5 },
-      })
-      if (error) throw error
-      const stats = (data as { stats?: Record<string, number> })?.stats
+      const termList = terms.length > 0 ? terms : ['cykelverkstad']
+
+      // Ett sökord per anrop – annars hinner edge-funktionen tajma ut i webbläsaren.
+      for (const term of termList) {
+        try {
+          const { data, error } = await supabase.functions.invoke('prospect-discover', {
+            body: { city: discoverCity, terms: [term], limit_per_term: 8, scrape_top: 4 },
+          })
+          if (error) throw error
+          const stats = (data as { stats?: Record<string, number> })?.stats
+          if (stats) {
+            total.queried += stats.queried || 0
+            total.inserted += stats.inserted || 0
+            total.updated += stats.updated || 0
+            total.suppressed += stats.suppressed || 0
+          }
+          await fetchProspects()
+        } catch (termError) {
+          failures.push(`${term}: ${await extractFunctionError(termError)}`)
+        }
+      }
+
+      if (failures.length === termList.length) {
+        toast.error(t('Discovery misslyckades'), { description: failures.join(' · ') })
+        return
+      }
+
       toast.success(t('Sökning klar'), {
-        description: stats
-          ? t('Skannade {queried} sökningar, {inserted} nya, {updated} uppdaterade, {suppressed} blockerade.', { queried: stats.queried, inserted: stats.inserted, updated: stats.updated, suppressed: stats.suppressed })
-          : t('Prospects uppdaterade.'),
+        description: t('Skannade {queried} sökningar, {inserted} nya, {updated} uppdaterade, {suppressed} blockerade.', { queried: total.queried, inserted: total.inserted, updated: total.updated, suppressed: total.suppressed }),
       })
+      if (failures.length > 0) {
+        toast.warning(t('Vissa sökord misslyckades'), { description: failures.join(' · ') })
+      }
       await fetchProspects()
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t('Okänt fel')
-      toast.error(t('Discovery misslyckades'), { description: message })
     } finally {
       setDiscovering(false)
     }
   }
+
 
   const refreshActivities = async () => {
     if (!selected) return
