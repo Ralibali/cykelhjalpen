@@ -125,7 +125,7 @@ const CustomerResponses = () => {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full' || request?.status === 'expired' || request?.status === 'completed') return
+    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full' || request?.status === 'expired' || request?.status === 'choice_expired' || request?.status === 'completed') return
     const id = window.setInterval(() => { load() }, POLL_MS)
     const onVisible = () => { if (document.visibilityState === 'visible') load() }
     document.addEventListener('visibilitychange', onVisible)
@@ -314,7 +314,7 @@ const CustomerResponses = () => {
 
             <div className="flex items-center justify-between gap-3 mb-4">
               <h2 className="font-display text-xl">{t('Prisförslag ({count})', { count: responses.length })}</h2>
-              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && request.status !== 'expired' && request.status !== 'completed' && (
+              {request.admin_status === 'approved' && request.status !== 'closed_for_responses' && request.status !== 'full' && request.status !== 'expired' && request.status !== 'choice_expired' && request.status !== 'completed' && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                   <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--brand-mint))] opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-[hsl(var(--brand-mint))]" /></span>
                   {t('Uppdateras automatiskt')}

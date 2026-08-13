@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
 
       const { error: updateError } = await admin
         .from('bike_repair_requests')
-        .update({ status: nextStatus, updated_at: new Date().toISOString() })
+        .update({ status: nextStatus, updated_at: new Date().toISOString(), closed_at: nextStatus === 'closed_for_responses' ? new Date().toISOString() : null })
         .eq('id', request.id)
         .in('status', ['new', 'has_offers'])
 
