@@ -244,14 +244,14 @@ const CustomerResponses = () => {
         </div>
         <p className="text-sm">
           {request.status === 'expired'
-            ? t('Svarstiden på tre dagar har gått ut och ingen verkstad hann svara. Du kan lägga upp ett nytt ärende när du vill.')
+            ? t('Svarstiden på fem dagar har gått ut och ingen verkstad hann svara. Du kan lägga upp ett nytt ärende när du vill.')
             : request.status === 'choice_expired'
               ? t('Du hann inte välja verkstad inom fem dagar, så offerterna har gått ut. Du kan lägga upp ett nytt ärende när du vill.')
               : (request.status === 'closed_for_responses' || request.status === 'full')
                 ? t('Ärendet är stängt för nya offerter. Du har fem dagar på dig att jämföra prisförslagen nedan och välja den verkstad du vill gå vidare med.')
                 : responses.length > 0
-                  ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat eller svarstiden på tre dagar går ut. Välj den verkstad du vill gå vidare med.')
-                  : t('Anslutna verkstäder i {city} kan nu se ärendet i tre dagar. Nya prisförslag visas här automatiskt.', { city: request.city })}
+                  ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat eller svarstiden på fem dagar går ut. Välj den verkstad du vill gå vidare med.')
+                  : t('Anslutna verkstäder i {city} kan nu se ärendet i fem dagar. Nya prisförslag visas här automatiskt.', { city: request.city })}
         </p>
 
       </div>

@@ -1,6 +1,6 @@
-// Stänger cykelärenden som är äldre än tre dagar.
+// Stänger cykelärenden som är äldre än fem dagar.
 //
-// Verkstäder har tre dagar på sig att lämna offert. Därefter stängs ärendet
+// Verkstäder har fem dagar på sig att lämna offert. Därefter stängs ärendet
 // för nya svar och kunden får ett mejl med en sammanställning av de offerter
 // som kommit in (eller besked om att inga offerter kom in).
 //
@@ -9,7 +9,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
 
-const RESPONSE_WINDOW_DAYS = 3
+const RESPONSE_WINDOW_DAYS = 5
 
 const escapeHtml = (value: unknown) => String(value ?? '')
   .replaceAll('&', '&amp;')
@@ -112,25 +112,25 @@ Deno.serve(async (req) => {
         ? (lang === 'en'
           ? `
             <h2 style="margin:0 0 16px">Time is up – here are your quotes</h2>
-            <p>Hi ${escapeHtml(request.customer_name)}, workshops had three days to reply to your request (${escapeHtml(request.repair_category)}, ${escapeHtml(request.city)}). The request is now closed for new quotes.</p>
+            <p>Hi ${escapeHtml(request.customer_name)}, workshops had five days to reply to your request (${escapeHtml(request.repair_category)}, ${escapeHtml(request.city)}). The request is now closed for new quotes.</p>
             <table style="border-collapse:collapse;margin:16px 0;width:100%">${rows}</table>
             <p>Pick the workshop you want to go with – you get their contact details straight away.</p>
             <p style="margin-top:24px"><a href="${link}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Compare and choose</a></p>`
           : `
             <h2 style="margin:0 0 16px">Tiden är ute – här är dina offerter</h2>
-            <p>Hej ${escapeHtml(request.customer_name)}, verkstäderna hade tre dagar på sig att svara på ditt ärende (${escapeHtml(request.repair_category)}, ${escapeHtml(request.city)}). Ärendet är nu stängt för nya offerter.</p>
+            <p>Hej ${escapeHtml(request.customer_name)}, verkstäderna hade fem dagar på sig att svara på ditt ärende (${escapeHtml(request.repair_category)}, ${escapeHtml(request.city)}). Ärendet är nu stängt för nya offerter.</p>
             <table style="border-collapse:collapse;margin:16px 0;width:100%">${rows}</table>
             <p>Välj den verkstad du vill gå vidare med – du får kontaktuppgifterna direkt.</p>
             <p style="margin-top:24px"><a href="${link}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Jämför och välj</a></p>`)
         : (lang === 'en'
           ? `
             <h2 style="margin:0 0 16px">No quotes this time</h2>
-            <p>Hi ${escapeHtml(request.customer_name)}, unfortunately no workshop in ${escapeHtml(request.city)} replied within three days, so your request is now closed.</p>
+            <p>Hi ${escapeHtml(request.customer_name)}, unfortunately no workshop in ${escapeHtml(request.city)} replied within five days, so your request is now closed.</p>
             <p>You are welcome to post a new request – it is free and often gets a reply within a day.</p>
             <p style="margin-top:24px"><a href="https://cykelhjalpen.se/cykelreparation" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Post a new request</a></p>`
           : `
             <h2 style="margin:0 0 16px">Inga offerter den här gången</h2>
-            <p>Hej ${escapeHtml(request.customer_name)}, tyvärr svarade ingen verkstad i ${escapeHtml(request.city)} inom tre dagar, så ditt ärende är nu stängt.</p>
+            <p>Hej ${escapeHtml(request.customer_name)}, tyvärr svarade ingen verkstad i ${escapeHtml(request.city)} inom fem dagar, så ditt ärende är nu stängt.</p>
             <p>Du är varmt välkommen att lägga upp ett nytt ärende – det är gratis och får oftast svar inom ett dygn.</p>
             <p style="margin-top:24px"><a href="https://cykelhjalpen.se/cykelreparation" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Lägg upp nytt ärende</a></p>`)
 
