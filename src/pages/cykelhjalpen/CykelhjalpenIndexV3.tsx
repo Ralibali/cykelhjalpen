@@ -46,8 +46,9 @@ const CykelhjalpenIndexV3 = () => {
         '@id': 'https://cykelhjalpen.se/#service',
         name: text('Jämförelsetjänst för cykelreparationer', 'Bike repair comparison service'),
         serviceType: text('Jämförelse av lokala cykelverkstäder', 'Comparison of local bike shops'),
-        areaServed: ['Linköping', 'Norrköping', 'Uppsala', 'Lund'].map((name) => ({ '@type': 'City', name })),
+        areaServed: { '@type': 'City', name: 'Linköping' },
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'SEK' },
+        description: text('Aktiv fokusmarknad i Linköping. Partnernätverket byggs samtidigt ut i Norrköping, Uppsala och Lund.', 'Active focus market in Linköping. The partner network is also expanding in Norrköping, Uppsala and Lund.'),
       },
       {
         '@type': 'FAQPage',
