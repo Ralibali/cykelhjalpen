@@ -243,11 +243,13 @@ const CustomerResponses = () => {
           <h1 className="font-display text-2xl">{t('Ärendet är publicerat')}</h1>
         </div>
         <p className="text-sm">
-          {(request.status === 'closed_for_responses' || request.status === 'full')
-            ? t('Du har fått maximalt tre prisförslag. Jämför dem nedan och välj den verkstad du vill gå vidare med.')
-            : responses.length > 0
-              ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat. Välj den verkstad du vill gå vidare med.')
-              : t('Anslutna verkstäder i {city} kan nu se ärendet. Nya prisförslag visas här automatiskt.', { city: request.city })}
+          {request.status === 'expired'
+            ? t('Svarstiden på tre dagar har gått ut och ingen verkstad hann svara. Du kan lägga upp ett nytt ärende när du vill.')
+            : (request.status === 'closed_for_responses' || request.status === 'full')
+              ? t('Ärendet är stängt för nya offerter. Jämför prisförslagen nedan och välj den verkstad du vill gå vidare med.')
+              : responses.length > 0
+                ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat eller svarstiden på tre dagar går ut. Välj den verkstad du vill gå vidare med.')
+                : t('Anslutna verkstäder i {city} kan nu se ärendet i tre dagar. Nya prisförslag visas här automatiskt.', { city: request.city })}
         </p>
       </div>
     )
