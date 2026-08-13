@@ -125,7 +125,7 @@ const CustomerResponses = () => {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full' || request?.status === 'completed') return
+    if (!token || request?.admin_status === 'rejected' || request?.status === 'closed_for_responses' || request?.status === 'full' || request?.status === 'expired' || request?.status === 'completed') return
     const id = window.setInterval(() => { load() }, POLL_MS)
     const onVisible = () => { if (document.visibilityState === 'visible') load() }
     document.addEventListener('visibilitychange', onVisible)
