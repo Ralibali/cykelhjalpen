@@ -230,6 +230,7 @@ export type Database = {
           bike_type: string
           can_drop_off: boolean
           city: string
+          closed_at: string | null
           created_at: string
           customer_email: string
           customer_language: string
@@ -255,6 +256,7 @@ export type Database = {
           bike_type: string
           can_drop_off?: boolean
           city?: string
+          closed_at?: string | null
           created_at?: string
           customer_email: string
           customer_language?: string
@@ -280,6 +282,7 @@ export type Database = {
           bike_type?: string
           can_drop_off?: boolean
           city?: string
+          closed_at?: string | null
           created_at?: string
           customer_email?: string
           customer_language?: string
