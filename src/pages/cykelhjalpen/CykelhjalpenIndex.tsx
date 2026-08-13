@@ -1,1 +1,1 @@
-export { default } from './CykelhjalpenIndexV2'
+export { default } from './CykelhjalpenIndexV3'
