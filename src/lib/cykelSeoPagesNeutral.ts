@@ -4,9 +4,12 @@ import type { TFunction } from './i18n'
 export { seoPagePath, EN_SLUG_STEMS } from './cykelSeoPages'
 export type { CykelSeoPage } from './cykelSeoPages'
 
-const neutralize = (value: string) => value
-  .replaceAll('Linköping är Cykelhjälpens fokusstad just nu.', 'Cykelhjälpen finns i Linköping, Norrköping, Uppsala och Lund.')
-  .replaceAll('Linköping is Cykelhjälpen’s focus city right now.', 'Cykelhjälpen is available in Linköping, Norrköping, Uppsala and Lund.')
+const replaceEvery = (value: string, search: string, replacement: string) => value.split(search).join(replacement)
+
+const neutralize = (value: string) => {
+  const swedish = replaceEvery(value, 'Linköping är Cykelhjälpens fokusstad just nu.', 'Cykelhjälpen finns i Linköping, Norrköping, Uppsala och Lund.')
+  return replaceEvery(swedish, 'Linköping is Cykelhjälpen’s focus city right now.', 'Cykelhjälpen is available in Linköping, Norrköping, Uppsala and Lund.')
+}
 
 export const buildCykelSeoPages = (t?: TFunction) => buildBase(t).map((page) => ({
   ...page,
