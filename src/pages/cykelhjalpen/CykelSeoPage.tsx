@@ -1,1 +1,1 @@
-export { default } from './CykelSeoPageV4'
+export { default } from './CykelSeoPageV5'

@@ -1,1 +1,1 @@
-export * from './seoStaticV4'
+export * from './seoStaticV5'

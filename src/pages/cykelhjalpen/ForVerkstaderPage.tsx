@@ -1,1 +1,1 @@
-export { default } from './ForVerkstaderPageV3'
+export { default } from './ForVerkstaderPageV4'
