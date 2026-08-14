@@ -12,6 +12,7 @@ import { useT } from '@/lib/i18n'
 
 const howItWorksLink = '/#sa-fungerar-det'
 const citiesLink = '/#stader'
+const faqLink = '/#vanliga-fragor'
 
 const CykelNavbar = () => {
   const [open, setOpen] = useState(false)
@@ -39,6 +40,7 @@ const CykelNavbar = () => {
         <nav className="hidden md:flex items-center gap-6" aria-label={t('Huvudmeny')}>
           <NavLink to={citiesLink} className={navLinkClass}>{t('Städer')}</NavLink>
           <NavLink to={howItWorksLink} className={navLinkClass}>{t('Så fungerar det')}</NavLink>
+          <NavLink to={faqLink} className={navLinkClass}>{t('Vanliga frågor')}</NavLink>
           <NavLink to="/for-cykelverkstader" className={navLinkClass}>{t('För verkstäder')}</NavLink>
         </nav>
 
@@ -71,6 +73,7 @@ const CykelNavbar = () => {
           <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
             <NavLink to={citiesLink} onClick={() => setOpen(false)} className={navLinkClass}>{t('Städer')}</NavLink>
             <NavLink to={howItWorksLink} onClick={() => setOpen(false)} className={navLinkClass}>{t('Så fungerar det')}</NavLink>
+            <NavLink to={faqLink} onClick={() => setOpen(false)} className={navLinkClass}>{t('Vanliga frågor')}</NavLink>
             <NavLink to="/for-cykelverkstader" onClick={() => setOpen(false)} className={navLinkClass}>{t('För verkstäder')}</NavLink>
             <div className="flex flex-col gap-2 pt-3 border-t border-border">
               {isAuthenticated ? (
