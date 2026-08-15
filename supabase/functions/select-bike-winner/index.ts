@@ -49,6 +49,10 @@ Deno.serve(async (req) => {
     if (requestError) throw requestError
     if (!request) throw new Error('Ärendet hittades inte.')
     if (request.admin_status !== 'approved') throw new Error('Ärendet är inte publicerat ännu.')
+    // Utgångna ärenden kan inte längre väljas – offerten har gått ut.
+    if (request.status === 'expired' || request.status === 'choice_expired') {
+      throw new Error('Offertfönstret har gått ut för det här ärendet.')
+    }
 
     // Atomisk reglering i databasen: vinnare 'won', övriga skickade 'lost',
     // ärendet 'completed'. Samtidiga val ger winner_already_chosen.

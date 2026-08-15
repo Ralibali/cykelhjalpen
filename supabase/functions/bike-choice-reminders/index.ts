@@ -9,6 +9,10 @@
 //   dag 4  – SMS: offerterna går ut i morgon
 //   dag 5  – ärendet sätts till `choice_expired` + slutmejl
 //
+// Dessutom: ärenden med en eller två offerter (ännu inte stängda) får en knuff
+// ett dygn efter senaste svaret – kunden behöver inte vänta på att ärendet
+// stängs för att välja verkstad.
+//
 // Idempotens sköts via notification_events (unik nyckel per ärende och steg).
 // Körs schemalagt varje timme utan JWT.
 
@@ -221,6 +225,71 @@ Deno.serve(async (req) => {
           }),
         })
         if (sent) result.emails_sent += 1
+      }
+    }
+
+    // Knuff för ärenden som har offerter men ännu inte stängts: ett dygn efter
+    // senaste svaret påminns kunden om att den kan välja verkstad direkt.
+    const { data: openRows, error: openError } = await admin
+      .from('bike_repair_requests')
+      .select('id, view_token, customer_name, customer_email, customer_phone, customer_language, city, repair_category')
+      .eq('status', 'has_offers')
+      .eq('admin_status', 'approved')
+      .limit(200)
+
+    if (openError) throw openError
+
+    for (const row of openRows || []) {
+      const nudgeKey = `choice_nudge:${row.id}`
+      if (await alreadyLogged(admin, nudgeKey)) continue
+
+      const { data: latestResponses, error: latestError } = await admin
+        .from('workshop_responses')
+        .select('id, created_at', { count: 'exact' })
+        .eq('request_id', row.id)
+        .in('status', ['sent', 'won'])
+        .order('created_at', { ascending: false })
+      if (latestError) {
+        console.error('bike-choice-reminders nudge query', row.id, latestError.message)
+        continue
+      }
+      const offerCount = latestResponses?.length ?? 0
+      const newestAt = latestResponses?.[0]?.created_at
+      if (offerCount === 0 || !newestAt) continue
+
+      const hoursSinceLatest = (Date.now() - new Date(newestAt).getTime()) / (60 * 60 * 1000)
+      if (hoursSinceLatest < 24) continue
+
+      result.checked += 1
+      const lang: 'sv' | 'en' = row.customer_language === 'en' ? 'en' : 'sv'
+      const link = `https://cykelhjalpen.se/mitt-arende/${row.view_token}`
+
+      if (row.customer_email) {
+        const sent = await sendEmail(admin, {
+          to: row.customer_email,
+          subject: lang === 'en'
+            ? `You can choose your workshop already – ${offerCount} quote${offerCount === 1 ? '' : 's'} waiting`
+            : `Du kan välja verkstad redan nu – ${offerCount} offert${offerCount === 1 ? '' : 'er'} väntar`,
+          idempotencyKey: nudgeKey,
+          html: ctaEmail({
+            lang,
+            heading: lang === 'en' ? 'Your quotes are waiting' : 'Dina offerter väntar',
+            link,
+            cta: lang === 'en' ? 'Compare and choose' : 'Jämför och välj',
+            body: lang === 'en'
+              ? `Hi ${escapeHtml(row.customer_name)}, you already have ${offerCount} quote${offerCount === 1 ? '' : 's'} on your request (${escapeHtml(row.repair_category)}, ${escapeHtml(row.city)}). You do not have to wait – pick a workshop now and you get their contact details straight away.`
+              : `Hej ${escapeHtml(row.customer_name)}, du har redan ${offerCount} offert${offerCount === 1 ? '' : 'er'} på ditt ärende (${escapeHtml(row.repair_category)}, ${escapeHtml(row.city)}). Du behöver inte vänta – välj en verkstad nu så får du kontaktuppgifterna direkt.`,
+          }),
+        })
+        if (sent) result.emails_sent += 1
+      }
+
+      if (row.customer_phone) {
+        const message = lang === 'en'
+          ? `Cykelhjalpen: you have ${offerCount} quote(s) waiting – choose a workshop now: ${link}`
+          : `Cykelhjälpen: du har ${offerCount} offert${offerCount === 1 ? '' : 'er'} som väntar – välj verkstad nu: ${link}`
+        const sms = await logSmsAttempt(admin, { to: row.customer_phone, message, idempotencyKey: `choice_nudge_sms:${row.id}`, reason: 'choice_nudge' })
+        if (sms.status === 'sent') result.sms_sent += 1
       }
     }
 

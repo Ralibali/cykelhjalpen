@@ -40,7 +40,7 @@ serve(async (req) => {
 
     const { data: request, error: requestError } = await admin
       .from("bike_repair_requests")
-      .select("id, customer_name, bike_type, repair_category, description, city, urgency, can_drop_off, wants_pickup, status, admin_status, rejected_reason, created_at")
+      .select("id, customer_name, bike_type, repair_category, description, city, urgency, can_drop_off, wants_pickup, status, admin_status, rejected_reason, created_at, closed_at")
       .eq("view_token", parsed.data.token)
       .maybeSingle();
     if (requestError) throw requestError;

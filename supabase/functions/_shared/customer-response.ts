@@ -8,13 +8,22 @@ import { logNotificationEvent, logSmsAttempt } from './notifications.ts'
 export const buildCustomerResponseUrl = (viewToken: string): string =>
   `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(viewToken)}`
 
-export const buildCustomerResponseSubject = (repairCategory: string): string =>
-  `Nytt prisförslag på din cykel – ${repairCategory}`
+export type CustomerLang = 'sv' | 'en'
 
-// ÅÄÖ gör att SMS skickas som UCS-2 (67 tecken per del). Texten hålls kort så
-// att den för normala verkstadsnamn aldrig överstiger tre delar (201 tecken).
-export const buildCustomerResponseSms = (workshopName: string, requestUrl: string): string =>
-  `Hej! ${workshopName} har lämnat prisförslag på ditt cykelärende. Se det här: ${requestUrl}`
+export const buildCustomerResponseSubject = (repairCategory: string, lang: CustomerLang = 'sv'): string =>
+  lang === 'en'
+    ? `New quote for your bike – ${repairCategory}`
+    : `Nytt prisförslag på din cykel – ${repairCategory}`
+
+// ÅÄÖ gör att svenska SMS skickas som UCS-2 (67 tecken per del). Texten hålls
+// kort så att den för normala verkstadsnamn aldrig överstiger tre delar (201
+// tecken). Engelska texter saknar ÅÄÖ men hålls inom samma gräns.
+export const buildCustomerResponseSms = (
+  workshopName: string, requestUrl: string, lang: CustomerLang = 'sv',
+): string =>
+  lang === 'en'
+    ? `Cykelhjalpen: ${workshopName} sent you a quote. Compare and choose a workshop: ${requestUrl}`
+    : `Cykelhjälpen: ${workshopName} har lagt ett prisförslag. Jämför och välj verkstad: ${requestUrl}`
 
 export const escapeCustomerHtml = (value: unknown): string =>
   String(value ?? '')
@@ -22,20 +31,31 @@ export const escapeCustomerHtml = (value: unknown): string =>
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 export const buildCustomerResponseEmailHtml = (
-  customerName: string, workshopName: string, requestUrl: string,
-): string =>
-  `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">` +
-  `<h2>Hej ${escapeCustomerHtml(customerName)}!</h2>` +
-  `<p><strong>${escapeCustomerHtml(workshopName)}</strong> har lämnat ett prisförslag på ditt cykelärende.</p>` +
-  `<p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se prisförslaget</a></p>` +
-  `<p style="color:#6b7280;font-size:13px">Du får det här mejlet för att du lagt upp ett ärende på Cykelhjälpen.</p>` +
-  `</div>`
+  customerName: string, workshopName: string, requestUrl: string, lang: CustomerLang = 'sv',
+): string => {
+  const cta = lang === 'en' ? 'View the quote and choose' : 'Se prisförslaget och välj'
+  const body = lang === 'en'
+    ? `<strong>${escapeCustomerHtml(workshopName)}</strong> has sent you a quote. Compare the quotes and choose the workshop you want to go ahead with – you get their contact details as soon as you have chosen.`
+    : `<strong>${escapeCustomerHtml(workshopName)}</strong> har lämnat ett prisförslag på ditt cykelärende. Jämför förslagen och välj den verkstad du vill gå vidare med – du får kontaktuppgifterna direkt när du valt.`
+  const footer = lang === 'en'
+    ? 'You are getting this email because you posted a request on Cykelhjälpen.'
+    : 'Du får det här mejlet för att du lagt upp ett ärende på Cykelhjälpen.'
+  return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">` +
+    `<h2>${lang === 'en' ? 'Hi' : 'Hej'} ${escapeCustomerHtml(customerName)}!</h2>` +
+    `<p>${body}</p>` +
+    `<p><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">${cta}</a></p>` +
+    `<p style="color:#6b7280;font-size:13px">${footer}</p>` +
+    `</div>`
+}
 
 export const buildCustomerResponseEmailText = (
-  customerName: string, workshopName: string, requestUrl: string,
+  customerName: string, workshopName: string, requestUrl: string, lang: CustomerLang = 'sv',
 ): string =>
-  `Hej ${customerName}!\n\n${workshopName} har lämnat ett prisförslag på ditt cykelärende.\n\nSe prisförslaget: ${requestUrl}\n\n` +
-  `Du får det här mejlet för att du lagt upp ett ärende på Cykelhjälpen.`
+  lang === 'en'
+    ? `Hi ${customerName}!\n\n${workshopName} has sent you a quote. Compare the quotes and choose the workshop you want to go ahead with – you get their contact details as soon as you have chosen.\n\nView the quote: ${requestUrl}\n\n` +
+      `You are getting this email because you posted a request on Cykelhjälpen.`
+    : `Hej ${customerName}!\n\n${workshopName} har lämnat ett prisförslag på ditt cykelärende. Jämför förslagen och välj den verkstad du vill gå vidare med – du får kontaktuppgifterna direkt när du valt.\n\nSe prisförslaget: ${requestUrl}\n\n` +
+      `Du får det här mejlet för att du lagt upp ett ärende på Cykelhjälpen.`
 
 type ChannelResult = 'sent' | 'failed' | 'skipped'
 
@@ -51,7 +71,7 @@ export const notifyCustomerOfNewResponse = async (
 ): Promise<{ email: ChannelResult; sms: ChannelResult }> => {
   const { data: request, error } = await admin
     .from('bike_repair_requests')
-    .select('customer_name, customer_email, customer_phone, repair_category, view_token')
+    .select('customer_name, customer_email, customer_phone, customer_language, repair_category, view_token')
     .eq('id', ctx.requestId)
     .maybeSingle()
   if (error) {
@@ -61,7 +81,8 @@ export const notifyCustomerOfNewResponse = async (
   if (!request?.view_token) return { email: 'skipped', sms: 'skipped' }
 
   const requestUrl = buildCustomerResponseUrl(request.view_token as string)
-  const workshopName = ctx.workshopName || 'En cykelverkstad'
+  const lang: CustomerLang = request.customer_language === 'en' ? 'en' : 'sv'
+  const workshopName = ctx.workshopName || (lang === 'en' ? 'A bike workshop' : 'En cykelverkstad')
   const customerName = (request.customer_name as string) || 'du'
 
   // --- E-post (idempotent per svar) ---
@@ -86,9 +107,9 @@ export const notifyCustomerOfNewResponse = async (
           },
           body: JSON.stringify({
             to: request.customer_email,
-            subject: buildCustomerResponseSubject((request.repair_category as string) || 'cykelreparation'),
-            html: buildCustomerResponseEmailHtml(customerName, workshopName, requestUrl),
-            text: buildCustomerResponseEmailText(customerName, workshopName, requestUrl),
+            subject: buildCustomerResponseSubject((request.repair_category as string) || 'cykelreparation', lang),
+            html: buildCustomerResponseEmailHtml(customerName, workshopName, requestUrl, lang),
+            text: buildCustomerResponseEmailText(customerName, workshopName, requestUrl, lang),
           }),
           signal: AbortSignal.timeout(15_000),
         })
@@ -121,7 +142,7 @@ export const notifyCustomerOfNewResponse = async (
   if (request.customer_phone) {
     const smsResult = await logSmsAttempt(admin, {
       to: request.customer_phone as string,
-      message: buildCustomerResponseSms(workshopName, requestUrl),
+      message: buildCustomerResponseSms(workshopName, requestUrl, lang),
       idempotencyKey: `customer_response_sms:${ctx.responseId}`,
       reason: 'customer_new_response',
     })

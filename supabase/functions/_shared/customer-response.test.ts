@@ -37,7 +37,7 @@ Deno.test('mejl-html escapar farliga tecken', () => {
   const html = buildCustomerResponseEmailHtml('<script>alert(1)</script>', 'Verkstan <b>& Söner', buildCustomerResponseUrl(TOKEN))
   if (html.includes('<script>')) throw new Error('Oescapat kundnamn i html')
   assertStringIncludes(html, 'Verkstan &lt;b&gt;&amp; Söner')
-  assertStringIncludes(html, 'Se prisförslaget')
+  assertStringIncludes(html, 'Se prisförslaget och välj')
 })
 
 Deno.test('textvarianten fungerar utan html', () => {
@@ -50,4 +50,22 @@ Deno.test('textvarianten fungerar utan html', () => {
 Deno.test('escapeCustomerHtml hanterar null', () => {
   assertEquals(escapeCustomerHtml(null), '')
   assertEquals(escapeCustomerHtml('a & b'), 'a &amp; b')
+})
+
+Deno.test('engelsk variant av ämne, sms och mejl', () => {
+  assertEquals(buildCustomerResponseSubject('Puncture', 'en'), 'New quote for your bike – Puncture')
+  const sms = buildCustomerResponseSms('Cykelverkstan AB', buildCustomerResponseUrl(TOKEN), 'en')
+  assertStringIncludes(sms, 'sent you a quote')
+  const html = buildCustomerResponseEmailHtml('Anna', 'Cykelverkstan', buildCustomerResponseUrl(TOKEN), 'en')
+  assertStringIncludes(html, 'View the quote and choose')
+  assertStringIncludes(html, 'contact details')
+  const text = buildCustomerResponseEmailText('Anna', 'Cykelverkstan', buildCustomerResponseUrl(TOKEN), 'en')
+  assertStringIncludes(text, 'Hi Anna!')
+})
+
+Deno.test('svenska mejlet styr mot att välja verkstad', () => {
+  const html = buildCustomerResponseEmailHtml('Anna', 'Cykelverkstan', buildCustomerResponseUrl(TOKEN))
+  assertStringIncludes(html, 'kontaktuppgifterna direkt')
+  const sms = buildCustomerResponseSms('Cykelverkstan AB', buildCustomerResponseUrl(TOKEN))
+  assertStringIncludes(sms, 'välj verkstad')
 })

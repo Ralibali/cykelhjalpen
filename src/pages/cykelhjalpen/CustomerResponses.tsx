@@ -47,6 +47,7 @@ interface RequestData {
   admin_status: string
   rejected_reason: string | null
   created_at: string
+  closed_at?: string | null
 }
 
 interface RequestImage {
@@ -248,7 +249,14 @@ const CustomerResponses = () => {
             : request.status === 'choice_expired'
               ? t('Du hann inte välja verkstad inom fem dagar, så offerterna har gått ut. Du kan lägga upp ett nytt ärende när du vill.')
               : (request.status === 'closed_for_responses' || request.status === 'full')
-                ? t('Ärendet är stängt för nya offerter. Du har fem dagar på dig att jämföra prisförslagen nedan och välja den verkstad du vill gå vidare med.')
+                ? (() => {
+                    const daysLeft = request.closed_at
+                      ? Math.max(0, Math.ceil(5 - (Date.now() - new Date(request.closed_at).getTime()) / 86_400_000))
+                      : 5
+                    return daysLeft > 0
+                      ? t('Ärendet är stängt för nya offerter. Du har {days} dagar kvar att jämföra prisförslagen nedan och välja den verkstad du vill gå vidare med.', { days: daysLeft })
+                      : t('Ärendet är stängt för nya offerter. Jämför prisförslagen nedan och välj den verkstad du vill gå vidare med.')
+                  })()
                 : responses.length > 0
                   ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat eller svarstiden på fem dagar går ut. Välj den verkstad du vill gå vidare med.')
                   : t('Anslutna verkstäder i {city} kan nu se ärendet i fem dagar. Nya prisförslag visas här automatiskt.', { city: request.city })}
@@ -429,7 +437,7 @@ const CustomerResponses = () => {
                                   <Clock3 className="h-3.5 w-3.5" /> {t('Verkstaden har meddelats och hör av sig så snart uppdraget är aktiverat.')}
                                 </span>
                               )}
-                              {!hasWinner && request.admin_status === 'approved' && response.status === 'sent' && (
+                              {!hasWinner && request.admin_status === 'approved' && request.status !== 'expired' && request.status !== 'choice_expired' && response.status === 'sent' && (
                                 confirmingId === response.id ? (
                                   <span className="flex flex-wrap items-center gap-2 rounded-2xl bg-[hsl(var(--brand-mint)/0.1)] px-3 py-2">
 
