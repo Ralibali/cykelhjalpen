@@ -7,5 +7,7 @@
       "command": "export BUN_INSTALL=\"$HOME/.bun\"; export PATH=\"$BUN_INSTALL/bin:$PATH\"; cd /agent/repos/cykelhjalpen && bun run dev"
     }
   ],
-  "ports": [8080]
+  "ports": [
+    { "name": "dev", "port": 8080 }
+  ]
 }
