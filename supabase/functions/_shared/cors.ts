@@ -12,12 +12,6 @@ export function isAllowedPublicOrigin(origin: string): boolean {
     || LOCAL_DEV_ORIGIN_RE.test(origin)
 }
 
-/** Origin for Stripe returns and auth callbacks. Preview hosts fall back to production. */
-export function allowedPublicOrigin(origin: string | null | undefined): string {
-  if (origin && isAllowedPublicOrigin(origin)) return origin
-  return CYKELHJALPENS_SITE_ORIGIN
-}
-
 export function corsFor(req: Request) {
   const origin = req.headers.get('origin') || ''
   const allowed = isAllowedPublicOrigin(origin)

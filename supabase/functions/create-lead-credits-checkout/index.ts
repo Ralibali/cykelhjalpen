@@ -1,7 +1,7 @@
 import Stripe from 'npm:stripe@18.5.0'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
-import { allowedPublicOrigin, corsFor } from '../_shared/cors.ts'
+import { corsFor, CYKELHJALPENS_SITE_ORIGIN } from '../_shared/cors.ts'
 
 const BodySchema = z.object({
   quantity: z.number().int().min(1).max(100).default(10),
@@ -69,8 +69,6 @@ Deno.serve(async (req) => {
       await admin.from('workshops').update({ stripe_customer_id: customerId }).eq('id', workshop.id)
     }
 
-    const origin = allowedPublicOrigin(req.headers.get('origin'))
-
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       client_reference_id: workshop.id,
@@ -92,8 +90,8 @@ Deno.serve(async (req) => {
         },
         quantity: 1,
       }],
-      success_url: `${origin}/dashboard/verkstad/betalningar?success=true&lead_credits=${quantity}`,
-      cancel_url: `${origin}/dashboard/verkstad/betalningar?canceled=true`,
+      success_url: `${CYKELHJALPENS_SITE_ORIGIN}/dashboard/verkstad/betalningar?success=true&lead_credits=${quantity}`,
+      cancel_url: `${CYKELHJALPENS_SITE_ORIGIN}/dashboard/verkstad/betalningar?canceled=true`,
       metadata: {
         workshop_id: workshop.id,
         type: 'lead_credits',
