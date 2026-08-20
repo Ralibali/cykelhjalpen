@@ -39,6 +39,22 @@ export const looksLikeBusinessEmail = (email: string | null): boolean => {
   return businessPrefixes.some((prefix) => local === prefix || local.startsWith(`${prefix}.`) || local.startsWith(`${prefix}@`) || local.startsWith(`${prefix}-`))
 }
 
+export const PROSPECT_EMAIL_INVALID = 'Ogiltig e-postadress'
+export const PROSPECT_EMAIL_NOT_BUSINESS =
+  'E-postadressen ser inte ut som ett publikt företagsmejl – utkast blockerat.'
+
+export type ProspectEmailUpdate =
+  | { ok: true; email: string; normalized_email: string }
+  | { ok: false; error: string }
+
+/** Normaliserar och kräver publikt företagsmejl. Skickar inget – bara persist-underlag. */
+export const prepareProspectEmailUpdate = (raw: string | null | undefined): ProspectEmailUpdate => {
+  const normalized = normalizeEmail(raw)
+  if (!normalized) return { ok: false, error: PROSPECT_EMAIL_INVALID }
+  if (!looksLikeBusinessEmail(normalized)) return { ok: false, error: PROSPECT_EMAIL_NOT_BUSINESS }
+  return { ok: true, email: normalized, normalized_email: normalized }
+}
+
 export const normalizePhone = (raw: string | null | undefined): string | null => {
   if (!raw) return null
   const digits = raw.replace(/[^\d+]/g, '')

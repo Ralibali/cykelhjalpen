@@ -15,6 +15,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useT } from '@/lib/i18n'
+import { canCreateProspectEmailDraft } from '@/lib/prospectEmail'
+import { ProspectEmailEditor } from './ProspectEmailEditor'
 
 // Edge-funktioner svarar med { error: "riktigt felmeddelande" } i bodyn vid non-2xx,
 // men functions.invoke exponerar bara en generisk text. Läs bodyn så att panelen
@@ -342,6 +344,25 @@ const AdminProspects = () => {
     } finally { setSavingId(null) }
   }
 
+  const saveProspectEmail = async (email: string) => {
+    if (!selected) return
+    setBusyAction(true)
+    try {
+      const { error } = await supabase.functions.invoke('prospect-action', {
+        body: { prospect_id: selected.id, action: 'update_email', email },
+      })
+      if (error) throw error
+      toast.success(t('E-post sparad'))
+      await fetchProspects()
+      const { data: updated } = await supabase.from('workshop_prospects').select('*').eq('id', selected.id).maybeSingle()
+      if (updated) setSelected(updated as unknown as Prospect)
+    } catch (error) {
+      toast.error(t('Kunde inte spara e-post'), { description: await extractFunctionError(error) })
+    } finally {
+      setBusyAction(false)
+    }
+  }
+
   const sendNow = async (activity: OutreachActivity) => {
     setSavingId(activity.id)
     try {
@@ -539,7 +560,11 @@ const AdminProspects = () => {
 
                 <div className="text-sm space-y-1">
                   {selected.website && <div className="flex items-center gap-2"><a href={selected.website} target="_blank" rel="noreferrer noopener" className="underline truncate flex-1"><ExternalLink className="h-3 w-3 inline mr-1" />{selected.website}</a></div>}
-                  {selected.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3" /><span className="flex-1 truncate">{selected.email}</span><button className="text-xs underline" onClick={() => copyToClipboard(selected.email!, t('E-post'))}><Copy className="h-3 w-3" /></button></div>}
+                  <ProspectEmailEditor
+                    email={selected.email}
+                    saving={busyAction}
+                    onSave={saveProspectEmail}
+                  />
                   {selected.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3" /><span className="flex-1">{selected.phone}</span><button className="text-xs underline" onClick={() => copyToClipboard(selected.phone!, t('Telefon'))}><Copy className="h-3 w-3" /></button></div>}
                   {selected.address && <div className="text-xs text-muted-foreground">{selected.address}</div>}
                   {selected.opening_hours && <div className="text-xs text-muted-foreground">{t('Öppet: {hours}', { hours: selected.opening_hours })}</div>}
@@ -561,7 +586,13 @@ const AdminProspects = () => {
                   <Button size="sm" variant="outline" onClick={() => performAction('reject')} disabled={busyAction}><X className="h-4 w-4 mr-1" /> {t('Avvisa')}</Button>
                   <Button size="sm" variant="outline" onClick={() => performAction('do_not_contact')} disabled={busyAction} className="text-red-700 border-red-300"><Ban className="h-4 w-4 mr-1" /> {t('Do-not-contact')}</Button>
                   <Button size="sm" variant="outline" onClick={() => performAction('convert')} disabled={busyAction || selected.do_not_contact}>{t('Konvertera')}</Button>
-                  <Button size="sm" variant="outline" onClick={() => performAction('prepare_draft', { channel: 'email' })} disabled={busyAction || selected.do_not_contact || !selected.email || selected.status !== 'approved_for_contact'}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => performAction('prepare_draft', { channel: 'email' })}
+                    disabled={busyAction || !canCreateProspectEmailDraft(selected)}
+                    title={!selected.email ? t('Lägg till ett företagsmejl ovan för att skapa utkast') : selected.status !== 'approved_for_contact' ? t('Godkänn prospektet först') : ''}
+                  >
                     <Mail className="h-4 w-4 mr-1" /> {t('Skapa e-postutkast')}
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => performAction('prepare_draft', { channel: 'sms' })} disabled={busyAction || selected.do_not_contact || !selected.phone}>

@@ -1,11 +1,11 @@
 // Admin-only: åtgärder på prospects.
-// action: 'approve' | 'reject' | 'do_not_contact' | 'convert' | 'prepare_draft' | 'prepare_followup' | 'update_draft' | 'approve_draft'
+// action: 'approve' | 'reject' | 'do_not_contact' | 'convert' | 'prepare_draft' | 'prepare_followup' | 'update_draft' | 'approve_draft' | 'update_email'
 // SKICKAR INGET externt. Alla utkast är inaktiva tills admin uttryckligen anropar prospect-send-outreach.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { buildEmailDraft, buildFollowUpDraft, OUTREACH_FOLLOWUP_MIN_DAYS, unsubscribeUrl } from '../_shared/outreach.ts'
-import { looksLikeBusinessEmail } from '../_shared/prospect.ts'
+import { looksLikeBusinessEmail, prepareProspectEmailUpdate } from '../_shared/prospect.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -20,6 +20,7 @@ type Action =
   | 'prepare_followup'
   | 'update_draft'
   | 'approve_draft'
+  | 'update_email'
 
 interface Body {
   prospect_id?: string
@@ -29,6 +30,7 @@ interface Body {
   note?: string
   subject?: string
   message?: string
+  email?: string
 }
 
 const buildSmsDraft = (prospect: { company_name: string; city: string; unsubscribe_token: string }) => {
@@ -101,12 +103,21 @@ Deno.serve(async (req) => {
       .maybeSingle()
     if (prospectError) throw prospectError
     if (!prospect) throw new Error('Prospekt hittades inte')
-    if (prospect.do_not_contact && body.action !== 'do_not_contact') {
+    if (prospect.do_not_contact && body.action !== 'do_not_contact' && body.action !== 'update_email') {
       throw new Error('Prospektet är markerat som do-not-contact.')
     }
 
     if (body.action === 'approve') {
       await admin.from('workshop_prospects').update({ status: 'approved_for_contact' }).eq('id', prospect.id)
+    } else if (body.action === 'update_email') {
+      // Persist only – inget mejl skickas. Samma företagsmejl-krav som prepare_draft / send.
+      const prepared = prepareProspectEmailUpdate(body.email)
+      if (!prepared.ok) throw new Error(prepared.error)
+      const { error: emailError } = await admin
+        .from('workshop_prospects')
+        .update({ email: prepared.email, normalized_email: prepared.normalized_email })
+        .eq('id', prospect.id)
+      if (emailError) throw emailError
     } else if (body.action === 'reject') {
       await admin.from('workshop_prospects').update({ status: 'rejected', notes: body.note ?? prospect.notes }).eq('id', prospect.id)
     } else if (body.action === 'do_not_contact') {
