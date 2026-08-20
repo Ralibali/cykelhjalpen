@@ -182,4 +182,22 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     expect(sitemap).not.toContain('cykelhjalpen.se')
     expect(sitemap).not.toContain('/skicka-arende')
   })
+
+  it('låser inte Linköping på generiska kund- och verkstadsingångar', () => {
+    const routes = getIndexableSeoRoutes('cykelhjalpen')
+    const generic = ['/', '/skicka-arende', '/for-cykelverkstader', '/en', '/en/submit-request', '/en/for-bike-shops']
+
+    for (const path of generic) {
+      const route = routes.find((item) => item.path === path)
+      expect(route, `saknar SEO-route: ${path}`).toBeDefined()
+      const locked = (route?.links || []).some((link) => /stad=linkoping|stad=Linköping/i.test(link.href))
+      expect(locked, `${path} ska inte prefill:a Linköping`).toBe(false)
+    }
+
+    const workshop = routes.find((item) => item.path === '/for-cykelverkstader')
+    const workshopEn = routes.find((item) => item.path === '/en/for-bike-shops')
+    expect(JSON.stringify(workshop?.sections)).not.toMatch(/skicka en offert/)
+    expect(JSON.stringify(workshopEn?.sections)).not.toMatch(/when you send a quote/)
+    expect(workshopEn?.description).not.toMatch(/when you send a quote/)
+  })
 })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bikeRequestSchema, makeDefaultBikeRequest } from './bikeRequestForm'
+import { bikeRequestSchema, makeDefaultBikeRequest, resolveWizardCity } from './bikeRequestForm'
 
 const validRequest = () => ({
   ...makeDefaultBikeRequest('Linköping'),
@@ -42,5 +42,31 @@ describe('bikeRequestSchema', () => {
       postcode: 'ABC',
     })
     expect(result.success).toBe(false)
+  })
+
+  it('does not assume Linköping when no city was chosen', () => {
+    expect(makeDefaultBikeRequest().city).toBe('')
+    expect(bikeRequestSchema.safeParse(makeDefaultBikeRequest()).success).toBe(false)
+    expect(bikeRequestSchema.safeParse({
+      ...validRequest(),
+      city: '',
+    }).success).toBe(false)
+  })
+})
+
+describe('resolveWizardCity', () => {
+  it('prefers ?stad= over a stored draft', () => {
+    expect(resolveWizardCity('uppsala', 'Lund')).toBe('Uppsala')
+    expect(resolveWizardCity('Lund', 'Linköping')).toBe('Lund')
+  })
+
+  it('keeps a valid draft city when no query city exists', () => {
+    expect(resolveWizardCity(null, 'Norrköping')).toBe('Norrköping')
+  })
+
+  it('stays empty instead of inventing Linköping', () => {
+    expect(resolveWizardCity(null)).toBe('')
+    expect(resolveWizardCity('stockholm', 'Göteborg')).toBe('')
+    expect(resolveWizardCity('')).toBe('')
   })
 })

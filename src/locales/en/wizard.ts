@@ -76,6 +76,8 @@ export const EN_WIZARD: Record<string, string> = {
   'E-post': 'E-mail',
   'din@epost.se': 'your@email.com',
   'Vi mejlar en personlig länk där du ser och jämför svaren.': 'We’ll e-mail you a personal link where you can view and compare responses.',
+  't.ex. område eller stadsdel': 'e.g. neighbourhood or district',
+  'din stad': 'your city',
   'Uppgifterna delas med anslutna cykelverkstäder i {city} som vill lämna offert, enligt': 'Your details are shared with affiliated bike shops in {city} who want to submit a quote, in accordance with the',
   'integritetspolicyn': 'privacy policy',
   'Säkerhetskontroll': 'Security check',

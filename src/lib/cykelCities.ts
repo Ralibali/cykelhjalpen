@@ -59,6 +59,16 @@ export const resolveCykelCityParam = (value: unknown): CykelCityName | null => {
   return match ? match.name : null
 }
 
+/** Generic request URL. City is added only when the caller already chose one. */
+export const requestPath = (opts?: { city?: string | null; problem?: string | null }) => {
+  const params = new URLSearchParams()
+  const city = resolveCykelCityParam(opts?.city)
+  if (city) params.set('stad', getCykelCity(city).slug)
+  if (opts?.problem) params.set('problem', opts.problem)
+  const query = params.toString()
+  return query ? `/skicka-arende?${query}` : '/skicka-arende'
+}
+
 export const slugify = (value: string) =>
   value.toLowerCase().replace(/å|ä/g, 'a').replace(/ö/g, 'o').replace(/\s+/g, '-')
 
