@@ -22,7 +22,7 @@ describe('publishedQuotesStatusCopy', () => {
     expect(impliesWaitingForMore(copy.text)).toBe(false)
     expect(copy.text.toLowerCase()).not.toContain('jämför')
     expect(copy.text).toContain('Välj redan nu')
-    expect(copy.text).toContain('kontaktuppgifterna först när du valt i Cykelhjälpen')
+    expect(copy.text).toContain('kontaktuppgifter först när du valt i Cykelhjälpen')
   })
 
   it('two or more quotes may ask the customer to compare', () => {
@@ -31,7 +31,7 @@ describe('publishedQuotesStatusCopy', () => {
     expect(impliesWaitingForMore(copy.text)).toBe(false)
     expect(copy.text).toContain('Jämför')
     expect(copy.text).toContain('välj redan nu')
-    expect(copy.text).toContain('kontaktuppgifterna först när du valt i Cykelhjälpen')
+    expect(copy.text).toContain('kontaktuppgifter först när du valt i Cykelhjälpen')
   })
 
   it('closed window with one quote still leads with choose now', () => {

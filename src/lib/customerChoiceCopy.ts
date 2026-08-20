@@ -25,7 +25,7 @@ export type StatusCopy = {
 }
 
 const CONTACT_AFTER_PICK_SV =
-  'Du får verkstadens kontaktuppgifter först när du valt i Cykelhjälpen.'
+  'du får verkstadens kontaktuppgifter först när du valt i Cykelhjälpen.'
 
 export function shouldUseCompareCopy(quoteCount: number): boolean {
   return quoteCount >= 2
