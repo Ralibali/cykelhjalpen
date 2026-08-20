@@ -3,6 +3,7 @@ import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { notifyAdminsOfPendingRequest } from '../_shared/notifications.ts'
 import { sendAdminAlert } from '../_shared/admin-alert.ts'
+import { cityHasActiveWorkshop, publishApprovedBikeRequest } from '../_shared/publish-bike-request.ts'
 
 
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
@@ -170,17 +171,48 @@ Deno.serve(async (req) => {
       console.error('Customer terms tracking failed', termsError)
     }
 
-    const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(row.view_token)}`
-    const customerEmailTask = fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${serviceRoleKey}`,
-      },
-      body: JSON.stringify({
-        to: body.customer_email,
-        subject: `Vi har tagit emot ditt cykelärende i ${body.city} – ${body.repair_category}`,
-        html: `
+    let autoApproved = false
+    try {
+      // Same eligibility as admin-health: approved workshop + quote in last 30 days, exact city.
+      if (await cityHasActiveWorkshop(supabase, body.city)) {
+        await publishApprovedBikeRequest({
+          admin: supabase,
+          supabaseUrl,
+          serviceRoleKey,
+          requestRow: {
+            id: row.id,
+            view_token: row.view_token,
+            customer_name: body.customer_name,
+            customer_email: body.customer_email,
+            bike_type: body.bike_type,
+            repair_category: body.repair_category,
+            description: body.description,
+            area: body.area || null,
+            city: body.city,
+            urgency: body.urgency,
+            admin_status: 'pending_approval',
+          },
+        })
+        autoApproved = true
+      }
+    } catch (autoApproveError) {
+      console.error('Auto-approve failed; leaving request pending for manual admin', autoApproveError)
+    }
+
+    const backgroundTasks: Promise<unknown>[] = []
+
+    if (!autoApproved) {
+      const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(row.view_token)}`
+      backgroundTasks.push(fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${serviceRoleKey}`,
+        },
+        body: JSON.stringify({
+          to: body.customer_email,
+          subject: `Vi har tagit emot ditt cykelärende i ${body.city} – ${body.repair_category}`,
+          html: `
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
             <h2 style="margin:0 0 16px">Tack ${escapeHtml(body.customer_name)}!</h2>
             <p>Vi har tagit emot din förfrågan om <strong>${escapeHtml(body.repair_category)}</strong> för din ${escapeHtml(body.bike_type)} i <strong>${escapeHtml(body.city)}</strong>.</p>
@@ -193,49 +225,51 @@ Deno.serve(async (req) => {
             <p style="color:#666;font-size:13px;margin-top:24px">Spara mejlet. Länken är personlig och fungerar utan konto.</p>
           </div>
         `,
-      }),
-    }).then(async (response) => {
-      if (!response.ok) console.error('Customer confirmation email failed', response.status, await response.text().catch(() => ''))
-    }).catch((emailError) => console.error('Customer confirmation email failed', emailError))
+        }),
+      }).then(async (response) => {
+        if (!response.ok) console.error('Customer confirmation email failed', response.status, await response.text().catch(() => ''))
+      }).catch((emailError) => console.error('Customer confirmation email failed', emailError)))
 
-    // In-app notification till admins så nya ärenden syns i klockan utan polling.
-    const adminNotifyTask = notifyAdminsOfPendingRequest(supabase, {
-      city: body.city,
-      repair_category: body.repair_category,
-      request_id: (row as { id?: string } | null)?.id,
-    }).catch((notifyError) => console.error('Admin notification insert failed', notifyError))
+      backgroundTasks.push(notifyAdminsOfPendingRequest(supabase, {
+        city: body.city,
+        repair_category: body.repair_category,
+        request_id: (row as { id?: string } | null)?.id,
+      }).catch((notifyError) => console.error('Admin notification insert failed', notifyError)))
 
-    // E-postnotis till admin om det nya ärendet.
-    const adminEmailTask = sendAdminAlert({
-      supabaseUrl,
-      serviceRoleKey,
-      subject: `Nytt cykelärende i ${body.city} – ${body.repair_category}`,
-      heading: 'Nytt ärende väntar på granskning',
-      rows: [
-        ['Stad', body.city],
-        ['Problem', body.repair_category],
-        ['Cykeltyp', body.bike_type],
-        ['Beskrivning', body.description],
-        ['Kund', body.customer_name],
-        ['E-post', body.customer_email],
-        ['Telefon', body.customer_phone],
-        ['Område', body.area],
-      ],
-      ctaUrl: 'https://cykelhjalpen.se/admin/cykelarenden',
-      ctaLabel: 'Granska ärendet',
-    })
-
-    const edgeRuntime = (globalThis as any).EdgeRuntime
-    if (edgeRuntime?.waitUntil) {
-      edgeRuntime.waitUntil(customerEmailTask)
-      edgeRuntime.waitUntil(adminNotifyTask)
-      edgeRuntime.waitUntil(adminEmailTask)
-    } else {
-      await Promise.all([customerEmailTask, adminNotifyTask, adminEmailTask])
+      backgroundTasks.push(sendAdminAlert({
+        supabaseUrl,
+        serviceRoleKey,
+        subject: `Nytt cykelärende i ${body.city} – ${body.repair_category}`,
+        heading: 'Nytt ärende väntar på granskning',
+        rows: [
+          ['Stad', body.city],
+          ['Problem', body.repair_category],
+          ['Cykeltyp', body.bike_type],
+          ['Beskrivning', body.description],
+          ['Kund', body.customer_name],
+          ['E-post', body.customer_email],
+          ['Telefon', body.customer_phone],
+          ['Område', body.area],
+        ],
+        ctaUrl: 'https://cykelhjalpen.se/admin/cykelarenden',
+        ctaLabel: 'Granska ärendet',
+      }))
     }
 
+    const edgeRuntime = (globalThis as any).EdgeRuntime
+    if (backgroundTasks.length > 0) {
+      if (edgeRuntime?.waitUntil) {
+        for (const task of backgroundTasks) edgeRuntime.waitUntil(task)
+      } else {
+        await Promise.all(backgroundTasks)
+      }
+    }
 
-    return new Response(JSON.stringify(row), {
+    return new Response(JSON.stringify({
+      ...row,
+      admin_status: autoApproved ? 'approved' : 'pending_approval',
+      auto_approved: autoApproved,
+    }), {
       status: 200,
       headers: {
         ...corsHeaders,
