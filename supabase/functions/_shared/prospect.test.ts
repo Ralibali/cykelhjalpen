@@ -18,14 +18,20 @@ Deno.test('prepareProspectEmailUpdate: sparar bara publikt företagsmejl', () =>
     email: 'cykla@stigscykel.se',
     normalized_email: 'cykla@stigscykel.se',
   })
+  assertEquals(prepareProspectEmailUpdate('cykla@stigscykel.se', 'https://www.stigscykel.se'), {
+    ok: true,
+    email: 'cykla@stigscykel.se',
+    normalized_email: 'cykla@stigscykel.se',
+  })
 })
 
-Deno.test('looksLikeBusinessEmail: accepterar butiksroller på företagsdomän', () => {
+Deno.test('looksLikeBusinessEmail: accepterar icke-personlig lokal på företagsdomän', () => {
   const accepted = [
     'cykla@stigscykel.se',
     'order@verkstad.se',
     'mail@cykel.se',
     'shop@bike.com',
+    'office@firma.se',
     'info@verkstad.se',
     'kontakt@cykel.se',
     'contact@shop.com',
@@ -46,6 +52,13 @@ Deno.test('looksLikeBusinessEmail: accepterar butiksroller på företagsdomän',
   }
 })
 
+Deno.test('looksLikeBusinessEmail: webbplatsdomän matchar även okänd lokal', () => {
+  assertEquals(looksLikeBusinessEmail('cykla@stigscykel.se', 'stigscykel.se'), true)
+  assertEquals(looksLikeBusinessEmail('cykla@stigscykel.se', 'https://www.stigscykel.se'), true)
+  assertEquals(looksLikeBusinessEmail('john@stigscykel.se', 'https://stigscykel.se/'), true)
+  assertEquals(looksLikeBusinessEmail('john@stigscykel.se', 'https://norrkopings-cykel.se'), false)
+})
+
 Deno.test('looksLikeBusinessEmail: blockerar konsumentinkorgar', () => {
   const rejected = [
     'info@gmail.com',
@@ -55,9 +68,14 @@ Deno.test('looksLikeBusinessEmail: blockerar konsumentinkorgar', () => {
     'support@hotmail.se',
     'service@live.com',
     'shop@outlook.se',
+    'info@icloud.com',
+    'kontakt@me.com',
+    'hej@yahoo.com',
+    'shop@yahoo.se',
   ]
   for (const email of rejected) {
     assertEquals(looksLikeBusinessEmail(email), false, email)
+    assertEquals(looksLikeBusinessEmail(email, 'gmail.com'), false, email)
   }
 })
 
@@ -68,7 +86,7 @@ Deno.test('prepareProspectEmailUpdate: blockerar konsumentinkorg även med före
   })
 })
 
-Deno.test('prepareProspectEmailUpdate: blockerar personlig e-post', () => {
+Deno.test('prepareProspectEmailUpdate: blockerar personlig e-post på okänd domän', () => {
   assertEquals(prepareProspectEmailUpdate('anna@verkstad.se'), {
     ok: false,
     error: PROSPECT_EMAIL_NOT_BUSINESS,

@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
     }
 
     // Mottagaren MÅSTE vara publikt företagsmejl
-    if (!looksLikeBusinessEmail(activity.recipient) || !looksLikeBusinessEmail(prospect.normalized_email)) {
+    if (!looksLikeBusinessEmail(activity.recipient, prospect.website) || !looksLikeBusinessEmail(prospect.normalized_email, prospect.website)) {
       throw new Error('Mottagaren är inte klassad som publikt företagsmejl – blockerat.')
     }
 
