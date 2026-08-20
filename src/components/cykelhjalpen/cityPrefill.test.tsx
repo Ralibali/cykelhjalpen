@@ -1,7 +1,23 @@
 import type { ReactElement } from 'react'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+vi.mock('@/hooks/usePageTracking', () => ({
+  trackClick: () => {},
+}))
+
+class IntersectionObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+Object.defineProperty(globalThis, 'IntersectionObserver', {
+  writable: true,
+  configurable: true,
+  value: IntersectionObserverStub,
+})
 import { LanguageProvider } from '@/lib/i18n'
 import CykelFooter from './CykelFooter'
 import CykelHomeHeroNeutral from './CykelHomeHeroNeutral'
