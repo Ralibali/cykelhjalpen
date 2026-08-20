@@ -98,13 +98,17 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     }
   })
 
-  it('indexerar verkstadssidan och formuläret men inte privata kundsidor', () => {
+  it('indexerar verkstadssidan, formuläret, registrering och juridiska sidor men inte privata kundsidor', () => {
     const indexablePaths = getIndexableSeoRoutes('cykelhjalpen').map((route) => route.path)
     const noindexPaths = getNoindexSeoRoutes('cykelhjalpen').map((route) => route.path)
 
     expect(indexablePaths).toContain('/for-cykelverkstader')
     expect(indexablePaths).toContain('/skicka-arende')
-    expect(indexablePaths).not.toContain('/registrera/verkstad')
+    expect(indexablePaths).toContain('/registrera/verkstad')
+    expect(indexablePaths).toContain('/integritetspolicy')
+    expect(indexablePaths).toContain('/villkor')
+    expect(indexablePaths).toContain('/cookies')
+    expect(noindexPaths).not.toContain('/registrera/verkstad')
     expect(noindexPaths).toContain('/mitt-arende')
     expect(noindexPaths).toContain('/avregistrera')
     expect(noindexPaths).toContain('/annons/verkstad')
@@ -127,5 +131,55 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     const sitemap = generateSitemapXml('cykelhjalpen')
     const urls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1])
     expect(new Set(urls).size).toBe(urls.length)
+  })
+
+  it('generateSitemapXml(cykelhjalpen) returnerar välformad XML utan att kasta', () => {
+    let sitemap = ''
+    expect(() => {
+      sitemap = generateSitemapXml('cykelhjalpen')
+    }).not.toThrow()
+
+    expect(sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true)
+    expect(sitemap).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"')
+    expect(sitemap.trimEnd().endsWith('</urlset>')).toBe(true)
+
+    const parsed = new DOMParser().parseFromString(sitemap, 'application/xml')
+    expect(parsed.querySelector('parsererror')).toBeNull()
+
+    const urls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1])
+    expect(urls.length).toBeGreaterThan(20)
+    expect(urls).toEqual(expect.arrayContaining([
+      'https://cykelhjalpen.se/',
+      'https://cykelhjalpen.se/skicka-arende',
+      'https://cykelhjalpen.se/for-cykelverkstader',
+      'https://cykelhjalpen.se/registrera/verkstad',
+      'https://cykelhjalpen.se/cykelverkstad-linkoping',
+      'https://cykelhjalpen.se/integritetspolicy',
+      'https://cykelhjalpen.se/villkor',
+      'https://cykelhjalpen.se/cookies',
+      'https://cykelhjalpen.se/en',
+      'https://cykelhjalpen.se/en/submit-request',
+      'https://cykelhjalpen.se/en/for-bike-shops',
+    ]))
+
+    for (const url of urls) {
+      expect(url.startsWith('https://cykelhjalpen.se')).toBe(true)
+      expect(url).not.toContain('updro.se')
+    }
+
+    expect(sitemap).not.toContain('updro.se')
+    expect(sitemap).not.toContain('/mitt-arende')
+    expect(sitemap).not.toContain('/annons/')
+    expect(sitemap).not.toContain('/dashboard')
+    expect(sitemap).not.toContain('/admin')
+    expect(sitemap).not.toContain('/logga-in')
+  })
+
+  it('låter Updro-sitemap vara oförändrat Updro-innehåll', () => {
+    const sitemap = generateSitemapXml('updro')
+    expect(sitemap).toContain('https://updro.se/')
+    expect(sitemap).toContain('https://updro.se/publicera')
+    expect(sitemap).not.toContain('cykelhjalpen.se')
+    expect(sitemap).not.toContain('/skicka-arende')
   })
 })
