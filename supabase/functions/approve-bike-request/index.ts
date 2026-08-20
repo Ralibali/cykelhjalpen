@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
-import { notifyWorkshopsOfApprovedRequest, logSmsAttempt } from '../_shared/notifications.ts'
+import { APPROVED_ADMIN_STATUS, publishApprovedBikeRequest } from '../_shared/publish-bike-request.ts'
 
 
 const ActionSchema = z.object({
@@ -16,12 +16,6 @@ const escapeHtml = (value: unknown) => String(value ?? '')
   .replaceAll('>', '&gt;')
   .replaceAll('"', '&quot;')
   .replaceAll("'", '&#39;')
-
-const urgencyLabel = (value: string | null) => ({
-  asap: 'Så snart som möjligt',
-  this_week: 'Den här veckan',
-  flexible: 'Flexibel',
-}[value || ''] || value || 'Ej angivet')
 
 
 Deno.serve(async (req) => {
@@ -71,135 +65,66 @@ Deno.serve(async (req) => {
     if (requestError) throw requestError
     if (!requestRow) throw new Error('Ärendet hittades inte')
 
-    const newStatus = action === 'approve' ? 'approved' : 'rejected'
+    const newStatus = action === 'approve' ? APPROVED_ADMIN_STATUS : 'rejected'
     if (requestRow.admin_status === newStatus) {
       return new Response(JSON.stringify({ success: true, status: newStatus, already_applied: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const { error: updateError } = await admin
-      .from('bike_repair_requests')
-      .update({
-        admin_status: newStatus,
-        approved_at: action === 'approve' ? new Date().toISOString() : null,
-        rejected_reason: action === 'reject' ? (reason || null) : null,
-      })
-      .eq('id', request_id)
-    if (updateError) throw updateError
+    let notifiedWorkshops = 0
+    let workshopEmailsSent = 0
+    let smsSent = 0
 
-    const sendEmail = async (to: string, subject: string, html: string) => {
-      const response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+    if (action === 'approve') {
+      const published = await publishApprovedBikeRequest({
+        admin,
+        supabaseUrl,
+        serviceRoleKey,
+        requestRow,
+      })
+      notifiedWorkshops = published.workshops_notified
+      workshopEmailsSent = published.workshop_emails_sent
+      smsSent = published.sms_sent
+    } else {
+      const { error: updateError } = await admin
+        .from('bike_repair_requests')
+        .update({
+          admin_status: 'rejected',
+          approved_at: null,
+          rejected_reason: reason || null,
+        })
+        .eq('id', request_id)
+      if (updateError) throw updateError
+
+      const requestUrl = requestRow.view_token
+        ? `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`
+        : 'https://cykelhjalpen.se/'
+      const safeName = escapeHtml(requestRow.customer_name)
+      const safeCategory = escapeHtml(requestRow.repair_category)
+      const safeReason = escapeHtml(reason)
+
+      await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${serviceRoleKey}`,
         },
-        body: JSON.stringify({ to, subject, html }),
-      })
-      if (!response.ok) {
-        throw new Error(`E-postfel ${response.status}: ${(await response.text().catch(() => '')).slice(0, 160)}`)
-      }
-    }
-
-    const requestUrl = requestRow.view_token
-      ? `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`
-      : 'https://cykelhjalpen.se/'
-    const safeName = escapeHtml(requestRow.customer_name)
-    const safeBikeType = escapeHtml(requestRow.bike_type)
-    const safeCategory = escapeHtml(requestRow.repair_category)
-    const safeReason = escapeHtml(reason)
-
-    const customerEmail = sendEmail(
-      requestRow.customer_email,
-      action === 'approve'
-        ? 'Ditt cykelärende är godkänt och skickat till verkstäder'
-        : 'Vi kunde tyvärr inte publicera ditt cykelärende',
-      action === 'approve'
-        ? `
-          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-            <h2 style="margin:0 0 16px">Hej ${safeName}!</h2>
-            <p>Ditt ärende om <strong>${safeCategory}</strong> för din ${safeBikeType} är nu godkänt.</p>
-            <p>Det har skickats till anslutna cykelverkstäder i ${escapeHtml(requestRow.city || 'Linköping')}. Du får besked när en verkstad lämnar offert.</p>
-            <p style="margin-top:24px"><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Följ ditt ärende</a></p>
-          </div>
-        `
-        : `
+        body: JSON.stringify({
+          to: requestRow.customer_email,
+          subject: 'Vi kunde tyvärr inte publicera ditt cykelärende',
+          html: `
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
             <h2 style="margin:0 0 16px">Hej ${safeName}!</h2>
             <p>Vi kunde tyvärr inte publicera ditt ärende om <strong>${safeCategory}</strong>.</p>
             ${reason ? `<p><strong>Anledning:</strong> ${safeReason}</p>` : ''}
             <p>Du är välkommen att justera uppgifterna och skicka in en ny förfrågan.</p>
+            <p style="margin-top:24px"><a href="${requestUrl}">Visa ärendet</a></p>
           </div>
         `,
-    ).catch((error) => console.error('Customer status email failed', error))
-
-    let workshopEmailResults: PromiseSettledResult<void>[] = []
-    let notifiedWorkshops = 0
-    let smsSent = 0
-
-    if (action === 'approve') {
-      const city = requestRow.city || 'Linköping'
-      let workshopsQuery = admin
-        .from('workshops')
-        .select('id, email, company_name, phone, sms_notifications, user_id')
-        .eq('approved', true)
-      if (requestRow.preferred_workshop_id) {
-        workshopsQuery = workshopsQuery.eq('id', requestRow.preferred_workshop_id)
-      } else {
-        workshopsQuery = workshopsQuery.eq('city', city)
-      }
-      const { data: workshops, error: workshopsError } = await workshopsQuery
-      if (workshopsError) throw workshopsError
-
-      notifiedWorkshops = workshops?.length || 0
-      const description = requestRow.description.length > 300
-        ? `${requestRow.description.slice(0, 300)}…`
-        : requestRow.description
-      const dashboardUrl = 'https://cykelhjalpen.se/dashboard/verkstad/arenden'
-
-      workshopEmailResults = await Promise.allSettled((workshops || []).map((workshop) => sendEmail(
-        workshop.email,
-        `Nytt godkänt cykelärende i ${city} – ${requestRow.repair_category}`,
-        `
-          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
-            <h2 style="margin:0 0 16px">Nytt cykelärende i ${escapeHtml(city)}</h2>
-            <p>Hej ${escapeHtml(workshop.company_name)}, en kund söker hjälp:</p>
-            <table style="border-collapse:collapse;margin:16px 0">
-              <tr><td style="padding:4px 12px 4px 0;color:#555">Cykel:</td><td><strong>${safeBikeType}</strong></td></tr>
-              <tr><td style="padding:4px 12px 4px 0;color:#555">Problem:</td><td><strong>${safeCategory}</strong></td></tr>
-              <tr><td style="padding:4px 12px 4px 0;color:#555">När:</td><td>${escapeHtml(urgencyLabel(requestRow.urgency))}</td></tr>
-              ${requestRow.area ? `<tr><td style="padding:4px 12px 4px 0;color:#555">Område:</td><td>${escapeHtml(requestRow.area)}</td></tr>` : ''}
-            </table>
-            <p style="background:#f5f5f5;padding:12px;border-radius:6px">${escapeHtml(description)}</p>
-            <p style="margin-top:24px"><a href="${dashboardUrl}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Öppna ärendet och lämna offert</a></p>
-          </div>
-        `,
-      )))
-
-      // In-app-notiser via klockan för alla mottagande verkstäder.
-      await notifyWorkshopsOfApprovedRequest(admin, workshops || [], {
-        city,
-        repair_category: requestRow.repair_category,
-        bike_type: requestRow.bike_type,
-        request_id,
-      }).catch((notifyError) => console.error('Workshop in-app notification failed', notifyError))
-
-      // Skickar SMS via 46elks (om ELKS_API_USERNAME/ELKS_API_PASSWORD är satta)
-      // till verkstäder som slagit på sms_notifications. Utan leverantör loggas
-      // försöket som 'skipped' i notification_events.
-      const recipients = (workshops || []).filter((workshop) => workshop.sms_notifications && workshop.phone)
-      const message = `Nytt godkänt cykelärende i ${city}: ${requestRow.repair_category}. Svara i verkstadsvyn: cykelhjalpen.se/dashboard/verkstad/arenden`
-      const smsResults = await Promise.allSettled(recipients.map((workshop) => logSmsAttempt(admin, {
-        to: workshop.phone || '',
-        message,
-        idempotencyKey: `bike_request_approved_sms:${request_id}:${workshop.id}`,
-        reason: 'bike_request_approved',
-      })))
-      smsSent = smsResults.filter((result) => result.status === 'fulfilled' && (result.value as { status: string }).status === 'sent').length
+        }),
+      }).catch((error) => console.error('Customer status email failed', error))
     }
-
-    await customerEmail
 
     const { error: auditError } = await admin.from('audit_log').insert({
       admin_id: userData.user.id,
@@ -209,7 +134,7 @@ Deno.serve(async (req) => {
       details: {
         reason: reason || null,
         workshops_found: notifiedWorkshops,
-        workshop_emails_sent: workshopEmailResults.filter((result) => result.status === 'fulfilled').length,
+        workshop_emails_sent: workshopEmailsSent,
         sms_sent: smsSent,
       },
     })
@@ -219,7 +144,7 @@ Deno.serve(async (req) => {
       success: true,
       status: newStatus,
       workshops_notified: notifiedWorkshops,
-      workshop_emails_sent: workshopEmailResults.filter((result) => result.status === 'fulfilled').length,
+      workshop_emails_sent: workshopEmailsSent,
       sms_sent: smsSent,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
