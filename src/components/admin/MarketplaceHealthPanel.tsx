@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Activity, AlertTriangle, ShieldCheck, TrendingDown } from 'lucide-react'
 import { useT } from '@/lib/i18n'
+import { getCurrentHost } from '@/lib/hostConfig'
+import CykelMarketplaceHealthPanel from './CykelMarketplaceHealthPanel'
 
 type HealthStatus = 'healthy' | 'watch' | 'low_supply' | 'pause_or_recruit'
 
@@ -26,7 +28,7 @@ const STATUS_META: Record<HealthStatus, { cls: string; Icon: typeof Activity }> 
   pause_or_recruit: { cls: 'bg-rose-50 text-rose-700 border-rose-200', Icon: AlertTriangle },
 }
 
-const MarketplaceHealthPanel = () => {
+const UpdroMarketplaceHealthPanel = () => {
   const t = useT()
   const [rows, setRows] = useState<CategoryHealth[]>([])
   const [loading, setLoading] = useState(true)
@@ -103,5 +105,11 @@ const MarketplaceHealthPanel = () => {
     </div>
   )
 }
+
+const MarketplaceHealthPanel = () => (
+  getCurrentHost() === 'cykelhjalpen'
+    ? <CykelMarketplaceHealthPanel />
+    : <UpdroMarketplaceHealthPanel />
+)
 
 export default MarketplaceHealthPanel

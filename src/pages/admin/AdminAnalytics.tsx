@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { getCurrentHost } from '@/lib/hostConfig'
 import { AdminLayout } from './AdminDashboard'
+import CykelAdminAnalytics from './CykelAdminAnalytics'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, FunnelChart, Funnel, LabelList } from 'recharts'
 import { TrendingUp, Users, ClipboardList, CreditCard, Eye, ArrowUpRight, ArrowDownRight, DollarSign, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -50,7 +52,7 @@ const growth = (current: number, prev: number) => {
   return Math.round((newItems / prev) * 100)
 }
 
-const AdminAnalytics = () => {
+const UpdroAdminAnalytics = () => {
   const t = useT()
   const [registrations, setRegistrations] = useState<TimeSeriesPoint[]>([])
   const [projectsByDay, setProjectsByDay] = useState<TimeSeriesPoint[]>([])
@@ -377,5 +379,11 @@ const AdminAnalytics = () => {
     </AdminLayout>
   )
 }
+
+const AdminAnalytics = () => (
+  getCurrentHost() === 'cykelhjalpen'
+    ? <CykelAdminAnalytics />
+    : <UpdroAdminAnalytics />
+)
 
 export default AdminAnalytics
