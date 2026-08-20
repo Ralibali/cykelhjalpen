@@ -1,7 +1,7 @@
 import Stripe from 'npm:stripe@18.5.0'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
-import { corsFor } from '../_shared/cors.ts'
+import { allowedPublicOrigin, corsFor } from '../_shared/cors.ts'
 
 const BodySchema = z.object({
   quantity: z.number().int().min(1).max(100).default(10),
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       await admin.from('workshops').update({ stripe_customer_id: customerId }).eq('id', workshop.id)
     }
 
-    const origin = req.headers.get('origin') ?? 'https://cykelhjalpen.se'
+    const origin = allowedPublicOrigin(req.headers.get('origin'))
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

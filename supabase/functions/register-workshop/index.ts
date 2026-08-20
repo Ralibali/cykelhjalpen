@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
-import { corsFor } from '../_shared/cors.ts'
+import { allowedPublicOrigin, corsFor } from '../_shared/cors.ts'
 import { notifyAdminsOfNewWorkshop } from '../_shared/notifications.ts'
 import { verifyTurnstile } from '../_shared/turnstile.ts'
 
@@ -92,16 +92,13 @@ Deno.serve(async (req) => {
     const publicClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false } })
     const adminClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
 
-    const requestOrigin = req.headers.get('origin') ?? ''
-    const allowedOrigin = /^(https:\/\/(www\.)?cykelhjalpen\.se|http:\/\/localhost(:\d+)?)$/i.test(requestOrigin)
-      ? requestOrigin
-      : 'https://cykelhjalpen.se'
+    const origin = allowedPublicOrigin(req.headers.get('origin'))
 
     const { data: authData, error: authError } = await publicClient.auth.signUp({
       email,
       password: body.password,
       options: {
-        emailRedirectTo: `${allowedOrigin}/dashboard/verkstad`,
+        emailRedirectTo: `${origin}/dashboard/verkstad`,
         data: {
           role: 'supplier',
           full_name: body.company_name,

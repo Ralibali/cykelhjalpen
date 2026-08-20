@@ -5,14 +5,9 @@ import Stripe from 'npm:stripe@18.5.0'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { LEAD_FEE_ORE } from '../_shared/pricing.ts'
-import { corsFor } from '../_shared/cors.ts'
+import { allowedPublicOrigin, corsFor } from '../_shared/cors.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
-
-const allowedOrigin = (origin: string | null) => {
-  if (origin && /^(https:\/\/(www\.)?cykelhjalpen\.se|https:\/\/[a-z0-9-]+\.lovable\.app|http:\/\/localhost(:\d+)?)$/i.test(origin)) return origin
-  return 'https://cykelhjalpen.se'
-}
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
@@ -67,7 +62,7 @@ Deno.serve(async (req) => {
     if (!stripeSecret) throw new Error('Stripe är inte konfigurerat')
     const stripe = new Stripe(stripeSecret, { apiVersion: '2025-08-27.basil' })
 
-    const origin = allowedOrigin(req.headers.get('origin'))
+    const origin = allowedPublicOrigin(req.headers.get('origin'))
 
     // Återanvänd en öppen Checkout-session om en redan finns för svaret.
     const { data: pendingCharges, error: pendingError } = await admin

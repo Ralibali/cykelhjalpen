@@ -13,6 +13,7 @@ import { Mail, KeyRound, Loader2, CheckCircle2 } from 'lucide-react'
 import { setSEOMeta } from '@/lib/seoHelpers'
 import { getCurrentHost } from '@/lib/hostConfig'
 import { useT, useLanguage, localizedHref } from '@/lib/i18n'
+import { publicSiteOrigin } from '@/lib/publicSiteOrigin'
 
 const ForgotPasswordPage = () => {
   const t = useT()
@@ -48,7 +49,7 @@ const ForgotPasswordPage = () => {
 
     setLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
-      redirectTo: `${window.location.origin}${localizedHref('/nytt-losenord', lang)}`,
+      redirectTo: `${publicSiteOrigin()}${localizedHref('/nytt-losenord', lang)}`,
     })
     setLoading(false)
 
