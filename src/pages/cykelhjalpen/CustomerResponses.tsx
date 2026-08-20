@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { useT } from '@/lib/i18n'
+import { closedChoiceDaysLeft, publishedQuotesStatusCopy } from '@/lib/customerChoiceCopy'
 
 interface WorkshopResponse {
   id: string
@@ -244,22 +245,15 @@ const CustomerResponses = () => {
           <h1 className="font-display text-2xl">{t('Ärendet är publicerat')}</h1>
         </div>
         <p className="text-sm">
-          {request.status === 'expired'
-            ? t('Svarstiden på fem dagar har gått ut och ingen verkstad hann svara. Du kan lägga upp ett nytt ärende när du vill.')
-            : request.status === 'choice_expired'
-              ? t('Du hann inte välja verkstad inom fem dagar, så offerterna har gått ut. Du kan lägga upp ett nytt ärende när du vill.')
-              : (request.status === 'closed_for_responses' || request.status === 'full')
-                ? (() => {
-                    const daysLeft = request.closed_at
-                      ? Math.max(0, Math.ceil(5 - (Date.now() - new Date(request.closed_at).getTime()) / 86_400_000))
-                      : 5
-                    return daysLeft > 0
-                      ? t('Ärendet är stängt för nya offerter. Du har {days} dagar kvar att jämföra prisförslagen nedan och välja den verkstad du vill gå vidare med.', { days: daysLeft })
-                      : t('Ärendet är stängt för nya offerter. Jämför prisförslagen nedan och välj den verkstad du vill gå vidare med.')
-                  })()
-                : responses.length > 0
-                  ? t('Du har fått prisförslag. Fler kan tillkomma tills tre verkstäder har svarat eller svarstiden på fem dagar går ut. Välj den verkstad du vill gå vidare med.')
-                  : t('Anslutna verkstäder i {city} kan nu se ärendet i fem dagar. Nya prisförslag visas här automatiskt.', { city: request.city })}
+          {(() => {
+            const copy = publishedQuotesStatusCopy({
+              status: request.status,
+              quoteCount: responses.length,
+              city: request.city,
+              daysLeft: closedChoiceDaysLeft(request.closed_at),
+            })
+            return t(copy.text, copy.vars)
+          })()}
         </p>
 
       </div>
@@ -416,7 +410,7 @@ const CustomerResponses = () => {
                                 </span>
                               )}
                             </div>
-                            <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-4 border-t border-border">
                               {contactUnlocked && phone && (
                                 <Button asChild size="sm" className="rounded-full shadow-brand" onClick={() => handleContact(response, 'phone')}>
                                   <a href={`tel:${phone}`} aria-label={t('Ring {name}', { name: company || t('verkstaden') })}><Phone className="h-4 w-4 mr-1.5" /> {t('Ring')}</a>
@@ -439,19 +433,18 @@ const CustomerResponses = () => {
                               )}
                               {!hasWinner && request.admin_status === 'approved' && request.status !== 'expired' && request.status !== 'choice_expired' && response.status === 'sent' && (
                                 confirmingId === response.id ? (
-                                  <span className="flex flex-wrap items-center gap-2 rounded-2xl bg-[hsl(var(--brand-mint)/0.1)] px-3 py-2">
-
-                                    <span className="text-xs font-medium">{t('Valet är slutgiltigt. Gå vidare med {name}?', { name: company || t('verkstaden') })}</span>
-                                    <Button size="sm" className="rounded-full" disabled={selectingId === response.id} onClick={() => pickWinner(response)}>
+                                  <span className="flex w-full flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 rounded-2xl bg-[hsl(var(--brand-mint)/0.1)] px-3 py-3">
+                                    <span className="text-sm font-medium">{t('Valet är slutgiltigt. Gå vidare med {name}?', { name: company || t('verkstaden') })}</span>
+                                    <Button className="w-full sm:w-auto rounded-full shadow-brand font-semibold" disabled={selectingId === response.id} onClick={() => pickWinner(response)}>
                                       {selectingId === response.id ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
                                       {t('Ja, välj verkstaden')}
                                     </Button>
-                                    <Button size="sm" variant="ghost" className="rounded-full" disabled={selectingId === response.id} onClick={() => setConfirmingId(null)}>
+                                    <Button variant="ghost" className="w-full sm:w-auto rounded-full" disabled={selectingId === response.id} onClick={() => setConfirmingId(null)}>
                                       {t('Avbryt')}
                                     </Button>
                                   </span>
                                 ) : (
-                                  <Button size="sm" variant="outline" className="rounded-full border-2 border-[hsl(var(--brand-mint))] text-[hsl(var(--brand-mint))] font-semibold" onClick={() => setConfirmingId(response.id)}>
+                                  <Button className="w-full sm:w-auto rounded-full shadow-brand font-semibold" onClick={() => setConfirmingId(response.id)}>
                                     <CheckCircle2 className="h-4 w-4 mr-1.5" /> {t('Välj denna verkstad')}
                                   </Button>
                                 )

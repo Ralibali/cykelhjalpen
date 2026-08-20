@@ -19,24 +19,58 @@ export const buildCustomerResponseSubject = (repairCategory: string, lang: Custo
 // kort så att den för normala verkstadsnamn aldrig överstiger tre delar (201
 // tecken). Engelska texter saknar ÅÄÖ men hålls inom samma gräns.
 export const buildCustomerResponseSms = (
-  workshopName: string, requestUrl: string, lang: CustomerLang = 'sv',
-): string =>
-  lang === 'en'
-    ? `Cykelhjalpen: ${workshopName} sent you a quote. Compare and choose a workshop: ${requestUrl}`
-    : `Cykelhjälpen: ${workshopName} har lagt ett prisförslag. Jämför och välj verkstad: ${requestUrl}`
+  workshopName: string, requestUrl: string, lang: CustomerLang = 'sv', quoteCount = 1,
+): string => {
+  if (lang === 'en') {
+    const action = quoteCount >= 2
+      ? 'Compare and choose a workshop'
+      : 'Choose now – you get contact details after you pick'
+    return `Cykelhjalpen: ${workshopName} sent you a quote. ${action}: ${requestUrl}`
+  }
+  const action = quoteCount >= 2
+    ? 'Jämför och välj verkstad redan nu'
+    : 'Välj redan nu – du får kontakten när du valt'
+  return `Cykelhjälpen: ${workshopName} har lagt ett prisförslag. ${action}: ${requestUrl}`
+}
 
 export const escapeCustomerHtml = (value: unknown): string =>
   String(value ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
+const emailBody = (workshopName: string, lang: CustomerLang, quoteCount: number): string => {
+  const name = escapeCustomerHtml(workshopName)
+  if (lang === 'en') {
+    return quoteCount >= 2
+      ? `<strong>${name}</strong> has sent you a quote. Compare the quotes and choose the workshop you want to go ahead with – you get their contact details only after you have chosen in Cykelhjälpen.`
+      : `<strong>${name}</strong> has sent you a quote. You can choose already – you get their contact details only after you have chosen in Cykelhjälpen.`
+  }
+  return quoteCount >= 2
+    ? `<strong>${name}</strong> har lämnat ett prisförslag på ditt cykelärende. Jämför förslagen och välj den verkstad du vill gå vidare med – du får kontaktuppgifterna först när du valt i Cykelhjälpen.`
+    : `<strong>${name}</strong> har lämnat ett prisförslag på ditt cykelärende. Välj redan nu – du får verkstadens kontaktuppgifter först när du valt i Cykelhjälpen.`
+}
+
+const emailCta = (lang: CustomerLang, quoteCount: number): string => {
+  if (lang === 'en') return quoteCount >= 2 ? 'Compare the quotes and choose' : 'Choose the workshop now'
+  return quoteCount >= 2 ? 'Jämför och välj' : 'Välj verkstad redan nu'
+}
+
+const emailBodyText = (workshopName: string, lang: CustomerLang, quoteCount: number): string => {
+  if (lang === 'en') {
+    return quoteCount >= 2
+      ? `${workshopName} has sent you a quote. Compare the quotes and choose the workshop you want to go ahead with – you get their contact details only after you have chosen in Cykelhjälpen.`
+      : `${workshopName} has sent you a quote. You can choose already – you get their contact details only after you have chosen in Cykelhjälpen.`
+  }
+  return quoteCount >= 2
+    ? `${workshopName} har lämnat ett prisförslag på ditt cykelärende. Jämför förslagen och välj den verkstad du vill gå vidare med – du får kontaktuppgifterna först när du valt i Cykelhjälpen.`
+    : `${workshopName} har lämnat ett prisförslag på ditt cykelärende. Välj redan nu – du får verkstadens kontaktuppgifter först när du valt i Cykelhjälpen.`
+}
+
 export const buildCustomerResponseEmailHtml = (
-  customerName: string, workshopName: string, requestUrl: string, lang: CustomerLang = 'sv',
+  customerName: string, workshopName: string, requestUrl: string, lang: CustomerLang = 'sv', quoteCount = 1,
 ): string => {
-  const cta = lang === 'en' ? 'View the quote and choose' : 'Se prisförslaget och välj'
-  const body = lang === 'en'
-    ? `<strong>${escapeCustomerHtml(workshopName)}</strong> has sent you a quote. Compare the quotes and choose the workshop you want to go ahead with – you get their contact details as soon as you have chosen.`
-    : `<strong>${escapeCustomerHtml(workshopName)}</strong> har lämnat ett prisförslag på ditt cykelärende. Jämför förslagen och välj den verkstad du vill gå vidare med – du får kontaktuppgifterna direkt när du valt.`
+  const cta = emailCta(lang, quoteCount)
+  const body = emailBody(workshopName, lang, quoteCount)
   const footer = lang === 'en'
     ? 'You are getting this email because you posted a request on Cykelhjälpen.'
     : 'Du får det här mejlet för att du lagt upp ett ärende på Cykelhjälpen.'
@@ -49,12 +83,12 @@ export const buildCustomerResponseEmailHtml = (
 }
 
 export const buildCustomerResponseEmailText = (
-  customerName: string, workshopName: string, requestUrl: string, lang: CustomerLang = 'sv',
+  customerName: string, workshopName: string, requestUrl: string, lang: CustomerLang = 'sv', quoteCount = 1,
 ): string =>
   lang === 'en'
-    ? `Hi ${customerName}!\n\n${workshopName} has sent you a quote. Compare the quotes and choose the workshop you want to go ahead with – you get their contact details as soon as you have chosen.\n\nView the quote: ${requestUrl}\n\n` +
+    ? `Hi ${customerName}!\n\n${emailBodyText(workshopName, lang, quoteCount)}\n\nView the quote: ${requestUrl}\n\n` +
       `You are getting this email because you posted a request on Cykelhjälpen.`
-    : `Hej ${customerName}!\n\n${workshopName} har lämnat ett prisförslag på ditt cykelärende. Jämför förslagen och välj den verkstad du vill gå vidare med – du får kontaktuppgifterna direkt när du valt.\n\nSe prisförslaget: ${requestUrl}\n\n` +
+    : `Hej ${customerName}!\n\n${emailBodyText(workshopName, lang, quoteCount)}\n\nSe prisförslaget: ${requestUrl}\n\n` +
       `Du får det här mejlet för att du lagt upp ett ärende på Cykelhjälpen.`
 
 type ChannelResult = 'sent' | 'failed' | 'skipped'
@@ -85,6 +119,14 @@ export const notifyCustomerOfNewResponse = async (
   const workshopName = ctx.workshopName || (lang === 'en' ? 'A bike workshop' : 'En cykelverkstad')
   const customerName = (request.customer_name as string) || 'du'
 
+  // Default 1 so a failed count never implies more quotes are coming.
+  const { count: sentCount } = await admin
+    .from('workshop_responses')
+    .select('id', { count: 'exact', head: true })
+    .eq('request_id', ctx.requestId)
+    .in('status', ['sent', 'won'])
+  const quoteCount = sentCount && sentCount > 0 ? sentCount : 1
+
   // --- E-post (idempotent per svar) ---
   let email: ChannelResult = 'skipped'
   if (request.customer_email) {
@@ -108,8 +150,8 @@ export const notifyCustomerOfNewResponse = async (
           body: JSON.stringify({
             to: request.customer_email,
             subject: buildCustomerResponseSubject((request.repair_category as string) || 'cykelreparation', lang),
-            html: buildCustomerResponseEmailHtml(customerName, workshopName, requestUrl, lang),
-            text: buildCustomerResponseEmailText(customerName, workshopName, requestUrl, lang),
+            html: buildCustomerResponseEmailHtml(customerName, workshopName, requestUrl, lang, quoteCount),
+            text: buildCustomerResponseEmailText(customerName, workshopName, requestUrl, lang, quoteCount),
           }),
           signal: AbortSignal.timeout(15_000),
         })
@@ -142,7 +184,7 @@ export const notifyCustomerOfNewResponse = async (
   if (request.customer_phone) {
     const smsResult = await logSmsAttempt(admin, {
       to: request.customer_phone as string,
-      message: buildCustomerResponseSms(workshopName, requestUrl, lang),
+      message: buildCustomerResponseSms(workshopName, requestUrl, lang, quoteCount),
       idempotencyKey: `customer_response_sms:${ctx.responseId}`,
       reason: 'customer_new_response',
     })
