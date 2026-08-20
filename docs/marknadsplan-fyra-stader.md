@@ -35,7 +35,7 @@ Hej!
 
 Jag driver Cykelhjälpen, en tjänst där personer i er stad beskriver sitt cykelproblem och anslutna verkstäder själva väljer vilka ärenden de vill lämna prisförslag på.
 
-Det kostar inget att registrera verkstaden och det finns ingen månadsavgift. Ni ser ärendet först och betalar endast när ni väljer att skicka en offert till kunden.
+Det kostar inget att registrera verkstaden och det finns ingen månadsavgift. Det är gratis att lämna offert. Ni betalar 50 kr exklusive moms först när kunden väljer er som vinnare. De två första vinsterna är gratis.
 
 Vi söker nu lokala verkstäder i Linköping, Norrköping, Uppsala och Lund.
 

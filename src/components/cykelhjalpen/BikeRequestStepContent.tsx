@@ -31,7 +31,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { CustomerTerms } from '@/components/legal/CustomerTerms'
 import Turnstile from './Turnstile'
-import { CYKEL_CITIES, getCykelCity } from '@/lib/cykelCities'
+import { CYKEL_CITIES, getCykelCity, isCykelCity } from '@/lib/cykelCities'
 import { BIKE_TYPES, REPAIR_CATEGORIES, URGENCY_OPTIONS, type BikeRequestFormState } from '@/lib/bikeRequestForm'
 import { useT } from '@/lib/i18n'
 
@@ -168,7 +168,7 @@ const BikeRequestStepContent = ({
   onBikeTypeSelect,
 }: Props) => {
   const t = useT()
-  const selectedCity = getCykelCity(form.city)
+  const selectedCity = isCykelCity(form.city) ? getCykelCity(form.city) : null
   const SYMPTOM_SUGGESTIONS = SYMPTOM_SUGGESTIONS_SV.map((symptom) => t(symptom))
 
   if (step === 0) {
@@ -350,7 +350,7 @@ const BikeRequestStepContent = ({
               id="area"
               value={form.area}
               onChange={(event) => update('area', event.target.value)}
-              placeholder={selectedCity.exampleArea}
+              placeholder={selectedCity?.exampleArea || t('t.ex. område eller stadsdel')}
               className="rounded-xl border-2"
             />
           </div>
@@ -484,7 +484,7 @@ const BikeRequestStepContent = ({
 
       <CustomerTerms accepted={form.consent} onAccept={(value) => update('consent', value)} />
       <p className="text-xs text-muted-foreground leading-relaxed">
-        {t('Uppgifterna delas med anslutna cykelverkstäder i {city} som vill lämna offert, enligt', { city: form.city })}{' '}
+        {t('Uppgifterna delas med anslutna cykelverkstäder i {city} som vill lämna offert, enligt', { city: form.city || t('din stad') })}{' '}
         <a href="/integritetspolicy" target="_blank" rel="noreferrer" className="underline font-medium">{t('integritetspolicyn')}</a>.
       </p>
 

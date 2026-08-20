@@ -2,6 +2,7 @@ import { assert, assertEquals, assertStringIncludes } from 'https://deno.land/st
 import {
   buildClickTrackingUrl,
   buildEditedEmail,
+  buildEmailDraft,
   buildFollowUpDraft,
   oneClickUnsubscribeUrl,
   OUTREACH_WORKSHOP_URL,
@@ -94,6 +95,21 @@ Deno.test('replaceWorkshopUrlWithTracking: orörd text utan registreringslänk',
   const tracking = buildClickTrackingUrl('https://xyz.supabase.co', ACTIVITY_ID, TOKEN)
   const input = 'Hej! Det här mejlet har ingen länk.'
   assertEquals(replaceWorkshopUrlWithTracking(input, tracking), input)
+})
+
+Deno.test('buildEmailDraft: tar betalt vid vinst, inte vid skickad offert', () => {
+  const { text, html } = buildEmailDraft({
+    company_name: 'Cykelverkstan AB',
+    city: 'Uppsala',
+    website: null,
+    ai_summary: null,
+    services: null,
+    unsubscribe_token: TOKEN,
+  })
+  assertStringIncludes(text, 'Det kostar inget att svara')
+  assertStringIncludes(text, 'först när kunden väljer er betalar ni 50 kr')
+  assert(!text.includes('när ni väljer att skicka en offert'))
+  assertStringIncludes(html, 'först när kunden väljer er')
 })
 
 Deno.test('buildFollowUpDraft: innehåller registreringslänk, hälsning och stad', () => {

@@ -18,7 +18,7 @@ import { usePageSeo } from '@/i18n/usePageSeo'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
-import { DEFAULT_CYKEL_CITY, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
+import { resolveCykelCityParam } from '@/lib/cykelCities'
 import {
   BIKE_REQUEST_STEPS,
   BIKE_TYPES,
@@ -26,6 +26,7 @@ import {
   URGENCY_OPTIONS,
   makeBikeRequestSchema,
   makeDefaultBikeRequest,
+  resolveWizardCity,
   type BikeRequestFormState,
 } from '@/lib/bikeRequestForm'
 import { useT, useLanguage } from '@/lib/i18n'
@@ -90,14 +91,14 @@ const BikeRequestWizard = () => {
   const prefillCategory = matchParam(searchParams.get('problem'), REPAIR_CATEGORIES)
 
   const [form, setForm] = useState<BikeRequestFormState>(() => {
-    const defaults = makeDefaultBikeRequest(requestedCity || DEFAULT_CYKEL_CITY)
+    const defaults = makeDefaultBikeRequest(requestedCity || '')
     let base = defaults
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(DRAFT_KEY)
         if (stored) {
           const draft = JSON.parse(stored)
-          const city = requestedCity || (isCykelCity(draft?.city) ? draft.city : DEFAULT_CYKEL_CITY)
+          const city = resolveWizardCity(requestedCity, draft?.city)
           base = { ...defaults, ...draft, city, consent: false }
         }
       } catch {
