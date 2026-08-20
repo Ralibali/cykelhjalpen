@@ -7,6 +7,7 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import CykelOpenRequestsTeaser from '@/components/cykelhjalpen/CykelOpenRequestsTeaser'
 import { LEAD_FEE_KR } from '@/lib/pricing'
 import { CYKEL_CITIES } from '@/lib/cykelCities'
+import { resolveWorkshopLandingMarket, workshopLandingCopy } from '@/lib/workshopLanding'
 import { trackClick } from '@/hooks/usePageTracking'
 import { useLanguage } from '@/lib/i18n'
 import { usePageSeo } from '@/i18n/usePageSeo'
@@ -18,11 +19,10 @@ const ForVerkstaderPageV4 = () => {
   const [searchParams] = useSearchParams()
   const pageSeo = usePageSeo('/for-cykelverkstader')
   const text = (sv: string, en: string) => lang === 'en' ? en : sv
-  const cityParam = (searchParams.get('stad') || '').trim().toLowerCase()
-  const market = CYKEL_CITIES.find((item) => item.slug === cityParam || item.name.toLowerCase() === cityParam) || CYKEL_CITIES[0]
-  const city = market.name
-  const registerHref = `/registrera/verkstad?stad=${market.slug}`
-  const trackCta = (placement: string) => trackClick('workshop_partner_cta', 'Founding Partner', { placement, city })
+  const { selected, registerHref } = resolveWorkshopLandingMarket(searchParams.get('stad'))
+  const city = selected?.name
+  const copy = workshopLandingCopy(selected, text)
+  const trackCta = (placement: string) => trackClick('workshop_partner_cta', 'Founding Partner', { placement, city: city || 'alla' })
 
   const benefits = [
     [Users, text('Lokala kunder', 'Local customers'), text('Ta emot förfrågningar från personer som redan beskrivit vad som behöver lagas.', 'Receive requests from people who have already described what needs repairing.')],
@@ -33,8 +33,8 @@ const ForVerkstaderPageV4 = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>{text(`Få fler cykelkunder i ${city} | Cykelhjälpen`, `Get more bike customers in ${city} | Cykelhjälpen`)}</title>
-        <meta name="description" content={text(`Bli Founding Partner i Cykelhjälpen i ${city}. Ingen månadsavgift, två första vunna kunderna gratis och full frihet att välja vilka jobb ni vill svara på.`, `Become a Founding Partner with Cykelhjälpen in ${city}. No monthly fee, your first two won customers are free, and you choose which jobs to respond to.`)} />
+        <title>{copy.title}</title>
+        <meta name="description" content={copy.description} />
         <link rel="canonical" href={pageSeo.canonical} />
       </Helmet>
       <CykelNavbar />
@@ -42,14 +42,14 @@ const ForVerkstaderPageV4 = () => {
         <section className="bg-hero-gradient">
           <div className="container mx-auto px-4 py-14 md:py-20 max-w-6xl grid lg:grid-cols-[1fr_.9fr] gap-10 items-center">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-accent/15 text-accent px-3.5 py-1.5 text-sm font-semibold mb-6"><Sparkles className="h-4 w-4" /> Founding Partner · {city}</span>
-              <h1 className="font-display text-4xl md:text-6xl tracking-tight leading-[1.03]">{text(`Få in fler lokala cykeljobb i ${city}`, `Get more local bike jobs in ${city}`)} <span className="text-accent italic">{text('utan månadsavgift.', 'with no monthly fee.')}</span></h1>
+              <span className="inline-flex items-center gap-2 rounded-full bg-accent/15 text-accent px-3.5 py-1.5 text-sm font-semibold mb-6"><Sparkles className="h-4 w-4" /> {copy.badge}</span>
+              <h1 className="font-display text-4xl md:text-6xl tracking-tight leading-[1.03]">{copy.h1Lead} <span className="text-accent italic">{text('utan månadsavgift.', 'with no monthly fee.')}</span></h1>
               <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl">{text('Cykelhjälpen skickar relevanta kundärenden. Ni väljer själva om och när ni vill lämna prisförslag.', 'Cykelhjälpen sends relevant customer requests. You decide if and when to submit a quote.')}</p>
               <div className="mt-7 rounded-2xl border-2 border-primary/30 bg-background/80 p-5 max-w-2xl">
-                <p className="font-semibold flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" />{text(`Vi bygger partnernätverket i ${city}`, `We are building the partner network in ${city}`)}</p>
-                <p className="text-sm text-muted-foreground mt-2">{text(`Målet är ett litet, starkt nätverk av aktiva verkstäder i ${city}, så att kundärenden får relevanta lokala chanser till svar.`, `The goal is a small, strong network of active bike shops in ${city}, giving customer requests relevant local chances of a response.`)}</p>
+                <p className="font-semibold flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" />{copy.networkTitle}</p>
+                <p className="text-sm text-muted-foreground mt-2">{copy.networkBody}</p>
               </div>
-              <Button asChild size="lg" className="mt-8 rounded-full h-14 px-8"><Link to={registerHref} onClick={() => trackCta('hero')}>{text(`Bli Founding Partner i ${city}`, `Become a Founding Partner in ${city}`)} <ArrowRight className="h-4 w-4 ml-2" /></Link></Button>
+              <Button asChild size="lg" className="mt-8 rounded-full h-14 px-8"><Link to={registerHref} onClick={() => trackCta('hero')}>{copy.heroCta} <ArrowRight className="h-4 w-4 ml-2" /></Link></Button>
               <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground"><span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" />0 kr/mån</span><span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" />{text('2 första vinsterna gratis', 'First 2 wins free')}</span><span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" />{text('Ingen bindningstid', 'No commitment')}</span></div>
             </div>
             <div className="relative"><div className="rounded-[2rem] overflow-hidden sticker bg-card"><img src={verkstadHero1200} srcSet={`${verkstadHero640} 640w, ${verkstadHero1200} 1200w`} alt={text('Cykelmekaniker i verkstad', 'Bike mechanic in a workshop')} width={1200} height={725} className="w-full aspect-[4/3] object-cover" /></div><div className="absolute -bottom-5 left-5 rounded-2xl border bg-background/95 p-5 shadow-brand"><p className="text-xs text-muted-foreground">{text('När kunden väljer er', 'When the customer chooses you')}</p><p className="font-display text-3xl">{LEAD_FEE_KR} kr</p><p className="text-xs text-muted-foreground">{text('exkl. moms · efter gratisvinsterna', 'excl. VAT · after the free wins')}</p></div></div>
@@ -62,7 +62,7 @@ const ForVerkstaderPageV4 = () => {
 
         <CykelOpenRequestsTeaser trackCta={trackCta} />
 
-        <section className="py-20"><div className="container mx-auto px-4 max-w-4xl"><div className="sticker rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-9 md:p-14 text-center"><Store className="h-11 w-11 mx-auto text-[hsl(var(--brand-sun))] mb-5" /><h2 className="font-display text-4xl md:text-5xl">{text(`Var med från början i ${city}`, `Join from the start in ${city}`)}</h2><p className="mt-5 text-background/70 text-lg max-w-2xl mx-auto">{text('Registreringen är gratis. Testa riktiga kundärenden och avgör själv om Cykelhjälpen skapar värde för verkstaden.', 'Registration is free. Try real customer requests and decide whether Cykelhjälpen creates value for your shop.')}</p><Button asChild size="lg" className="mt-8 rounded-full h-14 px-10 bg-accent text-accent-foreground"><Link to={registerHref} onClick={() => trackCta('bottom')}>{text(`Registrera verkstaden i ${city}`, `Register your shop in ${city}`)} <ArrowRight className="h-4 w-4 ml-2" /></Link></Button></div></div></section>
+        <section className="py-20"><div className="container mx-auto px-4 max-w-4xl"><div className="sticker rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-9 md:p-14 text-center"><Store className="h-11 w-11 mx-auto text-[hsl(var(--brand-sun))] mb-5" /><h2 className="font-display text-4xl md:text-5xl">{copy.bottomTitle}</h2><p className="mt-5 text-background/70 text-lg max-w-2xl mx-auto">{text('Registreringen är gratis. Testa riktiga kundärenden och avgör själv om Cykelhjälpen skapar värde för verkstaden.', 'Registration is free. Try real customer requests and decide whether Cykelhjälpen creates value for your shop.')}</p><Button asChild size="lg" className="mt-8 rounded-full h-14 px-10 bg-accent text-accent-foreground"><Link to={registerHref} onClick={() => trackCta('bottom')}>{copy.bottomCta} <ArrowRight className="h-4 w-4 ml-2" /></Link></Button></div></div></section>
       </main>
       <CykelFooter />
     </div>

@@ -16,7 +16,7 @@ import { LEAD_FEE_KR } from '@/lib/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
-import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, type CykelCityName } from '@/lib/cykelCities'
+import { CYKEL_CITIES, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
 import { useT } from '@/lib/i18n'
 
 const SERVICES_SV = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Elsparkcykelservice', 'Hjulbygge', 'Mobil reparation']
@@ -44,7 +44,7 @@ const RegisterWorkshopPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const cityParam = searchParams.get('stad')
-  const initialCity = (CYKEL_CITIES.find((c) => c.name.toLowerCase() === (cityParam || '').toLowerCase() || c.slug === (cityParam || '').toLowerCase())?.name || DEFAULT_CYKEL_CITY) as CykelCityName
+  const initialCity = resolveCykelCityParam(cityParam) || ''
   const [loading, setLoading] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [turnstileResetKey, setTurnstileResetKey] = useState(0)
@@ -55,7 +55,7 @@ const RegisterWorkshopPage = () => {
     phone: '',
     address: '',
     website: '',
-    city: initialCity,
+    city: initialCity as CykelCityName | '',
     services: [] as string[],
     terms_accepted: false,
     dpa_accepted: false,
@@ -78,6 +78,7 @@ const RegisterWorkshopPage = () => {
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!form.terms_accepted) return toast.error(t('Du måste godkänna villkoren'))
+    if (!isCykelCity(form.city)) return toast.error(t('Välj vilken stad ni arbetar i'))
     if (form.company_name.trim().length < 2) return toast.error(t('Ange verkstadens namn'))
     if (form.password.length < 8) return toast.error(t('Lösenordet måste vara minst åtta tecken'))
     if (!turnstileToken) return toast.error(t('Bekräfta säkerhetskontrollen innan du registrerar verkstaden.'))
@@ -215,7 +216,7 @@ const RegisterWorkshopPage = () => {
           </div>
 
           <div>
-            <Label htmlFor="ad">{t('Adress i {city}', { city: form.city })} <span className="font-normal text-muted-foreground">({t('valfritt')})</span></Label>
+            <Label htmlFor="ad">{form.city ? t('Adress i {city}', { city: form.city }) : t('Adress')} <span className="font-normal text-muted-foreground">({t('valfritt')})</span></Label>
             <Input id="ad" autoComplete="street-address" value={form.address} onChange={(event) => update('address', event.target.value)} className="rounded-xl border-2" />
           </div>
 
