@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
         if (email && blockedEmails.has(email)) { stats.suppressed += 1; continue }
         if (phone && blockedPhones.has(phone)) { stats.suppressed += 1; continue }
 
-        const emailIsBusiness = looksLikeBusinessEmail(email)
+        const emailIsBusiness = looksLikeBusinessEmail(email, website)
         const services = Array.isArray(extract.services) ? extract.services.slice(0, 20) : []
         const detectedCity = (extract.city || body.city) as string
         const score = scoreProspect({

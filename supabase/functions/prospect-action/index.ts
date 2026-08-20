@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
       await admin.from('workshop_prospects').update({ status: 'approved_for_contact' }).eq('id', prospect.id)
     } else if (body.action === 'update_email') {
       // Persist only – inget mejl skickas. Samma företagsmejl-krav som prepare_draft / send.
-      const prepared = prepareProspectEmailUpdate(body.email)
+      const prepared = prepareProspectEmailUpdate(body.email, prospect.website)
       if (!prepared.ok) throw new Error(prepared.error)
       const { error: emailError } = await admin
         .from('workshop_prospects')
@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
       const channel = body.channel || 'email'
       const recipient = channel === 'email' ? prospect.email : prospect.phone
       if (!recipient) throw new Error(`Saknar ${channel === 'email' ? 'e-post' : 'telefonnummer'} för utkast`)
-      if (channel === 'email' && !looksLikeBusinessEmail(prospect.normalized_email)) {
+      if (channel === 'email' && !looksLikeBusinessEmail(prospect.normalized_email, prospect.website)) {
         throw new Error('E-postadressen ser inte ut som ett publikt företagsmejl – utkast blockerat.')
       }
       const { data: blocked } = await admin
@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
       }
       const recipient = prospect.email
       if (!recipient) throw new Error('Saknar e-post för uppföljning')
-      if (!looksLikeBusinessEmail(prospect.normalized_email)) {
+      if (!looksLikeBusinessEmail(prospect.normalized_email, prospect.website)) {
         throw new Error('E-postadressen ser inte ut som ett publikt företagsmejl – utkast blockerat.')
       }
 

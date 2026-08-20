@@ -8,6 +8,7 @@ import { prepareProspectEmailUpdate, prospectEmailGuardMessage } from '@/lib/pro
 
 interface ProspectEmailEditorProps {
   email: string | null
+  website?: string | null
   saving?: boolean
   disabled?: boolean
   onSave: (email: string) => void
@@ -15,6 +16,7 @@ interface ProspectEmailEditorProps {
 
 export const ProspectEmailEditor = ({
   email,
+  website = null,
   saving = false,
   disabled = false,
   onSave,
@@ -26,10 +28,10 @@ export const ProspectEmailEditor = ({
     setValue(email ?? '')
   }, [email])
 
-  const prepared = prepareProspectEmailUpdate(value)
+  const prepared = prepareProspectEmailUpdate(value, website)
   const unchanged = (email ?? '').trim().toLowerCase() === value.trim().toLowerCase()
   const canSave = !disabled && !saving && !unchanged && prepared.ok
-  const guardMessage = prospectEmailGuardMessage(value)
+  const guardMessage = prospectEmailGuardMessage(value, website)
 
   const copySaved = async () => {
     if (!email) return

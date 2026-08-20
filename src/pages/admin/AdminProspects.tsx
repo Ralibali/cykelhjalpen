@@ -562,6 +562,7 @@ const AdminProspects = () => {
                   {selected.website && <div className="flex items-center gap-2"><a href={selected.website} target="_blank" rel="noreferrer noopener" className="underline truncate flex-1"><ExternalLink className="h-3 w-3 inline mr-1" />{selected.website}</a></div>}
                   <ProspectEmailEditor
                     email={selected.email}
+                    website={selected.website}
                     saving={busyAction}
                     onSave={saveProspectEmail}
                   />

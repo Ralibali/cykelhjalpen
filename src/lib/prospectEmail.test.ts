@@ -10,8 +10,13 @@ import {
 } from './prospectEmail'
 
 describe('looksLikeBusinessEmail', () => {
-  it('accepterar publika företagsprefix', () => {
+  it('accepterar icke-personliga lokaler på företagsdomän, inklusive butiksroller', () => {
     const accepted = [
+      'cykla@stigscykel.se',
+      'order@verkstad.se',
+      'mail@cykel.se',
+      'shop@bike.com',
+      'office@firma.se',
       'info@verkstad.se',
       'kontakt@cykel.se',
       'contact@shop.com',
@@ -32,7 +37,34 @@ describe('looksLikeBusinessEmail', () => {
     }
   })
 
-  it('blockerar personliga och tomma adresser', () => {
+  it('accepterar cykla@stigscykel.se via webbplatsdomän även om lokalen vore okänd', () => {
+    expect(looksLikeBusinessEmail('cykla@stigscykel.se', 'https://www.stigscykel.se')).toBe(true)
+    expect(looksLikeBusinessEmail('cykla@stigscykel.se', 'stigscykel.se')).toBe(true)
+    expect(looksLikeBusinessEmail('john@stigscykel.se', 'https://stigscykel.se/')).toBe(true)
+    expect(looksLikeBusinessEmail('cykla@stigscykel.se', 'https://norrkopings-cykel.se')).toBe(true)
+  })
+
+  it('blockerar konsumentinkorgar även med företagsprefix eller matchande webbplats', () => {
+    const rejected = [
+      'info@gmail.com',
+      'kontakt@hotmail.com',
+      'hej@outlook.com',
+      'info@gmail.se',
+      'support@hotmail.se',
+      'service@live.com',
+      'shop@outlook.se',
+      'info@icloud.com',
+      'kontakt@me.com',
+      'hej@yahoo.com',
+      'shop@yahoo.se',
+    ]
+    for (const email of rejected) {
+      expect(looksLikeBusinessEmail(email), email).toBe(false)
+      expect(looksLikeBusinessEmail(email, 'gmail.com'), email).toBe(false)
+    }
+  })
+
+  it('blockerar personliga lokaler på okänd domän', () => {
     const rejected = [
       null,
       '',
@@ -42,10 +74,12 @@ describe('looksLikeBusinessEmail', () => {
       'lastname@workshop.se',
       'personal@workshop.se',
       'christoffer@gmail.com',
+      'john@stigscykel.se',
     ]
     for (const email of rejected) {
       expect(looksLikeBusinessEmail(email), String(email)).toBe(false)
     }
+    expect(looksLikeBusinessEmail('john@stigscykel.se', 'https://norrkopings-cykel.se')).toBe(false)
   })
 })
 
@@ -68,11 +102,26 @@ describe('prepareProspectEmailUpdate', () => {
       email: 'info@cykel.se',
       normalized_email: 'info@cykel.se',
     })
+    expect(prepareProspectEmailUpdate('cykla@stigscykel.se')).toEqual({
+      ok: true,
+      email: 'cykla@stigscykel.se',
+      normalized_email: 'cykla@stigscykel.se',
+    })
+    expect(prepareProspectEmailUpdate('cykla@stigscykel.se', 'https://stigscykel.se')).toEqual({
+      ok: true,
+      email: 'cykla@stigscykel.se',
+      normalized_email: 'cykla@stigscykel.se',
+    })
   })
 
-  it('avvisar ogiltig och personlig e-post', () => {
+  it('avvisar ogiltig, personlig och konsument-e-post', () => {
     expect(prepareProspectEmailUpdate('')).toEqual({ ok: false, error: PROSPECT_EMAIL_INVALID })
+    expect(prepareProspectEmailUpdate(null)).toEqual({ ok: false, error: PROSPECT_EMAIL_INVALID })
     expect(prepareProspectEmailUpdate('john@verkstad.se')).toEqual({
+      ok: false,
+      error: PROSPECT_EMAIL_NOT_BUSINESS,
+    })
+    expect(prepareProspectEmailUpdate('info@gmail.com')).toEqual({
       ok: false,
       error: PROSPECT_EMAIL_NOT_BUSINESS,
     })
@@ -81,6 +130,7 @@ describe('prepareProspectEmailUpdate', () => {
   it('visar guard-text bara när en ogiltig adress är ifylld', () => {
     expect(prospectEmailGuardMessage('')).toBeNull()
     expect(prospectEmailGuardMessage('info@verkstad.se')).toBeNull()
+    expect(prospectEmailGuardMessage('cykla@stigscykel.se', 'stigscykel.se')).toBeNull()
     expect(prospectEmailGuardMessage('john@verkstad.se')).toBe(PROSPECT_EMAIL_NOT_BUSINESS)
   })
 })

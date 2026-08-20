@@ -27,6 +27,18 @@ describe('ProspectEmailEditor', () => {
     expect(onSave).toHaveBeenCalledWith('info@cykelverkstad.se')
   })
 
+  it('aktiverar spara för cykla@stigscykel.se mot deras egen sajt', () => {
+    const onSave = vi.fn()
+    wrap(<ProspectEmailEditor email={null} website="https://stigscykel.se" onSave={onSave} />)
+    fireEvent.change(screen.getByTestId('prospect-email-input'), {
+      target: { value: 'cykla@stigscykel.se' },
+    })
+    const save = screen.getByTestId('prospect-email-save')
+    expect(save).toBeEnabled()
+    fireEvent.click(save)
+    expect(onSave).toHaveBeenCalledWith('cykla@stigscykel.se')
+  })
+
   it('blockerar personlig e-post med samma guard som utskicket', () => {
     wrap(<ProspectEmailEditor email={null} onSave={vi.fn()} />)
     fireEvent.change(screen.getByTestId('prospect-email-input'), {

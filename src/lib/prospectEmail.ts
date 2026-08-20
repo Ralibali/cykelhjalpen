@@ -17,11 +17,14 @@ export type ProspectEmailUpdate =
   | { ok: true; email: string; normalized_email: string }
   | { ok: false; error: string }
 
-export const prepareProspectEmailUpdate = (raw: string | null | undefined): ProspectEmailUpdate =>
-  prepareShared(raw) as ProspectEmailUpdate
+export const prepareProspectEmailUpdate = (
+  raw: string | null | undefined,
+  website?: string | null,
+): ProspectEmailUpdate =>
+  prepareShared(raw, website) as ProspectEmailUpdate
 
-export const prospectEmailGuardMessage = (raw: string): string | null => {
-  const prepared = prepareProspectEmailUpdate(raw)
+export const prospectEmailGuardMessage = (raw: string, website?: string | null): string | null => {
+  const prepared = prepareProspectEmailUpdate(raw, website)
   if (prepared.ok) return null
   if (!raw.trim()) return null
   return 'error' in prepared ? prepared.error : null

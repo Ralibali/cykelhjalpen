@@ -30,13 +30,79 @@ const PRIVATE_EMAIL_LOCAL_PARTS = new Set([
   'firstname', 'lastname', 'personal',
 ])
 
-export const looksLikeBusinessEmail = (email: string | null): boolean => {
+const CONSUMER_EMAIL_DOMAINS = new Set([
+  'gmail.com',
+  'gmail.se',
+  'googlemail.com',
+  'hotmail.com',
+  'hotmail.se',
+  'outlook.com',
+  'outlook.se',
+  'live.com',
+  'live.se',
+  'msn.com',
+  'icloud.com',
+  'me.com',
+  'yahoo.com',
+  'yahoo.se',
+])
+
+/** Vanliga förnamn – inte en prefix-allowlist. Shop-roller som cykla/info/order hör inte hit. */
+const GIVEN_NAMES = new Set([
+  'adam', 'alexander', 'alice', 'alma', 'alva', 'amanda', 'anders', 'andreas',
+  'anna', 'anne', 'anton', 'arvid', 'astrid', 'axel',
+  'benjamin', 'birgitta', 'bjorn', 'camilla', 'carina', 'carl', 'cecilia',
+  'charlie', 'christoffer', 'christopher',
+  'daniel', 'david', 'ebba', 'edvin', 'elias', 'elin', 'elisabeth', 'ellen',
+  'elsa', 'elvira', 'emma', 'emil', 'erik', 'eva',
+  'felicia', 'felix', 'freja', 'fredrik', 'gustav',
+  'hanna', 'hans', 'henrik', 'hugo',
+  'ida', 'isak', 'isabella', 'jacob', 'jakob', 'jens', 'jessica', 'jesper',
+  'johan', 'johanna', 'john', 'jonatan', 'jonathan', 'julia',
+  'karl', 'karin', 'kasper', 'klara', 'kristina',
+  'lars', 'lina', 'linda', 'linnea', 'lisa', 'lovisa', 'lucas', 'ludvig',
+  'maja', 'malin', 'marcus', 'maria', 'marie', 'martin', 'matilda', 'mats',
+  'mattias', 'max', 'michael', 'mikael',
+  'nina', 'noah', 'nora', 'oliver', 'olivia', 'oscar', 'oskar',
+  'patrick', 'patrik', 'per', 'peter', 'petra',
+  'rebecca', 'robert', 'robin',
+  'saga', 'samuel', 'sara', 'simon', 'sofia', 'stefan', 'stina', 'susanne',
+  'therese', 'thomas', 'tobias', 'tomas', 'tuva', 'ulrika',
+  'viktor', 'vilma', 'william', 'wilma',
+])
+
+const isConsumerEmailDomain = (domain: string): boolean => {
+  if (CONSUMER_EMAIL_DOMAINS.has(domain)) return true
+  for (const consumer of CONSUMER_EMAIL_DOMAINS) {
+    if (domain.endsWith(`.${consumer}`)) return true
+  }
+  return false
+}
+
+const looksLikePersonalLocal = (local: string): boolean => {
+  if (PRIVATE_EMAIL_LOCAL_PARTS.has(local) || GIVEN_NAMES.has(local)) return true
+  const segments = local.split(/[._-]+/).filter(Boolean)
+  return segments.length >= 2 && GIVEN_NAMES.has(segments[0])
+}
+
+const emailDomainMatchesWebsite = (emailDomain: string, website?: string | null): boolean => {
+  const host = normalizeDomain(website)
+  if (!host) return false
+  return emailDomain === host || emailDomain.endsWith(`.${host}`) || host.endsWith(`.${emailDomain}`)
+}
+
+export const looksLikeBusinessEmail = (
+  email: string | null,
+  website?: string | null,
+): boolean => {
   if (!email) return false
-  const local = email.split('@')[0]
-  if (!local) return false
-  if (PRIVATE_EMAIL_LOCAL_PARTS.has(local)) return false
-  const businessPrefixes = ['info', 'kontakt', 'contact', 'hej', 'support', 'service', 'bokning', 'verkstad', 'workshop', 'sales', 'kund', 'butik']
-  return businessPrefixes.some((prefix) => local === prefix || local.startsWith(`${prefix}.`) || local.startsWith(`${prefix}@`) || local.startsWith(`${prefix}-`))
+  const [rawLocal, rawDomain] = email.split('@')
+  if (!rawLocal || !rawDomain) return false
+  const local = rawLocal.toLowerCase()
+  const domain = rawDomain.toLowerCase()
+  if (isConsumerEmailDomain(domain)) return false
+  if (emailDomainMatchesWebsite(domain, website)) return true
+  return !looksLikePersonalLocal(local)
 }
 
 export const PROSPECT_EMAIL_INVALID = 'Ogiltig e-postadress'
@@ -48,10 +114,13 @@ export type ProspectEmailUpdate =
   | { ok: false; error: string }
 
 /** Normaliserar och kräver publikt företagsmejl. Skickar inget – bara persist-underlag. */
-export const prepareProspectEmailUpdate = (raw: string | null | undefined): ProspectEmailUpdate => {
+export const prepareProspectEmailUpdate = (
+  raw: string | null | undefined,
+  website?: string | null,
+): ProspectEmailUpdate => {
   const normalized = normalizeEmail(raw)
   if (!normalized) return { ok: false, error: PROSPECT_EMAIL_INVALID }
-  if (!looksLikeBusinessEmail(normalized)) return { ok: false, error: PROSPECT_EMAIL_NOT_BUSINESS }
+  if (!looksLikeBusinessEmail(normalized, website)) return { ok: false, error: PROSPECT_EMAIL_NOT_BUSINESS }
   return { ok: true, email: normalized, normalized_email: normalized }
 }
 
