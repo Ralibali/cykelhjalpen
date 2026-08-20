@@ -1,4 +1,4 @@
-import { CYKEL_CITIES, slugify, type CykelCity, type CykelCityName } from './cykelCities'
+import { CYKEL_CITIES, getCykelCity, slugify, type CykelCity, type CykelCityName } from './cykelCities'
 
 export interface CykelSeoPage {
   slug: string

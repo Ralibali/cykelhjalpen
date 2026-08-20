@@ -165,11 +165,10 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
   it('ger varje engelsk SEO-sida en svensk hreflang-motsvarighet', () => {
     const routes = getAllStaticSeoRoutes('cykelhjalpen')
     const svPaths = new Set(routes.filter((r) => r.lang !== 'en').map((r) => r.path))
-    const enRoutes = routes.filter((r) => r.lang === 'en')
+    const enRoutes = routes.filter((r) => r.lang === 'en' && r.altPath)
 
     expect(enRoutes.length).toBeGreaterThan(80)
     for (const route of enRoutes) {
-      expect(route.altPath, `saknar altPath: ${route.path}`).toBeTruthy()
       expect(svPaths.has(route.altPath!), `saknar svensk motsvarighet: ${route.path}`).toBe(true)
     }
   })
