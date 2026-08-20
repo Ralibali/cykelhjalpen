@@ -37,7 +37,7 @@ Deno.test('mejl-html escapar farliga tecken', () => {
   const html = buildCustomerResponseEmailHtml('<script>alert(1)</script>', 'Verkstan <b>& Söner', buildCustomerResponseUrl(TOKEN))
   if (html.includes('<script>')) throw new Error('Oescapat kundnamn i html')
   assertStringIncludes(html, 'Verkstan &lt;b&gt;&amp; Söner')
-  assertStringIncludes(html, 'Se prisförslaget och välj')
+  assertStringIncludes(html, 'Välj verkstad redan nu')
 })
 
 Deno.test('textvarianten fungerar utan html', () => {
@@ -56,16 +56,28 @@ Deno.test('engelsk variant av ämne, sms och mejl', () => {
   assertEquals(buildCustomerResponseSubject('Puncture', 'en'), 'New quote for your bike – Puncture')
   const sms = buildCustomerResponseSms('Cykelverkstan AB', buildCustomerResponseUrl(TOKEN), 'en')
   assertStringIncludes(sms, 'sent you a quote')
+  assertEquals(sms.toLowerCase().includes('compare'), false)
   const html = buildCustomerResponseEmailHtml('Anna', 'Cykelverkstan', buildCustomerResponseUrl(TOKEN), 'en')
-  assertStringIncludes(html, 'View the quote and choose')
+  assertStringIncludes(html, 'Choose the workshop now')
   assertStringIncludes(html, 'contact details')
   const text = buildCustomerResponseEmailText('Anna', 'Cykelverkstan', buildCustomerResponseUrl(TOKEN), 'en')
   assertStringIncludes(text, 'Hi Anna!')
 })
 
-Deno.test('svenska mejlet styr mot att välja verkstad', () => {
-  const html = buildCustomerResponseEmailHtml('Anna', 'Cykelverkstan', buildCustomerResponseUrl(TOKEN))
-  assertStringIncludes(html, 'kontaktuppgifterna direkt')
-  const sms = buildCustomerResponseSms('Cykelverkstan AB', buildCustomerResponseUrl(TOKEN))
-  assertStringIncludes(sms, 'välj verkstad')
+Deno.test('en offert säger inte att kunden ska vänta på fler', () => {
+  const html = buildCustomerResponseEmailHtml('Anna', 'Cykelverkstan', buildCustomerResponseUrl(TOKEN), 'sv', 1)
+  assertEquals(html.toLowerCase().includes('jämför'), false)
+  assertStringIncludes(html, 'Välj redan nu')
+  assertStringIncludes(html, 'först när du valt i Cykelhjälpen')
+  const sms = buildCustomerResponseSms('Cykelverkstan AB', buildCustomerResponseUrl(TOKEN), 'sv', 1)
+  assertEquals(sms.toLowerCase().includes('jämför'), false)
+  assertStringIncludes(sms, 'Välj redan nu')
+})
+
+Deno.test('två offerter får jämföra-språk', () => {
+  const html = buildCustomerResponseEmailHtml('Anna', 'Cykelverkstan', buildCustomerResponseUrl(TOKEN), 'sv', 2)
+  assertStringIncludes(html, 'Jämför förslagen')
+  assertStringIncludes(html, 'först när du valt i Cykelhjälpen')
+  const sms = buildCustomerResponseSms('Cykelverkstan AB', buildCustomerResponseUrl(TOKEN), 'sv', 2)
+  assertStringIncludes(sms, 'Jämför och välj verkstad redan nu')
 })
