@@ -17,5 +17,17 @@ if ! command -v bun >/dev/null 2>&1 || [ "$(bun --version 2>/dev/null)" != "$BUN
   curl -fsSL https://bun.sh/install | bash -s "bun-v${BUN_VERSION}"
 fi
 
+# Ensure Bun is on PATH for future interactive/login shells. The Bun installer's
+# own .bashrc edit is not reliable in non-interactive builds, so wire it up here.
+BASHRC="$HOME/.bashrc"
+if [ -f "$BASHRC" ] && ! grep -q 'BUN_INSTALL' "$BASHRC"; then
+  {
+    echo ''
+    echo '# bun'
+    echo 'export BUN_INSTALL="$HOME/.bun"'
+    echo 'export PATH="$BUN_INSTALL/bin:$PATH"'
+  } >> "$BASHRC"
+fi
+
 bun --version
 bun install --frozen-lockfile
