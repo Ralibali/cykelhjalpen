@@ -5,14 +5,9 @@ import Stripe from 'npm:stripe@18.5.0'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { LEAD_FEE_ORE } from '../_shared/pricing.ts'
-import { corsFor } from '../_shared/cors.ts'
+import { corsFor, CYKELHJALPENS_SITE_ORIGIN } from '../_shared/cors.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
-
-const allowedOrigin = (origin: string | null) => {
-  if (origin && /^(https:\/\/(www\.)?cykelhjalpen\.se|https:\/\/[a-z0-9-]+\.lovable\.app|http:\/\/localhost(:\d+)?)$/i.test(origin)) return origin
-  return 'https://cykelhjalpen.se'
-}
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
@@ -66,8 +61,6 @@ Deno.serve(async (req) => {
     const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeSecret) throw new Error('Stripe är inte konfigurerat')
     const stripe = new Stripe(stripeSecret, { apiVersion: '2025-08-27.basil' })
-
-    const origin = allowedOrigin(req.headers.get('origin'))
 
     // Återanvänd en öppen Checkout-session om en redan finns för svaret.
     const { data: pendingCharges, error: pendingError } = await admin
@@ -135,8 +128,8 @@ Deno.serve(async (req) => {
         },
         quantity: 1,
       }],
-      success_url: `${origin}/dashboard/verkstad?won_paid=true&response_id=${response.id}`,
-      cancel_url: `${origin}/dashboard/verkstad?won_canceled=true&response_id=${response.id}`,
+      success_url: `${CYKELHJALPENS_SITE_ORIGIN}/dashboard/verkstad?won_paid=true&response_id=${response.id}`,
+      cancel_url: `${CYKELHJALPENS_SITE_ORIGIN}/dashboard/verkstad?won_canceled=true&response_id=${response.id}`,
       metadata: { kind: 'winner_fee', response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
       payment_intent_data: {
         metadata: { kind: 'winner_fee', response_id: response.id, request_id: response.request_id, workshop_id: workshop.id },
