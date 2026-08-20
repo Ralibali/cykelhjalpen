@@ -58,7 +58,7 @@ verify_jwt = false
 [functions.close-stale-bike-requests]
 verify_jwt = false
 
-# Serveras till sökmotorer och crawlers.
+# Leftover Updro sitemap. Must not be rewritten onto cykelhjalpen.se/sitemap.xml.
 [functions.sitemap]
 verify_jwt = false
 

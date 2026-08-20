@@ -143,7 +143,7 @@ const RegisterWorkshopPage = () => {
       <Helmet>
         <title>{t('Registrera cykelverkstad | Cykelhjälpen')}</title>
         <meta name="description" content={t('Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift – ni lämnar offert gratis och betalar först när kunden väljer er.')} />
-        <meta name="robots" content="noindex, follow" />
+        <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://cykelhjalpen.se/registrera/verkstad" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={t('Registrera cykelverkstad | Cykelhjälpen')} />

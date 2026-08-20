@@ -36,7 +36,10 @@ function seoBuildPlugin(host: 'cykelhjalpen' | 'updro'): Plugin {
           res.end(xml);
         } catch (e) {
           console.error('Sitemap generation error:', e);
-          next(e);
+          const origin = host === 'updro' ? 'https://updro.se' : 'https://cykelhjalpen.se';
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+          res.end(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${origin}/</loc></url>\n</urlset>`);
         }
       });
     },

@@ -131,7 +131,27 @@ const buildIndex = () =>
 
 // ============ ROUTER ============
 
+const requestMentionsCykelhjalpen = (req: Request) => {
+  const host = [
+    req.headers.get("x-forwarded-host"),
+    req.headers.get("host"),
+    req.headers.get("origin"),
+    req.headers.get("referer"),
+    req.url,
+  ].filter(Boolean).join(" ").toLowerCase();
+  return host.includes("cykelhjalpen");
+};
+
 serve(async (req) => {
+  // Leftover Updro generator. Never serve it for Cykelhjälpen — that host uses
+  // the static sitemap written at build time by generateSitemapXml('cykelhjalpen').
+  if (requestMentionsCykelhjalpen(req)) {
+    return new Response("Not found", {
+      status: 404,
+      headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex" },
+    });
+  }
+
   const path = new URL(req.url).pathname;
 
   if (path.endsWith("/sitemap-main.xml")) return new Response(buildMain(), { headers });

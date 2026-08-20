@@ -152,6 +152,7 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
       { q: 'Hur många svar får jag?', a: 'Upp till tre verkstäder kan svara med pris och tid.' },
     ],
   },
+  ...cykelUtilityRoutes(),
   ...cityRoutes(),
   ...detailedCykelPages.map<StaticSeoRoute>((page) => {
     const cityPath = cityLandingPath(page.city)
@@ -288,9 +289,52 @@ const englishRoutes = (): StaticSeoRoute[] => [
 
 
 
+const cykelUtilityRoutes = (): StaticSeoRoute[] => [
+  {
+    path: '/registrera/verkstad',
+    title: 'Registrera cykelverkstad | Cykelhjälpen',
+    description: 'Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift – ni lämnar offert gratis och betalar först när kunden väljer er.',
+    h1: 'Anslut din verkstad',
+    priority: 0.7,
+    changefreq: 'monthly',
+    lastmod: today(),
+    ogImage: '/og/registrera-verkstad.jpg',
+    links: [
+      { label: 'För cykelverkstäder', href: '/for-cykelverkstader' },
+      ...cityLinks,
+    ],
+  },
+  {
+    path: '/integritetspolicy',
+    title: 'Integritetspolicy | Cykelhjälpen',
+    description: 'Integritetspolicy för Cykelhjälpen.se. Så här hanterar Cykelhjälpen personuppgifter enligt GDPR.',
+    h1: 'Integritetspolicy',
+    priority: 0.3,
+    changefreq: 'yearly',
+    lastmod: today(),
+  },
+  {
+    path: '/villkor',
+    title: 'Allmänna villkor | Cykelhjälpen',
+    description: 'Allmänna villkor för Cykelhjälpen.se — leadplattform för cykelreparation i Linköping, Norrköping, Uppsala och Lund.',
+    h1: 'Allmänna villkor',
+    priority: 0.3,
+    changefreq: 'yearly',
+    lastmod: today(),
+  },
+  {
+    path: '/cookies',
+    title: 'Cookiepolicy | Cykelhjälpen',
+    description: 'Läs om hur Cykelhjälpen använder nödvändiga cookies, samtycke, Google Analytics och Google Ads.',
+    h1: 'Cookiepolicy',
+    priority: 0.3,
+    changefreq: 'yearly',
+    lastmod: today(),
+  },
+]
+
 const CYKEL_NOINDEX_PATHS = [
-  '/registrera/verkstad', '/mitt-arende', '/avregistrera', '/annons/verkstad',
-  '/integritetspolicy', '/villkor', '/cookies',
+  '/mitt-arende', '/avregistrera', '/annons/verkstad',
   '/publicera', '/byraer', '/priser', '/om-oss', '/artiklar', '/verktyg', '/stader',
   '/jamfor', '/hitta-webbyra', '/hitta-seo-byra', '/hitta-digital-byra',
   '/redaktionell-policy', '/metod', '/landing', '/landing/byra', '/sitemap',
@@ -386,17 +430,25 @@ export const getNoindexSeoRoutes = (host: SiteHost = 'cykelhjalpen') => getAllSt
 const sitemapAlternates = (host: SiteHost, route: StaticSeoRoute) => {
   if (!route.altPath) return ''
   const isEnglish = route.lang === 'en'
-  const svUrl = absFor(host, isEnglish ? route.altPath : route.path)
-  const enUrl = absFor(host, isEnglish ? route.path : route.altPath)
+  const svUrl = esc(absFor(host, isEnglish ? route.altPath : route.path))
+  const enUrl = esc(absFor(host, isEnglish ? route.path : route.altPath))
   return `<xhtml:link rel="alternate" hreflang="sv" href="${svUrl}"/><xhtml:link rel="alternate" hreflang="en" href="${enUrl}"/><xhtml:link rel="alternate" hreflang="x-default" href="${svUrl}"/>`
+}
+
+const priorityXml = (priority: number) => {
+  const value = Number.isFinite(priority) ? Math.min(1, Math.max(0, priority)) : 0.5
+  return value.toFixed(1)
 }
 
 const urlset = (host: SiteHost, routes: StaticSeoRoute[]) =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${routes
-    .map((route) => `  <url><loc>${absFor(host, route.path)}</loc><lastmod>${route.lastmod || today()}</lastmod><changefreq>${route.changefreq}</changefreq><priority>${route.priority.toFixed(1)}</priority>${sitemapAlternates(host, route)}</url>`)
+    .map((route) => `  <url><loc>${esc(absFor(host, route.path))}</loc><lastmod>${route.lastmod || today()}</lastmod><changefreq>${route.changefreq}</changefreq><priority>${priorityXml(route.priority)}</priority>${sitemapAlternates(host, route)}</url>`)
     .join('\n')}\n</urlset>`
 
-export const generateSitemapXml = (host: SiteHost = 'cykelhjalpen') => urlset(host, getIndexableSeoRoutes(host))
+export const generateSitemapXml = (host: SiteHost = 'cykelhjalpen') => {
+  const routes = getIndexableSeoRoutes(host).filter((route) => typeof route.path === 'string' && route.path.length > 0)
+  return urlset(host, routes)
+}
 export const generateSectionSitemapXml = (_section: SitemapSection, host: SiteHost = 'cykelhjalpen') => generateSitemapXml(host)
 export const generateSitemapIndexXml = (host: SiteHost = 'cykelhjalpen') =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>${siteUrlFor(host)}/sitemap.xml</loc><lastmod>${today()}</lastmod></sitemap>\n</sitemapindex>`
