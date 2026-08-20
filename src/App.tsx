@@ -378,6 +378,8 @@ const AppRoutes = () => {
               <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
               <Route path="/admin/verkstader/:id" element={<ProtectedRoute role="admin"><AdminWorkshopDetail /></ProtectedRoute>} />
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
+              <Route path="/admin/marketplace-health" element={<ProtectedRoute role="admin"><AdminMarketplaceHealth /></ProtectedRoute>} />
+              <Route path="/admin/analytics" element={<ProtectedRoute role="admin"><AdminAnalytics /></ProtectedRoute>} />
 
               {/* Local SEO — dynamiska routes från CYKEL_SEO_PAGES (sv + en) */}
               {CYKEL_SEO_PAGES.map((p) => (

@@ -45,6 +45,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     items: [
       { label: 'Prospekt', href: '/admin/prospekt', icon: Search, badge: 'openProspects', keywords: 'rekrytering outreach' },
       { label: 'Statistik', href: '/admin/statistik', icon: BarChart3, keywords: 'analytics siffror' },
+      { label: 'Marketplace health', href: '/admin/marketplace-health', icon: Activity, keywords: 'hälsa utbud efterfrågan städer' },
       { label: 'Besökare', href: '/admin/besokare', icon: Eye, keywords: 'trafik sidvisningar' },
       { label: 'Guider', href: '/admin/guider', icon: Newspaper, keywords: 'innehåll artiklar' },
       { label: 'Artikelgenerator', href: '/admin/artikelgenerator', icon: Sparkles, keywords: 'ai seo innehåll' },
