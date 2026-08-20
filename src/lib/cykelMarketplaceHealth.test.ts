@@ -228,7 +228,7 @@ describe('city rollup and health', () => {
     expect(linkoping.approvedWorkshops).toBe(2)
     expect(linkoping.activeWorkshops).toBe(1)
     expect(linkoping.silentWorkshops).toBe(1)
-    expect(linkoping.medianHoursToFirstQuote).toBe(24)
+    expect(linkoping.medianHoursToFirstQuote).toBe(48)
 
     expect(snapshot.cityRollup.find((row) => row.city === 'Norrköping')?.pending).toBe(1)
     expect(snapshot.cityRollup.find((row) => row.city === 'Uppsala')?.rejected).toBe(1)
