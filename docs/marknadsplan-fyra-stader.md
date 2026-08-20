@@ -101,6 +101,8 @@ Beskriv cykelproblemet på cirka två minuter. Anslutna verkstäder i STAD kan s
 
 ## Mätning per stad
 
+GA4 och GTM är inte inkopplade i produktion. Konverterings-ID:n i `src/lib/googleAds.ts` är tomma. Tills utbudet kan bära mer efterfrågan mäts trafiken med Plausible — koppla inte in Google-taggar för att jaga mer volym.
+
 Följ följande händelser med stad i metadata:
 
 - `home_city_clicked`

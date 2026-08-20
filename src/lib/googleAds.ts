@@ -8,6 +8,10 @@
  * SETUP: fyll i de tre värdena nedan från Google Ads
  * (Verktyg → Konverteringar → respektive konverteringsåtgärd → Tagginställningar).
  * Lämna tomt så blir allt en tyst no-op – helt säkert att deploya i förväg.
+ *
+ * Status 2026-08: tagId/labelRequest/labelSignup är tomma. GA4 och GTM är inte
+ * inkopplade i produktion. Mätning sker via Plausible tills utbudet kan bära
+ * mer efterfrågan — fyll inte i Ads-ID:n och installera inte GA4/GTM här.
  */
 import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent, type ConsentLevel } from './analyticsConsent'
 
