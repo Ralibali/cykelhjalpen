@@ -108,6 +108,7 @@ export const EN_WORKSHOP: Record<string, string> = {
   'Fakturor för lead credits': 'Invoices for lead credits',
 
   'Ange verkstadens namn': 'Enter the bike shop name',
+  'Välj vilken stad ni arbetar i': 'Choose which city you work in',
   'Välj en giltig stad': 'Choose a valid city',
   'En godkänd verkstads serviceort ändras av Cykelhjälpen efter kontroll. Kontakta info@cykelhjalpen.se.': "An approved bike shop's service area is changed by Cykelhjälpen after review. Contact info@cykelhjalpen.se.",
   'Serviceorten är låst för godkända verkstäder. Kontakta info@cykelhjalpen.se.': 'The service area is locked for approved bike shops. Contact info@cykelhjalpen.se.',

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, Bike, CircleDot, Cog, Heart, MessageSquare, Settings2, Wrench, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { trackClick } from '@/hooks/usePageTracking'
+import { requestPath } from '@/lib/cykelCities'
 import { useT } from '@/lib/i18n'
 
 const CykelHowItWorks = () => {
@@ -69,8 +70,8 @@ const CykelHowItWorks = () => {
             {repairs.map(({ icon: Icon, title, text, problem }) => (
               <Link
                 key={problem}
-                to={`/skicka-arende?stad=linkoping&problem=${encodeURIComponent(problem)}`}
-                onClick={() => trackClick('home_repair_shortcut_clicked', title, { problem, city: 'Linköping' })}
+                to={requestPath({ problem })}
+                onClick={() => trackClick('home_repair_shortcut_clicked', title, { problem })}
                 className="group rounded-[1.6rem] border border-border/70 bg-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-accent/50 hover:shadow-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -91,7 +92,7 @@ const CykelHowItWorks = () => {
               <p className="mt-1 text-muted-foreground">{t('Beskriv problemet med egna ord – formuläret guidar dig vidare.')}</p>
             </div>
             <Button asChild variant="outline" className="mt-4 md:mt-0 rounded-full shrink-0">
-              <Link to="/skicka-arende?stad=linkoping" onClick={() => trackClick('home_other_problem_clicked', 'Beskriv ett annat problem', { city: 'Linköping' })}>
+              <Link to={requestPath()} onClick={() => trackClick('home_other_problem_clicked', 'Beskriv ett annat problem')}>
                 {t('Beskriv ett annat problem')} <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>

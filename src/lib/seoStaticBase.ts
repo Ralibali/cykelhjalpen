@@ -121,7 +121,7 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
     ogImage: '/og/for-cykelverkstader.jpg',
     sections: [
       { h2: 'Lokala och granskade förfrågningar', body: 'Cykelhjälpen förmedlar cykelärenden från personer i den stad där verkstaden arbetar.' },
-      { h2: 'Ingen månadsavgift', body: 'Registreringen är kostnadsfri. En leadavgift tas ut först när verkstaden aktivt väljer att skicka en offert.' },
+      { h2: 'Ingen månadsavgift', body: 'Registreringen är kostnadsfri. Det kostar inget att lämna offert – en leadavgift tas ut först när kunden väljer verkstadens offert.' },
       { h2: 'Ni behåller kundrelationen', body: 'När offerten skickats får kunden verkstadens kontaktuppgifter och fortsatt bokning sker direkt med verkstaden.' },
     ],
     links: [
@@ -240,7 +240,7 @@ const englishRoutes = (): StaticSeoRoute[] => [
     altPath: '/for-cykelverkstader',
     lang: 'en',
     title: 'Get more customers to your bike shop | Cykelhjälpen',
-    description: 'Join with your bike shop in Linköping, Norrköping, Uppsala or Lund. No monthly fee — you only pay when you send a quote.',
+    description: 'Join with your bike shop in Linköping, Norrköping, Uppsala or Lund. No monthly fee — quoting is free, and you only pay when the customer chooses you.',
     h1: 'Get more local customers to your bike shop',
     priority: 0.7,
     changefreq: 'monthly',
@@ -248,7 +248,7 @@ const englishRoutes = (): StaticSeoRoute[] => [
     ogImage: '/og/for-cykelverkstader.jpg',
     sections: [
       { h2: 'Local, reviewed requests', body: 'We send bike repair requests from people in the city where your shop works.' },
-      { h2: 'No monthly fee', body: 'Registration is free. You pay a lead fee only when you choose to send a quote.' },
+      { h2: 'No monthly fee', body: 'Registration is free. Quoting is free. You pay a lead fee only when the customer chooses your quote.' },
       { h2: 'You keep the customer', body: 'After you send a quote, the customer gets your contact details and books directly with you.' },
     ],
     links: [{ label: 'Register your bike shop for free', href: '/registrera/verkstad' }, ...enCityLinks],

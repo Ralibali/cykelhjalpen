@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from './cykelCities'
+import { isCykelCity, resolveCykelCityParam, type CykelCityName } from './cykelCities'
 
 export const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Elsparkcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
 
@@ -22,11 +22,13 @@ export const URGENCY_OPTIONS = [
 
 const URGENCY_VALUES = ['asap', 'this_week', 'flexible'] as const
 
+export type BikeRequestCity = CykelCityName | ''
+
 export interface BikeRequestFormState {
   bike_type: string
   repair_category: string
   description: string
-  city: CykelCityName
+  city: BikeRequestCity
   area: string
   postcode: string
   urgency: string
@@ -63,7 +65,7 @@ export const makeBikeRequestSchema = (t: TFunction = (s) => s) => z.object({
 // Default (Swedish) schema instance for non-component usage (e.g. tests).
 export const bikeRequestSchema = makeBikeRequestSchema()
 
-export const makeDefaultBikeRequest = (city: CykelCityName = DEFAULT_CYKEL_CITY): BikeRequestFormState => ({
+export const makeDefaultBikeRequest = (city: BikeRequestCity = ''): BikeRequestFormState => ({
   bike_type: '',
   repair_category: '',
   description: '',
@@ -78,5 +80,12 @@ export const makeDefaultBikeRequest = (city: CykelCityName = DEFAULT_CYKEL_CITY)
   customer_phone: '',
   consent: false,
 })
+
+/** City from ?stad= wins. Otherwise keep a stored draft city, never invent Linköping. */
+export const resolveWizardCity = (requestedCity: unknown, draftCity?: unknown): BikeRequestCity => {
+  const fromQuery = resolveCykelCityParam(requestedCity) ?? (isCykelCity(requestedCity) ? requestedCity : null)
+  if (fromQuery) return fromQuery
+  return isCykelCity(draftCity) ? draftCity : ''
+}
 
 export const BIKE_REQUEST_STEPS = ['Cykel', 'Problem', 'Plats', 'Kontakt & skicka']
