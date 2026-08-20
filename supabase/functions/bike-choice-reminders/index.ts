@@ -18,6 +18,7 @@
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
+import { isHasOffersNudgeDue } from '../_shared/choice-nudge.ts'
 import { logSmsAttempt, logNotificationEvent } from '../_shared/notifications.ts'
 
 const CHOICE_WINDOW_DAYS = 5
@@ -243,22 +244,24 @@ Deno.serve(async (req) => {
       const nudgeKey = `choice_nudge:${row.id}`
       if (await alreadyLogged(admin, nudgeKey)) continue
 
+      // Do not use select(..., { count: 'exact' }) without head/limit here.
+      // In the Edge runtime that shape can return data=null, so every
+      // has_offers row was skipped and choice_nudge:* never logged.
       const { data: latestResponses, error: latestError } = await admin
         .from('workshop_responses')
-        .select('id, created_at', { count: 'exact' })
+        .select('id, created_at')
         .eq('request_id', row.id)
         .in('status', ['sent', 'won'])
         .order('created_at', { ascending: false })
+        .limit(3)
       if (latestError) {
         console.error('bike-choice-reminders nudge query', row.id, latestError.message)
         continue
       }
-      const offerCount = latestResponses?.length ?? 0
-      const newestAt = latestResponses?.[0]?.created_at
-      if (offerCount === 0 || !newestAt) continue
-
-      const hoursSinceLatest = (Date.now() - new Date(newestAt).getTime()) / (60 * 60 * 1000)
-      if (hoursSinceLatest < 24) continue
+      const quotes = Array.isArray(latestResponses) ? latestResponses : []
+      const offerCount = quotes.length
+      const newestAt = quotes[0]?.created_at
+      if (offerCount === 0 || !newestAt || !isHasOffersNudgeDue(newestAt)) continue
 
       result.checked += 1
       const lang: 'sv' | 'en' = row.customer_language === 'en' ? 'en' : 'sv'
@@ -273,15 +276,31 @@ Deno.serve(async (req) => {
           idempotencyKey: nudgeKey,
           html: ctaEmail({
             lang,
-            heading: lang === 'en' ? 'Your quotes are waiting' : 'Dina offerter väntar',
+            heading: lang === 'en'
+              ? (offerCount === 1 ? 'Your quote is waiting' : 'Your quotes are waiting')
+              : (offerCount === 1 ? 'Ditt prisförslag väntar' : 'Dina offerter väntar'),
             link,
-            cta: lang === 'en' ? 'Compare and choose' : 'Jämför och välj',
+            cta: lang === 'en'
+              ? (offerCount === 1 ? 'Choose the workshop now' : 'Compare and choose')
+              : (offerCount === 1 ? 'Välj verkstad redan nu' : 'Jämför och välj'),
             body: lang === 'en'
-              ? `Hi ${escapeHtml(row.customer_name)}, you already have ${offerCount} quote${offerCount === 1 ? '' : 's'} on your request (${escapeHtml(row.repair_category)}, ${escapeHtml(row.city)}). You do not have to wait – pick a workshop now and you get their contact details straight away.`
-              : `Hej ${escapeHtml(row.customer_name)}, du har redan ${offerCount} offert${offerCount === 1 ? '' : 'er'} på ditt ärende (${escapeHtml(row.repair_category)}, ${escapeHtml(row.city)}). Du behöver inte vänta – välj en verkstad nu så får du kontaktuppgifterna direkt.`,
+              ? `Hi ${escapeHtml(row.customer_name)}, you already have ${offerCount} quote${offerCount === 1 ? '' : 's'} on your request (${escapeHtml(row.repair_category)}, ${escapeHtml(row.city)}). You do not have to wait – pick a workshop now and you get their contact details only after you choose in Cykelhjälpen.`
+              : `Hej ${escapeHtml(row.customer_name)}, du har redan ${offerCount} offert${offerCount === 1 ? '' : 'er'} på ditt ärende (${escapeHtml(row.repair_category)}, ${escapeHtml(row.city)}). Du behöver inte vänta – välj redan nu. Du får verkstadens kontaktuppgifter först när du valt i Cykelhjälpen.`,
           }),
         })
         if (sent) result.emails_sent += 1
+      } else {
+        // Still persist the email idempotency key so a 24h-old quote is visible
+        // in notification_events even when the customer has no email.
+        await logNotificationEvent(admin, {
+          channel: 'email',
+          provider: 'resend',
+          recipient: row.id,
+          idempotencyKey: nudgeKey,
+          status: 'skipped',
+          payload: { reason: 'choice_nudge', request_id: row.id, offer_count: offerCount },
+          error: 'no_customer_email',
+        })
       }
 
       if (row.customer_phone) {
