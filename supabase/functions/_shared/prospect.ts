@@ -30,13 +30,46 @@ const PRIVATE_EMAIL_LOCAL_PARTS = new Set([
   'firstname', 'lastname', 'personal',
 ])
 
+const CONSUMER_EMAIL_DOMAINS = new Set([
+  'gmail.com',
+  'gmail.se',
+  'hotmail.com',
+  'hotmail.se',
+  'outlook.com',
+  'outlook.se',
+  'live.com',
+])
+
+const BUSINESS_EMAIL_PREFIXES = [
+  'info',
+  'kontakt',
+  'contact',
+  'hej',
+  'support',
+  'service',
+  'bokning',
+  'verkstad',
+  'workshop',
+  'sales',
+  'kund',
+  'butik',
+  'cykla',
+  'order',
+  'mail',
+  'shop',
+]
+
 export const looksLikeBusinessEmail = (email: string | null): boolean => {
   if (!email) return false
-  const local = email.split('@')[0]
-  if (!local) return false
+  const [rawLocal, rawDomain] = email.split('@')
+  if (!rawLocal || !rawDomain) return false
+  const local = rawLocal.toLowerCase()
+  const domain = rawDomain.toLowerCase()
+  if (CONSUMER_EMAIL_DOMAINS.has(domain)) return false
   if (PRIVATE_EMAIL_LOCAL_PARTS.has(local)) return false
-  const businessPrefixes = ['info', 'kontakt', 'contact', 'hej', 'support', 'service', 'bokning', 'verkstad', 'workshop', 'sales', 'kund', 'butik']
-  return businessPrefixes.some((prefix) => local === prefix || local.startsWith(`${prefix}.`) || local.startsWith(`${prefix}@`) || local.startsWith(`${prefix}-`))
+  return BUSINESS_EMAIL_PREFIXES.some(
+    (prefix) => local === prefix || local.startsWith(`${prefix}.`) || local.startsWith(`${prefix}-`),
+  )
 }
 
 export const PROSPECT_EMAIL_INVALID = 'Ogiltig e-postadress'

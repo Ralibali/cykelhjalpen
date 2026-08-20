@@ -10,8 +10,12 @@ import {
 } from './prospectEmail'
 
 describe('looksLikeBusinessEmail', () => {
-  it('accepterar publika företagsprefix', () => {
+  it('accepterar publika företagsprefix på företagsdomän', () => {
     const accepted = [
+      'cykla@stigscykel.se',
+      'order@verkstad.se',
+      'mail@cykel.se',
+      'shop@bike.com',
       'info@verkstad.se',
       'kontakt@cykel.se',
       'contact@shop.com',
@@ -29,6 +33,21 @@ describe('looksLikeBusinessEmail', () => {
     ]
     for (const email of accepted) {
       expect(looksLikeBusinessEmail(email), email).toBe(true)
+    }
+  })
+
+  it('blockerar konsumentinkorgar även med företagsprefix', () => {
+    const rejected = [
+      'info@gmail.com',
+      'kontakt@hotmail.com',
+      'hej@outlook.com',
+      'info@gmail.se',
+      'support@hotmail.se',
+      'service@live.com',
+      'shop@outlook.se',
+    ]
+    for (const email of rejected) {
+      expect(looksLikeBusinessEmail(email), email).toBe(false)
     }
   })
 
@@ -68,11 +87,21 @@ describe('prepareProspectEmailUpdate', () => {
       email: 'info@cykel.se',
       normalized_email: 'info@cykel.se',
     })
+    expect(prepareProspectEmailUpdate('cykla@stigscykel.se')).toEqual({
+      ok: true,
+      email: 'cykla@stigscykel.se',
+      normalized_email: 'cykla@stigscykel.se',
+    })
   })
 
-  it('avvisar ogiltig och personlig e-post', () => {
+  it('avvisar ogiltig, personlig och konsument-e-post', () => {
     expect(prepareProspectEmailUpdate('')).toEqual({ ok: false, error: PROSPECT_EMAIL_INVALID })
+    expect(prepareProspectEmailUpdate(null)).toEqual({ ok: false, error: PROSPECT_EMAIL_INVALID })
     expect(prepareProspectEmailUpdate('john@verkstad.se')).toEqual({
+      ok: false,
+      error: PROSPECT_EMAIL_NOT_BUSINESS,
+    })
+    expect(prepareProspectEmailUpdate('info@gmail.com')).toEqual({
       ok: false,
       error: PROSPECT_EMAIL_NOT_BUSINESS,
     })
