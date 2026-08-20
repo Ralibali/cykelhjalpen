@@ -1,10 +1,10 @@
 {
   "name": "Cykelhjälpen",
-  "install": "bash .cursor/install.sh",
+  "install": "bash /agent/repos/cykelhjalpen/.cursor/install.sh",
   "terminals": [
     {
       "name": "dev",
-      "command": "export BUN_INSTALL=\"$HOME/.bun\"; export PATH=\"$BUN_INSTALL/bin:$PATH\"; bun run dev"
+      "command": "export BUN_INSTALL=\"$HOME/.bun\"; export PATH=\"$BUN_INSTALL/bin:$PATH\"; cd /agent/repos/cykelhjalpen && bun run dev"
     }
   ],
   "ports": [8080]
