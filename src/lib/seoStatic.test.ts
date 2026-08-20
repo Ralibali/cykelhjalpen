@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CYKEL_SEO_PAGES } from './cykelSeoPages'
+import { CYKEL_SEO_PAGES, isThinSeoFarmPage, seoPageHref } from './cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath } from './cykelCities'
-import { generateSitemapXml, getIndexableSeoRoutes, getNoindexSeoRoutes } from './seoStatic'
+import { generateSitemapXml, getAllStaticSeoRoutes, getIndexableSeoRoutes, getNoindexSeoRoutes } from './seoStatic'
 
 // Slugs som redan är indexerade i Google — får ALDRIG ändras.
 const LEGACY_LINKOPING_SLUGS = [
@@ -72,7 +74,7 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
   })
 
   it('kopplar varje prerenderad SEO-sida till rätt stad', () => {
-    const routes = getIndexableSeoRoutes('cykelhjalpen')
+    const routes = getAllStaticSeoRoutes('cykelhjalpen')
     const byPath = new Map(routes.map((route) => [route.path, route]))
     const cityHubPaths = new Set(CYKEL_CITIES.map((city) => cityLandingPath(city.name)))
 
@@ -82,6 +84,7 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
 
       expect(route, `saknar statisk SEO-route: ${path}`).toBeDefined()
       expect(route?.city, `fel stad på ${path}`).toBe(page.city)
+      expect(Boolean(route?.noindex), `fel noindex på ${path}`).toBe(Boolean(page.noindex))
 
       if (!cityHubPaths.has(path)) {
         expect(route?.links).toEqual(expect.arrayContaining([
@@ -95,6 +98,63 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
           },
         ]))
       }
+    }
+  })
+
+  it('noindexar Lund/Uppsala-distrikt och tjänstefarmar men behåller stadshubbar indexerbara', () => {
+    const indexable = new Set(getIndexableSeoRoutes('cykelhjalpen').map((route) => route.path))
+    const noindex = new Set(getNoindexSeoRoutes('cykelhjalpen').map((route) => route.path))
+    const sitemap = generateSitemapXml('cykelhjalpen')
+
+    const farmPages = CYKEL_SEO_PAGES.filter(isThinSeoFarmPage)
+    expect(farmPages.length).toBeGreaterThan(20)
+
+    for (const page of farmPages) {
+      const sv = seoPageHref(page, 'sv')
+      const en = seoPageHref(page, 'en')
+      expect(page.noindex, `farm ska vara noindex: ${page.slug}`).toBe(true)
+      expect(noindex.has(sv), `saknas i noindex: ${sv}`).toBe(true)
+      expect(noindex.has(en), `saknas i noindex: ${en}`).toBe(true)
+      expect(indexable.has(sv), `ska inte vara indexbar: ${sv}`).toBe(false)
+      expect(indexable.has(en), `ska inte vara indexbar: ${en}`).toBe(false)
+      expect(sitemap).not.toContain(`<loc>https://cykelhjalpen.se${sv}</loc>`)
+      expect(sitemap).not.toContain(`<loc>https://cykelhjalpen.se${en}</loc>`)
+    }
+
+    for (const hub of ['/cykelverkstad-lund', '/cykelverkstad-uppsala', '/en/bike-repair-lund', '/en/bike-repair-uppsala']) {
+      expect(indexable.has(hub), `hub ska vara indexbar: ${hub}`).toBe(true)
+      expect(noindex.has(hub), `hub ska inte noindexas: ${hub}`).toBe(false)
+      expect(sitemap).toContain(`<loc>https://cykelhjalpen.se${hub}</loc>`)
+    }
+
+    expect(indexable.has('/')).toBe(true)
+    expect(indexable.has('/cykelverkstad-linkoping')).toBe(true)
+    expect(indexable.has('/en/bike-repair-linkoping')).toBe(true)
+    expect(indexable.has('/for-cykelverkstader')).toBe(true)
+    expect(indexable.has('/registrera/verkstad')).toBe(true)
+    expect(indexable.has('/en/for-bike-shops')).toBe(true)
+    expect(sitemap).toContain('<loc>https://cykelhjalpen.se/</loc>')
+    expect(sitemap).toContain('<loc>https://cykelhjalpen.se/cykelverkstad-linkoping</loc>')
+
+    const publicSitemap = readFileSync(resolve(process.cwd(), 'public/sitemap.xml'), 'utf8')
+    for (const page of farmPages) {
+      expect(publicSitemap).not.toContain(`<loc>https://cykelhjalpen.se${seoPageHref(page, 'sv')}</loc>`)
+      expect(publicSitemap).not.toContain(`<loc>https://cykelhjalpen.se${seoPageHref(page, 'en')}</loc>`)
+    }
+    expect(publicSitemap).toContain('<loc>https://cykelhjalpen.se/cykelverkstad-lund</loc>')
+    expect(publicSitemap).toContain('<loc>https://cykelhjalpen.se/cykelverkstad-uppsala</loc>')
+    expect(publicSitemap).toContain('<loc>https://cykelhjalpen.se/cykelverkstad-linkoping</loc>')
+    expect(publicSitemap).toContain('<loc>https://cykelhjalpen.se/</loc>')
+
+    const norrkopingFarms = CYKEL_SEO_PAGES.filter((page) =>
+      page.city === 'Norrköping' && page.slug !== 'cykelverkstad-norrkoping')
+    expect(norrkopingFarms.length).toBeGreaterThan(5)
+    for (const page of norrkopingFarms) {
+      expect(page.noindex).toBeFalsy()
+      expect(indexable.has(seoPageHref(page, 'sv'))).toBe(true)
+      expect(indexable.has(seoPageHref(page, 'en'))).toBe(true)
+      expect(sitemap).toContain(`<loc>https://cykelhjalpen.se${seoPageHref(page, 'sv')}</loc>`)
+      expect(sitemap).toContain(`<loc>https://cykelhjalpen.se${seoPageHref(page, 'en')}</loc>`)
     }
   })
 
@@ -115,13 +175,12 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
   })
 
   it('ger varje engelsk SEO-sida en svensk hreflang-motsvarighet', () => {
-    const routes = getIndexableSeoRoutes('cykelhjalpen')
+    const routes = getAllStaticSeoRoutes('cykelhjalpen')
     const svPaths = new Set(routes.filter((r) => r.lang !== 'en').map((r) => r.path))
-    const enRoutes = routes.filter((r) => r.lang === 'en')
+    const enRoutes = routes.filter((r) => r.lang === 'en' && r.altPath)
 
     expect(enRoutes.length).toBeGreaterThan(80)
     for (const route of enRoutes) {
-      expect(route.altPath, `saknar altPath: ${route.path}`).toBeTruthy()
       expect(svPaths.has(route.altPath!), `saknar svensk motsvarighet: ${route.path}`).toBe(true)
     }
   })

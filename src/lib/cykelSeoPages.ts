@@ -1,4 +1,5 @@
 import { CYKEL_CITIES, slugify, type CykelCity, type CykelCityName } from './cykelCities'
+import { isThinSeoFarmPath } from './seoRobots'
 
 export interface CykelSeoPage {
   slug: string
@@ -12,7 +13,12 @@ export interface CykelSeoPage {
   faq: { q: string; a: string }[]
   ogImage?: string
   variant?: 'price-stats'
+  /** Thin district/service farms in Lund and Uppsala stay live but are not indexed. City hubs stay indexable. */
+  noindex?: boolean
 }
+
+export const isThinSeoFarmPage = (page: Pick<CykelSeoPage, 'slug'>) =>
+  isThinSeoFarmPath(`/${page.slug}`)
 
 export const EN_SLUG_STEMS: Record<string, string> = {
   cykelverkstad: 'bike-repair',
@@ -342,24 +348,29 @@ const defaultDescription = (c: CykelCity, svc: ServiceDef, t: Tfn) => copy(t,
   { what: englishMode(t) ? svc.whatEn : svc.whatSv, city: c.name },
 )
 
-const buildService = (c: CykelCity, svc: ServiceDef, t: Tfn): CykelSeoPage => ({
-  slug: `${svc.slugStem}-${c.slug}`,
-  enSlug: `${EN_SLUG_STEMS[svc.slugStem] ?? svc.slugStem}-${c.slug}`,
-  city: c.name,
-  h1: svc.h1(c, t),
-  title: svc.title(c, t),
-  description: svc.description?.(c, t) ?? defaultDescription(c, svc, t),
-  intro: localIntro(c, t, svc.whatSv, svc.whatEn),
-  sections: svc.sections(c, t),
-  faq: svc.faq?.(c, t) ?? [responseFaq(c, t), freeFaq(t)],
-  variant: svc.variant,
-  ogImage: svc.ogImage,
-})
+const buildService = (c: CykelCity, svc: ServiceDef, t: Tfn): CykelSeoPage => {
+  const slug = `${svc.slugStem}-${c.slug}`
+  return {
+    slug,
+    enSlug: `${EN_SLUG_STEMS[svc.slugStem] ?? svc.slugStem}-${c.slug}`,
+    city: c.name,
+    h1: svc.h1(c, t),
+    title: svc.title(c, t),
+    description: svc.description?.(c, t) ?? defaultDescription(c, svc, t),
+    intro: localIntro(c, t, svc.whatSv, svc.whatEn),
+    sections: svc.sections(c, t),
+    faq: svc.faq?.(c, t) ?? [responseFaq(c, t), freeFaq(t)],
+    variant: svc.variant,
+    ogImage: svc.ogImage,
+    noindex: isThinSeoFarmPage({ slug }),
+  }
+}
 
 const buildDistrict = (c: CykelCity, district: string, t: Tfn): CykelSeoPage => ({
   slug: `cykelverkstad-${slugify(district)}-${c.slug}`,
   enSlug: `bike-shop-${slugify(district)}-${c.slug}`,
   city: c.name,
+  noindex: isThinSeoFarmPage({ slug: `cykelverkstad-${slugify(district)}-${c.slug}` }),
   h1: copy(t, 'Cykelverkstad i {district}, {city}', 'Bike shop in {district}, {city}', { district, city: c.name }),
   title: copy(t, 'Cykelverkstad {district} {city} — lokal cykelhjälp', 'Bike shop {district} {city} — local bike repair help', { district, city: c.name }),
   description: copy(t, 'Behöver du cykelverkstad nära {district}, {city}? Beskriv problemet gratis. Anslutna verkstäder kan svara när de har kapacitet.', 'Need a bike shop near {district}, {city}? Describe the problem for free. Partnered bike shops can reply when they have capacity.', { district, city: c.name }),

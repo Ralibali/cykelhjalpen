@@ -101,6 +101,8 @@ Beskriv cykelproblemet på cirka två minuter. Anslutna verkstäder i STAD kan s
 
 ## Mätning per stad
 
+CookieConsent laddar GA4 (`G-C0XMZG0KDQ`) och Ads (`AW-10941540384`) efter “Tillåt alla”. Konverterings-ID:n i `src/lib/googleAds.ts` är tomma, så `trackAdsConversion` är en no-op. Fyll inte i dem, lägg inte till GTM och koppla inte in mer Google — produktmätning är Plausible tills utbudet kan bära mer efterfrågan.
+
 Följ följande händelser med stad i metadata:
 
 - `home_city_clicked`

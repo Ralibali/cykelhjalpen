@@ -1,5 +1,6 @@
 import { CYKEL_SEO_PAGES, buildCykelSeoPages } from './cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath, getCykelCity } from './cykelCities'
+import { shouldNoindexPath } from './seoRobots'
 import { EN } from '../locales/en'
 import type { SiteHost } from './hostConfig'
 
@@ -165,6 +166,7 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
       priority: page.variant === 'price-stats' ? 0.9 : 0.78,
       changefreq: page.variant === 'price-stats' ? 'weekly' : 'monthly',
       lastmod: today(),
+      noindex: page.noindex,
       sections: page.sections,
       faq: page.faq,
       ogImage: page.ogImage,
@@ -270,6 +272,7 @@ const englishRoutes = (): StaticSeoRoute[] => [
       description: trunc(page.description),
       h1: page.h1,
       city: page.city,
+      noindex: page.noindex,
       priority: page.enSlug === `bike-repair-${citySlug}` ? 0.85 : page.variant === 'price-stats' ? 0.8 : 0.7,
       changefreq: page.variant === 'price-stats' ? 'weekly' as const : 'monthly' as const,
       lastmod: today(),
@@ -446,7 +449,8 @@ const urlset = (host: SiteHost, routes: StaticSeoRoute[]) =>
     .join('\n')}\n</urlset>`
 
 export const generateSitemapXml = (host: SiteHost = 'cykelhjalpen') => {
-  const routes = getIndexableSeoRoutes(host).filter((route) => typeof route.path === 'string' && route.path.length > 0)
+  const routes = getIndexableSeoRoutes(host).filter((route) =>
+    typeof route.path === 'string' && route.path.length > 0 && !shouldNoindexPath(route.path))
   return urlset(host, routes)
 }
 export const generateSectionSitemapXml = (_section: SitemapSection, host: SiteHost = 'cykelhjalpen') => generateSitemapXml(host)

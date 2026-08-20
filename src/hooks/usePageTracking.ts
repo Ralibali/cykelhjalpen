@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, hasAnalyticsConsent } from '@/lib/analyticsConsent'
 import { getNoindexSeoRoutes } from '@/lib/seoStatic'
 import { getCurrentHost } from '@/lib/hostConfig'
+import { shouldNoindexPath } from '@/lib/seoRobots'
 
 const SESSION_ID_KEY = '_sid'
 const ATTRIBUTION_KEY = '_cykel_attribution'
@@ -81,15 +82,8 @@ function captureAttribution(search: string, pathname: string): Attribution {
 }
 
 function routeShouldRemainNoindex(pathname: string): boolean {
-  const path = pathname.replace(/\/$/, '') || '/'
   const host = getCurrentHost()
-  const noindexPaths = new Set(getNoindexSeoRoutes(host).map((route) => route.path))
-  const privatePrefixes = ['/admin', '/dashboard']
-  const privateExact = ['/logga-in', '/registrera', '/registrera/byra', '/aterstall-losenord', '/nytt-losenord', '/landing', '/landing/byra']
-
-  return noindexPaths.has(path)
-    || privateExact.includes(path)
-    || privatePrefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+  return shouldNoindexPath(pathname, getNoindexSeoRoutes(host).map((route) => route.path))
 }
 
 export function usePageTracking() {
