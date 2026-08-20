@@ -19,25 +19,31 @@ describe('seoRobots', () => {
   })
 
   it('keeps public landing pages indexable', () => {
-    expect(shouldNoindexPath('/cykelverkstad-uppsala', configuredNoindexPaths)).toBe(false)
-    expect(getRobotsDirectiveForPath('/cykelverkstad-uppsala', configuredNoindexPaths)).toBe(INDEX_ROBOTS_DIRECTIVE)
-    expect(shouldNoindexPath('/cykelservice-norrkoping', registryNoindexPaths)).toBe(false)
-    expect(getRobotsDirectiveForPath('/cykelverkstad-lund', registryNoindexPaths)).toBe(INDEX_ROBOTS_DIRECTIVE)
+    expect(shouldNoindexPath('/cykelverkstad-uppsala')).toBe(false)
+    expect(getRobotsDirectiveForPath('/cykelverkstad-uppsala')).toBe(INDEX_ROBOTS_DIRECTIVE)
+    expect(shouldNoindexPath('/cykelservice-norrkoping')).toBe(false)
+    expect(getRobotsDirectiveForPath('/cykelverkstad-lund')).toBe(INDEX_ROBOTS_DIRECTIVE)
+    expect(shouldNoindexPath('/en/bike-repair-lund')).toBe(false)
+    expect(shouldNoindexPath('/for-cykelverkstader')).toBe(false)
+    expect(shouldNoindexPath('/registrera/verkstad')).toBe(false)
+    expect(shouldNoindexPath('/cykelverkstad-linkoping')).toBe(false)
   })
 
-  it('noindexar Lund/Uppsala-farmer via SEO-registret, inklusive engelska /en-sökvägar', () => {
+  it('noindexar Lund/Uppsala-farmer i seoRobots, inklusive engelska /en-sökvägar', () => {
     const farm = CYKEL_SEO_PAGES.find((page) => page.slug === 'cykelservice-uppsala')
     expect(farm && isThinSeoFarmPage(farm)).toBe(true)
 
-    expect(getRobotsDirectiveForPath('/cykelservice-uppsala', registryNoindexPaths)).toBe(NOINDEX_ROBOTS_DIRECTIVE)
-    expect(getRobotsDirectiveForPath('/en/bike-service-uppsala', registryNoindexPaths)).toBe(NOINDEX_ROBOTS_DIRECTIVE)
-    expect(shouldNoindexPath('/bike-service-uppsala', registryNoindexPaths)).toBe(true)
-    expect(shouldNoindexPath('/cykelverkstad-delphi-lund', registryNoindexPaths)).toBe(true)
-    expect(shouldNoindexPath('/en/bike-shop-flogsta-uppsala', registryNoindexPaths)).toBe(true)
+    expect(getRobotsDirectiveForPath('/cykelservice-uppsala')).toBe(NOINDEX_ROBOTS_DIRECTIVE)
+    expect(getRobotsDirectiveForPath('/en/bike-service-uppsala')).toBe(NOINDEX_ROBOTS_DIRECTIVE)
+    expect(shouldNoindexPath('/bike-service-uppsala')).toBe(true)
+    expect(shouldNoindexPath('/cykelverkstad-delphi-lund')).toBe(true)
+    expect(shouldNoindexPath('/en/bike-shop-flogsta-uppsala')).toBe(true)
+    expect(registryNoindexPaths).toContain('/cykelservice-uppsala')
+    expect(registryNoindexPaths).toContain('/en/bike-service-uppsala')
 
     for (const page of CYKEL_SEO_PAGES.filter(isThinSeoFarmPage)) {
-      expect(shouldNoindexPath(seoPageHref(page, 'sv'), registryNoindexPaths)).toBe(true)
-      expect(shouldNoindexPath(seoPageHref(page, 'en'), registryNoindexPaths)).toBe(true)
+      expect(shouldNoindexPath(seoPageHref(page, 'sv'))).toBe(true)
+      expect(shouldNoindexPath(seoPageHref(page, 'en'))).toBe(true)
     }
   })
 

@@ -1,5 +1,6 @@
 import { CYKEL_SEO_PAGES, buildCykelSeoPages } from './cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath, getCykelCity } from './cykelCities'
+import { shouldNoindexPath } from './seoRobots'
 import { EN } from '../locales/en'
 import type { SiteHost } from './hostConfig'
 
@@ -448,7 +449,8 @@ const urlset = (host: SiteHost, routes: StaticSeoRoute[]) =>
     .join('\n')}\n</urlset>`
 
 export const generateSitemapXml = (host: SiteHost = 'cykelhjalpen') => {
-  const routes = getIndexableSeoRoutes(host).filter((route) => typeof route.path === 'string' && route.path.length > 0)
+  const routes = getIndexableSeoRoutes(host).filter((route) =>
+    typeof route.path === 'string' && route.path.length > 0 && !shouldNoindexPath(route.path))
   return urlset(host, routes)
 }
 export const generateSectionSitemapXml = (_section: SitemapSection, host: SiteHost = 'cykelhjalpen') => generateSitemapXml(host)

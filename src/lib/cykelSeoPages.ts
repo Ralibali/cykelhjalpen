@@ -1,4 +1,5 @@
-import { CYKEL_CITIES, getCykelCity, slugify, type CykelCity, type CykelCityName } from './cykelCities'
+import { CYKEL_CITIES, slugify, type CykelCity, type CykelCityName } from './cykelCities'
+import { isThinSeoFarmPath } from './seoRobots'
 
 export interface CykelSeoPage {
   slug: string
@@ -16,14 +17,8 @@ export interface CykelSeoPage {
   noindex?: boolean
 }
 
-/** Cities whose district + service SEO farms are noindex. City hub pages stay indexed. */
-export const THIN_SEO_FARM_CITIES: readonly CykelCityName[] = ['Lund', 'Uppsala']
-
-export const isCykelCityHubSlug = (slug: string, city: CykelCityName) =>
-  slug === `cykelverkstad-${getCykelCity(city).slug}`
-
-export const isThinSeoFarmPage = (page: Pick<CykelSeoPage, 'slug' | 'city'>) =>
-  THIN_SEO_FARM_CITIES.includes(page.city) && !isCykelCityHubSlug(page.slug, page.city)
+export const isThinSeoFarmPage = (page: Pick<CykelSeoPage, 'slug'>) =>
+  isThinSeoFarmPath(`/${page.slug}`)
 
 export const EN_SLUG_STEMS: Record<string, string> = {
   cykelverkstad: 'bike-repair',
@@ -367,7 +362,7 @@ const buildService = (c: CykelCity, svc: ServiceDef, t: Tfn): CykelSeoPage => {
     faq: svc.faq?.(c, t) ?? [responseFaq(c, t), freeFaq(t)],
     variant: svc.variant,
     ogImage: svc.ogImage,
-    noindex: isThinSeoFarmPage({ slug, city: c.name }),
+    noindex: isThinSeoFarmPage({ slug }),
   }
 }
 
@@ -375,7 +370,7 @@ const buildDistrict = (c: CykelCity, district: string, t: Tfn): CykelSeoPage => 
   slug: `cykelverkstad-${slugify(district)}-${c.slug}`,
   enSlug: `bike-shop-${slugify(district)}-${c.slug}`,
   city: c.name,
-  noindex: isThinSeoFarmPage({ slug: `cykelverkstad-${slugify(district)}-${c.slug}`, city: c.name }),
+  noindex: isThinSeoFarmPage({ slug: `cykelverkstad-${slugify(district)}-${c.slug}` }),
   h1: copy(t, 'Cykelverkstad i {district}, {city}', 'Bike shop in {district}, {city}', { district, city: c.name }),
   title: copy(t, 'Cykelverkstad {district} {city} — lokal cykelhjälp', 'Bike shop {district} {city} — local bike repair help', { district, city: c.name }),
   description: copy(t, 'Behöver du cykelverkstad nära {district}, {city}? Beskriv problemet gratis. Anslutna verkstäder kan svara när de har kapacitet.', 'Need a bike shop near {district}, {city}? Describe the problem for free. Partnered bike shops can reply when they have capacity.', { district, city: c.name }),

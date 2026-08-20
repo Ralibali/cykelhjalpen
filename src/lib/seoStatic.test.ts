@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CYKEL_SEO_PAGES, isThinSeoFarmPage, seoPageHref } from './cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath } from './cykelCities'
@@ -133,6 +135,16 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     expect(indexable.has('/en/for-bike-shops')).toBe(true)
     expect(sitemap).toContain('<loc>https://cykelhjalpen.se/</loc>')
     expect(sitemap).toContain('<loc>https://cykelhjalpen.se/cykelverkstad-linkoping</loc>')
+
+    const publicSitemap = readFileSync(resolve(process.cwd(), 'public/sitemap.xml'), 'utf8')
+    for (const page of farmPages) {
+      expect(publicSitemap).not.toContain(`<loc>https://cykelhjalpen.se${seoPageHref(page, 'sv')}</loc>`)
+      expect(publicSitemap).not.toContain(`<loc>https://cykelhjalpen.se${seoPageHref(page, 'en')}</loc>`)
+    }
+    expect(publicSitemap).toContain('<loc>https://cykelhjalpen.se/cykelverkstad-lund</loc>')
+    expect(publicSitemap).toContain('<loc>https://cykelhjalpen.se/cykelverkstad-uppsala</loc>')
+    expect(publicSitemap).toContain('<loc>https://cykelhjalpen.se/cykelverkstad-linkoping</loc>')
+    expect(publicSitemap).toContain('<loc>https://cykelhjalpen.se/</loc>')
 
     const norrkopingFarms = CYKEL_SEO_PAGES.filter((page) =>
       page.city === 'Norrköping' && page.slug !== 'cykelverkstad-norrkoping')
