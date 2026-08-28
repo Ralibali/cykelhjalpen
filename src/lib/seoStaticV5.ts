@@ -2,6 +2,7 @@ import * as base from './seoStaticBase'
 import type { StaticSeoRoute, SitemapSection } from './seoStaticBase'
 import type { SiteHost } from './hostConfig'
 import { CYKEL_CITIES, cityLandingPath } from './cykelCities'
+import { honestTrustPrerender } from './honestTrust'
 
 export type { StaticSeoRoute, SitemapSection } from './seoStaticBase'
 export const SITE_URL = base.SITE_URL
@@ -24,6 +25,7 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
     sections: [
       { h2: 'Så fungerar Cykelhjälpen', body: 'Beskriv cykeln och problemet en gång. Anslutna verkstäder kan svara med pris och möjlig tid när jobbet passar deras kapacitet.' },
       { h2: 'Välj din stad', body: 'Cykelhjälpen har lokala sidor för Linköping, Norrköping, Uppsala och Lund. Välj stad för guider och för att skicka ett kostnadsfritt ärende.' },
+      { h2: 'Så är det upplagt', body: honestTrustPrerender.homeSv },
     ],
   }
 
@@ -36,6 +38,12 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
       { q: 'Do I need an account?', a: 'No. You send the request and receive a personal link by email.' },
       { q: 'How many replies can I get?', a: 'Up to three partnered bike shops can reply when there is matching capacity. The actual number of replies varies.' },
     ],
+    sections: [
+      { h2: 'How it works', body: 'Choose your city, describe your bike and the problem, and leave your contact details. Local bike shops reply with a price and how long the repair takes.' },
+      { h2: 'Free, no account needed', body: 'Sending a request is free and you never have to accept a quote. You get a personal link to your request by email.' },
+      { h2: 'Made for students and newcomers', body: 'You can write your request in English. The bike shop sees that you want the answer in English.' },
+      { h2: 'How it is set up', body: honestTrustPrerender.homeEn },
+    ],
   }
 
   if (route.path === '/for-cykelverkstader') return {
@@ -45,6 +53,7 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
       { h2: 'Lokala förfrågningar', body: 'Ni väljer själva vilka cykeljobb ni vill svara på.' },
       { h2: 'Två första vinsterna gratis', body: 'Registreringen har ingen månadsavgift. De två första vunna kunderna är gratis. Därefter tas avgiften ut först när kunden väljer verkstadens offert.' },
       { h2: 'Fyra marknader', body: 'Partnerverkstäder rekryteras i Linköping, Norrköping, Uppsala och Lund.' },
+      { h2: 'Vad det kostar', body: honestTrustPrerender.workshopSv },
     ],
   }
 
@@ -55,6 +64,7 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
       { h2: 'Choose the jobs you want', body: 'You decide which local bike-repair requests you want to answer.' },
       { h2: 'First two wins are free', body: 'There is no monthly fee. Your first two won customers are free. After that the fee is charged only when the customer chooses your quote.' },
       { h2: 'Four markets', body: 'Partner bike shops are being recruited in Linköping, Norrköping, Uppsala and Lund.' },
+      { h2: 'What it costs', body: honestTrustPrerender.workshopEn },
     ],
   }
 

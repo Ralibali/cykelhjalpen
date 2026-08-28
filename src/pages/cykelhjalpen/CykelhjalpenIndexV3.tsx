@@ -3,10 +3,12 @@ import { Helmet } from 'react-helmet-async'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import CykelHomeHeroNeutral from '@/components/cykelhjalpen/CykelHomeHeroNeutral'
+import CykelHonestTrust from '@/components/cykelhjalpen/CykelHonestTrust'
 import Reveal from '@/components/cykelhjalpen/Reveal'
 import { buildCykelHomeFaqs } from '@/components/cykelhjalpen/CykelHomeTrust'
 import { CykelV3FaqAndFinalCta, CykelV3QuotePreview, CykelV3WhyCompare } from '@/components/cykelhjalpen/CykelHomeV3Full'
 import { CykelV3CitiesNeutral, CykelV3MobileStickyNeutral, CykelV3WorkshopRecruitmentNeutral } from '@/components/cykelhjalpen/CykelV3NeutralSections'
+import { trackClick } from '@/hooks/usePageTracking'
 import { usePageSeo } from '@/i18n/usePageSeo'
 import { useLanguage, useT } from '@/lib/i18n'
 
@@ -72,6 +74,14 @@ const CykelhjalpenIndexV3 = () => {
         <CykelHomeHeroNeutral />
         <Suspense fallback={<SectionFallback />}>
           <Reveal><CykelHowItWorks /></Reveal>
+          <Reveal>
+            <CykelHonestTrust
+              variant="cyclist"
+              ctaHref="/skicka-arende"
+              ctaLabel={text('Få prisförslag gratis', 'Get a free quote')}
+              onCtaClick={() => trackClick('home_trust_cta', 'Få prisförslag gratis')}
+            />
+          </Reveal>
           <Reveal><CykelV3QuotePreview /></Reveal>
           <Reveal><CykelV3WhyCompare /></Reveal>
           <Reveal><CykelV3CitiesNeutral /></Reveal>

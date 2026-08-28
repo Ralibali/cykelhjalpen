@@ -15,7 +15,15 @@ const CykelHomeHeroNeutral = () => {
   const text = (sv: string, en: string) => lang === 'en' ? en : sv
 
   return (
-    <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28">
+    <section className="relative overflow-hidden pt-8 pb-16 md:pt-16 md:pb-24">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-20 right-[-12%] h-72 w-72 rounded-full bg-[hsl(var(--brand-sun))]/20 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-40 left-[-10%] h-56 w-56 rounded-full bg-[hsl(var(--brand-teal))]/15 blur-3xl"
+      />
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
           <motion.div
@@ -29,7 +37,7 @@ const CykelHomeHeroNeutral = () => {
               {text('Cykelhjälpen i Linköping, Norrköping, Uppsala och Lund', 'Cykelhjälpen in Linköping, Norrköping, Uppsala and Lund')}
             </div>
 
-            <h1 className="mt-7 font-display text-5xl md:text-7xl font-extrabold leading-[1.02] tracking-tight text-balance">
+            <h1 className="mt-6 md:mt-7 font-display text-[2.6rem] leading-[1.05] sm:text-5xl md:text-7xl font-extrabold tracking-tight text-balance">
               {t('Trasig cykel?')}{' '}
               <span className="block text-accent">{t('Jämför innan du väljer.')}</span>
             </h1>
@@ -42,13 +50,13 @@ const CykelHomeHeroNeutral = () => {
               <strong className="text-foreground">{t('Gratis för dig som cyklist.')}</strong>
             </p>
 
-            <div className="mt-8 flex flex-wrap justify-center gap-2" aria-label={t('Välj stad')}>
+            <div className="mt-7 flex flex-wrap justify-center gap-2" aria-label={t('Välj stad')}>
               {CYKEL_CITIES.map((city) => (
                 <Link
                   key={city.name}
                   to={cityLandingPath(city.name)}
                   onClick={() => trackClick('home_city_clicked', city.name, { city: city.name })}
-                  className="inline-flex items-center gap-1.5 rounded-full border bg-background/70 px-5 py-2.5 text-sm font-semibold transition-all hover:bg-secondary hover:border-foreground/30"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-border bg-background/80 px-4 py-2 text-sm font-semibold transition-all hover:bg-secondary hover:border-foreground/30"
                 >
                   <MapPin className="h-3.5 w-3.5" />
                   {city.name}
@@ -61,13 +69,13 @@ const CykelHomeHeroNeutral = () => {
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-10 mx-auto max-w-3xl rounded-[2rem] border border-border/60 bg-background/60 backdrop-blur-sm p-6 md:p-9 shadow-brand"
+            className="mt-8 md:mt-10 mx-auto max-w-3xl rounded-[2rem] border-2 border-[hsl(var(--ink)/0.12)] bg-background/80 backdrop-blur-sm p-5 md:p-9 shadow-brand"
           >
             <p className="text-xs uppercase tracking-[.18em] text-muted-foreground font-semibold text-center">
               {text('Vanliga cykelproblem – ett klick förbereder ärendet:', 'Common bike problems — one click prepares your request:')}
             </p>
 
-            <div className="mt-5 flex flex-wrap justify-center gap-2.5">
+            <div className="mt-5 grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2.5">
               {[
                 { label: t('Punktering'), param: 'Punktering' },
                 { label: t('Bromsar'), param: 'Bromsar' },
@@ -79,7 +87,7 @@ const CykelHomeHeroNeutral = () => {
                   key={param}
                   to={`/skicka-arende?problem=${encodeURIComponent(param)}`}
                   onClick={() => trackClick('home_quickstart_clicked', label, { problem: param })}
-                  className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:text-accent"
+                  className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:text-accent"
                 >
                   {label}
                 </Link>
@@ -99,9 +107,20 @@ const CykelHomeHeroNeutral = () => {
               </Button>
             </div>
 
-            <div className="mt-7 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-sm">
+              {[
+                { value: '0 kr', label: text('Gratis för cyklisten', 'Free for the cyclist') },
+                { value: 'Max 3', label: text('offerter per ärende', 'quotes per request') },
+                { value: text('Du väljer', 'You choose'), label: text('verkstad i Cykelhjälpen', 'the shop in Cykelhjälpen') },
+              ].map((item) => (
+                <div key={item.value} className="rounded-2xl border bg-secondary/70 px-3.5 py-3 text-left sm:text-center">
+                  <p className="font-display text-lg leading-none">{item.value}</p>
+                  <p className="mt-1.5 text-muted-foreground leading-snug">{item.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Inget konto')}</span>
-              <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {text('Verkstäder svarar när jobbet passar', 'Bike shops respond when the job fits')}</span>
               <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Ingen köpplikt')}</span>
             </div>
           </motion.div>
