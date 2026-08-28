@@ -46,7 +46,7 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
     ],
   }
 
-  if (route.path === '/for-cykelverkstader') return {
+  if (route.path === '/for-cykelverkstader' || route.canonicalPath === '/for-cykelverkstader') return {
     ...route,
     description: 'Anslut din cykelverkstad utan månadsavgift. De två första vunna kunderna är gratis; därefter tas avgiften ut först när kunden väljer er offert.',
     sections: [
@@ -57,7 +57,7 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
     ],
   }
 
-  if (route.path === '/en/for-bike-shops') return {
+  if (route.path === '/en/for-bike-shops' || route.canonicalPath === '/en/for-bike-shops') return {
     ...route,
     description: 'Join Cykelhjälpen with no monthly fee. Your first two won customers are free; after that the fee is charged only when the customer chooses your quote.',
     sections: [

@@ -4,6 +4,14 @@
   "installCommand": "bun install --frozen-lockfile",
   "buildCommand": "bun run build",
   "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/for-verkstader", "destination": "/for-cykelverkstader", "permanent": true },
+    { "source": "/for-verkstader/", "destination": "/for-cykelverkstader", "permanent": true },
+    { "source": "/en/for-verkstader", "destination": "/en/for-bike-shops", "permanent": true },
+    { "source": "/en/for-verkstader/", "destination": "/en/for-bike-shops", "permanent": true },
+    { "source": "/en/for-cykelverkstader", "destination": "/en/for-bike-shops", "permanent": true },
+    { "source": "/en/for-cykelverkstader/", "destination": "/en/for-bike-shops", "permanent": true }
+  ],
   "rewrites": [
     {
       "source": "/((?!assets/)(?!.*\\.).*)",

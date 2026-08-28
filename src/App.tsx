@@ -103,6 +103,18 @@ const WorkshopPageOrEnRedirect = () => {
   return <ForVerkstaderPage />;
 };
 
+/** On Cykelhjälpen, leftover Updro /registrera is the workshop form — not a buyer portal. */
+const RegisterEntry = () => {
+  const host = getCurrentHost();
+  if (host === "cykelhjalpen") return <RedirectKeepSearch to="/registrera/verkstad" />;
+  return <RegisterPage />;
+};
+
+const RegisterAlias = () => {
+  const host = getCurrentHost();
+  return <RedirectKeepSearch to={host === "cykelhjalpen" ? "/registrera/verkstad" : "/registrera"} />;
+};
+
 // SEO pages
 const PillarPage = lazy(() => import("./components/seo/PillarPage"));
 const SubPage = lazy(() => import("./components/seo/SubPage"));
@@ -341,6 +353,8 @@ const AppRoutes = () => {
               {/* Alias: äldre/felaktig länk till kundens ärendesida */}
               <Route path="/mina-svar/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
+              {/* Leftover Updro buyer/agency paths — workshops hit these and got 404 */}
+              <Route path="/registrera/byra" element={<RedirectKeepSearch to="/registrera/verkstad" />} />
               <Route path="/for-cykelverkstader" element={<WorkshopPageOrEnRedirect />} />
               {/* Gammal länk från rekryteringsmejl – behåll query (utm) vid redirect */}
               <Route path="/for-verkstader" element={<LegacyWorkshopRedirect />} />
@@ -406,8 +420,11 @@ const AppRoutes = () => {
 
           {/* Shared auth + admin entry — rendered on both hosts */}
           <Route path="/logga-in" element={<LoginPage />} />
-          <Route path="/registrera" element={<RegisterPage />} />
+          <Route path="/registrera" element={<RegisterEntry />} />
+          <Route path="/register" element={<RegisterAlias />} />
           <Route path="/aterstall-losenord" element={<ForgotPasswordPage />} />
+          <Route path="/glomt-losenord" element={<RedirectKeepSearch to="/aterstall-losenord" />} />
+          <Route path="/forgot-password" element={<RedirectKeepSearch to="/aterstall-losenord" />} />
           <Route path="/nytt-losenord" element={<ResetPasswordPage />} />
           <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
 
