@@ -22,6 +22,7 @@ import { LanguageProvider } from '@/lib/i18n'
 import CykelFooter from './CykelFooter'
 import CykelHomeHeroNeutral from './CykelHomeHeroNeutral'
 import CykelHowItWorks from './CykelHowItWorks'
+import CykelHonestTrust from './CykelHonestTrust'
 import { CykelV3FaqAndFinalCta, CykelV3QuotePreview } from './CykelHomeV3Full'
 import { CykelV3MobileStickyNeutral } from './CykelV3NeutralSections'
 
@@ -54,13 +55,14 @@ describe('generic customer CTAs', () => {
     expect(hrefs.every((href) => !/[?&]stad=/.test(href))).toBe(true)
   })
 
-  it('quote preview, final CTA, footer and sticky do not lock a city', () => {
+  it('quote preview, final CTA, footer, sticky and trust block do not lock a city', () => {
     wrap(
       <>
         <CykelV3QuotePreview />
         <CykelV3FaqAndFinalCta />
         <CykelFooter />
         <CykelV3MobileStickyNeutral />
+        <CykelHonestTrust variant="cyclist" ctaHref="/skicka-arende" ctaLabel="Få prisförslag gratis" />
       </>,
     )
     const hrefs = requestHrefs()

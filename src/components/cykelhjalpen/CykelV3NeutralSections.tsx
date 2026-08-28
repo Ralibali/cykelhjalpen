@@ -15,9 +15,9 @@ export const CykelV3CitiesNeutral = () => {
   const text = useText()
 
   return (
-    <section id="stader" className="py-20 scroll-mt-20">
+    <section id="stader" className="py-16 md:py-24 scroll-mt-20">
       <div className="container mx-auto px-4 max-w-6xl">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-10">
           <div>
             <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3">{text('Städer', 'Cities')}</p>
             <h2 className="font-display text-4xl md:text-5xl">{text('Cykelhjälpen i fyra städer', 'Cykelhjälpen in four cities')}</h2>
@@ -25,7 +25,7 @@ export const CykelV3CitiesNeutral = () => {
           <p className="text-muted-foreground max-w-md">{text('Välj din stad för lokala guider och för att skicka ett kostnadsfritt cykelärende.', 'Choose your city for local guides and to send a free bike-repair request.')}</p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {CYKEL_CITIES.map((city) => {
             const image = getCityImage(city.name)
             return (
@@ -57,9 +57,9 @@ export const CykelV3WorkshopRecruitmentNeutral = () => {
   const text = useText()
 
   return (
-    <section className="py-20 bg-[hsl(var(--brand-cream))]/40">
+    <section className="py-16 md:py-24 bg-[hsl(var(--brand-cream))]/40">
       <div className="container mx-auto px-4 max-w-5xl">
-        <div className="sticker rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-8 md:p-12 grid md:grid-cols-[1fr_auto] gap-8 items-center">
+        <div className="sticker rounded-[2rem] bg-[hsl(var(--brand-dark))] text-background p-6 md:p-12 grid md:grid-cols-[1fr_auto] gap-6 md:gap-8 items-center">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-background/10 px-3 py-1.5 text-xs font-semibold mb-5"><Sparkles className="h-3.5 w-3.5 text-[hsl(var(--brand-sun))]" /> Founding Partner</span>
             <h2 className="font-display text-4xl md:text-5xl">{text('Driver du cykelverkstad?', 'Do you run a bike shop?')}</h2>

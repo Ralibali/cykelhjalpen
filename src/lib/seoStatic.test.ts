@@ -258,5 +258,12 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     expect(JSON.stringify(workshop?.sections)).not.toMatch(/skicka en offert/)
     expect(JSON.stringify(workshopEn?.sections)).not.toMatch(/when you send a quote/)
     expect(workshopEn?.description).not.toMatch(/when you send a quote/)
+
+    const home = routes.find((item) => item.path === '/')
+    expect(JSON.stringify(home?.sections)).toContain('Gratis för cyklisten')
+    expect(JSON.stringify(home?.sections)).toContain('Aurora Media AB')
+    expect(JSON.stringify(workshop?.sections)).toContain('50 kr exkl. moms')
+    expect(JSON.stringify(home?.sections)).not.toMatch(/jojoscykel|hundratals|lovable\.app|vercel\.app/i)
+    expect(JSON.stringify(workshop?.sections)).not.toMatch(/jojoscykel|hundratals|lovable\.app|vercel\.app/i)
   })
 })

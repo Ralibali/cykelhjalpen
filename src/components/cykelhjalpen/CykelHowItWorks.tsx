@@ -25,13 +25,13 @@ const CykelHowItWorks = () => {
 
   return (
     <>
-      <section id="sa-fungerar-det" className="py-20 md:py-24 scroll-mt-20">
+      <section id="sa-fungerar-det" className="py-16 md:py-24 scroll-mt-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-14">
             <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3">{t('Så fungerar det')}</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance">{t('Från problem till rätt verkstad i tre steg')}</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4 md:gap-6">
             {steps.map(({ icon: Icon, title, text }, index) => (
               <motion.div
                 key={title}
@@ -40,7 +40,7 @@ const CykelHowItWorks = () => {
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.5, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -6 }}
-                className="group relative overflow-hidden rounded-[2rem] border border-border/60 bg-secondary/60 p-8"
+                className="group relative overflow-hidden sticker rounded-[2rem] bg-card p-6 md:p-8"
               >
                 <span aria-hidden className="pointer-events-none absolute -top-6 -right-3 font-display text-[7rem] leading-none font-extrabold text-foreground/5 transition-colors group-hover:text-accent/15">
                   {index + 1}
@@ -58,9 +58,9 @@ const CykelHowItWorks = () => {
         </div>
       </section>
 
-      <section className="py-20 md:py-24 bg-[hsl(var(--brand-cream))]/35">
+      <section className="py-16 md:py-24 bg-[hsl(var(--brand-cream))]/35">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="max-w-2xl mb-12 md:mb-14">
+          <div className="max-w-2xl mb-8 md:mb-14">
             <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3">{t('Vanliga reparationer')}</p>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-balance">{t('Börja med det som bäst beskriver problemet')}</h2>
             <p className="mt-4 text-lg text-muted-foreground leading-relaxed">{t('Välj en vanlig reparation så förbereder vi ärendet åt dig. Du kan ändra allt innan du skickar.')}</p>
@@ -72,7 +72,7 @@ const CykelHowItWorks = () => {
                 key={problem}
                 to={requestPath({ problem })}
                 onClick={() => trackClick('home_repair_shortcut_clicked', title, { problem })}
-                className="group rounded-[1.6rem] border border-border/70 bg-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-accent/50 hover:shadow-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group sticker rounded-[1.6rem] bg-card p-6 transition-all duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-start justify-between gap-4">
                   <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
