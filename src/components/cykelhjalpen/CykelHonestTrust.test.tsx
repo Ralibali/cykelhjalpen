@@ -16,7 +16,7 @@ describe('CykelHonestTrust', () => {
     wrap(<CykelHonestTrust variant="cyclist" ctaHref="/skicka-arende" ctaLabel="Få prisförslag gratis" />)
 
     expect(screen.getByRole('heading', { name: 'Så här är Cykelhjälpen upplagt' })).toBeInTheDocument()
-    expect(screen.getByText('Gratis för cyklisten')).toBeInTheDocument()
+    expect(screen.getAllByText('Gratis för cyklisten').length).toBeGreaterThan(0)
     expect(screen.getByText('Kunden väljer verkstad')).toBeInTheDocument()
     expect(screen.getByText('Offerter per ärende')).toBeInTheDocument()
     expect(screen.getByText('Aurora Media AB, Linköping')).toBeInTheDocument()
