@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CYKEL_SEO_PAGES, isThinSeoFarmPage, seoPageHref } from './cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath } from './cykelCities'
-import { generateSitemapXml, getAllStaticSeoRoutes, getIndexableSeoRoutes, getNoindexSeoRoutes } from './seoStatic'
+import { generateSitemapXml, getAllStaticSeoRoutes, getIndexableSeoRoutes, getNoindexSeoRoutes, renderStaticHtml } from './seoStatic'
 
 // Slugs som redan är indexerade i Google — får ALDRIG ändras.
 const LEGACY_LINKOPING_SLUGS = [
@@ -172,6 +172,42 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     expect(noindexPaths).toContain('/mitt-arende')
     expect(noindexPaths).toContain('/avregistrera')
     expect(noindexPaths).toContain('/annons/verkstad')
+  })
+
+  it('ger leftover /for-verkstader samma first-byte-titel som den levande sidan', () => {
+    const routes = getAllStaticSeoRoutes('cykelhjalpen')
+    const live = routes.find((route) => route.path === '/for-cykelverkstader')
+    const leftover = routes.find((route) => route.path === '/for-verkstader')
+    const leftoverEn = routes.find((route) => route.path === '/en/for-verkstader')
+    const liveEn = routes.find((route) => route.path === '/en/for-bike-shops')
+
+    expect(live?.title).toMatch(/Cykelhjälpen/)
+    expect(leftover?.title).toBe(live?.title)
+    expect(leftover?.title).not.toBe('')
+    expect(leftover?.canonicalPath).toBe('/for-cykelverkstader')
+    expect(leftoverEn?.title).toBe(liveEn?.title)
+    expect(leftoverEn?.title).not.toBe('')
+
+    const html = renderStaticHtml(
+      '<html><head><title>fallback</title></head><body><div id="root"></div></body></html>',
+      leftover!,
+      'cykelhjalpen',
+    )
+    expect(html).toMatch(/<title>Få fler kunder till din cykelverkstad \| Cykelhjälpen<\/title>/)
+    expect(html).not.toMatch(/<title><\/title>/)
+    expect(html).toContain('prerender-status-code')
+    expect(html).toContain('Location: https://cykelhjalpen.se/for-cykelverkstader')
+    expect(html).toContain('Registrera verkstaden gratis')
+  })
+
+  it('ger inloggning, registrering och glömt-lösenord en riktig first-byte-titel', () => {
+    const routes = getAllStaticSeoRoutes('cykelhjalpen')
+    const byPath = new Map(routes.map((route) => [route.path, route]))
+
+    expect(byPath.get('/logga-in')?.title).toBe('Logga in | Cykelhjälpen')
+    expect(byPath.get('/registrera')?.title).toBe('Registrera cykelverkstad | Cykelhjälpen')
+    expect(byPath.get('/aterstall-losenord')?.title).toBe('Glömt lösenord | Cykelhjälpen')
+    expect(byPath.get('/nytt-losenord')?.title).toBe('Skapa nytt lösenord | Cykelhjälpen')
   })
 
   it('ger varje engelsk SEO-sida en svensk hreflang-motsvarighet', () => {

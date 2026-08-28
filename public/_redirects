@@ -1,3 +1,8 @@
+# Leftover workshop aliases from old outreach — send them to the live page
+/for-verkstader              /for-cykelverkstader   301
+/en/for-verkstader           /en/for-bike-shops     301
+/en/for-cykelverkstader      /en/for-bike-shops     301
+
 # Static SEO files — never SPA-fallback these (a missing file must 404, not become HTML)
 /sitemap.xml        /sitemap.xml        200
 /sitemap-index.xml  /sitemap-index.xml  200

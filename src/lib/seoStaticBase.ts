@@ -373,20 +373,52 @@ const UPDRO_NOINDEX_PATHS = [
   '/dashboard', '/admin', '/logga-in', '/registrera', '/aterstall-losenord', '/nytt-losenord',
 ]
 
-const noindexRoutesFor = (paths: string[]): StaticSeoRoute[] => paths.map((routePath) => ({
-  path: routePath,
-  title: '',
-  description: '',
-  h1: '',
-  priority: 0.1,
-  changefreq: 'yearly' as const,
-  noindex: true,
-}))
+/** First-byte titles for auth/utility noindex pages. Empty titles look like unfinished leftovers. */
+const CYKEL_AUTH_SEO: Record<string, { title: string; description: string; h1: string }> = {
+  '/logga-in': {
+    title: 'Logga in | Cykelhjälpen',
+    description: 'Logga in på din verkstadssida hos Cykelhjälpen.',
+    h1: 'Logga in',
+  },
+  '/registrera': {
+    title: 'Registrera cykelverkstad | Cykelhjälpen',
+    description: 'Registrera din cykelverkstad. Ingen månadsavgift – ni lämnar offert gratis och betalar först när kunden väljer er.',
+    h1: 'Anslut din verkstad',
+  },
+  '/registrera/byra': {
+    title: 'Registrera cykelverkstad | Cykelhjälpen',
+    description: 'Registrera din cykelverkstad. Ingen månadsavgift – ni lämnar offert gratis och betalar först när kunden väljer er.',
+    h1: 'Anslut din verkstad',
+  },
+  '/aterstall-losenord': {
+    title: 'Glömt lösenord | Cykelhjälpen',
+    description: 'Återställ lösenordet till ditt konto hos Cykelhjälpen.',
+    h1: 'Glömt lösenord',
+  },
+  '/nytt-losenord': {
+    title: 'Skapa nytt lösenord | Cykelhjälpen',
+    description: 'Välj ett nytt lösenord till ditt konto hos Cykelhjälpen.',
+    h1: 'Skapa nytt lösenord',
+  },
+}
+
+const noindexRoutesFor = (paths: string[]): StaticSeoRoute[] => paths.map((routePath) => {
+  const auth = CYKEL_AUTH_SEO[routePath]
+  return {
+    path: routePath,
+    title: auth?.title ?? '',
+    description: auth?.description ?? '',
+    h1: auth?.h1 ?? '',
+    priority: 0.1,
+    changefreq: 'yearly' as const,
+    noindex: true,
+  }
+})
 
 /**
- * Legacy URLs that still get traffic (old outreach links) and redirect client-side.
- * They must never be indexed themselves, but they point search engines at the
- * live page through a self-non-referencing canonical.
+ * Leftover workshop URLs from old outreach. They redirect to the live page
+ * (Vercel + client). First-byte HTML must reuse the canonical title so the
+ * alias never ships an empty <title>.
  */
 export const LEGACY_ALIAS_ROUTES: { path: string; canonicalPath: string; lang?: 'sv' | 'en' }[] = [
   { path: '/for-verkstader', canonicalPath: '/for-cykelverkstader', lang: 'sv' },
@@ -394,17 +426,27 @@ export const LEGACY_ALIAS_ROUTES: { path: string; canonicalPath: string; lang?: 
   { path: '/en/for-cykelverkstader', canonicalPath: '/en/for-bike-shops', lang: 'en' },
 ]
 
-const legacyAliasRoutes = (): StaticSeoRoute[] => LEGACY_ALIAS_ROUTES.map((alias) => ({
-  path: alias.path,
-  canonicalPath: alias.canonicalPath,
-  title: '',
-  description: '',
-  h1: '',
-  priority: 0.1,
-  changefreq: 'yearly' as const,
-  noindex: true,
-  lang: alias.lang,
-}))
+const legacyAliasRoutes = (): StaticSeoRoute[] => {
+  const canonicals = [...cykelIndexableRoutes(), ...englishRoutes()]
+  return LEGACY_ALIAS_ROUTES.map((alias) => {
+    const canonical = canonicals.find((route) => route.path === alias.canonicalPath)
+    return {
+      path: alias.path,
+      canonicalPath: alias.canonicalPath,
+      title: canonical?.title || 'Få fler kunder till din cykelverkstad | Cykelhjälpen',
+      description: canonical?.description || '',
+      h1: canonical?.h1 || 'Få fler lokala kunder till din cykelverkstad',
+      sections: canonical?.sections,
+      links: canonical?.links,
+      faq: canonical?.faq,
+      ogImage: canonical?.ogImage,
+      priority: 0.1,
+      changefreq: 'yearly' as const,
+      noindex: true,
+      lang: alias.lang,
+    }
+  })
+}
 
 const indexableFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro'
   ? updroIndexableRoutes()
@@ -523,7 +565,14 @@ const head = (host: SiteHost, route: StaticSeoRoute) => {
   const image = imageFor(host, route.ogImage)
   const url = absFor(host, route.canonicalPath || route.path)
   const isEnglish = route.lang === 'en'
+  const redirectMeta = route.canonicalPath && route.canonicalPath !== route.path
+    ? [
+        '<meta name="prerender-status-code" content="301" />',
+        `<meta name="prerender-header" content="Location: ${absFor(host, route.canonicalPath)}" />`,
+      ]
+    : []
   return [
+    ...redirectMeta,
     ...alternateLinks(host, route),
     `<title>${esc(route.title)}</title>`,
     `<meta name="description" content="${esc(route.description)}" />`,
@@ -546,14 +595,21 @@ const head = (host: SiteHost, route: StaticSeoRoute) => {
   ].join('\n    ')
 }
 
+const isWorkshopLanding = (route: StaticSeoRoute) =>
+  route.path === '/for-cykelverkstader' || route.canonicalPath === '/for-cykelverkstader'
+
+const isWorkshopLandingEn = (route: StaticSeoRoute) =>
+  route.path === '/en/for-bike-shops' || route.canonicalPath === '/en/for-bike-shops'
+
 const body = (route: StaticSeoRoute) => {
   if (route.lang === 'en') return englishBody(route)
-  const primaryHref = route.path === '/for-cykelverkstader'
+  const workshopOffer = isWorkshopLanding(route) || route.path === '/registrera' || route.path === '/registrera/byra'
+  const primaryHref = workshopOffer
     ? '/registrera/verkstad'
     : route.city
       ? `/skicka-arende?stad=${encodeURIComponent(route.city)}`
       : '/skicka-arende'
-  const primaryLabel = route.path === '/for-cykelverkstader' ? 'Registrera verkstaden gratis' : 'Få prisförslag gratis'
+  const primaryLabel = workshopOffer ? 'Registrera verkstaden gratis' : 'Få prisförslag gratis'
   return `<main id="static-seo-content" data-static-route="${esc(route.path)}"><nav><a href="/">Cykelhjälpen</a></nav><article><h1>${esc(route.h1)}</h1><p>${esc(route.description)}</p><p><a href="${primaryHref}">${primaryLabel}</a></p>${
     route.sections?.map((section) => `<section><h2>${esc(section.h2)}</h2><p>${esc(section.body)}</p></section>`).join('') || ''
   }${
@@ -564,12 +620,12 @@ const body = (route: StaticSeoRoute) => {
 }
 
 const englishBody = (route: StaticSeoRoute) => {
-  const primaryHref = route.path === '/en/for-bike-shops'
+  const primaryHref = isWorkshopLandingEn(route)
     ? '/registrera/verkstad'
     : route.city
       ? `/en/submit-request?stad=${encodeURIComponent(route.city)}`
       : '/en/submit-request'
-  const primaryLabel = route.path === '/en/for-bike-shops' ? 'Register your bike shop for free' : 'Get free quotes'
+  const primaryLabel = isWorkshopLandingEn(route) ? 'Register your bike shop for free' : 'Get free quotes'
   return `<main id="static-seo-content" data-static-route="${esc(route.path)}" lang="en"><nav><a href="/en">Cykelhjälpen</a></nav><article><h1>${esc(route.h1)}</h1><p>${esc(route.description)}</p><p><a href="${primaryHref}">${primaryLabel}</a></p>${
     route.sections?.map((section) => `<section><h2>${esc(section.h2)}</h2><p>${esc(section.body)}</p></section>`).join('') || ''
   }${

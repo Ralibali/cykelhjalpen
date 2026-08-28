@@ -9,6 +9,7 @@ type VercelConfig = {
   buildCommand?: string
   outputDirectory?: string
   bunVersion?: string
+  redirects?: { source: string; destination: string; permanent?: boolean }[]
   rewrites?: { source: string; destination: string }[]
   headers?: HeaderRule[]
 }
@@ -49,6 +50,24 @@ describe('vercel.json (Vite SPA)', () => {
     expect(vercel.buildCommand).toBe('bun run build')
     expect(vercel.outputDirectory).toBe('dist')
     expect(vercel.bunVersion).toBeUndefined()
+  })
+
+  it('301-redirects leftover workshop aliases to the live pages', () => {
+    const redirects = vercel.redirects ?? []
+    const bySource = new Map(redirects.map((rule) => [rule.source, rule]))
+
+    expect(bySource.get('/for-verkstader')).toMatchObject({
+      destination: '/for-cykelverkstader',
+      permanent: true,
+    })
+    expect(bySource.get('/en/for-verkstader')).toMatchObject({
+      destination: '/en/for-bike-shops',
+      permanent: true,
+    })
+    expect(bySource.get('/en/for-cykelverkstader')).toMatchObject({
+      destination: '/en/for-bike-shops',
+      permanent: true,
+    })
   })
 
   it('rewrites client routes to /index.html', () => {
@@ -112,6 +131,9 @@ describe('vercel.json (Vite SPA)', () => {
     expect(headers).toContain('/sitemap.xml')
     expect(redirects).toContain('/sitemap.xml')
     expect(redirects).toContain('/robots.txt')
+    expect(redirects).toMatch(/\/for-verkstader\s+\/for-cykelverkstader\s+301/)
+    expect(redirects).toMatch(/\/en\/for-verkstader\s+\/en\/for-bike-shops\s+301/)
+    expect(redirects.indexOf('/for-verkstader')).toBeLessThan(redirects.indexOf('/*'))
     expect(redirects.indexOf('/sitemap.xml')).toBeLessThan(redirects.indexOf('/*'))
     expect(redirects).toMatch(/\/\*\s+\/index\.html\s+200/)
   })
