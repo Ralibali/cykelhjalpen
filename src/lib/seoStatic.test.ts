@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CYKEL_SEO_PAGES, isThinSeoFarmPage, seoPageHref } from './cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath } from './cykelCities'
-import { generateSitemapXml, getAllStaticSeoRoutes, getIndexableSeoRoutes, getNoindexSeoRoutes } from './seoStatic'
+import { generateSitemapXml, getAllStaticSeoRoutes, getIndexableSeoRoutes, getNoindexSeoRoutes, renderStaticHtml } from './seoStatic'
 
 // Slugs som redan är indexerade i Google — får ALDRIG ändras.
 const LEGACY_LINKOPING_SLUGS = [
@@ -265,5 +265,49 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     expect(JSON.stringify(workshop?.sections)).toContain('50 kr exkl. moms')
     expect(JSON.stringify(home?.sections)).not.toMatch(/jojoscykel|hundratals|lovable\.app|vercel\.app/i)
     expect(JSON.stringify(workshop?.sections)).not.toMatch(/jojoscykel|hundratals|lovable\.app|vercel\.app/i)
+  })
+
+  it('ger Norrköping en ärlig first-byte-titel utan att ändra brödtext eller Linköping', () => {
+    const routes = getAllStaticSeoRoutes('cykelhjalpen')
+    const norrkoping = routes.find((route) => route.path === '/cykelverkstad-norrkoping')
+    const linkoping = routes.find((route) => route.path === '/cykelverkstad-linkoping')
+    const norrkopingEn = routes.find((route) => route.path === '/en/bike-repair-norrkoping')
+
+    expect(norrkoping, 'saknar Norrköping-hub').toBeDefined()
+    expect(linkoping, 'saknar Linköping-hub').toBeDefined()
+
+    expect(norrkoping?.title).toBe('Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners')
+    expect(norrkoping?.title.toLowerCase()).not.toMatch(/^(jämför|prisförslag)/)
+    expect(norrkoping?.title).not.toMatch(/jämför|prisförslag/i)
+    expect(norrkoping?.title).not.toMatch(/\d+\s+(verkstad|verkstäder|partners?)/i)
+
+    expect(norrkoping?.h1).toBe('Cykelverkstad i Norrköping')
+    expect(norrkoping?.description).toBe(
+      'Behöver du cykelverkstad i Norrköping? Beskriv problemet gratis. Anslutna verkstäder kan svara med pris och möjlig tid när de har kapacitet.',
+    )
+    expect(norrkoping?.sections).toEqual([
+      {
+        h2: 'Cykelhjälp i Norrköping',
+        body: 'Campus Norrköping, Resecentrum och de täta stadsdelarna gör cykeln till ett naturligt transportmedel. Ange område eller postnummer så kan verkstaden själv bedöma avstånd och möjlig tid.',
+      },
+      {
+        h2: 'Aktuell tillgänglighet',
+        body: 'Cykelhjälpen finns i Norrköping. Tillgängligheten beror på vilka partnerverkstäder som är aktiva när ärendet skickas.',
+      },
+      {
+        h2: 'Vanliga cykeljobb',
+        body: 'Punktering, däck, bromsar, växlar, kedja, hjul, service och elcykelproblem är exempel på jobb du kan beskriva.',
+      },
+    ])
+
+    expect(linkoping?.title).toBe('Cykelverkstad Linköping – jämför lokala prisförslag')
+    expect(norrkopingEn?.title).toBe('Bike shop Norrköping — compare local replies')
+
+    const template = '<!doctype html><html><head><title>x</title><meta name="description" content="x" /><meta name="robots" content="index" /><link rel="canonical" href="https://example.com/" /></head><body><div id="root"></div></body></html>'
+    const html = renderStaticHtml(template, norrkoping!, 'cykelhjalpen')
+    expect(html).toMatch(/<title>Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners<\/title>/)
+    expect(html).toMatch(/<meta property="og:title" content="Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners" \/>/)
+    expect(html).not.toMatch(/<title>[^<]*(jämför|prisförslag)/i)
+    expect(html).toContain('Anslutna verkstäder kan svara med pris och möjlig tid när de har kapacitet.')
   })
 })
