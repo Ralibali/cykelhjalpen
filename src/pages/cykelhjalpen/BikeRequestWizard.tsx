@@ -107,7 +107,7 @@ const BikeRequestWizard = () => {
         if (stored) {
           const draft = JSON.parse(stored)
           const city = resolveWizardCity(requestedCity, draft?.city)
-          base = { ...defaults, ...draft, city, consent: false }
+          base = { ...defaults, ...draft, city, consent: false, reminder_opt_in: false }
         }
       } catch {
         localStorage.removeItem(DRAFT_KEY)
@@ -296,6 +296,7 @@ const BikeRequestWizard = () => {
           city: parsed.data.city,
           customer_language: lang,
           terms_accepted: parsed.data.consent,
+          reminder_opt_in: parsed.data.reminder_opt_in === true,
           turnstile_token: turnstileToken,
         },
       })

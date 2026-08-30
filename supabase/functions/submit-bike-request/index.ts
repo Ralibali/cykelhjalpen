@@ -42,6 +42,8 @@ const BodySchema = z.object({
   terms_accepted: z.literal(true, {
     errorMap: () => ({ message: 'Du måste godkänna användarvillkoren för att skicka förfrågan.' }),
   }),
+  // V2 S8: frivillig opt-in för servicepåminnelser (default false = ej samlad).
+  reminder_opt_in: z.boolean().optional().default(false),
   turnstile_token: z.string().min(10).max(4096),
 }).refine((value) => value.can_drop_off || value.wants_pickup, {
   message: 'dropoff_or_pickup_required',
@@ -174,6 +176,26 @@ Deno.serve(async (req) => {
       }
     } catch (termsError) {
       console.error('Customer terms tracking failed', termsError)
+    }
+
+    // V2 S8: lagra samtycke för servicepåminnelser när kunden kryssat i rutan.
+    // Skyddad i try/catch – samtyckeslagring får aldrig stoppa själva ärendet.
+    if (body.reminder_opt_in) {
+      try {
+        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body.customer_email))
+        const subjectKey = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('')
+        await supabase.from('v2_retention_contacts').upsert({
+          subject_type: 'customer',
+          subject_key: subjectKey,
+          consent_basis: 'marketing_consent',
+          consent_at: new Date().toISOString(),
+          unsubscribed_at: null,
+          lifecycle_stage: 'active',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'subject_type,subject_key' })
+      } catch (consentError) {
+        console.error('Reminder opt-in storage failed', consentError)
+      }
     }
 
     let autoApproved = false

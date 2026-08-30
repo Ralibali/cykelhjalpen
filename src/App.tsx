@@ -38,6 +38,7 @@ const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
 const CykelCityLandingPage = lazy(() => import("./pages/cykelhjalpen/CykelCityLandingPage"));
 const WorkshopAdCityPage = lazy(() => import("./pages/cykelhjalpen/WorkshopAdCityPage"));
 const UnsubscribePage = lazy(() => import("./pages/cykelhjalpen/UnsubscribePage"));
+<<<<<<< HEAD
 const WorkshopProfilePage = lazy(() => import("./pages/cykelhjalpen/WorkshopProfilePage"));
 const WorkshopDirectoryPage = lazy(() => import("./pages/cykelhjalpen/WorkshopDirectoryPage"));
 
@@ -45,6 +46,9 @@ const WorkshopDirectoryPage = lazy(() => import("./pages/cykelhjalpen/WorkshopDi
 const ContentSurfaceGate = lazy(() => import("./components/cykelhjalpen/content/ContentSurfaceGate"));
 const CykelGuidesIndexPage = lazy(() => import("./pages/cykelhjalpen/CykelGuidesIndexPage"));
 const CykelGuideArticlePage = lazy(() => import("./pages/cykelhjalpen/CykelGuideArticlePage"));
+=======
+const RetentionUnsubscribePage = lazy(() => import("./pages/cykelhjalpen/RetentionUnsubscribePage"));
+>>>>>>> v2/customer-retention
 
 import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
@@ -364,6 +368,8 @@ const AppRoutes = () => {
               {/* Google Ads: rekryteringssida per stad för verkstäder (noindex) */}
               <Route path="/annons/verkstad/:citySlug" element={<WorkshopAdCityPage />} />
               <Route path="/avregistrera/:token" element={<UnsubscribePage />} />
+              {/* V2 S8: avsluta servicepåminnelser (kund, kontolös token-länk) */}
+              <Route path="/avsluta-paminnelser/:token" element={<RetentionUnsubscribePage />} />
 
               {/* V2 S4: publika verkstadsprofiler + katalog. Sidlarna grindsjälva
                   på flaggan v2.directory.public_profiles (404 när den är av) och

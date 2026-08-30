@@ -483,6 +483,18 @@ const BikeRequestStepContent = ({
       </div>
 
       <CustomerTerms accepted={form.consent} onAccept={(value) => update('consent', value)} />
+
+      <div className="flex items-center gap-3">
+        <Checkbox
+          id="reminder-opt-in"
+          checked={form.reminder_opt_in}
+          onCheckedChange={(checked) => update('reminder_opt_in', checked === true)}
+        />
+        <label htmlFor="reminder-opt-in" className="text-sm text-gray-700 cursor-pointer">
+          {t('Påminn mig när det är dags för service igen (frivilligt – max ett mejl per säsong, avsluta när du vill)')}
+        </label>
+      </div>
+
       <p className="text-xs text-muted-foreground leading-relaxed">
         {t('Uppgifterna delas med anslutna cykelverkstäder i {city} som vill lämna offert, enligt', { city: form.city || t('din stad') })}{' '}
         <a href="/integritetspolicy" target="_blank" rel="noreferrer" className="underline font-medium">{t('integritetspolicyn')}</a>.
