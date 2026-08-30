@@ -1,6 +1,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { corsFor } from "../_shared/cors.ts";
+import { v2FlagEnabledFor } from "../_shared/v2/flags.ts";
+import { getV2CityConfigs, v2ClusterCityNames } from "../_shared/v2/city-state.ts";
+import { citySlugFromName } from "../_shared/v2/config-schema.ts";
+import {
+  matchWorkshopToRequestCity,
+  visibleCityNamesForWorkshop,
+} from "../_shared/v2/eligibility.ts";
 
 const storagePath = (value: string) => {
   const marker = "/bike-images/";
@@ -37,25 +44,57 @@ serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
     const { data: ws, error: workshopError } = await admin
       .from("workshops")
-      .select("id, approved, city")
+      .select("id, approved, city, areas_served, service_area_mode, cluster_opt_in, services")
       .eq("user_id", u.user.id)
       .maybeSingle();
     if (workshopError) throw workshopError;
     if (!ws || !ws.approved) throw new Error("not approved");
     if (!ws.city) throw new Error("workshop city missing");
 
+    // V2 (gate G-L1, flag v2.liquidity.areas_served_matching): the workshop
+    // board resolves visible cities through the eligibility engine —
+    // areas_served[] and cluster membership (Östergötland) in addition to the
+    // exact home city. Flag OFF = exact-city only (live behavior unchanged).
+    const matchingOn = await v2FlagEnabledFor(admin, "v2.liquidity.areas_served_matching", {
+      citySlug: citySlugFromName(ws.city),
+      subjectId: ws.id,
+    });
+
+    let visibleCities = [ws.city];
+    let knownCityNames: string[] = [];
+    let workshopClusterCityNames: string[] = [];
+    if (matchingOn) {
+      const configs = await getV2CityConfigs(admin);
+      knownCityNames = Object.values(configs).map((config) => config.cityName);
+      workshopClusterCityNames = await v2ClusterCityNames(admin, ws.city);
+      visibleCities = visibleCityNamesForWorkshop(
+        {
+          city: ws.city,
+          areasServed: ws.areas_served,
+          serviceAreaMode: ws.service_area_mode,
+          clusterOptIn: ws.cluster_opt_in,
+        },
+        { areasServedMatchingOn: true, knownCityNames, workshopClusterCityNames },
+      );
+    }
+
     // City filtering must happen before returning data. Client-side filtering is not access control.
     const { data, error } = await admin
       .from("bike_repair_requests")
-      .select("id, bike_type, repair_category, description, area, postcode, urgency, can_drop_off, wants_pickup, status, created_at, customer_language")
+      .select("id, bike_type, repair_category, description, area, postcode, urgency, can_drop_off, wants_pickup, status, created_at, customer_language, city")
       .in("status", ["new", "has_offers"])
       .eq("admin_status", "approved")
-      .eq("city", ws.city)
+      .in("city", visibleCities)
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw error;
 
-    const initialRequests = data || [];
+    const workshopServices: string[] = ws.services || [];
+    const initialRequests = (data || []).filter((row) =>
+      // Service-category awareness where supported: a workshop that declared
+      // services only sees requests in those categories (flag-gated).
+      !matchingOn || workshopServices.length === 0 || workshopServices.includes(row.repair_category)
+    );
     const initialIds = initialRequests.map((row) => row.id);
     const sentCounts = new Map<string, number>();
 
@@ -107,7 +146,22 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      requests: requests.map((row) => ({ ...row, images: imagesByRequest.get(row.id) || [] })),
+      requests: requests.map((row) => ({
+        ...row,
+        images: imagesByRequest.get(row.id) || [],
+        // How this workshop matched the request's city (only meaningful when
+        // the areas/cluster matching flag is on; always "city" otherwise).
+        matched_via: matchWorkshopToRequestCity(
+          {
+            city: ws.city,
+            areasServed: ws.areas_served,
+            serviceAreaMode: ws.service_area_mode,
+            clusterOptIn: ws.cluster_opt_in,
+          },
+          row.city,
+          { areasServedMatchingOn: matchingOn, clusterCityNames: workshopClusterCityNames },
+        ) || "city",
+      })),
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
     });

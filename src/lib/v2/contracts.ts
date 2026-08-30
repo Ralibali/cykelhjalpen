@@ -18,6 +18,7 @@ export type V2CityState = (typeof V2_CITY_STATES)[number]
 
 export const V2_FLAG_KEYS = [
   'v2.liquidity.areas_served_matching',
+  'v2.liquidity.city_state_messaging',
   'v2.liquidity.zero_quote_rescue',
   'v2.liquidity.winner_reminders',
   'v2.liquidity.reselection',
