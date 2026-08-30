@@ -2,11 +2,12 @@ import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { usePageSeo } from '@/i18n/usePageSeo'
 import { motion } from 'framer-motion'
-import { ArrowRight, Bike, CheckCircle2, MapPin, ShieldCheck, Wrench } from 'lucide-react'
+import { ArrowRight, Bike, CheckCircle2, MapPin, ShieldCheck, Store as Storefront, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
+import { cityDirectoryPath, useDirectoryGate } from '@/lib/v2/directory'
 import { getCityImage } from '@/lib/cykelCityImages'
 import { trackClick } from '@/hooks/usePageTracking'
 import { useT } from '@/lib/i18n'
@@ -17,6 +18,7 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
   const cityImage = getCityImage(city)
   const pageSeo = usePageSeo(cityLandingPath(city))
   const canonical = pageSeo.canonical
+  const directoryGate = useDirectoryGate(cityData.slug)
 
   const trackCta = (placement: string) => {
     trackClick('city_request_cta_clicked', t('Få prisförslag i {city}', { city }), { city, placement })
@@ -181,6 +183,21 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
             </div>
             <Button asChild><Link to={cityQuery(city)} onClick={() => trackCta('bottom')}>{t('Starta förfrågan')}</Link></Button>
           </div>
+
+          {/* V2 S4: länka till verkstadskatalogen bara när G-D1-grinden passerar
+              (flagga på + min antal opt-in-verkstäder + admin directory_indexable). */}
+          {directoryGate.indexable && (
+            <div className="sticker bg-card rounded-2xl p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+              <div>
+                <Storefront className="h-7 w-7 text-primary mb-3" />
+                <h2 className="font-display text-2xl font-bold">{t('Anslutna verkstäder i {city}', { city })}</h2>
+                <p className="text-muted-foreground mt-2">{t('Se vilka cykelverkstäder i {city} som är anslutna till Cykelhjälpen och vad de hjälper till med.', { city })}</p>
+              </div>
+              <Button asChild variant="outline">
+                <Link to={cityDirectoryPath(cityData.slug)}>{t('Se verkstäderna')} <ArrowRight className="h-4 w-4 ml-2" /></Link>
+              </Button>
+            </div>
+          )}
 
           <section aria-labelledby="andra-stader">
             <h2 id="andra-stader" className="font-display text-2xl font-bold mb-4">{t('Cykelhjälpen i fler städer')}</h2>

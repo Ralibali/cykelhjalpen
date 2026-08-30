@@ -35,6 +35,11 @@ export interface WorkshopContext {
   price_info: string | null
   booking_url: string | null
   services: string[] | null
+  // V2 S4 (kontrakt §2.4): publik profil — samtycke + scopade fält
+  slug: string | null
+  bio_short: string | null
+  public_profile_opt_in: boolean
+  areas_served: string[] | null
 }
 
 const WorkshopLayout = () => {
@@ -51,7 +56,7 @@ const WorkshopLayout = () => {
       if (!user) return
       const { data, error } = await supabase
         .from('workshops')
-        .select('id, company_name, email, phone, address, website, city, approved, sms_notifications, free_leads_remaining, logo_url, description, opening_hours, org_number, founded_year, facebook_url, instagram_url, price_info, booking_url, services')
+        .select('id, company_name, email, phone, address, website, city, approved, sms_notifications, free_leads_remaining, logo_url, description, opening_hours, org_number, founded_year, facebook_url, instagram_url, price_info, booking_url, services, slug, bio_short, public_profile_opt_in, areas_served')
         .eq('user_id', user.id)
         .maybeSingle()
 
@@ -61,7 +66,9 @@ const WorkshopLayout = () => {
         return
       }
 
-      let nextWorkshop = data as WorkshopContext | null
+      // V2-kolumnerna (bio_short, public_profile_opt_in, areas_served, slug)
+      // saknas i de genererade typerna tills S13 regenererat dem (kontrakt §1).
+      let nextWorkshop = data as unknown as WorkshopContext | null
       const pendingCity = localStorage.getItem(PENDING_CITY_KEY)
       const confirmationKey = confirmedCityKey(user.id)
 

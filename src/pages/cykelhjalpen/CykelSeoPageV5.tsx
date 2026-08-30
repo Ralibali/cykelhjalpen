@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { buildCykelSeoPages, seoPagePath, type CykelSeoPage as CykelSeoPageType } from '@/lib/cykelSeoPagesNeutral'
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { getRobotsDirectiveForPath } from '@/lib/seoRobots'
+import { cityDirectoryPath, useDirectoryGate } from '@/lib/v2/directory'
 import { getCityImage } from '@/lib/cykelCityImages'
 import elsparkBanner1200 from '@/assets/cykel-elsparkcykel-1200.webp'
 import elsparkBanner640 from '@/assets/cykel-elsparkcykel-640.webp'
@@ -86,6 +87,10 @@ const CykelSeoPageV5 = () => {
   const cityImage = getCityImage(city)
   const bannerImage = isElspark ? { large: elsparkBanner1200, small: elsparkBanner640, alt: text('Elsparkcykel på reparationsstativ i en cykelverkstad', 'E-scooter on a repair stand in a bike shop') } : cityImage
   const requestHref = lang === 'en' ? `/submit-request?stad=${citySlug}` : cityQuery(city)
+  // V2 S4: internlänk till verkstadskatalogen bara när G-D1-grinden passerar
+  // (flagga på + min antal opt-in-verkstäder + admin directory_indexable).
+  const directoryGate = useDirectoryGate(citySlug)
+  const showDirectoryLink = lang === 'sv' && directoryGate.indexable
   const cityHubUrl = lang === 'en' ? `https://cykelhjalpen.se/en/bike-repair-${citySlug}` : `https://cykelhjalpen.se${cityLandingPath(city)}`
   const homeUrl = lang === 'en' ? 'https://cykelhjalpen.se/en' : 'https://cykelhjalpen.se/'
   const seoDescription = page.variant === 'price-stats'
@@ -109,6 +114,7 @@ const CykelSeoPageV5 = () => {
     {page.sections.map((item) => <section key={item.h2} className="mb-8"><h2 className="font-display text-2xl font-bold mb-2">{item.h2}</h2><p className="text-foreground/90 leading-relaxed">{item.body}</p></section>)}
     {page.variant === 'price-stats' && <GuidePriceTable lang={lang} />}
     <section className="mt-12"><h2 className="font-display text-2xl font-bold mb-4">{text('Vanliga frågor', 'Frequently asked questions')}</h2><div className="space-y-3">{page.faq.map((item) => <details key={item.q} className="group rounded-2xl bg-card p-5 sticker"><summary className="flex items-center justify-between cursor-pointer font-display text-lg">{item.q}<span className="text-accent group-open:rotate-45 transition-transform text-3xl leading-none">+</span></summary><p className="mt-3 text-muted-foreground leading-relaxed">{item.a}</p></details>)}</div></section>
+    {showDirectoryLink && <div className="mt-12 sticker rounded-3xl bg-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"><div><p className="font-display text-xl">{text('Anslutna verkstäder i {city}', 'Partnered shops in {city}').replace('{city}', city)}</p><p className="text-sm text-muted-foreground mt-1">{text('Se vilka verkstäder som svarar på förfrågningar via Cykelhjälpen.', 'See which shops answer requests through Cykelhjälpen.')}</p></div><Button asChild variant="outline" className="shrink-0"><Link to={cityDirectoryPath(citySlug)}>{text('Se verkstäderna', 'See the shops')}</Link></Button></div>}
     <RelatedPages currentSlug={page.slug} city={city} seoPages={seoPages} lang={lang} />
     <div className="mt-12 sticker rounded-3xl bg-[hsl(var(--brand-dark))] p-8 text-center text-background"><p className="font-display text-2xl mb-2">{text('Beskriv problemet och jämför alternativen', 'Describe the problem and compare your options')}</p><p className="text-sm text-background/70 mb-6">{text('Det tar omkring två minuter att skicka ett kostnadsfritt ärende.', 'It takes about two minutes to send a free request.')}</p><Button asChild size="lg" className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-8"><Link to={requestHref} onClick={() => trackCta('bottom')}>{text('Skicka cykelärende gratis', 'Send a free bike request')}</Link></Button></div>
   </article></main><CykelFooter /></div>

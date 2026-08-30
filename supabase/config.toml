@@ -65,3 +65,8 @@ verify_jwt = false
 # Påminner kunden om att välja offert inom fem dagar.
 [functions.bike-choice-reminders]
 verify_jwt = false
+
+# V2: publik verkstadsprofil (/verkstad/:slug) — anonym åtkomst, läser endast
+# den scopade vyn v2_public_workshop_directory (kontrakt §2.4/§3.4).
+[functions.v2-get-public-workshop]
+verify_jwt = false
