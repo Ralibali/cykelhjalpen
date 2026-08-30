@@ -1,5 +1,6 @@
 import { CYKEL_SEO_PAGES, buildCykelSeoPages } from './cykelSeoPages'
 import { CYKEL_CITIES, cityLandingPath, getCykelCity } from './cykelCities'
+import { cykelOgImagePath, cykelPageOgImage } from './cykelOg'
 import { shouldNoindexPath } from './seoRobots'
 import { EN } from '../locales/en'
 import type { SiteHost } from './hostConfig'
@@ -63,7 +64,7 @@ const cityRoutes = (): StaticSeoRoute[] => CYKEL_CITIES.map((city) => ({
   priority: 0.95,
   changefreq: 'weekly',
   lastmod: today(),
-  ogImage: '/og/hem.jpg',
+  ogImage: cykelPageOgImage({ slug: `cykelverkstad-${city.slug}`, city: city.name }),
   sections: [
     {
       h2: `Lokal cykelhjälp i ${city.name}`,
@@ -142,7 +143,6 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
     priority: 0.9,
     changefreq: 'monthly',
     lastmod: today(),
-    ogImage: '/og/hem.jpg',
     sections: [
       { h2: 'Så går det till', body: 'Välj stad, beskriv cykeln och problemet och lämna dina kontaktuppgifter. Anslutna verkstäder svarar med pris och tid.' },
       { h2: 'Gratis och utan konto', body: 'Det kostar inget och du har ingen köpplikt. Du får en personlig länk till ärendet via e-post.' },
@@ -169,7 +169,7 @@ const cykelIndexableRoutes = (): StaticSeoRoute[] => [
       noindex: page.noindex,
       sections: page.sections,
       faq: page.faq,
-      ogImage: page.ogImage,
+      ogImage: cykelPageOgImage(page),
       links: [
         { label: `Skicka cykelärende i ${page.city}`, href: `/skicka-arende?stad=${encodeURIComponent(page.city)}` },
         { label: `Cykelverkstad i ${page.city}`, href: cityPath },
@@ -226,7 +226,6 @@ const englishRoutes = (): StaticSeoRoute[] => [
     priority: 0.9,
     changefreq: 'monthly',
     lastmod: today(),
-    ogImage: '/og/hem.jpg',
     sections: [
       { h2: 'Two minutes, no account', body: 'Tell us the type of bike, what is wrong and where you live. You do not need to create an account.' },
       { h2: 'Compare up to three quotes', body: 'Local bike shops in your city reply with a price and how long the repair takes. You choose if you want to go ahead.' },
@@ -278,7 +277,7 @@ const englishRoutes = (): StaticSeoRoute[] => [
       lastmod: today(),
       sections: page.sections,
       faq: page.faq,
-      ogImage: page.ogImage ?? '/og/hem.jpg',
+      ogImage: cykelPageOgImage(page),
       links: [
         { label: `Get free quotes in ${page.city}`, href: `/en/submit-request?stad=${citySlug}` },
         ...(`/en/${page.enSlug}` === cityHub ? [] : [{ label: `Bike repair in ${page.city}`, href: cityHub }]),
@@ -544,9 +543,9 @@ const alternateLinks = (host: SiteHost, route: StaticSeoRoute) => {
   const svUrl = absFor(host, isEnglish ? route.altPath : route.path)
   const enUrl = absFor(host, isEnglish ? route.path : route.altPath)
   return [
-    `<link rel="alternate" hreflang="sv" href="${svUrl}" />`,
-    `<link rel="alternate" hreflang="en" href="${enUrl}" />`,
-    `<link rel="alternate" hreflang="x-default" href="${svUrl}" />`,
+    `<link rel="alternate" hreflang="sv" href="${svUrl}" data-rh="true" />`,
+    `<link rel="alternate" hreflang="en" href="${enUrl}" data-rh="true" />`,
+    `<link rel="alternate" hreflang="x-default" href="${svUrl}" data-rh="true" />`,
   ]
 }
 
@@ -554,30 +553,41 @@ const robotsContent = (route: StaticSeoRoute) => route.noindex
   ? (route.canonicalPath ? 'noindex, follow' : 'noindex, nofollow')
   : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
 
+/** Dedicated /og image when one exists for the route (or its Swedish twin). */
+const routeOgImage = (host: SiteHost, route: StaticSeoRoute) => {
+  if (route.ogImage) return route.ogImage
+  if (host === 'cykelhjalpen') {
+    const dedicated = cykelOgImagePath(route.path)
+      ?? (route.altPath ? cykelOgImagePath(route.altPath) : null)
+    if (dedicated) return dedicated
+  }
+  return undefined
+}
+
 const head = (host: SiteHost, route: StaticSeoRoute) => {
-  const image = imageFor(host, route.ogImage)
+  const image = imageFor(host, routeOgImage(host, route))
   const url = absFor(host, route.canonicalPath || route.path)
   const isEnglish = route.lang === 'en'
   return [
     ...alternateLinks(host, route),
     `<title>${esc(route.title)}</title>`,
-    `<meta name="description" content="${esc(route.description)}" />`,
-    `<meta name="robots" content="${robotsContent(route)}" />`,
-    `<link rel="canonical" href="${url}" />`,
-    '<meta property="og:type" content="website" />',
-    `<meta property="og:locale" content="${isEnglish ? 'en_US' : 'sv_SE'}" />`,
-    `<meta property="og:locale:alternate" content="${isEnglish ? 'sv_SE' : 'en_US'}" />`,
-    `<meta property="og:site_name" content="${host === 'updro' ? 'Updro' : 'Cykelhjälpen'}" />`,
-    `<meta property="og:url" content="${url}" />`,
-    `<meta property="og:title" content="${esc(route.title)}" />`,
-    `<meta property="og:description" content="${esc(route.description)}" />`,
-    `<meta property="og:image" content="${image}" />`,
-    `<meta property="og:image:alt" content="${esc(route.h1)}" />`,
-    '<meta name="twitter:card" content="summary_large_image" />',
-    `<meta name="twitter:title" content="${esc(route.title)}" />`,
-    `<meta name="twitter:description" content="${esc(route.description)}" />`,
-    `<meta name="twitter:image" content="${image}" />`,
-    `<script type="application/ld+json" id="static-seo-jsonld">${jsonLd(host, route)}</script>`,
+    `<meta name="description" content="${esc(route.description)}" data-rh="true" />`,
+    `<meta name="robots" content="${robotsContent(route)}" data-rh="true" />`,
+    `<link rel="canonical" href="${url}" data-rh="true" />`,
+    '<meta property="og:type" content="website" data-rh="true" />',
+    `<meta property="og:locale" content="${isEnglish ? 'en_US' : 'sv_SE'}" data-rh="true" />`,
+    `<meta property="og:locale:alternate" content="${isEnglish ? 'sv_SE' : 'en_US'}" data-rh="true" />`,
+    `<meta property="og:site_name" content="${host === 'updro' ? 'Updro' : 'Cykelhjälpen'}" data-rh="true" />`,
+    `<meta property="og:url" content="${url}" data-rh="true" />`,
+    `<meta property="og:title" content="${esc(route.title)}" data-rh="true" />`,
+    `<meta property="og:description" content="${esc(route.description)}" data-rh="true" />`,
+    `<meta property="og:image" content="${image}" data-rh="true" />`,
+    `<meta property="og:image:alt" content="${esc(route.h1)}" data-rh="true" />`,
+    '<meta name="twitter:card" content="summary_large_image" data-rh="true" />',
+    `<meta name="twitter:title" content="${esc(route.title)}" data-rh="true" />`,
+    `<meta name="twitter:description" content="${esc(route.description)}" data-rh="true" />`,
+    `<meta name="twitter:image" content="${image}" data-rh="true" />`,
+    `<script type="application/ld+json" id="static-seo-jsonld" data-rh="true">${jsonLd(host, route)}</script>`,
   ].join('\n    ')
 }
 
@@ -614,18 +624,20 @@ const englishBody = (route: StaticSeoRoute) => {
   }</article></main>`
 }
 
-export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: SiteHost = 'cykelhjalpen') => {
-  let html = template
-    .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(route.title)}</title>`)
-    .replace(/<meta name="description" content="[^"]*"\s*\/?>/, `<meta name="description" content="${esc(route.description)}" />`)
-    .replace(/<meta name="robots" content="[^"]*"\s*\/?>/, `<meta name="robots" content="${robotsContent(route)}" />`)
+/** Strip every SEO tag the template ships; head() below is the single source of truth. */
+const stripTemplateSeoTags = (html: string) =>
+  html
+    .replace(/<title>[\s\S]*?<\/title>\s*/g, '')
+    .replace(/<meta name="description" content="[^"]*"\s*\/?>\s*/g, '')
+    .replace(/<meta name="robots" content="[^"]*"\s*\/?>\s*/g, '')
     .replace(/<link rel="canonical" href="[^"]*"\s*\/?>\s*/g, '')
-
-  html = html
     .replace(/<link rel="alternate"[^>]+>\s*/g, '')
     .replace(/<meta property="og:[^>]+>\s*/g, '')
     .replace(/<meta name="twitter:[^>]+>\s*/g, '')
     .replace(/<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>\s*/g, '')
+
+export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: SiteHost = 'cykelhjalpen') => {
+  let html = stripTemplateSeoTags(template)
     .replace('</head>', `    ${head(host, route)}\n  </head>`)
 
   if (route.lang === 'en') {
@@ -635,4 +647,50 @@ export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: 
   }
 
   return html.replace(/<div id="root">[\s\S]*?<\/div>/, `<div id="root">${body(route)}</div>`)
+}
+
+/**
+ * Minimal SPA shell (dist/app.html) for dynamic and gated routes
+ * (/mitt-arende/<token>, /admin, Updro's /byraer/<slug>, …).
+ * Unlike the old /index.html fallback it does NOT pretend to be the homepage:
+ * no canonical, no og:url, no homepage body — just a generic title and the
+ * app bundle. Robots meta is deliberately omitted: gated prefixes are noindexed
+ * via the X-Robots-Tag HTTP header (vercel.json) + useNoindex() client-side,
+ * while indexable client-rendered pages (e.g. Updro agency profiles) must not
+ * ship noindex in the initial HTML — Google may skip rendering such pages,
+ * which would lock them out of the index even after JS sets index,follow.
+ */
+export const renderAppShellHtml = (template: string, host: SiteHost = 'cykelhjalpen') => {
+  const brand = host === 'updro' ? 'Updro' : 'Cykelhjälpen'
+  return stripTemplateSeoTags(template).replace('</head>', `    <title>${brand}</title>\n  </head>`)
+}
+
+/**
+ * Static 404 page written to dist/404.html. Vercel serves it with a real 404
+ * status for any path that matches neither a prerendered file nor an app-shell
+ * rewrite, ending the soft-404 surface (previously: 200 + homepage + canonical /).
+ * The inline script normalizes uppercase URL variants to their lowercase
+ * canonical form (Vercel static hosting cannot issue case-transforming 301s).
+ * The app bundle still boots so the React <NotFound /> catch-all takes over.
+ */
+export const renderNotFoundHtml = (template: string, host: SiteHost = 'cykelhjalpen') => {
+  const brand = host === 'updro' ? 'Updro' : 'Cykelhjälpen'
+  const notFoundHead = [
+    `<title>Sidan hittades inte (404) | ${brand}</title>`,
+    '<meta name="robots" content="noindex, nofollow" data-rh="true" />',
+    '<meta name="description" content="Sidan du söker finns inte. The page you are looking for does not exist." data-rh="true" />',
+    '<script>(function(){var p=window.location.pathname;var l=p.toLowerCase();if(p!==l){window.location.replace(l+window.location.search+window.location.hash)}})();</script>',
+  ].join('\n    ')
+  const homeLinks = host === 'updro'
+    ? '<a href="/">Till startsidan</a>'
+    : '<a href="/">Till startsidan</a> · <a href="/en" hreflang="en">Homepage (English)</a>'
+  const notFoundBody = '<main id="static-seo-content" data-static-route="/__404__" style="padding:2rem;font-family:system-ui,sans-serif;max-width:40rem;margin:0 auto">'
+    + '<h1>404 – sidan hittades inte</h1>'
+    + '<p>Sidan du letar efter finns inte – den kan ha flyttats eller aldrig publicerats.</p>'
+    + '<p lang="en">This page does not exist – it may have moved or never been published.</p>'
+    + `<p>${homeLinks}</p>`
+    + '</main>'
+  return stripTemplateSeoTags(template)
+    .replace('</head>', `    ${notFoundHead}\n  </head>`)
+    .replace(/<div id="root">[\s\S]*?<\/div>/, `<div id="root">${notFoundBody}</div>`)
 }

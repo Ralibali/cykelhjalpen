@@ -9,6 +9,8 @@ import {
   getAllStaticSeoRoutes,
   getIndexableSeoRoutes,
   getNoindexSeoRoutes,
+  renderAppShellHtml,
+  renderNotFoundHtml,
   renderStaticHtml,
   SITEMAP_SECTIONS,
 } from "./src/lib/seoStatic";
@@ -81,6 +83,13 @@ function seoBuildPlugin(host: 'cykelhjalpen' | 'updro'): Plugin {
         prerenderedCount++;
       }
       console.log(`✅ Prerendered ${prerenderedCount} routes`);
+
+      // SPA shell for dynamic/gated routes (vercel.json rewrites only those
+      // prefixes here) and a real 404 page (Vercel serves dist/404.html with
+      // status 404 for everything else — no more homepage soft-404s).
+      await fs.writeFile(path.join(distDir, 'app.html'), renderAppShellHtml(template, host), 'utf8');
+      await fs.writeFile(path.join(distDir, '404.html'), renderNotFoundHtml(template, host), 'utf8');
+      console.log('✅ Wrote app.html (SPA shell) and 404.html (real 404 page)');
     },
   };
 }

@@ -10,6 +10,7 @@ import { buildCykelSeoPages, seoPagePath, type CykelSeoPage as CykelSeoPageType 
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { getRobotsDirectiveForPath } from '@/lib/seoRobots'
 import { cityDirectoryPath, useDirectoryGate } from '@/lib/v2/directory'
+import { cykelPageOgImage } from '@/lib/cykelOg'
 import { getCityImage } from '@/lib/cykelCityImages'
 import elsparkBanner1200 from '@/assets/cykel-elsparkcykel-1200.webp'
 import elsparkBanner640 from '@/assets/cykel-elsparkcykel-640.webp'
@@ -169,7 +170,7 @@ const CykelSeoPageV5 = () => {
   const svUrl = `https://cykelhjalpen.se/${page.slug}`
   const enUrl = `https://cykelhjalpen.se/en/${page.enSlug}`
   const canonical = lang === 'en' ? enUrl : svUrl
-  const ogImage = page.ogImage ?? `/og/stad-${citySlug}.jpg`
+  const ogImage = cykelPageOgImage(page)
   const isElspark = page.slug.startsWith('elsparkcykel-reparation-')
   const cityImage = getCityImage(city)
   const bannerImage = isElspark ? { large: elsparkBanner1200, small: elsparkBanner640, alt: text('Elsparkcykel på reparationsstativ i en cykelverkstad', 'E-scooter on a repair stand in a bike shop') } : cityImage

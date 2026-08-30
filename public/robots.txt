@@ -3,7 +3,11 @@ User-agent: *
 Allow: /
 Allow: /registrera/verkstad
 
-# Inloggade, personliga och administrativa vyer
+# Inloggade, personliga och administrativa vyer.
+# Medvetet val: Disallow behålls för dessa oändliga token-URL:rymder
+# (crawl-budget-skydd). För att undvika "Indexed, though blocked" sätts
+# X-Robots-Tag: noindex,nofollow som HTTP-header på samma prefix (vercel.json)
+# och useNoindex() i appen, så varje hämtningsbar signal är konsekvent noindex.
 Disallow: /admin
 Disallow: /admin/
 Disallow: /dashboard
@@ -11,6 +15,7 @@ Disallow: /dashboard/
 Disallow: /logga-in
 Disallow: /aterstall-losenord
 Disallow: /mitt-arende/
+Disallow: /mina-svar/
 Disallow: /avregistrera/
 
 # Kampanj- och annonslandningar ska inte konkurrera i organiskt sök
