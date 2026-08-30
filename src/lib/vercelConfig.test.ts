@@ -9,6 +9,8 @@ type VercelConfig = {
   buildCommand?: string
   outputDirectory?: string
   bunVersion?: string
+  trailingSlash?: boolean
+  redirects?: { source: string; destination: string; statusCode?: number }[]
   rewrites?: { source: string; destination: string }[]
   headers?: HeaderRule[]
 }
@@ -17,12 +19,29 @@ const vercel = JSON.parse(
   readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8'),
 ) as VercelConfig
 
-const rewriteSource = vercel.rewrites?.[0]?.source ?? ''
-const spaFallback = new RegExp(`^${rewriteSource}$`)
-
-function shouldSpaRewrite(path: string): boolean {
-  return spaFallback.test(path)
+/**
+ * Converts a vercel.json rewrite source to a JS RegExp with Vercel semantics
+ * (named params with inline regex `:name(a|b)` are segment-anchored,
+ * `:path*` matches zero or more trailing segments).
+ */
+const sourceToRegExp = (source: string) => {
+  const converted = source
+    .replace(/\/:path\*$/, '(?:/.*)?')
+    .replace(/:(?:prefix|page)\(([^)]+)\)/g, '(?:$1)')
+  return new RegExp(`^${converted}$`)
 }
+
+const rewriteMatchers = (vercel.rewrites ?? []).map((rule) => ({
+  ...rule,
+  test: (path: string) => sourceToRegExp(rule.source).test(path),
+}))
+
+/** Rewrites that target the SPA shell (dist/app.html). */
+const appShellRewrite = (path: string) =>
+  rewriteMatchers.some((rule) => rule.destination === '/app.html' && rule.test(path))
+
+/** Any rewrite at all — a path with no matching rewrite and no dist file 404s. */
+const anyRewrite = (path: string) => rewriteMatchers.some((rule) => rule.test(path))
 
 function headerValues(path: string, key: string): string[] {
   return (vercel.headers ?? [])
@@ -35,6 +54,10 @@ function headerSourceMatches(source: string, path: string): boolean {
   if (source === path) return true
   if (source.endsWith('/:path*')) {
     const prefix = source.slice(0, -'/:path*'.length)
+    return path === prefix || path.startsWith(`${prefix}/`)
+  }
+  if (source.endsWith('/(.*)')) {
+    const prefix = source.slice(0, -'/(.*)'.length)
     return path === prefix || path.startsWith(`${prefix}/`)
   }
   const named = source.match(/^\/sitemap-:name\.xml$/)
@@ -51,15 +74,43 @@ describe('vercel.json (Vite SPA)', () => {
     expect(vercel.bunVersion).toBeUndefined()
   })
 
-  it('rewrites client routes to /index.html', () => {
-    expect(vercel.rewrites).toHaveLength(1)
-    expect(vercel.rewrites?.[0]?.destination).toBe('/index.html')
-    expect(shouldSpaRewrite('/')).toBe(true)
-    expect(shouldSpaRewrite('/logga-in')).toBe(true)
-    expect(shouldSpaRewrite('/dashboard')).toBe(true)
-    expect(shouldSpaRewrite('/dashboard/leads')).toBe(true)
-    expect(shouldSpaRewrite('/mitt-arende/abc')).toBe(true)
-    expect(shouldSpaRewrite('/registrera/verkstad')).toBe(true)
+  it('normalizes trailing slashes with 308 at the edge', () => {
+    expect(vercel.trailingSlash).toBe(false)
+  })
+
+  it('rewrites dynamic/gated client routes to the /app.html shell (not the homepage)', () => {
+    expect(vercel.rewrites?.length).toBeGreaterThan(0)
+    expect(vercel.rewrites?.every((rule) => rule.destination === '/app.html')).toBe(true)
+
+    const appPaths = [
+      '/logga-in', '/registrera', '/aterstall-losenord', '/nytt-losenord',
+      '/dashboard', '/dashboard/leads', '/admin', '/admin/verkstader',
+      '/mitt-arende/abc', '/mina-svar/abc', '/avregistrera/tok',
+      '/annons/verkstad/linkoping', '/registrera/verkstad', '/registrera/byra',
+      '/landing', '/landing/byra', '/sitemap',
+      // Updro dynamic surfaces (shared vercel.json — must never 404)
+      '/byraer/nisse-webb', '/byraer/linkoping/seo', '/artiklar/guide',
+      '/verktyg/kalkyl', '/stader/linkoping', '/leveranser/webbutveckling',
+      '/guider', '/guider/slug', '/kunskapsbank', '/support', '/updro-vs-partna',
+      // English-basename variants
+      '/en/mitt-arende/abc', '/en/logga-in', '/en/dashboard', '/en/admin/verkstader',
+      '/en/integritetspolicy', '/en/villkor', '/en/cookies', '/en/registrera/verkstad',
+    ]
+    for (const path of appPaths) {
+      expect(appShellRewrite(path), path).toBe(true)
+    }
+  })
+
+  it('gives unknown dotless URLs a real 404 (no SPA rewrite → dist/404.html)', () => {
+    const junkPaths = [
+      '/detta-finns-inte', '/nonexistent-page-xyz', '/guider-x',
+      '/Cykelverkstad-Linkoping', '/PUNKTERING-LUND', '/adminxyz',
+      '/registreraX', '/en/nonexistent', '/en/cykelverkstad-lund',
+      '/cykelreparation-linkoping-extra',
+    ]
+    for (const path of junkPaths) {
+      expect(anyRewrite(path), path).toBe(false)
+    }
   })
 
   it('does not SPA-rewrite sitemaps, robots, assets, or files with extensions', () => {
@@ -76,8 +127,31 @@ describe('vercel.json (Vite SPA)', () => {
       '/index.html',
     ]
     for (const path of staticPaths) {
-      expect(shouldSpaRewrite(path), path).toBe(false)
+      expect(anyRewrite(path), path).toBe(false)
     }
+  })
+
+  it('redirects dead/duplicate entry points instead of serving them', () => {
+    const redirects = vercel.redirects ?? []
+    const bySource = new Map(redirects.map((rule) => [rule.source, rule]))
+    expect(bySource.get('/index.html')?.destination).toBe('/')
+    expect(bySource.get('/app.html')?.destination).toBe('/')
+    expect(bySource.get('/404.html')?.destination).toBe('/')
+    // Dead email-CTA link → request form (was a soft-404, would now hard-404)
+    expect(bySource.get('/cykelreparation')?.destination).toBe('/skicka-arende')
+    // Legacy EN-footer URLs (Swedish slugs under /en) → correct English twins
+    expect(bySource.get('/en/cykelverkstad-lund')?.destination).toBe('/en/bike-repair-lund')
+    expect(bySource.get('/en/vad-kostar-cykelreparation-linkoping')?.destination).toBe('/en/bike-repair-cost-linkoping')
+    for (const rule of redirects) {
+      expect(rule.statusCode).toBe(308)
+    }
+  })
+
+  it('serves fingerprinted assets with immutable long-lived caching', () => {
+    expect(headerValues('/assets/index-abc123.js', 'Cache-Control'))
+      .toContain('public, max-age=31536000, immutable')
+    expect(headerValues('/assets/style-def456.css', 'Cache-Control'))
+      .toContain('public, max-age=31536000, immutable')
   })
 
   it('ports security, noindex, and sitemap headers from public/_headers', () => {
@@ -92,7 +166,11 @@ describe('vercel.json (Vite SPA)', () => {
     }
 
     const noindex = 'noindex, nofollow, noarchive'
-    for (const path of ['/admin', '/admin/users', '/dashboard', '/dashboard/leads', '/logga-in', '/registrera', '/aterstall-losenord']) {
+    for (const path of [
+      '/admin', '/admin/users', '/dashboard', '/dashboard/leads',
+      '/logga-in', '/registrera', '/aterstall-losenord', '/nytt-losenord',
+      '/mitt-arende/abc', '/mina-svar/abc', '/avregistrera/tok', '/annons/verkstad/linkoping',
+    ]) {
       expect(headerValues(path, 'X-Robots-Tag')).toContain(noindex)
     }
     expect(headerValues('/registrera/verkstad', 'X-Robots-Tag')).not.toContain(noindex)
@@ -103,6 +181,17 @@ describe('vercel.json (Vite SPA)', () => {
     }
     expect(headerValues('/robots.txt', 'Content-Type')).toContain('text/plain; charset=utf-8')
     expect(headerValues('/robots.txt', 'Cache-Control')).toContain('public, max-age=3600')
+  })
+
+  it('ships a report-only CSP covering the app third-parties', () => {
+    const csp = headerValues('/', 'Content-Security-Policy-Report-Only')[0] ?? ''
+    for (const token of [
+      'https://fonts.googleapis.com', 'https://fonts.gstatic.com',
+      'https://plausible.io', 'https://www.googletagmanager.com',
+      'https://*.supabase.co', 'https://challenges.cloudflare.com', 'https://js.stripe.com',
+    ]) {
+      expect(csp).toContain(token)
+    }
   })
 
   it('leaves Lovable Netlify files in place for rollback', () => {

@@ -12,6 +12,8 @@ export const LEGACY_ALIAS_ROUTES = base.LEGACY_ALIAS_ROUTES
 export const generateSitemapXml = base.generateSitemapXml
 export const generateSectionSitemapXml = base.generateSectionSitemapXml
 export const generateSitemapIndexXml = base.generateSitemapIndexXml
+export const renderAppShellHtml = base.renderAppShellHtml
+export const renderNotFoundHtml = base.renderNotFoundHtml
 
 const marketText = (city: string) => `Cykelhjälpen finns i ${city}. Tillgängligheten beror på vilka partnerverkstäder som är aktiva när ärendet skickas.`
 

@@ -2,10 +2,17 @@ import { Link } from 'react-router-dom'
 import CykelLogo from './CykelLogo'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
-import { useT } from '@/lib/i18n'
+import { useLanguage, useT } from '@/lib/i18n'
+import { toEnglishPath } from '@/i18n/routes'
 
 const CykelFooter = () => {
   const t = useT()
+  const { lang } = useLanguage()
+  // Under the /en router basename, Link `to` values are in-router paths.
+  // Map Swedish paths to their English twins so EN visitors never hit
+  // Swedish slugs (which client-redirect back to /en).
+  const localized = (svPath: string) =>
+    lang === 'en' ? (toEnglishPath(svPath) ?? svPath) : svPath
   return (
   <footer className="border-t border-border bg-muted/30 mt-24">
     <div className="container mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -21,7 +28,7 @@ const CykelFooter = () => {
         <h3 className="font-display font-semibold mb-3">{t('Välj stad')}</h3>
         <ul className="space-y-2 text-sm">
           {CYKEL_CITIES.map((city) => (
-            <li key={city.name}><Link to={cityLandingPath(city.name)} className="hover:text-primary">{t('Cykelverkstad {city}', { city: city.name })}</Link></li>
+            <li key={city.name}><Link to={localized(cityLandingPath(city.name))} className="hover:text-primary">{t('Cykelverkstad {city}', { city: city.name })}</Link></li>
           ))}
         </ul>
       </div>
@@ -29,16 +36,16 @@ const CykelFooter = () => {
       <div>
         <h3 className="font-display font-semibold mb-3">{t('För cyklister')}</h3>
         <ul className="space-y-2 text-sm">
-          <li><Link to="/skicka-arende" className="hover:text-primary">{t('Skicka cykelärende')}</Link></li>
-          <li><Link to="/#sa-fungerar-det" className="hover:text-primary">{t('Så fungerar det')}</Link></li>
-          <li><Link to="/vad-kostar-cykelreparation-linkoping" className="hover:text-primary">{t('Priser på cykelreparation')}</Link></li>
+          <li><Link to={localized('/skicka-arende')} className="hover:text-primary">{t('Skicka cykelärende')}</Link></li>
+          <li><Link to={localized('/#sa-fungerar-det')} className="hover:text-primary">{t('Så fungerar det')}</Link></li>
+          <li><Link to={localized('/vad-kostar-cykelreparation-linkoping')} className="hover:text-primary">{t('Priser på cykelreparation')}</Link></li>
         </ul>
       </div>
 
       <div>
         <h3 className="font-display font-semibold mb-3">{t('För verkstäder')}</h3>
         <ul className="space-y-2 text-sm">
-          <li><Link to="/for-cykelverkstader" className="hover:text-primary">{t('Få fler lokala kunder')}</Link></li>
+          <li><Link to={localized('/for-cykelverkstader')} className="hover:text-primary">{t('Få fler lokala kunder')}</Link></li>
           <li><Link to="/registrera/verkstad" className="hover:text-primary">{t('Registrera verkstaden')}</Link></li>
           <li><Link to="/logga-in" className="hover:text-primary">{t('Logga in')}</Link></li>
           <li><a href="mailto:info@cykelhjalpen.se" className="hover:text-primary">{t('Kontakta oss')}</a></li>
