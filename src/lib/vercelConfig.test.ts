@@ -92,9 +92,12 @@ describe('vercel.json (Vite SPA)', () => {
       '/byraer/nisse-webb', '/byraer/linkoping/seo', '/artiklar/guide',
       '/verktyg/kalkyl', '/stader/linkoping', '/leveranser/webbutveckling',
       '/guider', '/guider/slug', '/kunskapsbank', '/support', '/updro-vs-partna',
+      // V2 gated surfaces — client-rendered, must never hard-404 in prod
+      '/verkstad/nagon-slug', '/avsluta-paminnelser/some-token',
       // English-basename variants
       '/en/mitt-arende/abc', '/en/logga-in', '/en/dashboard', '/en/admin/verkstader',
       '/en/integritetspolicy', '/en/villkor', '/en/cookies', '/en/registrera/verkstad',
+      '/en/verkstad/nagon-slug', '/en/avsluta-paminnelser/some-token',
     ]
     for (const path of appPaths) {
       expect(appShellRewrite(path), path).toBe(true)
@@ -170,6 +173,7 @@ describe('vercel.json (Vite SPA)', () => {
       '/admin', '/admin/users', '/dashboard', '/dashboard/leads',
       '/logga-in', '/registrera', '/aterstall-losenord', '/nytt-losenord',
       '/mitt-arende/abc', '/mina-svar/abc', '/avregistrera/tok', '/annons/verkstad/linkoping',
+      '/avsluta-paminnelser/some-token',
     ]) {
       expect(headerValues(path, 'X-Robots-Tag')).toContain(noindex)
     }
@@ -191,6 +195,13 @@ describe('vercel.json (Vite SPA)', () => {
       'https://*.supabase.co', 'https://challenges.cloudflare.com', 'https://js.stripe.com',
     ]) {
       expect(csp).toContain(token)
+    }
+  })
+
+  it('disallows token URL spaces in robots.txt (crawl-budget guard)', () => {
+    const robots = readFileSync(resolve(process.cwd(), 'public/robots.txt'), 'utf8')
+    for (const prefix of ['/mitt-arende/', '/mina-svar/', '/avregistrera/', '/avsluta-paminnelser/', '/annons/']) {
+      expect(robots, `robots.txt saknar Disallow: ${prefix}`).toContain(`Disallow: ${prefix}`)
     }
   })
 

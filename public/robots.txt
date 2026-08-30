@@ -17,6 +17,7 @@ Disallow: /aterstall-losenord
 Disallow: /mitt-arende/
 Disallow: /mina-svar/
 Disallow: /avregistrera/
+Disallow: /avsluta-paminnelser/
 
 # Kampanj- och annonslandningar ska inte konkurrera i organiskt sök
 Disallow: /annons/
