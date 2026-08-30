@@ -105,6 +105,8 @@ export interface V2WinnerRemindersResponse {
 }
 export interface V2StalledWinnerRecoveryResponse {
   recovered: { request_id: string; old_response_id: string }[]
+  /** S2:s onboarding-livscykel körs i samma dagliga cron (tillägg, bakåtkompatibelt). */
+  onboarding?: { transitioned: number; nudged: number }
 }
 
 // v2-reselect-winner
