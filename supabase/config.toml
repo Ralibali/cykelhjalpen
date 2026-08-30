@@ -65,3 +65,14 @@ verify_jwt = false
 # Påminner kunden om att välja offert inom fem dagar.
 [functions.bike-choice-reminders]
 verify_jwt = false
+
+# --- V2 S8 retention (cron + publik unsubscribe-token) -----------------------
+# Daglig retention-loop: anropas av pg_cron med service-nyckeln (ingen
+# användarsession). Alla cadences är flagg-gated (v2.retention.lifecycle OFF).
+[functions.v2-retention-cron]
+verify_jwt = false
+
+# Publik avregistrering via engångstoken i mejl (ingen session). Token är
+# hemligheten; endpointen avslöjar aldrig om en token finns.
+[functions.v2-retention-unsubscribe]
+verify_jwt = false

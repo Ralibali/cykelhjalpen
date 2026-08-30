@@ -252,6 +252,13 @@ export const V2_FLAG_KEYS = [
   'v2.datamoat.event_collection',
   'v2.seo.content_surface',
   'v2.retention.lifecycle',
+  // S8 underflaggor (alla OFF; kräver v2.retention.lifecycle)
+  'v2.retention.dormant_reactivation',
+  'v2.retention.weekly_digest',
+  'v2.retention.seasonal_reactivation',
+  'v2.retention.performance_summary',
+  'v2.retention.profile_nudge',
+  'v2.retention.workshop_notifications',
   'v2.subscriptions.enabled',
   'v2.pricing.config_reader',
 ] as const
