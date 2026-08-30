@@ -1,5 +1,5 @@
 {
-  "name": "cykelhjalpen",
+  "name": "vite_react_shadcn_ts",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +10,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",
+    "types:v2:check": "node scripts/generate-v2-types.mjs --check",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
