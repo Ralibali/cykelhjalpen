@@ -3,19 +3,23 @@
 // any read error = every flag off. 60 s in-memory cache.
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/integrations/supabase/types'
 import type { V2FeatureFlagRow, V2FlagKey } from './contracts'
 
-type UntypedClient = SupabaseClient<any, 'public', any>
+// Typed client: the regenerated Database types (scripts/generate-v2-types.mjs)
+// include every v2_* table. Tests may still inject a minimal mock client via
+// `as unknown as V2Client` — runtime behavior is unchanged.
+export type V2Client = SupabaseClient<Database>
 
 // Lazy default client: importing the shared client module instantiates
 // Supabase at import time (needs env), which must not happen in tests that
 // only exercise pure logic.
-let defaultClient: UntypedClient | null = null
-async function db(client?: UntypedClient): Promise<UntypedClient> {
+let defaultClient: V2Client | null = null
+async function db(client?: V2Client): Promise<V2Client> {
   if (client) return client
   if (!defaultClient) {
     const mod = await import('@/integrations/supabase/client')
-    defaultClient = mod.supabase as unknown as UntypedClient
+    defaultClient = mod.supabase
   }
   return defaultClient
 }
@@ -26,7 +30,7 @@ const CACHE_TTL_MS = 60_000
 let cache: { at: number; flags: V2FlagMap } | null = null
 
 export async function fetchV2Flags(
-  opts: { bypassCache?: boolean; client?: UntypedClient } = {},
+  opts: { bypassCache?: boolean; client?: V2Client } = {},
 ): Promise<V2FlagMap> {
   if (!opts.bypassCache && cache && Date.now() - cache.at < CACHE_TTL_MS) {
     return cache.flags
@@ -38,7 +42,12 @@ export async function fetchV2Flags(
     if (error || !data) return cache?.flags ?? new Map()
 
     const flags: V2FlagMap = new Map()
-    for (const row of data as V2FeatureFlagRow[]) flags.set(row.key, row)
+    for (const row of data) {
+      flags.set(row.key, {
+        ...row,
+        rollout: (row.rollout ?? {}) as V2FeatureFlagRow['rollout'],
+      })
+    }
     cache = { at: Date.now(), flags }
     return flags
   } catch {

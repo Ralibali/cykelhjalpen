@@ -3,18 +3,18 @@
 // so rendering never breaks and never shows a different price than charged.
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/integrations/supabase/types'
 import { LEAD_FEE_ORE } from '@/lib/pricing'
 import type { V2PricingConfigRow } from './contracts'
-
-type UntypedClient = SupabaseClient<any, 'public', any>
+import type { V2Client } from './flags'
 
 // Lazy default client — the shared client module needs env at import time.
-let defaultClient: UntypedClient | null = null
-async function db(client?: UntypedClient): Promise<UntypedClient> {
+let defaultClient: V2Client | null = null
+async function db(client?: V2Client): Promise<V2Client> {
   if (client) return client
   if (!defaultClient) {
     const mod = await import('@/integrations/supabase/client')
-    defaultClient = mod.supabase as unknown as UntypedClient
+    defaultClient = mod.supabase
   }
   return defaultClient
 }
@@ -56,7 +56,7 @@ export function pricingFromRows(rows: V2PricingConfigRow[] | null | undefined): 
   }
 }
 
-export async function getV2Pricing(opts: { client?: UntypedClient } = {}): Promise<V2Pricing> {
+export async function getV2Pricing(opts: { client?: V2Client } = {}): Promise<V2Pricing> {
   try {
     const { data, error } = await (await db(opts.client))
       .from('v2_pricing_config')
@@ -66,7 +66,7 @@ export async function getV2Pricing(opts: { client?: UntypedClient } = {}): Promi
       .eq('key', 'winner_fee')
       .eq('active', true)
     if (error) return V2_LIVE_PRICING_FALLBACK
-    return pricingFromRows(data as V2PricingConfigRow[] | null)
+    return pricingFromRows(data)
   } catch {
     return V2_LIVE_PRICING_FALLBACK
   }
