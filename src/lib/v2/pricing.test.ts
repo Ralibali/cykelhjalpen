@@ -16,6 +16,7 @@ import {
   resolvePricingConfig,
   type V2PricingConfigRow,
   type V2PricingExperimentRow,
+  type V2PricingExperimentVariant,
 } from '../../../supabase/functions/_shared/v2/config-schema'
 
 import { LEAD_FEE_ORE, LEAD_FEE_KR } from '@/lib/pricing'
@@ -155,8 +156,11 @@ describe('pricing experiments — INERT + invariants (contract §2.8)', () => {
   })
 
   it('malformed variants resolve nothing', () => {
+    // intentionally malformed DB payload (missing winner_fee_ore) — the
+    // resolver must reject it at runtime even though the type requires it
+    const broken = { name: 'broken' } as unknown as V2PricingExperimentVariant
     expect(resolveExperimentVariant(
-      experiment({ active: true, variants: [{ name: 'broken' }] }),
+      experiment({ active: true, variants: [broken] }),
       'workshop-1',
     )).toBeNull()
     expect(resolveExperimentVariant(
