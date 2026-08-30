@@ -1784,6 +1784,7 @@ export type Database = {
           ghosted_claim_status: string | null
           stalled_at: string | null
           winner_reminded_at: string | null
+          won_at: string | null
           // __V2GEN_COLS_workshop_responses_Row_END__
         }
         Insert: {
@@ -1804,6 +1805,7 @@ export type Database = {
           ghosted_claim_status?: string | null
           stalled_at?: string | null
           winner_reminded_at?: string | null
+          won_at?: string | null
           // __V2GEN_COLS_workshop_responses_Insert_END__
         }
         Update: {
@@ -1824,6 +1826,7 @@ export type Database = {
           ghosted_claim_status?: string | null
           stalled_at?: string | null
           winner_reminded_at?: string | null
+          won_at?: string | null
           // __V2GEN_COLS_workshop_responses_Update_END__
         }
         Relationships: [
@@ -2051,7 +2054,9 @@ export type Database = {
       v2_content_pages: {
         Row: {
           author_name: string | null
+          author_title: string | null
           body_markdown: string | null
+          city_slugs: string[]
           created_at: string
           data_modules: Json
           description: string | null
@@ -2061,15 +2066,20 @@ export type Database = {
           page_type: string
           path: string
           published_at: string | null
+          related_paths: string[]
           reviewed_at: string | null
           reviewer_name: string | null
+          reviewer_title: string | null
+          service_categories: string[]
           status: string
           title: string
           updated_at: string
         }
         Insert: {
           author_name?: string | null
+          author_title?: string | null
           body_markdown?: string | null
+          city_slugs?: string[]
           created_at?: string
           data_modules?: Json
           description?: string | null
@@ -2079,15 +2089,20 @@ export type Database = {
           page_type: string
           path: string
           published_at?: string | null
+          related_paths?: string[]
           reviewed_at?: string | null
           reviewer_name?: string | null
+          reviewer_title?: string | null
+          service_categories?: string[]
           status?: string
           title: string
           updated_at?: string
         }
         Update: {
           author_name?: string | null
+          author_title?: string | null
           body_markdown?: string | null
+          city_slugs?: string[]
           created_at?: string
           data_modules?: Json
           description?: string | null
@@ -2097,8 +2112,11 @@ export type Database = {
           page_type?: string
           path?: string
           published_at?: string | null
+          related_paths?: string[]
           reviewed_at?: string | null
           reviewer_name?: string | null
+          reviewer_title?: string | null
+          service_categories?: string[]
           status?: string
           title?: string
           updated_at?: string
@@ -2442,6 +2460,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      v2_maintenance_reminder_rules: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          followup_days: number
+          id: string
+          kind: string
+          notes: string | null
+          remind_after_months: number
+          repair_category: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          followup_days?: number
+          id?: string
+          kind?: string
+          notes?: string | null
+          remind_after_months: number
+          repair_category: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          followup_days?: number
+          id?: string
+          kind?: string
+          notes?: string | null
+          remind_after_months?: number
+          repair_category?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       v2_nudge_log: {
         Row: {
@@ -2886,6 +2940,50 @@ export type Database = {
           requests_30d?: number
         }
         Relationships: []
+      }
+      v2_workshop_notification_prefs: {
+        Row: {
+          created_at: string
+          digest_enabled: boolean
+          performance_enabled: boolean
+          profile_nudge_enabled: boolean
+          review_notifications_enabled: boolean
+          seasonal_enabled: boolean
+          sms_enabled: boolean
+          updated_at: string
+          workshop_id: string
+        }
+        Insert: {
+          created_at?: string
+          digest_enabled?: boolean
+          performance_enabled?: boolean
+          profile_nudge_enabled?: boolean
+          review_notifications_enabled?: boolean
+          seasonal_enabled?: boolean
+          sms_enabled?: boolean
+          updated_at?: string
+          workshop_id: string
+        }
+        Update: {
+          created_at?: string
+          digest_enabled?: boolean
+          performance_enabled?: boolean
+          profile_nudge_enabled?: boolean
+          review_notifications_enabled?: boolean
+          seasonal_enabled?: boolean
+          sms_enabled?: boolean
+          updated_at?: string
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "v2_workshop_notification_prefs_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       v2_workshop_onboarding: {
         Row: {
@@ -3446,6 +3544,10 @@ export type Database = {
             }[]
           }
       // __V2GEN_FUNCTIONS_START__ (generated by scripts/generate-v2-types.mjs — do not edit by hand)
+      v2_assign_public_slug: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
       v2_emit_client_event: {
         Args: {
           p_consent_scope?: string
@@ -3455,6 +3557,10 @@ export type Database = {
         }
         Returns: Json
       }
+      v2_generate_workshop_slug: {
+        Args: { p_company_name: string; p_workshop_id: string }
+        Returns: string
+      }
       v2_get_price_index: {
         Args: {
           p_category?: string
@@ -3462,9 +3568,39 @@ export type Database = {
         }
         Returns: Json
       }
+      v2_get_public_directory: {
+        Args: {
+          p_area?: string
+          p_city_slug?: string
+          p_service?: string
+        }
+        Returns: Json
+      }
       v2_refresh_workshop_review_stats: {
         Args: Record<PropertyKey, never>
         Returns: unknown
+      }
+      v2_reselect_bike_winner: {
+        Args: { p_request_id: string; p_response_id: string }
+        Returns: {
+          previous_response_id: string
+          winner_workshop_id: string
+        }[]
+      }
+      v2_set_public_profile: {
+        Args: {
+          p_bio_short?: string
+          p_opt_in?: boolean
+        }
+        Returns: Json
+      }
+      v2_set_won_at: {
+        Args: Record<PropertyKey, never>
+        Returns: unknown
+      }
+      v2_slugify: {
+        Args: { p_value: string }
+        Returns: string
       }
       // __V2GEN_FUNCTIONS_END__
     }

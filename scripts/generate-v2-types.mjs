@@ -130,7 +130,7 @@ function parseMigrations(sql) {
   }
 
   for (const m of sql.matchAll(
-    /create\s+or\s+replace\s+function\s+public\.(\w+)\s*\(([\s\S]*?)\)\s*returns\s+([\w.]+)/gi,
+    /create\s+or\s+replace\s+function\s+public\.(\w+)\s*\(([\s\S]*?)\)\s*returns\s+(table\s*\(([\s\S]*?)\)|[\w.]+)/gi,
   )) {
     const args = []
     for (const part of splitTopLevel(m[2])) {
@@ -141,7 +141,13 @@ function parseMigrations(sql) {
       const col = parseColumn(t)
       if (col) args.push({ name: am[1], sqlType: col.sqlType, optional: /\bdefault\b/i.test(am[2]) })
     }
-    functions[m[1]] = { args, returns: m[3].toLowerCase() }
+    // RETURNS TABLE (col type, ...) → setof record; scalar types unchanged.
+    const returnsTable = m[4]
+      ? splitTopLevel(m[4])
+          .map((part) => parseColumn(part.trim()))
+          .filter(Boolean)
+      : null
+    functions[m[1]] = { args, returns: m[3].toLowerCase().replace(/\s*\([\s\S]*$/, ''), returnsTable }
   }
 
   return { enums, tables, addedColumns, functions }
@@ -289,6 +295,15 @@ function genFunction(name, fn, enums) {
     }
     lines.push(`${pad(8)}}`)
   }
+  if (fn.returnsTable) {
+    lines.push(`${pad(8)}Returns: {`)
+    for (const col of [...fn.returnsTable].sort((a, b) => a.name.localeCompare(b.name))) {
+      lines.push(`${pad(10)}${col.name}: ${tsType(col.sqlType, enums)}`)
+    }
+    lines.push(`${pad(8)}}[]`)
+    lines.push(`${pad(6)}}`)
+    return lines.join('\n')
+  }
   let ret
   if (fn.returns === 'jsonb' || fn.returns === 'json') ret = 'Json'
   else if (fn.returns === 'trigger') ret = 'unknown'
@@ -336,7 +351,16 @@ function main() {
     .filter((e) => e.startsWith('v2_'))
     .sort()
 
-  const tablesBlock = v2Tables.map((t) => genTable(t, tables[t], enums)).join('\n')
+  // V2-tabeller som fått senare ALTER TABLE … ADD COLUMN (t.ex. S7:s
+  // editorial-kolumner på v2_content_pages) genereras med SLUTGILTIGT schema —
+  // kolumnerna mergas in i TABLES-blocket i stället för COLS-markörer
+  // (COLS-markörer finns bara för V1-tabeller som redigeras för hand).
+  const finalCols = (t) => {
+    const byName = new Map()
+    for (const c of [...(tables[t] ?? []), ...(addedColumns[t] ?? [])]) byName.set(c.name, c)
+    return [...byName.values()]
+  }
+  const tablesBlock = v2Tables.map((t) => genTable(t, finalCols(t), enums)).join('\n')
   const viewsBlock = Object.keys(VIEW_SPECS)
     .sort()
     .map((v) => genView(v, VIEW_SPECS[v]))
@@ -364,6 +388,7 @@ function main() {
     s = replaceRegion(s, 'ENUMS', enumsBlock)
     s = replaceRegion(s, 'CONSTANTS', constantsBlock)
     for (const [table, cols] of Object.entries(addedColumns)) {
+      if (tables[table]) continue // v2-tabeller: kolumnerna ligger redan i TABLES-blocket
       const sorted = [...cols].sort((a, b) => a.name.localeCompare(b.name))
       for (const mode of ['Row', 'Insert', 'Update']) {
         const block = sorted.map((c) => colLine(c, enums, 10, mode)).join('\n')

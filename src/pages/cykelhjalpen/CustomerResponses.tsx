@@ -327,6 +327,7 @@ const CustomerResponses = () => {
 
             {winnerSettled && winner?.workshop?.company_name && token && (
               <OutcomeReviewCard token={token} workshopName={winner.workshop.company_name} />
+            )}
             {token && (
               <CustomerRetentionSection
                 token={token}

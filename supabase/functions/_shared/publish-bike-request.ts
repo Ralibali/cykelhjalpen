@@ -1,13 +1,10 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { notifyWorkshopsOfApprovedRequest, logSmsAttempt } from './notifications.ts'
-<<<<<<< HEAD
 import { v2FlagEnabledFor } from './v2/flags.ts'
 import { v2ClusterCityNames } from './v2/city-state.ts'
 import { citySlugFromName } from './v2/config-schema.ts'
 import { matchWorkshopToRequestCity } from './v2/eligibility.ts'
-=======
 import { withUtmParams } from './v2/utm.ts'
->>>>>>> v2/analytics-datamoat
 
 /** Keep in sync with src/lib/cykelMarketplaceHealth.ts (PR #9). */
 export const ACTIVE_WORKSHOP_QUOTE_WINDOW_DAYS = 30
