@@ -11,12 +11,14 @@
 
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import {
+  resolvePricingExperiment,
   V2_LIVE_PRICING,
   resolveExperimentVariant,
   resolvePricingConfig,
   type V2PricingConfig,
   type V2PricingConfigRow,
   type V2PricingExperimentRow,
+  type V2ResolvedExperiment,
 } from './config-schema.ts'
 import { v2FlagEnabled } from './flags.ts'
 
@@ -88,6 +90,43 @@ export async function getExperimentalWinnerFeeOre(
       if (variant?.winner_fee_ore != null) return variant.winner_fee_ore
     }
     return null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Pricing-experiment reader (contract §2.8). Display/config override ONLY —
+ * never used on a settlement path.
+ *
+ * An experiment applies only when ALL of these hold:
+ *   1. flag v2.pricing.config_reader is ON (the pricing indirection switch),
+ *   2. the experiment row is active=true (explicit admin activation),
+ *   3. now is within the row's started/ended window.
+ * Otherwise null → callers keep the live 50 SEK rule. commissionBps is not
+ * part of the experiment surface and stays 0 forever (invariant I1).
+ * Never throws.
+ */
+export async function getActivePricingExperiment(
+  supabase: SupabaseClient,
+  key: string,
+  opts: { subjectId?: string | null } = {},
+): Promise<V2ResolvedExperiment | null> {
+  try {
+    const flagOn = await v2FlagEnabled(supabase, 'v2.pricing.config_reader')
+    if (!flagOn) return null
+
+    const { data, error } = await supabase
+      .from('v2_pricing_experiments')
+      .select('key, variants, active, started_at, ended_at')
+      .eq('key', key)
+      .maybeSingle()
+    if (error) return null
+
+    return resolvePricingExperiment(data as V2PricingExperimentRow | null, {
+      flagOn: true,
+      subjectId: opts.subjectId ?? null,
+    })
   } catch {
     return null
   }

@@ -231,6 +231,44 @@ export interface V2EntitlementOverrideRequest {
   expires_at?: string
   reason: string
 }
+export interface V2EntitlementOverrideResponse {
+  override_id: string
+}
+// v2-subscription-portal (billing portal / cancellation)
+export interface V2SubscriptionPortalResponse {
+  url: string
+}
+
+// ---------------------------------------------------------------------------
+// Plans / subscriptions (mirror of _shared/v2/config-schema.ts — keep in sync;
+// parity enforced by subscriptions.test.ts)
+// ---------------------------------------------------------------------------
+
+export const V2_PLAN_CODES = ['pay_per_win', 'pro', 'pro_plus'] as const
+export type V2PlanCode = (typeof V2_PLAN_CODES)[number]
+
+/** Entitlement key registry (contract §2.8; extend only via contract revision). */
+export const V2_ENTITLEMENT_KEYS = [
+  'directory_featured',
+  'priority_slots',
+  'free_wins_per_month',
+  'price_index_early_access',
+  'profile_rich_modules',
+] as const
+export type V2EntitlementKey = (typeof V2_ENTITLEMENT_KEYS)[number]
+
+export type V2EntitlementMap = Partial<Record<V2EntitlementKey, unknown>>
+
+export type V2SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'cancelled' | 'expired'
+
+/** Statuses that entitle the workshop to its plan's entitlements. */
+export const V2_SUBSCRIPTION_LIVE_STATUSES: readonly V2SubscriptionStatus[] = [
+  'trialing',
+  'active',
+  'past_due',
+]
+
+export const V2_DEFAULT_PLAN_CODE: V2PlanCode = 'pay_per_win'
 
 // ---------------------------------------------------------------------------
 // Row types for the new tables (until supabase types are regenerated, S13)
@@ -269,4 +307,40 @@ export interface V2PricingConfigRow {
   free_wins_on_signup: number
   effective_from: string
   active: boolean
+}
+
+export interface V2PlanRow {
+  code: string
+  name: string
+  price_ore_monthly: number
+  currency: string
+  stripe_price_id: string | null
+  trial_days: number
+  entitlements: Record<string, unknown>
+  active: boolean
+}
+
+export interface V2WorkshopSubscriptionRow {
+  id: string
+  workshop_id: string
+  plan_code: string
+  status: V2SubscriptionStatus
+  stripe_subscription_id: string | null
+  stripe_customer_id: string | null
+  trial_ends_at: string | null
+  current_period_end: string | null
+  cancelled_at: string | null
+  granted_by_admin: boolean
+  override_reason: string | null
+}
+
+export interface V2EntitlementOverrideRow {
+  id: string
+  workshop_id: string
+  entitlement_key: string
+  value: unknown
+  expires_at: string | null
+  granted_by: string | null
+  reason: string
+  created_at: string
 }

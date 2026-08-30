@@ -6,6 +6,7 @@ import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { BuyLeadsPicker } from '@/components/workshop/BuyLeadsPicker'
 import { LeadCreditsInvoiceHistory } from '@/components/workshop/LeadCreditsInvoiceHistory'
 import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
+import { V2SubscriptionCard } from '@/components/workshop/V2SubscriptionCard'
 import { useT } from '@/lib/i18n'
 
 interface ChargeRow {
@@ -90,6 +91,9 @@ const WorkshopBilling = () => {
         <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">{t('Betalda offerter')}</p><p className="font-display text-2xl font-bold mt-1">{totals.paidCount}</p></div>
         <div className="sticker rounded-3xl bg-card p-4"><p className="text-xs text-muted-foreground">{t('Gratis-leads')}</p><p className="font-display text-2xl font-bold mt-1">{totals.freeCount}</p></div>
       </div>
+
+      {/* V2 prenumerationsyta — renderas bara när flaggan v2.subscriptions.enabled är PÅ */}
+      <V2SubscriptionCard workshopId={workshop.id} />
 
       <div className="sticker rounded-3xl bg-card p-6 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">

@@ -236,6 +236,228 @@ export function grossOre(netOre: number, vatRate: number): number {
 }
 
 // ---------------------------------------------------------------------------
+// Subscriptions / tiers (contract §2.8) — capability, OFF by default (G-S1)
+// ---------------------------------------------------------------------------
+
+export const V2_PLAN_CODES = ['pay_per_win', 'pro', 'pro_plus'] as const
+export type V2PlanCode = (typeof V2_PLAN_CODES)[number]
+
+export const isV2PlanCode = (value: string): value is V2PlanCode =>
+  (V2_PLAN_CODES as readonly string[]).includes(value)
+
+/**
+ * Entitlement key registry (contract §2.8). Extend ONLY via contract revision.
+ * Unknown keys in plan/override rows are dropped by the resolver — a typo must
+ * never silently grant something.
+ */
+export const V2_ENTITLEMENT_KEYS = [
+  'directory_featured',
+  'priority_slots',
+  'free_wins_per_month',
+  'price_index_early_access',
+  'profile_rich_modules',
+] as const
+export type V2EntitlementKey = (typeof V2_ENTITLEMENT_KEYS)[number]
+
+export const isV2EntitlementKey = (value: string): value is V2EntitlementKey =>
+  (V2_ENTITLEMENT_KEYS as readonly string[]).includes(value)
+
+export type V2EntitlementMap = Partial<Record<V2EntitlementKey, unknown>>
+
+export const V2_SUBSCRIPTION_STATUSES = [
+  'trialing',
+  'active',
+  'past_due',
+  'cancelled',
+  'expired',
+] as const
+export type V2SubscriptionStatus = (typeof V2_SUBSCRIPTION_STATUSES)[number]
+
+/** Statuses that entitle the workshop to its plan's entitlements. */
+export const V2_SUBSCRIPTION_LIVE_STATUSES: readonly V2SubscriptionStatus[] = [
+  'trialing',
+  'active',
+  'past_due',
+]
+
+export interface V2PlanRow {
+  code: string
+  name: string
+  price_ore_monthly: number
+  currency: string
+  stripe_price_id: string | null
+  trial_days: number
+  entitlements: Record<string, unknown>
+  active: boolean
+}
+
+export interface V2WorkshopSubscriptionRow {
+  id: string
+  workshop_id: string
+  plan_code: string
+  status: V2SubscriptionStatus
+  stripe_subscription_id: string | null
+  stripe_customer_id: string | null
+  trial_ends_at: string | null
+  current_period_end: string | null
+  cancelled_at: string | null
+  granted_by_admin: boolean
+  override_reason: string | null
+}
+
+export interface V2EntitlementOverrideRow {
+  id: string
+  workshop_id: string
+  entitlement_key: string
+  value: unknown
+  expires_at: string | null
+  granted_by: string | null
+  reason: string
+  created_at: string
+}
+
+/** The always-available default: today's pay-per-win model, no entitlements. */
+export const V2_DEFAULT_PLAN_CODE: V2PlanCode = 'pay_per_win'
+
+/**
+ * Resolve a workshop's effective entitlements.
+ *
+ * - Plan entitlements apply only while the subscription is in a LIVE status
+ *   (pass `subscriptionStatus: null` when there is no live row → nothing).
+ * - Admin overrides apply regardless of subscription state, until expires_at.
+ * - Override value `false`/`null` REVOKES the key (audit row kept in the DB).
+ * - Unknown keys are dropped everywhere (registry above is authoritative).
+ *
+ * Pure: no I/O. Callers decide the flag gating.
+ */
+export function resolveV2Entitlements(input: {
+  planEntitlements?: Record<string, unknown> | null
+  subscriptionStatus?: V2SubscriptionStatus | null
+  overrides?: V2EntitlementOverrideRow[] | null
+  now?: Date
+}): V2EntitlementMap {
+  const now = input.now ?? new Date()
+  const resolved: V2EntitlementMap = {}
+
+  const planIsLive =
+    input.subscriptionStatus != null &&
+    V2_SUBSCRIPTION_LIVE_STATUSES.includes(input.subscriptionStatus)
+
+  if (planIsLive) {
+    for (const [key, value] of Object.entries(input.planEntitlements ?? {})) {
+      if (!isV2EntitlementKey(key)) continue
+      if (value === false || value == null) continue
+      resolved[key] = value
+    }
+  }
+
+  for (const override of input.overrides ?? []) {
+    if (!isV2EntitlementKey(override.entitlement_key)) continue
+    if (override.expires_at && new Date(override.expires_at) <= now) continue
+    if (override.value === false || override.value == null) {
+      delete resolved[override.entitlement_key]
+    } else {
+      resolved[override.entitlement_key] = override.value
+    }
+  }
+
+  return resolved
+}
+
+// ---------------------------------------------------------------------------
+// Stripe subscription webhook state mapping (contract §3.8)
+// ---------------------------------------------------------------------------
+
+/**
+ * Map a Stripe subscription status to the contract's v2 status enum.
+ * Unknown statuses return null → the webhook stores nothing new.
+ * `incomplete` (first payment pending) and `paused` map to `past_due`:
+ * the workshop must not gain entitlements from an unpaid subscription.
+ */
+export function v2SubscriptionStatusFromStripe(
+  stripeStatus: string,
+): V2SubscriptionStatus | null {
+  switch (stripeStatus) {
+    case 'trialing':
+      return 'trialing'
+    case 'active':
+      return 'active'
+    case 'past_due':
+    case 'unpaid':
+    case 'incomplete':
+    case 'paused':
+      return 'past_due'
+    case 'canceled':
+      return 'cancelled'
+    case 'incomplete_expired':
+      return 'expired'
+    default:
+      return null
+  }
+}
+
+/**
+ * Duck-typed Stripe subscription shape (apiVersion 2025-08-27.basil moved
+ * current_period_end to items; we accept both). Pure so vitest can drive the
+ * webhook's state transitions with mocked payloads.
+ */
+export interface V2StripeSubscriptionLike {
+  id: string
+  status: string
+  customer: string | { id: string } | null
+  trial_end?: number | null
+  canceled_at?: number | null
+  current_period_end?: number | null
+  items?: { data?: Array<{ current_period_end?: number | null }> } | null
+  metadata?: Record<string, string> | null
+}
+
+export interface V2SubscriptionPatch {
+  status: V2SubscriptionStatus
+  stripe_subscription_id: string
+  stripe_customer_id: string | null
+  trial_ends_at: string | null
+  current_period_end: string | null
+  cancelled_at: string | null
+}
+
+const unixToIso = (seconds: number | null | undefined): string | null =>
+  typeof seconds === 'number' && Number.isFinite(seconds)
+    ? new Date(seconds * 1000).toISOString()
+    : null
+
+/**
+ * Build the v2_workshop_subscriptions patch for a Stripe subscription object.
+ * Returns null when the status is unknown (webhook then ignores the event).
+ */
+export function v2SubscriptionPatchFromStripe(
+  sub: V2StripeSubscriptionLike,
+): V2SubscriptionPatch | null {
+  const status = v2SubscriptionStatusFromStripe(sub.status)
+  if (!status) return null
+
+  const customerId =
+    typeof sub.customer === 'string'
+      ? sub.customer
+      : (sub.customer?.id ?? null)
+
+  const periodEnd =
+    sub.current_period_end ??
+    sub.items?.data?.find((item) => typeof item?.current_period_end === 'number')
+      ?.current_period_end ??
+    null
+
+  return {
+    status,
+    stripe_subscription_id: sub.id,
+    stripe_customer_id: customerId,
+    trial_ends_at: unixToIso(sub.trial_end),
+    current_period_end: unixToIso(periodEnd),
+    cancelled_at: unixToIso(sub.canceled_at),
+  }
+}
+
+
 // Pricing experiments (contract §2.8) — INERT until flagged (G-X1) and seeded
 // active=false. Invariants enforced HERE:
 //  - experiments can only carry winner_fee_ore; commission is ALWAYS 0 (I1) —
@@ -246,7 +468,7 @@ export function grossOre(netOre: number, vatRate: number): number {
 
 export interface V2PricingExperimentVariant {
   name: string
-  winner_fee_ore?: number
+  winner_fee_ore: number
   weight?: number
 }
 
@@ -256,6 +478,60 @@ export interface V2PricingExperimentRow {
   active: boolean
   started_at: string | null
   ended_at: string | null
+}
+
+export interface V2ResolvedExperiment {
+  key: string
+  variant: string
+  winnerFeeOre: number
+}
+
+/**
+ * Resolve an active pricing experiment to a display/config winner fee.
+ *
+ * HARD INVARIANTS (contract §2.8, I1–I2):
+ * - Returns null unless the caller has verified the flag (pass flagOn) AND the
+ *   row is active AND within its started/ended window. Default = live rule.
+ * - The result carries ONLY a winner fee in öre. Commission is not part of
+ *   the experiment surface at all — commissionBps is always 0 (I1).
+ * - Experiments never apply retroactively: this resolver is for NEW display /
+ *   config reads only. Already-won responses settle via the live rule path.
+ * - Variant choice is deterministic per subjectId (weighted buckets), so a
+ *   workshop always sees the same price.
+ */
+export function resolvePricingExperiment(
+  row: V2PricingExperimentRow | null | undefined,
+  opts: { flagOn: boolean; subjectId?: string | null; now?: Date },
+): V2ResolvedExperiment | null {
+  if (!opts.flagOn || !row || row.active !== true) return null
+
+  const now = opts.now ?? new Date()
+  if (row.started_at && new Date(row.started_at) > now) return null
+  if (row.ended_at && new Date(row.ended_at) <= now) return null
+
+  const variants = (row.variants ?? []).filter(
+    (v) =>
+      v &&
+      typeof v.name === 'string' &&
+      Number.isInteger(v.winner_fee_ore) &&
+      v.winner_fee_ore > 0 &&
+      (v.weight == null || (typeof v.weight === 'number' && v.weight > 0)),
+  )
+  if (variants.length === 0) return null
+
+  const totalWeight = variants.reduce((sum, v) => sum + (v.weight ?? 1), 0)
+  const bucket = rolloutBucket(opts.subjectId ?? row.key) // 0-99
+  let cursor = (bucket / 100) * totalWeight
+  let picked = variants[variants.length - 1]
+  for (const variant of variants) {
+    cursor -= variant.weight ?? 1
+    if (cursor < 0) {
+      picked = variant
+      break
+    }
+  }
+
+  return { key: row.key, variant: picked.name, winnerFeeOre: picked.winner_fee_ore }
 }
 
 /**
