@@ -65,3 +65,28 @@ verify_jwt = false
 # Påminner kunden om att välja offert inom fem dagar.
 [functions.bike-choice-reminders]
 verify_jwt = false
+
+# V2 S3: verkstaden rapporterar utfall av reglerat vunnet uppdrag.
+[functions.v2-report-outcome]
+verify_jwt = false
+
+# V2 S3: kunden bekräftar utfall via token-länk (kontolös åtkomst).
+[functions.v2-confirm-outcome]
+verify_jwt = false
+
+# V2 S3: daglig cron — "Hur gick det?"-inbjudningar, auto-completion, expiry.
+# OBS: schemalägg i Supabase cron innan flaggan slås på (I7/registry R4).
+[functions.v2-outcome-invites]
+verify_jwt = false
+
+# V2 S3: kunden lämnar recension via token-länk.
+[functions.v2-submit-review]
+verify_jwt = false
+
+# V2 S3: verkstaden svarar på recensioner om egna uppdrag.
+[functions.v2-respond-review]
+verify_jwt = false
+
+# V2 S3: admin modererar recensioner.
+[functions.v2-moderate-review]
+verify_jwt = false

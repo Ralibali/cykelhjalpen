@@ -43,6 +43,7 @@ import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
 const AdminBikeResponses = lazy(() => import("./pages/admin/AdminBikeResponses"));
+const AdminReviewModeration = lazy(() => import("./pages/admin/AdminReviewModeration"));
 const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
 const AdminWorkshopDetail = lazy(() => import("./pages/admin/AdminWorkshopDetail"));
 const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
@@ -375,6 +376,7 @@ const AppRoutes = () => {
               {/* Cykelhjälpen admin */}
               <Route path="/admin/cykelarenden" element={<ProtectedRoute role="admin"><AdminBikeRequests /></ProtectedRoute>} />
               <Route path="/admin/offerter" element={<ProtectedRoute role="admin"><AdminBikeResponses /></ProtectedRoute>} />
+              <Route path="/admin/recensioner" element={<ProtectedRoute role="admin"><AdminReviewModeration /></ProtectedRoute>} />
               <Route path="/admin/verkstader" element={<ProtectedRoute role="admin"><AdminWorkshops /></ProtectedRoute>} />
               <Route path="/admin/verkstader/:id" element={<ProtectedRoute role="admin"><AdminWorkshopDetail /></ProtectedRoute>} />
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
