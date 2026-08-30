@@ -1,5 +1,5 @@
 import {
-  Activity, Bell, Bike, CreditCard, FileText, Home, Mail, Newspaper, Search,
+  Activity, Bell, Bike, BookOpen, CreditCard, FileText, Home, Mail, Newspaper, Search,
   Settings, Sparkles, Users, Wrench, BarChart3, ScrollText, Link2, Eye,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -46,6 +46,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
       { label: 'Prospekt', href: '/admin/prospekt', icon: Search, badge: 'openProspects', keywords: 'rekrytering outreach' },
       { label: 'Statistik', href: '/admin/statistik', icon: BarChart3, keywords: 'analytics siffror' },
       { label: 'Marketplace health', href: '/admin/marketplace-health', icon: Activity, keywords: 'hälsa utbud efterfrågan städer' },
+      { label: 'Innehåll V2', href: '/admin/innehall', icon: BookOpen, keywords: 'guider innehåll redaktion publicera granska v2' },
       { label: 'Besökare', href: '/admin/besokare', icon: Eye, keywords: 'trafik sidvisningar' },
       { label: 'Guider', href: '/admin/guider', icon: Newspaper, keywords: 'innehåll artiklar' },
       { label: 'Artikelgenerator', href: '/admin/artikelgenerator', icon: Sparkles, keywords: 'ai seo innehåll' },

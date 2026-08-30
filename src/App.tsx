@@ -39,6 +39,11 @@ const CykelCityLandingPage = lazy(() => import("./pages/cykelhjalpen/CykelCityLa
 const WorkshopAdCityPage = lazy(() => import("./pages/cykelhjalpen/WorkshopAdCityPage"));
 const UnsubscribePage = lazy(() => import("./pages/cykelhjalpen/UnsubscribePage"));
 
+// V2 content engine surface (S7) — routes live behind flag v2.seo.content_surface
+const ContentSurfaceGate = lazy(() => import("./components/cykelhjalpen/content/ContentSurfaceGate"));
+const CykelGuidesIndexPage = lazy(() => import("./pages/cykelhjalpen/CykelGuidesIndexPage"));
+const CykelGuideArticlePage = lazy(() => import("./pages/cykelhjalpen/CykelGuideArticlePage"));
+
 import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
 const AdminBikeRequests = lazy(() => import("./pages/admin/AdminBikeRequests"));
@@ -46,6 +51,7 @@ const AdminBikeResponses = lazy(() => import("./pages/admin/AdminBikeResponses")
 const AdminWorkshops = lazy(() => import("./pages/admin/AdminWorkshops"));
 const AdminWorkshopDetail = lazy(() => import("./pages/admin/AdminWorkshopDetail"));
 const AdminBikePayments = lazy(() => import("./pages/admin/AdminBikePayments"));
+const CykelAdminContent = lazy(() => import("./pages/admin/CykelAdminContent"));
 
 // Lazy-loaded pages
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -356,6 +362,10 @@ const AppRoutes = () => {
               <Route path="/annons/verkstad/:citySlug" element={<WorkshopAdCityPage />} />
               <Route path="/avregistrera/:token" element={<UnsubscribePage />} />
 
+              {/* V2 content surface (v2_content_pages) — flag-gated, see ContentSurfaceGate */}
+              <Route path="/guider" element={<ContentSurfaceGate><CykelGuidesIndexPage /></ContentSurfaceGate>} />
+              <Route path="/guider/:slug" element={<ContentSurfaceGate><CykelGuideArticlePage /></ContentSurfaceGate>} />
+
 
               {/* Workshop dashboard — now protected */}
               <Route
@@ -380,6 +390,7 @@ const AppRoutes = () => {
               <Route path="/admin/cykelbetalningar" element={<ProtectedRoute role="admin"><AdminBikePayments /></ProtectedRoute>} />
               <Route path="/admin/marketplace-health" element={<ProtectedRoute role="admin"><AdminMarketplaceHealth /></ProtectedRoute>} />
               <Route path="/admin/analytics" element={<ProtectedRoute role="admin"><AdminAnalytics /></ProtectedRoute>} />
+              <Route path="/admin/innehall" element={<ProtectedRoute role="admin"><CykelAdminContent /></ProtectedRoute>} />
 
               {/* Local SEO — dynamiska routes från CYKEL_SEO_PAGES (sv + en) */}
               {CYKEL_SEO_PAGES.map((p) => (

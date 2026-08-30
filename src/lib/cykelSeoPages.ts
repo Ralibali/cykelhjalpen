@@ -382,6 +382,10 @@ const buildDistrict = (c: CykelCity, district: string, t: Tfn): CykelSeoPage => 
   faq: [responseFaq(c, t), freeFaq(t)],
 })
 
+/** All transactional service slug stems (e.g. 'punktering') — used by the V2
+    content engine for service_categories tagging and service-page linking. */
+export const CYKEL_SERVICE_STEMS: string[] = SERVICES.map((svc) => svc.slugStem)
+
 export const buildCykelSeoPages = (t: Tfn = identity): CykelSeoPage[] =>
   CYKEL_CITIES.flatMap((city) => [
     ...SERVICES.map((svc) => buildService(city, svc, t)),
