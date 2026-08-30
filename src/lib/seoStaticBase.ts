@@ -1,4 +1,5 @@
 import { CYKEL_SEO_PAGES, buildCykelSeoPages } from './cykelSeoPages'
+import { COMPARISON_PAGES } from './seoComparisons'
 import { CYKEL_CITIES, cityLandingPath, getCykelCity } from './cykelCities'
 import { cykelOgImagePath, cykelPageOgImage } from './cykelOg'
 import { shouldNoindexPath } from './seoRobots'
@@ -389,15 +390,40 @@ const UPDRO_INDEXABLE_PATHS = [
   '/integritetspolicy', '/villkor', '/cookies',
 ]
 
-const updroIndexableRoutes = (): StaticSeoRoute[] => UPDRO_INDEXABLE_PATHS.map((routePath) => ({
-  path: routePath,
-  title: 'Updro',
-  description: '',
-  h1: '',
-  priority: routePath === '/' ? 1 : 0.6,
-  changefreq: 'weekly' as const,
+/**
+ * Updro comparison pages (src/lib/seoComparisons.ts, linked from /jamfor).
+ * The slugs are fully enumerable static content, so they belong to the
+ * prerender set: each returns real HTML with its own title/description/h1 and
+ * appears in the updro sitemap. Without this they 404 in production (no
+ * rewrite prefix covers top-level slugs and the old catch-all is gone).
+ * Section bodies stay client-rendered (they contain markdown tables); the
+ * prerender ships head metadata + h1 + intro + FAQ/related links.
+ */
+const updroComparisonRoutes = (): StaticSeoRoute[] => COMPARISON_PAGES.map((page) => ({
+  path: `/${page.slug}`,
+  title: page.metaTitle,
+  description: page.metaDesc,
+  h1: page.h1,
+  priority: 0.6,
+  changefreq: 'monthly' as const,
   lastmod: today(),
+  sections: [{ h2: 'I korthet', body: page.intro }],
+  faq: page.faq,
+  links: page.relatedLinks,
 }))
+
+const updroIndexableRoutes = (): StaticSeoRoute[] => [
+  ...UPDRO_INDEXABLE_PATHS.map((routePath) => ({
+    path: routePath,
+    title: 'Updro',
+    description: '',
+    h1: '',
+    priority: routePath === '/' ? 1 : 0.6,
+    changefreq: 'weekly' as const,
+    lastmod: today(),
+  })),
+  ...updroComparisonRoutes(),
+]
 
 const UPDRO_NOINDEX_PATHS = [
   '/skicka-arende', '/registrera/verkstad', '/for-cykelverkstader', '/mitt-arende',

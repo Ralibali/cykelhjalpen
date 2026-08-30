@@ -15,6 +15,7 @@ import { savePublicProfileConsent, workshopProfilePath } from '@/lib/v2/director
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import WorkshopRetentionPanel from '@/components/cykelhjalpen/WorkshopRetentionPanel'
 import { useAuth } from '@/hooks/useAuth'
+import { useV2Flag } from '@/hooks/useV2Flag'
 import { useT } from '@/lib/i18n'
 
 const BIO_SHORT_MAX = 280
@@ -31,6 +32,12 @@ const WorkshopSettings = () => {
   const [uploading, setUploading] = useState(false)
   const [savingPublic, setSavingPublic] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
+
+  // V2 QA fix: the public-directory opt-in is flag-gated
+  // (v2.directory.public_profiles). With the flag OFF the section renders
+  // nothing — the surface is off and the RPC v2_set_public_profile rejects
+  // opt-in server-side too.
+  const publicProfilesOn = useV2Flag('v2.directory.public_profiles') === true
 
   // V2 S4: publik profil (kontrakt §2.4) — samtycke + kort beskrivning sparas
   // via RPC:n v2_set_public_profile som också tilldelar slug vid opt-in.
@@ -358,6 +365,7 @@ const WorkshopSettings = () => {
         </Button>
       </div>
 
+      {publicProfilesOn && (
       <div className="sticker rounded-3xl bg-card p-6 space-y-5 max-w-xl mt-6">
         <div>
           <h2 className="font-display text-xl font-bold">{t('Publik profil i verkstadskatalogen')}</h2>
@@ -411,6 +419,7 @@ const WorkshopSettings = () => {
           {savingPublic ? t('Sparar…') : t('Spara publik profil')}
         </Button>
       </div>
+      )}
 
       <div className="sticker rounded-3xl bg-card p-6 space-y-5 max-w-xl mt-6">
         <div>

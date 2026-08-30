@@ -18,11 +18,11 @@
   ],
   "rewrites": [
     {
-      "source": "/:prefix(mitt-arende|mina-svar|avregistrera|annons|dashboard|admin|byraer|artiklar|verktyg|stader|leveranser|guider|kunskapsbank|landing|registrera|sitemap)/:path*",
+      "source": "/:prefix(mitt-arende|mina-svar|avregistrera|avsluta-paminnelser|annons|dashboard|admin|byraer|artiklar|verktyg|stader|leveranser|guider|kunskapsbank|landing|registrera|sitemap|verkstad)/:path*",
       "destination": "/app.html"
     },
     {
-      "source": "/en/:prefix(mitt-arende|mina-svar|avregistrera|annons|dashboard|admin|byraer|artiklar|verktyg|stader|leveranser|guider|kunskapsbank|landing|registrera|sitemap)/:path*",
+      "source": "/en/:prefix(mitt-arende|mina-svar|avregistrera|avsluta-paminnelser|annons|dashboard|admin|byraer|artiklar|verktyg|stader|leveranser|guider|kunskapsbank|landing|registrera|sitemap|verkstad)/:path*",
       "destination": "/app.html"
     },
     {
@@ -106,6 +106,12 @@
     },
     {
       "source": "/avregistrera/:path*",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+      ]
+    },
+    {
+      "source": "/avsluta-paminnelser/:path*",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
       ]
