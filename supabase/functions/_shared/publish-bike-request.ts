@@ -173,8 +173,9 @@ export async function publishApprovedBikeRequest(opts: {
     }
   }
 
-  let { data: workshops, error: workshopsError } = await workshopsQuery
+  const { data: fetchedWorkshops, error: workshopsError } = await workshopsQuery
   if (workshopsError) throw workshopsError
+  let workshops = fetchedWorkshops
 
   if (matchingOn && !requestRow.preferred_workshop_id) {
     workshops = (workshops || []).filter((workshop) => {
