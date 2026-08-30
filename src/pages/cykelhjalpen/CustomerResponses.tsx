@@ -13,6 +13,8 @@ import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { useT } from '@/lib/i18n'
 import { closedChoiceDaysLeft, publishedQuotesStatusCopy } from '@/lib/customerChoiceCopy'
+import CustomerRetentionSection from '@/components/cykelhjalpen/CustomerRetentionSection'
+import type { V2RetentionState, V2ServiceHistoryItem } from '@/lib/v2/retention'
 
 interface WorkshopResponse {
   id: string
@@ -76,6 +78,8 @@ const CustomerResponses = () => {
   const [request, setRequest] = useState<RequestData | null>(null)
   const [responses, setResponses] = useState<WorkshopResponse[]>([])
   const [images, setImages] = useState<RequestImage[]>([])
+  const [history, setHistory] = useState<V2ServiceHistoryItem[]>([])
+  const [retention, setRetention] = useState<V2RetentionState | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
   const [selectingId, setSelectingId] = useState<string | null>(null)
@@ -103,6 +107,9 @@ const CustomerResponses = () => {
       const nextResponses: WorkshopResponse[] = data?.responses || []
       setRequest(data?.request || null)
       setImages(data?.images || [])
+      // V2 S8: servicehistorik + samtycke finns bara med när flaggan är på.
+      setHistory(Array.isArray(data?.history) ? data.history : [])
+      setRetention(data?.retention ?? null)
 
       if (firstLoadRef.current) {
         knownIdsRef.current = new Set(nextResponses.map((response) => response.id))
@@ -288,6 +295,15 @@ const CustomerResponses = () => {
         ) : (
           <>
             {statusCard()}
+
+            {token && (
+              <CustomerRetentionSection
+                token={token}
+                request={request}
+                history={history}
+                retention={retention}
+              />
+            )}
 
             <section className="sticker rounded-3xl bg-card p-6 mb-8" aria-labelledby="request-summary-heading">
               <h2 id="request-summary-heading" className="font-display text-lg mb-3">{t('Ditt ärende')}</h2>

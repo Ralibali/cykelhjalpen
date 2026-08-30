@@ -38,6 +38,8 @@ export interface BikeRequestFormState {
   customer_email: string
   customer_phone: string
   consent: boolean
+  /** V2 S8: frivillig opt-in för servicepåminnelser (max ett mejl/säsong). */
+  reminder_opt_in: boolean
 }
 
 type TFunction = (sv: string, vars?: Record<string, string | number>) => string
@@ -57,6 +59,7 @@ export const makeBikeRequestSchema = (t: TFunction = (s) => s) => z.object({
   customer_phone: z.string().trim().max(40)
     .refine((value) => /^(\+46|0046|0)\s?7[\d\s-]{8,}$/.test(value.replace(/\s+/g, ' ')), t('Ange ditt mobilnummer så vi kan sms:a dig när offerterna kommer')),
   consent: z.literal(true, { errorMap: () => ({ message: t('Du måste godkänna integritetspolicyn') }) }),
+  reminder_opt_in: z.boolean().optional().default(false),
 }).refine((value) => value.can_drop_off || value.wants_pickup, {
   message: t('Välj om du kan lämna cykeln eller behöver hämtning'),
   path: ['can_drop_off'],
@@ -79,6 +82,7 @@ export const makeDefaultBikeRequest = (city: BikeRequestCity = ''): BikeRequestF
   customer_email: '',
   customer_phone: '',
   consent: false,
+  reminder_opt_in: false,
 })
 
 /** City from ?stad= wins. Otherwise keep a stored draft city, never invent Linköping. */
