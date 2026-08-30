@@ -1,22 +1,40 @@
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { usePageSeo } from '@/i18n/usePageSeo'
+import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { ArrowRight, Bike, CheckCircle2, MapPin, ShieldCheck, Wrench } from 'lucide-react'
+import { ArrowRight, Bike, CheckCircle2, Info, MapPin, ShieldCheck, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { CYKEL_CITIES, cityLandingPath, cityQuery, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { getCityImage } from '@/lib/cykelCityImages'
+import { getV2CityConfig } from '@/lib/v2/cities'
+import { isV2FlagOn } from '@/lib/v2/flags'
+import { v2CityStateNotice } from '@/lib/v2/cityMessaging'
 import { trackClick } from '@/hooks/usePageTracking'
-import { useT } from '@/lib/i18n'
+import { useT, useLanguage } from '@/lib/i18n'
 
 const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
   const t = useT()
+  const { lang } = useLanguage()
   const cityData = getCykelCity(city)
   const cityImage = getCityImage(city)
   const pageSeo = usePageSeo(cityLandingPath(city))
   const canonical = pageSeo.canonical
+
+  // V2 city-state messaging (flag v2.liquidity.city_state_messaging, OFF by
+  // default): honest note when the city is SUPPLY_BUILDING / LIMITED / etc.
+  const { data: cityNotice } = useQuery({
+    queryKey: ['v2-city-state-notice', cityData.slug, lang],
+    staleTime: 60 * 1000,
+    retry: false,
+    queryFn: async () => {
+      if (!(await isV2FlagOn('v2.liquidity.city_state_messaging'))) return null
+      const config = await getV2CityConfig(cityData.slug)
+      return v2CityStateNotice(config, lang === 'en' ? 'en' : 'sv')
+    },
+  })
 
   const trackCta = (placement: string) => {
     trackClick('city_request_cta_clicked', t('Få prisförslag i {city}', { city }), { city, placement })
@@ -120,6 +138,22 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
                   <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Ingen köpplikt')}</span>
                   <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-[hsl(var(--brand-teal))]" /> {t('Lokala svar')}</span>
                 </div>
+                {cityNotice && (
+                  <div
+                    role="status"
+                    className={`mt-5 flex max-w-2xl items-start gap-3 rounded-2xl border-2 p-4 text-sm ${
+                      cityNotice.tone === 'warning'
+                        ? 'border-amber-300 bg-amber-50 text-amber-900'
+                        : 'border-border bg-background/80 text-foreground'
+                    }`}
+                  >
+                    <Info className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                    <div>
+                      <p className="font-semibold">{cityNotice.title}</p>
+                      <p className={cityNotice.tone === 'warning' ? 'text-amber-800' : 'text-muted-foreground'}>{cityNotice.body}</p>
+                    </div>
+                  </div>
+                )}
               </motion.div>
 
               <motion.div

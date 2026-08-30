@@ -1,5 +1,9 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { notifyWorkshopsOfApprovedRequest, logSmsAttempt } from './notifications.ts'
+import { v2FlagEnabledFor } from './v2/flags.ts'
+import { v2ClusterCityNames } from './v2/city-state.ts'
+import { citySlugFromName } from './v2/config-schema.ts'
+import { matchWorkshopToRequestCity } from './v2/eligibility.ts'
 
 /** Keep in sync with src/lib/cykelMarketplaceHealth.ts (PR #9). */
 export const ACTIVE_WORKSHOP_QUOTE_WINDOW_DAYS = 30
@@ -137,15 +141,55 @@ export async function publishApprovedBikeRequest(opts: {
 
   let workshopsQuery = admin
     .from('workshops')
-    .select('id, email, company_name, phone, sms_notifications, user_id')
+    .select('id, email, company_name, phone, sms_notifications, user_id, city, areas_served, service_area_mode, cluster_opt_in, services')
     .eq('approved', true)
   if (requestRow.preferred_workshop_id) {
     workshopsQuery = workshopsQuery.eq('id', requestRow.preferred_workshop_id)
   } else {
     workshopsQuery = workshopsQuery.eq('city', city)
   }
-  const { data: workshops, error: workshopsError } = await workshopsQuery
+
+  // V2 (flag v2.liquidity.areas_served_matching, gate G-L1): eligible supply
+  // resolves through the eligibility engine — areas_served[] and cluster
+  // membership (Östergötland) count, not just exact city. Flag OFF = the
+  // exact-city query above is used unchanged.
+  let matchingOn = false
+  let clusterCityNames: string[] = []
+  if (!requestRow.preferred_workshop_id) {
+    matchingOn = await v2FlagEnabledFor(admin, 'v2.liquidity.areas_served_matching', {
+      citySlug: citySlugFromName(city),
+    }).catch(() => false)
+    if (matchingOn) {
+      clusterCityNames = await v2ClusterCityNames(admin, city).catch(() => [city])
+      // No SQL city filter: 'areas' workshops may live outside the cluster.
+      // The eligibility engine filters below (tiny approved-workshop set).
+      workshopsQuery = admin
+        .from('workshops')
+        .select('id, email, company_name, phone, sms_notifications, user_id, city, areas_served, service_area_mode, cluster_opt_in, services')
+        .eq('approved', true)
+    }
+  }
+
+  let { data: workshops, error: workshopsError } = await workshopsQuery
   if (workshopsError) throw workshopsError
+
+  if (matchingOn && !requestRow.preferred_workshop_id) {
+    workshops = (workshops || []).filter((workshop) => {
+      const matched = matchWorkshopToRequestCity(
+        {
+          city: workshop.city,
+          areasServed: workshop.areas_served,
+          serviceAreaMode: workshop.service_area_mode,
+          clusterOptIn: workshop.cluster_opt_in,
+        },
+        city,
+        { areasServedMatchingOn: true, clusterCityNames },
+      )
+      if (!matched) return false
+      const services: string[] = workshop.services || []
+      return services.length === 0 || services.includes(requestRow.repair_category)
+    })
+  }
 
   const notifiedWorkshops = workshops?.length || 0
   const description = requestRow.description.length > 300

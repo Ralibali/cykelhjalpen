@@ -4,6 +4,8 @@ import { corsFor } from '../_shared/cors.ts'
 import { notifyAdminsOfPendingRequest } from '../_shared/notifications.ts'
 import { sendAdminAlert } from '../_shared/admin-alert.ts'
 import { cityHasActiveWorkshop, publishApprovedBikeRequest } from '../_shared/publish-bike-request.ts'
+import { resolveV2CityConfig } from '../_shared/v2/city-state.ts'
+import { v2AutoApproveForCity } from '../_shared/v2/eligibility.ts'
 
 
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
@@ -172,9 +174,26 @@ Deno.serve(async (req) => {
     }
 
     let autoApproved = false
+    // V2 city-state resolver (contract §2.1): the seeded v2_city_configs row
+    // decides the approve path. 'approve' = publish directly (LIMITED cities,
+    // cold-start inversion). 'legacy_gate' = unchanged V1 behavior (ACTIVE
+    // cities keep the active-workshop-30d gate until gate G-L1; cities without
+    // a config row are untouched). 'manual_review' = always pending
+    // (SUPPLY_BUILDING / PAUSED / RESEARCH).
+    let cityState: string | null = null
     try {
-      // Same eligibility as admin-health: approved workshop + quote in last 30 days, exact city.
-      if (await cityHasActiveWorkshop(supabase, body.city)) {
+      const cityConfig = await resolveV2CityConfig(supabase, body.city)
+      cityState = cityConfig?.state ?? null
+      const decision = v2AutoApproveForCity(cityConfig
+        ? {
+            state: cityConfig.state,
+            demandOpen: cityConfig.demandOpen,
+            autoApproveRequests: cityConfig.autoApproveRequests,
+          }
+        : null)
+      const shouldPublish = decision === 'approve'
+        || (decision === 'legacy_gate' && await cityHasActiveWorkshop(supabase, body.city))
+      if (shouldPublish) {
         await publishApprovedBikeRequest({
           admin: supabase,
           supabaseUrl,
@@ -203,6 +222,11 @@ Deno.serve(async (req) => {
 
     if (!autoApproved) {
       const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(row.view_token)}`
+      // Honest city-state messaging: SUPPLY_BUILDING cities get "vi bygger upp
+      // verkstadstätheten här" copy instead of a dead-end generic review note.
+      const statusParagraph = cityState === 'SUPPLY_BUILDING'
+        ? `Vi bygger fortfarande upp verkstadstätheten i ${escapeHtml(body.city)}. Ditt ärende är mottaget och granskas personligen av oss innan det går vidare — det kan därför ta lite längre tid innan du får prisförslag. Vi hör av oss så fort ärendet är ute hos verkstäderna.`
+        : `Ärendet granskas innan det skickas vidare till anslutna verkstäder i den valda staden. Du får besked när granskningen är klar.`
       backgroundTasks.push(fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
         method: 'POST',
         headers: {
@@ -216,7 +240,7 @@ Deno.serve(async (req) => {
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
             <h2 style="margin:0 0 16px">Tack ${escapeHtml(body.customer_name)}!</h2>
             <p>Vi har tagit emot din förfrågan om <strong>${escapeHtml(body.repair_category)}</strong> för din ${escapeHtml(body.bike_type)} i <strong>${escapeHtml(body.city)}</strong>.</p>
-            <p>Ärendet granskas innan det skickas vidare till anslutna verkstäder i den valda staden. Du får besked när granskningen är klar.</p>
+            <p>${statusParagraph}</p>
             <p style="margin-top:24px">
               <a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">
                 Följ ditt ärende
@@ -269,6 +293,7 @@ Deno.serve(async (req) => {
       ...row,
       admin_status: autoApproved ? 'approved' : 'pending_approval',
       auto_approved: autoApproved,
+      city_state: cityState,
     }), {
       status: 200,
       headers: {

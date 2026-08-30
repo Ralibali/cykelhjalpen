@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Bike, ArrowRight, ArrowLeft, Check, Loader2, ShieldCheck, Clock3, Users, Camera, MapPin, type LucideIcon } from 'lucide-react'
+import { Bike, ArrowRight, ArrowLeft, Check, Info, Loader2, ShieldCheck, Clock3, Users, Camera, MapPin, type LucideIcon } from 'lucide-react'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import BikeRequestStepContent, {
@@ -18,7 +18,10 @@ import { usePageSeo } from '@/i18n/usePageSeo'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
-import { resolveCykelCityParam } from '@/lib/cykelCities'
+import { CYKEL_CITIES, resolveCykelCityParam } from '@/lib/cykelCities'
+import { getV2CityConfig } from '@/lib/v2/cities'
+import { isV2FlagOn } from '@/lib/v2/flags'
+import { v2CityStateNotice } from '@/lib/v2/cityMessaging'
 import {
   BIKE_REQUEST_STEPS,
   BIKE_TYPES,
@@ -32,6 +35,11 @@ import {
 import { useT, useLanguage } from '@/lib/i18n'
 
 const DRAFT_KEY = 'cykelhjalpen_request_draft_v3'
+
+/** V1 display name → ascii slug (for the v2 city-config lookup). */
+const CYKEL_CITY_SLUGS: Record<string, string> = Object.fromEntries(
+  CYKEL_CITIES.map((city) => [city.name, city.slug]),
+)
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
   const gtag = (window as any).gtag
@@ -130,6 +138,22 @@ const BikeRequestWizard = () => {
     },
     staleTime: 5 * 60 * 1000,
     retry: false,
+  })
+
+  // V2 city-state messaging (flag v2.liquidity.city_state_messaging, OFF by
+  // default): honest per-state note for the selected city — e.g.
+  // SUPPLY_BUILDING cities say "vi bygger upp verkstadstätheten här".
+  const selectedCitySlug = CYKEL_CITY_SLUGS[form.city] ?? null
+  const { data: cityNotice } = useQuery({
+    queryKey: ['v2-city-state-notice', selectedCitySlug, lang],
+    enabled: Boolean(selectedCitySlug),
+    staleTime: 60 * 1000,
+    retry: false,
+    queryFn: async () => {
+      if (!(await isV2FlagOn('v2.liquidity.city_state_messaging'))) return null
+      const config = await getV2CityConfig(selectedCitySlug!)
+      return v2CityStateNotice(config, lang === 'en' ? 'en' : 'sv')
+    },
   })
 
   const imagePreviews = useMemo(
@@ -468,6 +492,23 @@ const BikeRequestWizard = () => {
                   onBikeTypeSelect={handleBikeTypeSelect}
                 />
               </div>
+
+              {cityNotice && (
+                <div
+                  role="status"
+                  className={`mt-5 flex items-start gap-3 rounded-2xl border-2 p-4 text-sm ${
+                    cityNotice.tone === 'warning'
+                      ? 'border-amber-300 bg-amber-50 text-amber-900'
+                      : 'border-border bg-muted/60 text-foreground'
+                  }`}
+                >
+                  <Info className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                  <div>
+                    <p className="font-semibold">{cityNotice.title}</p>
+                    <p className={cityNotice.tone === 'warning' ? 'text-amber-800' : 'text-muted-foreground'}>{cityNotice.body}</p>
+                  </div>
+                </div>
+              )}
 
               {step === BIKE_REQUEST_STEPS.length - 1 && stats && Number(stats.workshops) >= 3 && (
                 <div className="mt-5 flex items-start gap-2 text-sm text-muted-foreground">
