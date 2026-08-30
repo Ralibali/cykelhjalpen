@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BuyLeadsButton } from './BuyLeadsButton'
-import { LEAD_FEE_KR } from '@/lib/pricing'
+import { useV2Pricing } from '@/lib/v2/pricing'
 import { useT } from '@/lib/i18n'
 
 const QUANTITIES = [1, 2, 5, 10, 20]
@@ -11,6 +11,8 @@ interface BuyLeadsPickerProps {
 
 export function BuyLeadsPicker({ onSuccess }: BuyLeadsPickerProps) {
   const t = useT()
+  // Canonical pricing (contract §2.1): displayed credit price = charged price.
+  const creditUnitKr = useV2Pricing().creditUnitOre / 100
   const [quantity, setQuantity] = useState(10)
 
   return (
@@ -33,7 +35,7 @@ export function BuyLeadsPicker({ onSuccess }: BuyLeadsPickerProps) {
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        {t('Totalt {total} kr exkl. moms', { total: (quantity * LEAD_FEE_KR).toLocaleString('sv-SE') })}
+        {t('Totalt {total} kr exkl. moms', { total: (quantity * creditUnitKr).toLocaleString('sv-SE') })}
       </p>
       <BuyLeadsButton quantity={quantity} onSuccess={onSuccess} />
     </div>

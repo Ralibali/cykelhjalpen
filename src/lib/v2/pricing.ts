@@ -3,6 +3,7 @@
 // so rendering never breaks and never shows a different price than charged.
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { useQuery } from '@tanstack/react-query'
 import { LEAD_FEE_ORE } from '@/lib/pricing'
 import type { V2PricingConfigRow } from './contracts'
 
@@ -75,4 +76,28 @@ export async function getV2Pricing(opts: { client?: UntypedClient } = {}): Promi
 /** 50 kr exkl. → 62,50 kr inkl. moms (öre). */
 export function v2GrossOre(netOre: number, vatRate: number): number {
   return Math.round(netOre * (1 + vatRate))
+}
+
+/**
+ * React hook over getV2Pricing. placeholderData = the live constants, so
+ * first paint AND build-time prerender always show today's real price (50 kr
+ * exkl. moms) — never a loading gap, never a different number than charged.
+ */
+export function useV2Pricing(): V2Pricing {
+  const { data } = useQuery({
+    queryKey: ['v2-pricing-config'],
+    queryFn: () => getV2Pricing(),
+    staleTime: 60_000,
+    placeholderData: V2_LIVE_PRICING_FALLBACK,
+  })
+  return data ?? V2_LIVE_PRICING_FALLBACK
+}
+
+/** öre → '50' / '62,50' (sv-SE). */
+export function formatKrFromOre(ore: number): string {
+  const kr = ore / 100
+  return kr.toLocaleString('sv-SE', {
+    minimumFractionDigits: Number.isInteger(kr) ? 0 : 2,
+    maximumFractionDigits: 2,
+  })
 }

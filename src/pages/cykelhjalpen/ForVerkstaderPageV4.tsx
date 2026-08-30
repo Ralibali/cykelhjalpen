@@ -6,7 +6,7 @@ import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import CykelHonestTrust from '@/components/cykelhjalpen/CykelHonestTrust'
 import CykelOpenRequestsTeaser from '@/components/cykelhjalpen/CykelOpenRequestsTeaser'
-import { LEAD_FEE_KR } from '@/lib/pricing'
+import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
 import { CYKEL_CITIES } from '@/lib/cykelCities'
 import { resolveWorkshopLandingMarket, workshopLandingCopy } from '@/lib/workshopLanding'
 import { trackClick } from '@/hooks/usePageTracking'
@@ -20,6 +20,8 @@ const ForVerkstaderPageV4 = () => {
   const [searchParams] = useSearchParams()
   const pageSeo = usePageSeo('/for-cykelverkstader')
   const text = (sv: string, en: string) => lang === 'en' ? en : sv
+  // Canonical pricing (contract §2.1): displayed fee = charged fee.
+  const feeKr = formatKrFromOre(useV2Pricing().amountOre)
   const { selected, registerHref } = resolveWorkshopLandingMarket(searchParams.get('stad'))
   const city = selected?.name
   const copy = workshopLandingCopy(selected, text)
@@ -82,7 +84,7 @@ const ForVerkstaderPageV4 = () => {
                   <p className="mt-1 text-xs text-muted-foreground">{text('vinsterna gratis', 'wins are free')}</p>
                 </div>
                 <div className="rounded-2xl border bg-card px-4 py-3">
-                  <p className="font-display text-xl leading-none">{LEAD_FEE_KR} kr</p>
+                  <p className="font-display text-xl leading-none">{feeKr} kr</p>
                   <p className="mt-1 text-xs text-muted-foreground">{text('exkl. moms vid vinst därefter', 'excl. VAT on later wins')}</p>
                 </div>
               </div>
@@ -101,7 +103,7 @@ const ForVerkstaderPageV4 = () => {
               </div>
               <div className="mt-4 md:mt-0 md:absolute md:-bottom-2 md:left-5 rounded-2xl border-2 border-[hsl(var(--ink))] bg-background p-5 shadow-[4px_4px_0_hsl(var(--ink))] max-w-sm">
                 <p className="text-xs text-muted-foreground">{text('När kunden väljer er', 'When the customer chooses you')}</p>
-                <p className="font-display text-3xl">{LEAD_FEE_KR} kr</p>
+                <p className="font-display text-3xl">{feeKr} kr</p>
                 <p className="text-xs text-muted-foreground">{text('exkl. moms · efter gratisvinsterna', 'excl. VAT · after the free wins')}</p>
               </div>
             </div>

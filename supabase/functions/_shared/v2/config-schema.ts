@@ -236,6 +236,59 @@ export function grossOre(netOre: number, vatRate: number): number {
 }
 
 // ---------------------------------------------------------------------------
+// Pricing experiments (contract §2.8) — INERT until flagged (G-X1) and seeded
+// active=false. Invariants enforced HERE:
+//  - experiments can only carry winner_fee_ore; commission is ALWAYS 0 (I1) —
+//    variants have no commission field and resolvers never read one.
+//  - never retroactive: nothing here touches already-won responses; callers
+//    may only use a resolved variant for NEW settlements.
+// ---------------------------------------------------------------------------
+
+export interface V2PricingExperimentVariant {
+  name: string
+  winner_fee_ore?: number
+  weight?: number
+}
+
+export interface V2PricingExperimentRow {
+  key: string
+  variants: V2PricingExperimentVariant[]
+  active: boolean
+  started_at: string | null
+  ended_at: string | null
+}
+
+/**
+ * Deterministically resolve a subject's variant for an experiment.
+ * Returns null (→ live rule applies) when the experiment is inactive, ended,
+ * malformed, or no subjectId is given (no bucketing without a stable subject).
+ */
+export function resolveExperimentVariant(
+  row: V2PricingExperimentRow | null | undefined,
+  subjectId: string | null | undefined,
+  nowIso?: string,
+): V2PricingExperimentVariant | null {
+  if (!row || row.active !== true) return null
+  if (!subjectId) return null
+  if (row.ended_at && row.ended_at <= (nowIso ?? new Date().toISOString())) return null
+
+  const variants = (row.variants ?? []).filter(
+    (v) => v && typeof v.name === 'string' && typeof v.winner_fee_ore === 'number' && v.winner_fee_ore >= 0,
+  )
+  if (variants.length === 0) return null
+
+  const totalWeight = variants.reduce((sum, v) => sum + Math.max(0, v.weight ?? 1), 0)
+  if (totalWeight <= 0) return null
+
+  let cursor = rolloutBucket(`${row.key}:${subjectId}`) / 100 * totalWeight
+  for (const variant of variants) {
+    cursor -= Math.max(0, variant.weight ?? 1)
+    if (cursor < 0) return variant
+  }
+  return variants[variants.length - 1]
+}
+
+// ---------------------------------------------------------------------------
 // Feature flags (registry: contract §5)
 // ---------------------------------------------------------------------------
 

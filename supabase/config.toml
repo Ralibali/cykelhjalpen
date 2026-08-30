@@ -65,3 +65,14 @@ verify_jwt = false
 # Påminner kunden om att välja offert inom fem dagar.
 [functions.bike-choice-reminders]
 verify_jwt = false
+
+# --- V2 prisindex (S5) -------------------------------------------------------
+# Cron-anropas med service-nyckel (ingen användarsession); admin-JWT kan även
+# trigga manuellt. Writes gated on flag v2.prisindex.engine (G-P1).
+[functions.v2-compute-price-index]
+verify_jwt = false
+
+# Publik, sample-gated prisindex-läsning — kunder är kontolösa (anon).
+# Sample-gaten ligger i SQL-RPC:n v2_get_price_index.
+[functions.v2-get-price-index]
+verify_jwt = false

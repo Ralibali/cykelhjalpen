@@ -4,7 +4,7 @@
 import Stripe from 'npm:stripe@18.5.0'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
-import { LEAD_FEE_ORE } from '../_shared/pricing.ts'
+import { getEffectivePricing } from '../_shared/v2/pricing-config.ts'
 import { corsFor, CYKELHJALPENS_SITE_ORIGIN } from '../_shared/cors.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
@@ -57,6 +57,12 @@ Deno.serve(async (req) => {
     if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
     if (response.status !== 'won') throw new Error('Endast vinnande offerter kan betalas.')
     if (response.paid) throw new Error('Vinstavgiften är redan betald.')
+
+    // Canonical pricing (contract §2.1): flag v2.pricing.config_reader OFF →
+    // compile-time live rule (5000 öre); ON → v2_pricing_config (identical
+    // seed). Either way the charged amount never changes (invariant I2).
+    const pricing = await getEffectivePricing(admin)
+    const leadFeeOre = pricing.amountOre
 
     const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeSecret) throw new Error('Stripe är inte konfigurerat')
@@ -123,7 +129,7 @@ Deno.serve(async (req) => {
         price_data: {
           currency: 'sek',
           product_data: { name: 'Cykelhjälpen – vinstavgift', description: `Kunden valde er för ärende ${response.request_id.slice(0, 8)}` },
-          unit_amount: LEAD_FEE_ORE,
+          unit_amount: leadFeeOre,
           tax_behavior: 'exclusive',
         },
         quantity: 1,
@@ -141,7 +147,7 @@ Deno.serve(async (req) => {
       request_id: response.request_id,
       workshop_id: workshop.id,
       stripe_session_id: session.id,
-      amount: LEAD_FEE_ORE,
+      amount: leadFeeOre,
       currency: 'sek',
       status: 'pending',
     })

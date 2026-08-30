@@ -5,7 +5,7 @@ import { Loader2, Receipt, Sparkles } from 'lucide-react'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { BuyLeadsPicker } from '@/components/workshop/BuyLeadsPicker'
 import { LeadCreditsInvoiceHistory } from '@/components/workshop/LeadCreditsInvoiceHistory'
-import { LEAD_FEE_KR } from '@/lib/pricing'
+import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
 import { useT } from '@/lib/i18n'
 
 interface ChargeRow {
@@ -26,6 +26,9 @@ const STATUS_LABEL_SOURCE: Record<string, string> = {
 
 const WorkshopBilling = () => {
   const t = useT()
+  // Canonical pricing (contract §2.1) — same value as charged, one source of truth.
+  const pricing = useV2Pricing()
+  const creditPriceKr = formatKrFromOre(pricing.creditUnitOre)
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const [charges, setCharges] = useState<ChargeRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -95,7 +98,7 @@ const WorkshopBilling = () => {
               <Sparkles className="h-5 w-5 text-primary" /> {t('Lead credits')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt först när kunden väljer dig som vinnare.', { price: LEAD_FEE_KR })}
+              {t('Förköp leads och svara snabbare – {price} kr exkl. moms per credit. Krediter dras automatiskt först när kunden väljer dig som vinnare.', { price: creditPriceKr })}
             </p>
             <p className="text-sm mt-3">
               {t('Saldo just nu:')} <span className="font-display text-lg font-bold">{credits}</span>

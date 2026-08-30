@@ -12,7 +12,7 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { WorkshopTerms } from '@/components/legal/WorkshopTerms'
 import Turnstile from '@/components/cykelhjalpen/Turnstile'
 import { Helmet } from 'react-helmet-async'
-import { LEAD_FEE_KR } from '@/lib/pricing'
+import { formatKrFromOre, useV2Pricing, v2GrossOre } from '@/lib/v2/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
@@ -41,6 +41,10 @@ const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
 
 const RegisterWorkshopPage = () => {
   const t = useT()
+  // Canonical pricing (contract §2.1): consent text shows the charged fee.
+  const pricing = useV2Pricing()
+  const feeKr = formatKrFromOre(pricing.amountOre)
+  const feeGrossKr = formatKrFromOre(v2GrossOre(pricing.amountOre, pricing.vatRate))
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const cityParam = searchParams.get('stad')
@@ -250,7 +254,7 @@ const RegisterWorkshopPage = () => {
             </label>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {t('Det är kostnadsfritt att svara på förfrågningar. Först när kunden väljer din verkstad debiteras {fee} kr exkl. moms (62,50 kr inkl. moms) via Stripe – eller så dras ett gratis-lead. Läs gärna även våra', { fee: LEAD_FEE_KR })}{' '}
+              {t('Det är kostnadsfritt att svara på förfrågningar. Först när kunden väljer din verkstad debiteras {fee} kr exkl. moms ({feeGross} kr inkl. moms) via Stripe – eller så dras ett gratis-lead. Läs gärna även våra', { fee: feeKr, feeGross: feeGrossKr })}{' '}
               <Link to="/villkor" className="underline text-foreground" target="_blank">{t('allmänna villkor')}</Link> {t('och')}{' '}
               <Link to="/integritetspolicy" className="underline text-foreground" target="_blank">{t('integritetspolicy')}</Link>.
             </p>

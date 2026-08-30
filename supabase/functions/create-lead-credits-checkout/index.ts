@@ -2,12 +2,12 @@ import Stripe from 'npm:stripe@18.5.0'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor, CYKELHJALPENS_SITE_ORIGIN } from '../_shared/cors.ts'
+import { getEffectivePricing } from '../_shared/v2/pricing-config.ts'
 
+// Quantity bounds mirror v2_pricing_config credit_pack_min/max (seed 1–100).
 const BodySchema = z.object({
   quantity: z.number().int().min(1).max(100).default(10),
 })
-
-const LEAD_FEE_ORE = 5000 // 50 kr per lead
 
 const json = (body: unknown, status: number, headers: Record<string, string>) => new Response(
   JSON.stringify(body),
@@ -44,9 +44,14 @@ Deno.serve(async (req) => {
     if (!parsed.success) throw new Error('Ogiltig mängd')
 
     const { quantity } = parsed.data
-    const totalOre = quantity * LEAD_FEE_ORE
 
     const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
+
+    // Canonical credit price (contract §2.1): identical to the old hardcoded
+    // 5000 öre whether the config_reader flag is off (compile-time live rule)
+    // or on (v2_pricing_config seed). Charging behavior unchanged (I2).
+    const pricing = await getEffectivePricing(admin)
+    const totalOre = quantity * pricing.creditUnitOre
 
     const { data: workshop, error: workshopError } = await admin
       .from('workshops')

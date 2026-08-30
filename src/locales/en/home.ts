@@ -27,8 +27,8 @@ export const EN_HOME: Record<string, string> = {
 
   // CykelHomeTrust
   'Vad kostar det för verkstaden att lämna offert?': 'What does it cost the bike shop to submit a quote?',
-  'Ingenting. Det är helt gratis att svara på ett ärende. Verkstaden betalar femtio kronor exklusive moms först när du väljer deras offert som vinnare – vinner de inte kostar det inget.':
-    'Nothing. Responding to a request is completely free. The shop pays fifty SEK excl. VAT only when you pick their quote as the winner — if they do not win, it costs them nothing.',
+  'Ingenting. Det är helt gratis att svara på ett ärende. Verkstaden betalar {fee} kronor exklusive moms först när du väljer deras offert som vinnare – vinner de inte kostar det inget.':
+    'Nothing. Responding to a request is completely free. The shop pays {fee} SEK excl. VAT only when you pick their quote as the winner — if they do not win, it costs them nothing.',
   'Vad händer när jag väljer en vinnare?': 'What happens when I pick a winner?',
   'Du väljer den offert du gillar bäst. Då får du verkstadens kontaktuppgifter och verkstaden får ditt ärende – först i det läget dras avgiften från verkstaden. Du betalar fortfarande ingenting till Cykelhjälpen.':
     'You pick the quote you like best. You then get the shop\u2019s contact details and the shop gets your request — only at that point is the fee charged to the shop. You still pay nothing to Cykelhj\u00e4lpen.',
