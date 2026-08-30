@@ -2,6 +2,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { APPROVED_ADMIN_STATUS, publishApprovedBikeRequest } from '../_shared/publish-bike-request.ts'
+import { emitDomainEvent } from '../_shared/v2/events.ts'
+import { citySlugFromName } from '../_shared/v2/config-schema.ts'
+import { withUtmParams } from '../_shared/v2/utm.ts'
 
 
 const ActionSchema = z.object({
@@ -97,8 +100,12 @@ Deno.serve(async (req) => {
         .eq('id', request_id)
       if (updateError) throw updateError
 
+      // V2 attribution (S6): lifecycle email links carry UTM (dim02 fix).
       const requestUrl = requestRow.view_token
-        ? `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`
+        ? withUtmParams(
+          `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`,
+          { source: 'email', campaign: 'request_rejected' },
+        )
         : 'https://cykelhjalpen.se/'
       const safeName = escapeHtml(requestRow.customer_name)
       const safeCategory = escapeHtml(requestRow.repair_category)
@@ -125,6 +132,17 @@ Deno.serve(async (req) => {
         }),
       }).catch((error) => console.error('Customer status email failed', error))
     }
+
+    // V2 data-moat (S6): domain event, best-effort, flag-gated inside helper.
+    const citySlug = citySlugFromName(requestRow.city ?? '')
+    await emitDomainEvent(admin, {
+      eventName: action === 'approve' ? 'request.approved' : 'request.rejected',
+      actorType: 'admin',
+      actorId: userData.user.id,
+      citySlug,
+      requestId: request_id,
+      payload: { city_slug: citySlug, auto: false },
+    })
 
     const { error: auditError } = await admin.from('audit_log').insert({
       admin_id: userData.user.id,

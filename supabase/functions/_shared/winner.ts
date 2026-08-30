@@ -6,8 +6,14 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { logNotificationEvent } from './notifications.ts'
 import { escapeCustomerHtml } from './customer-response.ts'
+import { withUtmParams } from './v2/utm.ts'
 
 const DASHBOARD_URL = 'https://cykelhjalpen.se/dashboard/verkstad'
+
+// V2 attribution (S6): email links carry UTM so return visits are attributed
+// in page_views/click_events (dim02 fix). SMS keeps bare URLs (length).
+const dashboardEmailUrl = (campaign: string): string =>
+  withUtmParams(DASHBOARD_URL, { source: 'email', campaign })
 
 export const buildWinnerSubject = (customerName: string): string =>
   `Du vann ärendet från ${customerName}!`
@@ -21,7 +27,7 @@ export const buildWinnerEmailHtml = (
   (settled
     ? `<p>Ett gratis-lead har dragits och kundens kontaktuppgifter är upplåsta. Logga in och hör av er till kunden direkt:</p>`
     : `<p>För att låsa upp kundens kontaktuppgifter betalar ni vinstavgiften 50 kr exkl. moms. Logga in och slutför betalningen:</p>`) +
-  `<p><a href="${DASHBOARD_URL}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Öppna din instrumentpanel</a></p>` +
+  `<p><a href="${dashboardEmailUrl('winner_selected')}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Öppna din instrumentpanel</a></p>` +
   `<p style="color:#6b7280;font-size:13px">Ni får det här mejlet för att er verkstad är ansluten till Cykelhjälpen.</p>` +
   `</div>`
 
@@ -30,8 +36,8 @@ export const buildWinnerEmailText = (
 ): string =>
   `Grattis ${workshopName}!\n\n${customerName} har valt er för sitt cykelärende.\n\n` +
   (settled
-    ? `Ett gratis-lead har dragits och kundens kontaktuppgifter är upplåsta. Logga in och hör av er till kunden direkt: ${DASHBOARD_URL}\n\n`
-    : `För att låsa upp kundens kontaktuppgifter betalar ni vinstavgiften 50 kr exkl. moms. Logga in och slutför betalningen: ${DASHBOARD_URL}\n\n`) +
+    ? `Ett gratis-lead har dragits och kundens kontaktuppgifter är upplåsta. Logga in och hör av er till kunden direkt: ${dashboardEmailUrl('winner_selected')}\n\n`
+    : `För att låsa upp kundens kontaktuppgifter betalar ni vinstavgiften 50 kr exkl. moms. Logga in och slutför betalningen: ${dashboardEmailUrl('winner_selected')}\n\n`) +
   `Ni får det här mejlet för att er verkstad är ansluten till Cykelhjälpen.`
 
 export const buildLoserSubject = (): string => 'Kunden valde en annan verkstad den här gången'
@@ -41,13 +47,13 @@ export const buildLoserEmailHtml = (workshopName: string, repairCategory: string
   `<h2>Hej ${escapeCustomerHtml(workshopName)}!</h2>` +
   `<p>Kunden valde tyvärr en annan verkstad för ärendet (${escapeCustomerHtml(repairCategory)}). Ert svar kostade inget – ni betalar bara när kunden väljer er.</p>` +
   `<p>Nya ärenden i er stad dyker upp löpande på instrumentpanelen.</p>` +
-  `<p><a href="${DASHBOARD_URL}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se öppna ärenden</a></p>` +
+  `<p><a href="${dashboardEmailUrl('loser_selected')}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Se öppna ärenden</a></p>` +
   `<p style="color:#6b7280;font-size:13px">Ni får det här mejlet för att er verkstad är ansluten till Cykelhjälpen.</p>` +
   `</div>`
 
 export const buildLoserEmailText = (workshopName: string, repairCategory: string): string =>
   `Hej ${workshopName}!\n\nKunden valde tyvärr en annan verkstad för ärendet (${repairCategory}). Ert svar kostade inget – ni betalar bara när kunden väljer er.\n\n` +
-  `Nya ärenden i er stad dyker upp löpande: ${DASHBOARD_URL}\n\n` +
+  `Nya ärenden i er stad dyker upp löpande: ${dashboardEmailUrl('loser_selected')}\n\n` +
   `Ni får det här mejlet för att er verkstad är ansluten till Cykelhjälpen.`
 
 export const buildCustomerPickSubject = (workshopName: string): string =>

@@ -5,25 +5,27 @@
  * besökaren sagt ja till alla cookies ('all'), och bara på produktionsdomänen.
  * Consent Mode-signaler skickas så att Google vet laget (granted/denied).
  *
- * SETUP: fyll i de tre värdena nedan från Google Ads
- * (Verktyg → Konverteringar → respektive konverteringsåtgärd → Tagginställningar).
- * Lämna tomt så blir allt en tyst no-op – helt säkert att deploya i förväg.
+ * SETUP (V2): värdena är nu config-drivna via src/lib/v2/adsConfig.ts
+ * (nycklar v2.ads.*, env VITE_V2_ADS_TAG_ID / VITE_V2_ADS_LABEL_REQUEST /
+ * VITE_V2_ADS_LABEL_SIGNUP). Lämna tomt så blir allt en tyst no-op – helt
+ * säkert att deploya i förväg.
  *
- * Status: tagId/labelRequest/labelSignup är tomma, så trackAdsConversion är
- * en no-op. CookieConsent laddar redan GA4 G-C0XMZG0KDQ och Ads AW-10941540384
- * efter “Tillåt alla”. Fyll inte i ID:n här, lägg inte till GTM och koppla
- * inte in fler Google-taggar — produktmätning är Plausible tills utbudet
- * kan bära mer efterfrågan.
+ * Status: tagId/labelRequest/labelSignup är tomma (ingen VITE_V2_ADS_* satt),
+ * så trackAdsConversion är en no-op. CookieConsent laddar redan GA4
+ * G-C0XMZG0KDQ och Ads AW-10941540384 efter “Tillåt alla”. Fyll inte i ID:n
+ * här, lägg inte till GTM och koppla inte in fler Google-taggar —
+ * produktmätning är Plausible tills utbudet kan bära mer efterfrågan.
  */
 import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent, type ConsentLevel } from './analyticsConsent'
+import { resolveAdsConfig } from './v2/adsConfig'
 
 export const googleAdsConfig = {
-  /** Tagg-ID, t.ex. 'AW-123456789' */
-  tagId: '',
+  /** Tagg-ID, t.ex. 'AW-123456789' (från v2.ads.tag_id / VITE_V2_ADS_TAG_ID) */
+  tagId: resolveAdsConfig().tagId,
   /** Konverteringsetikett för "Skickat ärende" (kund skickar förfrågan) */
-  labelRequest: '',
+  labelRequest: resolveAdsConfig().labelRequest,
   /** Konverteringsetikett för "Registrerad verkstad" */
-  labelSignup: '',
+  labelSignup: resolveAdsConfig().labelSignup,
 }
 
 type GtagFn = (command: string, ...args: unknown[]) => void

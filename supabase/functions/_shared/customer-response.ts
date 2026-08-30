@@ -4,6 +4,7 @@
 
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { logNotificationEvent, logSmsAttempt } from './notifications.ts'
+import { withUtmParams } from './v2/utm.ts'
 
 export const buildCustomerResponseUrl = (viewToken: string): string =>
   `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(viewToken)}`
@@ -115,6 +116,8 @@ export const notifyCustomerOfNewResponse = async (
   if (!request?.view_token) return { email: 'skipped', sms: 'skipped' }
 
   const requestUrl = buildCustomerResponseUrl(request.view_token as string)
+  // V2 attribution (S6): email links carry UTM; SMS keeps the bare URL (length).
+  const emailUrl = withUtmParams(requestUrl, { source: 'email', campaign: 'new_quote' })
   const lang: CustomerLang = request.customer_language === 'en' ? 'en' : 'sv'
   const workshopName = ctx.workshopName || (lang === 'en' ? 'A bike workshop' : 'En cykelverkstad')
   const customerName = (request.customer_name as string) || 'du'
@@ -150,8 +153,8 @@ export const notifyCustomerOfNewResponse = async (
           body: JSON.stringify({
             to: request.customer_email,
             subject: buildCustomerResponseSubject((request.repair_category as string) || 'cykelreparation', lang),
-            html: buildCustomerResponseEmailHtml(customerName, workshopName, requestUrl, lang, quoteCount),
-            text: buildCustomerResponseEmailText(customerName, workshopName, requestUrl, lang, quoteCount),
+            html: buildCustomerResponseEmailHtml(customerName, workshopName, emailUrl, lang, quoteCount),
+            text: buildCustomerResponseEmailText(customerName, workshopName, emailUrl, lang, quoteCount),
           }),
           signal: AbortSignal.timeout(15_000),
         })

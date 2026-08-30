@@ -7,6 +7,9 @@ import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { buildCustomerResponseUrl } from '../_shared/customer-response.ts'
 import { notifyCustomerOfPick, notifyLoserWorkshop, notifyWinnerWorkshop } from '../_shared/winner.ts'
+import { emitDomainEvent } from '../_shared/v2/events.ts'
+import { citySlugFromName } from '../_shared/v2/config-schema.ts'
+import { withUtmParams } from '../_shared/v2/utm.ts'
 
 const BodySchema = z.object({
   token: z.string().uuid(),
@@ -43,7 +46,7 @@ Deno.serve(async (req) => {
 
     const { data: request, error: requestError } = await admin
       .from('bike_repair_requests')
-      .select('id, status, admin_status, customer_name, customer_email, repair_category, view_token')
+      .select('id, status, admin_status, customer_name, customer_email, repair_category, view_token, city')
       .eq('view_token', parsed.data.token)
       .maybeSingle()
     if (requestError) throw requestError
@@ -83,6 +86,7 @@ Deno.serve(async (req) => {
         .maybeSingle()
       settled = Boolean(responseRow?.paid)
     }
+    let settledByFreeLead = false
     if (!settled && (workshop.free_leads_remaining || 0) > 0) {
       const { data: settleRows, error: settleError } = await admin.rpc('settle_winner_free_lead', {
         p_response_id: parsed.data.response_id,
@@ -91,6 +95,7 @@ Deno.serve(async (req) => {
       if (!settleError) {
         const settleRow = Array.isArray(settleRows) ? settleRows[0] : settleRows
         settled = true
+        settledByFreeLead = true
         console.log('winner settled with free lead', parsed.data.response_id, 'remaining', settleRow?.remaining_free_leads)
       } else if (!settleError.message.includes('no_free_leads') && !settleError.message.includes('response_already_paid')) {
         console.error('settle_winner_free_lead failed', settleError.message)
@@ -132,15 +137,66 @@ Deno.serve(async (req) => {
         customerEmail: request.customer_email as string | null,
         customerName,
         workshopName,
-        requestUrl: buildCustomerResponseUrl(request.view_token as string),
+        // V2 attribution (S6): lifecycle email links carry UTM (dim02 fix).
+        requestUrl: withUtmParams(
+          buildCustomerResponseUrl(request.view_token as string),
+          { source: 'email', campaign: 'winner_chosen' },
+        ),
         settled,
       })
 
     })().catch((notifyError) => console.error('winner notifications failed', notifyError))
 
+    // V2 data-moat (S6): quote.won + quote.settled(free_lead), best-effort and
+    // flag-gated inside the helper. No PII in payloads (contract §4).
+    const eventTask = (async () => {
+      if (chosen.already_chosen) return
+      const citySlug = citySlugFromName((request.city as string | null) ?? '')
+      const [{ data: winnerResponse }, { count: quotesTotal }] = await Promise.all([
+        admin
+          .from('workshop_responses')
+          .select('estimated_price_min, estimated_price_max')
+          .eq('id', parsed.data.response_id)
+          .maybeSingle(),
+        admin
+          .from('workshop_responses')
+          .select('id', { count: 'exact', head: true })
+          .eq('request_id', request.id)
+          .in('status', ['won', 'lost']),
+      ])
+      await emitDomainEvent(admin, {
+        eventName: 'quote.won',
+        actorType: 'customer',
+        citySlug,
+        requestId: request.id,
+        workshopId: workshop.id,
+        responseId: parsed.data.response_id,
+        payload: {
+          city_slug: citySlug,
+          price_min: winnerResponse?.estimated_price_min ?? null,
+          price_max: winnerResponse?.estimated_price_max ?? null,
+          quotes_total: quotesTotal ?? null,
+        },
+      })
+      if (settledByFreeLead) {
+        await emitDomainEvent(admin, {
+          eventName: 'quote.settled',
+          actorType: 'system',
+          citySlug,
+          requestId: request.id,
+          workshopId: workshop.id,
+          responseId: parsed.data.response_id,
+          payload: { method: 'free_lead', amount_ore: 0 },
+        })
+      }
+    })().catch((eventError) => console.error('winner events failed', eventError))
+
     const edgeRuntime = (globalThis as any).EdgeRuntime
-    if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(notifyTask)
-    else await notifyTask
+    if (edgeRuntime?.waitUntil) {
+      edgeRuntime.waitUntil(notifyTask)
+      edgeRuntime.waitUntil(eventTask)
+    }
+    else await Promise.all([notifyTask, eventTask])
 
     return new Response(JSON.stringify({
       ok: true,

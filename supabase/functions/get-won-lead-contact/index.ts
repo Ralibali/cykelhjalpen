@@ -5,6 +5,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { getEffectivePricing } from '../_shared/v2/pricing-config.ts'
+import { emitDomainEvent } from '../_shared/v2/events.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
 
@@ -70,6 +71,18 @@ Deno.serve(async (req) => {
       .maybeSingle()
     if (requestError) throw requestError
     if (!request) throw new Error('Ärendet hittades inte')
+
+    // V2 data-moat (S6): contact unlock milestone. Best-effort, flag-gated
+    // inside the helper; payload carries no PII (contract §4 + extension).
+    await emitDomainEvent(admin, {
+      eventName: 'contact.unlocked',
+      actorType: 'workshop',
+      actorId: userData.user.id,
+      requestId: response.request_id,
+      workshopId: workshop.id,
+      responseId: response.id,
+      payload: {},
+    })
 
     return new Response(JSON.stringify({ contact: request }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
