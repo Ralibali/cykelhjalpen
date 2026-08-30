@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AdminLayout } from './AdminDashboard'
 import CykelMarketplaceHealthPanel from '@/components/admin/CykelMarketplaceHealthPanel'
+import V2KpiPanel from '@/components/admin/V2KpiPanel'
 import { supabase } from '@/integrations/supabase/client'
 import { useT } from '@/lib/i18n'
 import {
@@ -147,6 +148,8 @@ const CykelAdminAnalytics = () => {
           <CykelMarketplaceHealthPanel snapshot={snapshot} />
         </>
       )}
+
+      <V2KpiPanel />
     </AdminLayout>
   )
 }

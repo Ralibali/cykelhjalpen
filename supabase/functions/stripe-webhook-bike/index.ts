@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { notifyCustomerOfNewResponse } from "../_shared/customer-response.ts";
+import { emitDomainEvent } from "../_shared/v2/events.ts";
+import { LEAD_FEE_ORE } from "../_shared/pricing.ts";
 
 const BIKE_SESSION_EVENTS = new Set([
   "checkout.session.completed",
@@ -179,6 +181,22 @@ serve(async (req) => {
             })
             .eq("id", requestId);
           if (requestStatusError) throw requestStatusError;
+        }
+
+        // V2 data-moat (S6): winner-fee settlement event. Best-effort,
+        // flag-gated inside the helper; never affects payment handling.
+        if (newlyPaid && isWinnerFee) {
+          await emitDomainEvent(admin, {
+            eventName: "quote.settled",
+            actorType: "system",
+            requestId: requestId ?? null,
+            workshopId: workshopId ?? null,
+            responseId,
+            payload: {
+              method: "card",
+              amount_ore: typeof session.amount_subtotal === "number" ? session.amount_subtotal : LEAD_FEE_ORE,
+            },
+          });
         }
 
         // Only the transition from unpaid to paid sends a customer notification.

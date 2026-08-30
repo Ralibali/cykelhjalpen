@@ -4,6 +4,9 @@ import { corsFor } from '../_shared/cors.ts'
 import { notifyAdminsOfPendingRequest } from '../_shared/notifications.ts'
 import { sendAdminAlert } from '../_shared/admin-alert.ts'
 import { cityHasActiveWorkshop, publishApprovedBikeRequest } from '../_shared/publish-bike-request.ts'
+import { emitDomainEvent } from '../_shared/v2/events.ts'
+import { citySlugFromName } from '../_shared/v2/config-schema.ts'
+import { withUtmParams } from '../_shared/v2/utm.ts'
 
 
 const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
@@ -202,7 +205,11 @@ Deno.serve(async (req) => {
     const backgroundTasks: Promise<unknown>[] = []
 
     if (!autoApproved) {
-      const requestUrl = `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(row.view_token)}`
+      // V2 attribution (S6): lifecycle email links carry UTM (dim02 fix).
+      const requestUrl = withUtmParams(
+        `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(row.view_token)}`,
+        { source: 'email', campaign: 'request_confirmation' },
+      )
       backgroundTasks.push(fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
         method: 'POST',
         headers: {
@@ -253,6 +260,32 @@ Deno.serve(async (req) => {
         ],
         ctaUrl: 'https://cykelhjalpen.se/admin/cykelarenden',
         ctaLabel: 'Granska ärendet',
+      }))
+    }
+
+    // V2 data-moat (S6): domain events, best-effort, flag-gated inside the
+    // helper — never blocks the money path. Payload carries no PII (§4).
+    const citySlug = citySlugFromName(body.city)
+    backgroundTasks.push(emitDomainEvent(supabase, {
+      eventName: 'request.submitted',
+      actorType: 'customer',
+      citySlug,
+      requestId: row.id,
+      payload: {
+        bike_type: body.bike_type,
+        repair_category: body.repair_category,
+        urgency: body.urgency,
+        city_slug: citySlug,
+        auto_approved: autoApproved,
+      },
+    }))
+    if (autoApproved) {
+      backgroundTasks.push(emitDomainEvent(supabase, {
+        eventName: 'request.approved',
+        actorType: 'system',
+        citySlug,
+        requestId: row.id,
+        payload: { city_slug: citySlug, auto: true },
       }))
     }
 

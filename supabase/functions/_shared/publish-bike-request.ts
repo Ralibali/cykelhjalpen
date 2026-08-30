@@ -1,5 +1,6 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { notifyWorkshopsOfApprovedRequest, logSmsAttempt } from './notifications.ts'
+import { withUtmParams } from './v2/utm.ts'
 
 /** Keep in sync with src/lib/cykelMarketplaceHealth.ts (PR #9). */
 export const ACTIVE_WORKSHOP_QUOTE_WINDOW_DAYS = 30
@@ -115,6 +116,8 @@ export async function publishApprovedBikeRequest(opts: {
   const requestUrl = requestRow.view_token
     ? `https://cykelhjalpen.se/mitt-arende/${encodeURIComponent(requestRow.view_token)}`
     : 'https://cykelhjalpen.se/'
+  // V2 attribution (S6): lifecycle email links carry UTM (dim02 fix).
+  const customerEmailUrl = withUtmParams(requestUrl, { source: 'email', campaign: 'request_approved' })
   const safeName = escapeHtml(requestRow.customer_name)
   const safeBikeType = escapeHtml(requestRow.bike_type)
   const safeCategory = escapeHtml(requestRow.repair_category)
@@ -130,7 +133,7 @@ export async function publishApprovedBikeRequest(opts: {
         <h2 style="margin:0 0 16px">Hej ${safeName}!</h2>
         <p>Ditt ärende om <strong>${safeCategory}</strong> för din ${safeBikeType} är nu godkänt.</p>
         <p>Det har skickats till anslutna cykelverkstäder i ${escapeHtml(city)}. Du får besked när en verkstad lämnar offert.</p>
-        <p style="margin-top:24px"><a href="${requestUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Följ ditt ärende</a></p>
+        <p style="margin-top:24px"><a href="${customerEmailUrl}" style="display:inline-block;background:#157A6E;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">Följ ditt ärende</a></p>
       </div>
     `,
   ).catch((error) => console.error('Customer status email failed', error))
@@ -151,7 +154,10 @@ export async function publishApprovedBikeRequest(opts: {
   const description = requestRow.description.length > 300
     ? `${requestRow.description.slice(0, 300)}…`
     : requestRow.description
-  const dashboardUrl = 'https://cykelhjalpen.se/dashboard/verkstad/arenden'
+  const dashboardUrl = withUtmParams(
+    'https://cykelhjalpen.se/dashboard/verkstad/arenden',
+    { source: 'email', campaign: 'workshop_new_request' },
+  )
 
   const workshopEmailResults = await Promise.allSettled((workshops || []).map((workshop) => sendEmail(
     supabaseUrl,

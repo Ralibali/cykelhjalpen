@@ -5,16 +5,18 @@ import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, hasAnalyticsConsent } from '@
 import { getNoindexSeoRoutes } from '@/lib/seoStatic'
 import { getCurrentHost } from '@/lib/hostConfig'
 import { shouldNoindexPath } from '@/lib/seoRobots'
+import {
+  captureAttribution as captureAttributionPure,
+  readAttribution as readAttributionPure,
+  sanitizeReferrer,
+  sanitizeTrackingPath,
+  type Attribution,
+} from '@/lib/attribution'
 
 const SESSION_ID_KEY = '_sid'
-const ATTRIBUTION_KEY = '_cykel_attribution'
-const ATTRIBUTION_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid', 'msclkid'] as const
 
-type Attribution = Partial<Record<typeof ATTRIBUTION_PARAMS[number], string>> & {
-  landing_path?: string
-  first_referrer?: string
-  captured_at?: string
-}
+export { sanitizeTrackingPath }
+export type { Attribution }
 
 function getSessionId() {
   let id = sessionStorage.getItem(SESSION_ID_KEY)
@@ -34,51 +36,21 @@ function getDeviceType(): string {
   return 'desktop'
 }
 
-export function sanitizeTrackingPath(pathname: string): string {
-  if (/^\/mitt-arende\/[^/]+/i.test(pathname)) return '/mitt-arende/[redacted]'
-  return (pathname || '/').slice(0, 1000)
-}
-
-function sanitizeReferrer(value: string): string | undefined {
-  if (!value) return undefined
-  try {
-    const url = new URL(value)
-    if (url.origin === window.location.origin) {
-      return `${url.origin}${sanitizeTrackingPath(url.pathname)}`
-    }
-    return url.origin
-  } catch {
-    return undefined
-  }
-}
-
 function readAttribution(): Attribution {
-  try {
-    return JSON.parse(sessionStorage.getItem(ATTRIBUTION_KEY) || '{}') as Attribution
-  } catch {
-    sessionStorage.removeItem(ATTRIBUTION_KEY)
-    return {}
-  }
+  return readAttributionPure(sessionStorage, localStorage)
 }
 
 function captureAttribution(search: string, pathname: string): Attribution {
-  const existing = readAttribution()
-  if (Object.keys(existing).length > 0) return existing
-
-  const params = new URLSearchParams(search)
-  const attribution: Attribution = {
-    landing_path: sanitizeTrackingPath(pathname),
-    first_referrer: sanitizeReferrer(document.referrer),
-    captured_at: new Date().toISOString(),
-  }
-
-  for (const key of ATTRIBUTION_PARAMS) {
-    const value = params.get(key)?.trim()
-    if (value) attribution[key] = value.slice(0, 300)
-  }
-
-  sessionStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(attribution))
-  return attribution
+  return captureAttributionPure(
+    {
+      search,
+      pathname,
+      referrer: document.referrer,
+      origin: window.location.origin,
+    },
+    sessionStorage,
+    localStorage,
+  )
 }
 
 function routeShouldRemainNoindex(pathname: string): boolean {
@@ -126,7 +98,7 @@ export function usePageTracking() {
     supabase.from('page_views').insert({
       session_id: sessionId,
       path: safePath,
-      referrer: sanitizeReferrer(document.referrer) || null,
+      referrer: sanitizeReferrer(document.referrer, window.location.origin) || null,
       device_type: getDeviceType(),
     }).then(() => {})
   }, [analyticsEnabled, location.pathname, location.search])

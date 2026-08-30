@@ -8,6 +8,9 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
+import { emitDomainEvent } from '../_shared/v2/events.ts'
+import { citySlugFromName } from '../_shared/v2/config-schema.ts'
+import { withUtmParams } from '../_shared/v2/utm.ts'
 
 const RESPONSE_WINDOW_DAYS = 5
 
@@ -92,8 +95,28 @@ Deno.serve(async (req) => {
       }
       closed.push(request.id)
 
+      // V2 data-moat (S6): request.closed, best-effort, flag-gated inside the
+      // helper. reason='window_expired' — this cron only closes on the 5-day
+      // window (max_quotes closes happen in the payment path).
+      const citySlug = citySlugFromName(request.city ?? '')
+      await emitDomainEvent(admin, {
+        eventName: 'request.closed',
+        actorType: 'system',
+        citySlug,
+        requestId: request.id,
+        payload: { city_slug: citySlug, quotes_sent: offers.length, reason: 'window_expired' },
+      })
+
       const lang = request.customer_language === 'en' ? 'en' : 'sv'
-      const link = `https://cykelhjalpen.se/mitt-arende/${request.view_token}`
+      // V2 attribution (S6): lifecycle email links carry UTM (dim02 fix).
+      const link = withUtmParams(
+        `https://cykelhjalpen.se/mitt-arende/${request.view_token}`,
+        { source: 'email', campaign: offers.length > 0 ? 'request_closed' : 'request_expired' },
+      )
+      const newRequestLink = withUtmParams(
+        'https://cykelhjalpen.se/cykelreparation',
+        { source: 'email', campaign: 'request_expired' },
+      )
 
       const rows = offers.map((offer) => `
         <tr>
@@ -127,12 +150,12 @@ Deno.serve(async (req) => {
             <h2 style="margin:0 0 16px">No quotes this time</h2>
             <p>Hi ${escapeHtml(request.customer_name)}, unfortunately no workshop in ${escapeHtml(request.city)} replied within five days, so your request is now closed.</p>
             <p>You are welcome to post a new request – it is free and often gets a reply within a day.</p>
-            <p style="margin-top:24px"><a href="https://cykelhjalpen.se/cykelreparation" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Post a new request</a></p>`
+            <p style="margin-top:24px"><a href="${newRequestLink}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Post a new request</a></p>`
           : `
             <h2 style="margin:0 0 16px">Inga offerter den här gången</h2>
             <p>Hej ${escapeHtml(request.customer_name)}, tyvärr svarade ingen verkstad i ${escapeHtml(request.city)} inom fem dagar, så ditt ärende är nu stängt.</p>
             <p>Du är varmt välkommen att lägga upp ett nytt ärende – det är gratis och får oftast svar inom ett dygn.</p>
-            <p style="margin-top:24px"><a href="https://cykelhjalpen.se/cykelreparation" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Lägg upp nytt ärende</a></p>`)
+            <p style="margin-top:24px"><a href="${newRequestLink}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Lägg upp nytt ärende</a></p>`)
 
       try {
         const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {

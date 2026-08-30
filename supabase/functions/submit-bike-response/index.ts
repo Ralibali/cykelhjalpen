@@ -6,6 +6,8 @@ import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
 import { notifyCustomerOfNewResponse } from '../_shared/customer-response.ts'
 import { sendAdminAlert } from '../_shared/admin-alert.ts'
+import { emitDomainEvent } from '../_shared/v2/events.ts'
+import { citySlugFromName } from '../_shared/v2/config-schema.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
 
@@ -57,7 +59,7 @@ Deno.serve(async (req) => {
 
     const { data: response, error: responseError } = await admin
       .from('workshop_responses')
-      .select('id, request_id, workshop_id, paid, status')
+      .select('id, request_id, workshop_id, paid, status, estimated_price_min, estimated_price_max')
       .eq('id', parsed.data.response_id)
       .maybeSingle()
     if (responseError) throw responseError
@@ -74,7 +76,7 @@ Deno.serve(async (req) => {
     // Ärendet måste fortfarande vara öppet och i verkstadens stad.
     const { data: request, error: requestError } = await admin
       .from('bike_repair_requests')
-      .select('id, status, admin_status, city')
+      .select('id, status, admin_status, city, created_at, approved_at')
       .eq('id', response.request_id)
       .maybeSingle()
     if (requestError) throw requestError
@@ -94,6 +96,48 @@ Deno.serve(async (req) => {
       .eq('id', response.id)
       .in('status', ['draft', 'pending_payment'])
     if (updateError) throw new Error(friendlyDatabaseError(updateError.message))
+
+    // V2 data-moat (S6): quote.sent + workshop.first_quote, best-effort and
+    // flag-gated inside the helper. No PII in payloads (contract §4).
+    const citySlug = citySlugFromName(request.city ?? '')
+    const openAt = Date.parse((request.approved_at as string | null) || request.created_at)
+    const responseTimeHours = Number.isFinite(openAt)
+      ? Math.round(Math.max(0, (Date.now() - openAt) / 3_600_000) * 100) / 100
+      : null
+    const eventTasks: Promise<unknown>[] = [emitDomainEvent(admin, {
+      eventName: 'quote.sent',
+      actorType: 'workshop',
+      actorId: userData.user.id,
+      citySlug,
+      requestId: response.request_id,
+      workshopId: workshop.id,
+      responseId: response.id,
+      payload: {
+        city_slug: citySlug,
+        price_min: response.estimated_price_min ?? null,
+        price_max: response.estimated_price_max ?? null,
+        response_time_hours: responseTimeHours,
+      },
+    })]
+    // First quote ever from this workshop → onboarding milestone event.
+    eventTasks.push((async () => {
+      const { count } = await admin
+        .from('workshop_responses')
+        .select('id', { count: 'exact', head: true })
+        .eq('workshop_id', workshop.id)
+        .in('status', ['sent', 'won', 'lost'])
+      if ((count ?? 0) <= 1) {
+        await emitDomainEvent(admin, {
+          eventName: 'workshop.first_quote',
+          actorType: 'workshop',
+          actorId: userData.user.id,
+          citySlug,
+          workshopId: workshop.id,
+          responseId: response.id,
+          payload: { city_slug: citySlug },
+        })
+      }
+    })())
 
     // Notifiera kunden om det nya svaret – mejl + SMS, idempotent per svar.
     const notifyTask = notifyCustomerOfNewResponse(admin, {
@@ -120,11 +164,11 @@ Deno.serve(async (req) => {
     })
 
     const edgeRuntime = (globalThis as any).EdgeRuntime
+    const backgroundTasks = [notifyTask, adminAlertTask, ...eventTasks]
     if (edgeRuntime?.waitUntil) {
-      edgeRuntime.waitUntil(notifyTask)
-      edgeRuntime.waitUntil(adminAlertTask)
+      for (const task of backgroundTasks) edgeRuntime.waitUntil(task)
     } else {
-      await Promise.all([notifyTask, adminAlertTask])
+      await Promise.all(backgroundTasks)
     }
 
 

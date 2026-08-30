@@ -316,6 +316,9 @@ export const V2_SERVER_EVENT_NAMES = [
   'quote.sent',
   'quote.won',
   'quote.settled',
+  // Catalog extension (S6, 2026-08-31): contact unlock is a distinct money-path
+  // milestone the contract catalog lacked; payload carries no PII.
+  'contact.unlocked',
   'winner.reminded',
   'winner.stalled',
   'winner.reselected',
