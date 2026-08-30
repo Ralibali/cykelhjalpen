@@ -3,18 +3,16 @@
 // directory/prisindex render gating. Fails to null (unknown city = no V2
 // behavior change).
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { V2CityConfigRow, V2CityState } from './contracts'
-
-type UntypedClient = SupabaseClient<any, 'public', any>
+import type { V2Client } from './flags'
 
 // Lazy default client — the shared client module needs env at import time.
-let defaultClient: UntypedClient | null = null
-async function db(client?: UntypedClient): Promise<UntypedClient> {
+let defaultClient: V2Client | null = null
+async function db(client?: V2Client): Promise<V2Client> {
   if (client) return client
   if (!defaultClient) {
     const mod = await import('@/integrations/supabase/client')
-    defaultClient = mod.supabase as unknown as UntypedClient
+    defaultClient = mod.supabase
   }
   return defaultClient
 }
@@ -39,7 +37,7 @@ export function v2StateDefaults(state: V2CityState): {
 }
 
 export async function getV2CityConfigs(
-  opts: { client?: UntypedClient } = {},
+  opts: { client?: V2Client } = {},
 ): Promise<V2CityConfigRow[]> {
   try {
     const { data, error } = await (await db(opts.client))
@@ -48,7 +46,7 @@ export async function getV2CityConfigs(
         'city_slug, city_name, state, cluster_slug, demand_open, auto_approve_requests, directory_indexable, price_index_public, target_active_workshops, notes',
       )
     if (error || !data) return []
-    return data as V2CityConfigRow[]
+    return data
   } catch {
     return []
   }

@@ -2,18 +2,17 @@
 // Sends whitelisted client.* events through the hardened v2_emit_client_event
 // RPC. Best-effort: never throws, never blocks UI.
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { V2_CLIENT_EVENT_NAMES, type V2ClientEventName } from './contracts'
-
-type UntypedClient = SupabaseClient<any, 'public', any>
+import type { V2Client } from './flags'
+import type { Json } from '@/integrations/supabase/types'
 
 // Lazy default client — the shared client module needs env at import time.
-let defaultClient: UntypedClient | null = null
-async function db(client?: UntypedClient): Promise<UntypedClient> {
+let defaultClient: V2Client | null = null
+async function db(client?: V2Client): Promise<V2Client> {
   if (client) return client
   if (!defaultClient) {
     const mod = await import('@/integrations/supabase/client')
-    defaultClient = mod.supabase as unknown as UntypedClient
+    defaultClient = mod.supabase
   }
   return defaultClient
 }
@@ -58,18 +57,20 @@ function sessionId(): string | null {
 export async function trackV2ClientEvent(
   eventName: V2ClientEventName,
   payload: Record<string, unknown> = {},
-  opts: { consentScope?: 'necessary' | 'statistics' | 'marketing'; client?: UntypedClient } = {},
+  opts: { consentScope?: 'necessary' | 'statistics' | 'marketing'; client?: V2Client } = {},
 ): Promise<boolean> {
   if (!isV2ClientEventName(eventName)) return false
   try {
     const { data, error } = await (await db(opts.client)).rpc('v2_emit_client_event', {
       p_event_name: eventName,
-      p_payload: sanitizeV2ClientPayload(payload),
+      p_payload: sanitizeV2ClientPayload(payload) as Json,
       p_session_id: sessionId(),
       p_consent_scope: opts.consentScope ?? 'necessary',
     })
     if (error) return false
-    return (data as { ok?: boolean } | null)?.ok === true
+    return typeof data === 'object' && data !== null && !Array.isArray(data)
+      ? (data as { ok?: boolean }).ok === true
+      : false
   } catch {
     return false
   }
