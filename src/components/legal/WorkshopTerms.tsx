@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Briefcase, Scale, AlertTriangle, FileText } from 'lucide-react'
+import { formatKrFromOre, useV2Pricing, v2GrossOre } from '@/lib/v2/pricing'
 import { useT } from '@/lib/i18n'
 
 interface WorkshopTermsProps {
@@ -11,6 +12,10 @@ interface WorkshopTermsProps {
 
 export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
   const t = useT()
+  // Canonical pricing (contract §2.1) — displayed fee = charged fee.
+  const pricing = useV2Pricing()
+  const feeKr = formatKrFromOre(pricing.amountOre)
+  const feeGrossKr = formatKrFromOre(v2GrossOre(pricing.amountOre, pricing.vatRate))
   const [open, setOpen] = useState(false)
 
   return (
@@ -122,7 +127,7 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                 <section>
                   <h3 className="font-semibold text-gray-900">{t('5. Vinstavgift och lead-credits')}</h3>
                   <p className="mt-2">
-                    {t('Det är kostnadsfritt för Verkstaden att svara på kundförfrågningar. Först när kunden väljer Verkstadens prisförslag som vinnande debiteras en förmedlingsavgift om 50 kr exklusive moms (62,50 kr inklusive moms) innan kundens kontaktuppgifter låses upp. Nya verkstäder får 2 gratis leads som automatiskt dras vid vinst i stället för betalning. Verkstaden kan även köpa credits i förväg. Credits som inte förbrukas sparas på kontot.')}
+                    {t('Det är kostnadsfritt för Verkstaden att svara på kundförfrågningar. Först när kunden väljer Verkstadens prisförslag som vinnande debiteras en förmedlingsavgift om {fee} kr exklusive moms ({feeGross} kr inklusive moms) innan kundens kontaktuppgifter låses upp. Nya verkstäder får 2 gratis leads som automatiskt dras vid vinst i stället för betalning. Verkstaden kan även köpa credits i förväg. Credits som inte förbrukas sparas på kontot.', { fee: feeKr, feeGross: feeGrossKr })}
                   </p>
                 </section>
 

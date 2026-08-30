@@ -4,6 +4,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { corsFor } from '../_shared/cors.ts'
+import { getEffectivePricing } from '../_shared/v2/pricing-config.ts'
 
 const BodySchema = z.object({ response_id: z.string().uuid() })
 
@@ -54,7 +55,13 @@ Deno.serve(async (req) => {
     if (responseError) throw responseError
     if (!response || response.workshop_id !== workshop.id) throw new Error('Offerten hittades inte')
     if (response.status !== 'won') throw new Error('Kunden har inte valt er för det här ärendet.')
-    if (!response.paid) throw new Error('Betala vinstavgiften för att låsa upp kontaktuppgifterna.')
+    if (!response.paid) {
+      // Canonical pricing (contract §2.1): same value whether read from the
+      // config table or the compile-time live rule — the fee shown here always
+      // matches what create-winner-payment charges.
+      const pricing = await getEffectivePricing(admin)
+      throw new Error(`Betala vinstavgiften (${pricing.amountOre / 100} kr exkl. moms) för att låsa upp kontaktuppgifterna.`)
+    }
 
     const { data: request, error: requestError } = await admin
       .from('bike_repair_requests')

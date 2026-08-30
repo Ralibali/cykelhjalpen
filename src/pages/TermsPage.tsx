@@ -6,11 +6,16 @@ import { getCurrentHost } from '@/lib/hostConfig'
 import UpdroFooter from '@/components/Footer'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { setSEOMeta } from '@/lib/seoHelpers'
-import { LEAD_FEE_KR } from '@/lib/pricing'
+import { formatKrFromOre, useV2Pricing, v2GrossOre } from '@/lib/v2/pricing'
 import { useT, useLanguage } from '@/lib/i18n'
 
 const TermsPage = () => {
   const t = useT()
+  // Canonical pricing (contract §2.1): the fee displayed in the terms always
+  // matches the charged amount — 50 kr exkl. / 62,50 kr inkl. moms today.
+  const pricing = useV2Pricing()
+  const feeKr = formatKrFromOre(pricing.amountOre)
+  const feeGrossKr = formatKrFromOre(v2GrossOre(pricing.amountOre, pricing.vatRate))
   const { lang } = useLanguage()
   const isCykel = getCurrentHost() === 'cykelhjalpen'
   useEffect(() => {
@@ -89,7 +94,7 @@ const TermsPage = () => {
               <ul className="list-disc pl-5 space-y-1">
                 <li>{t('Det är gratis att registrera och ansöka om godkännande som verkstad.')}</li>
                 <li>{t('Det är kostnadsfritt för verkstäder att svara på kundförfrågningar.')}</li>
-                <li>{t('Först när kunden väljer verkstadens prisförslag som vinnande debiteras en vinstavgift om')} <strong>{t('{fee} kr exklusive moms (62,50 kr inklusive moms)', { fee: LEAD_FEE_KR })}</strong>. {t('Nya verkstäder får')} <strong>{t('två gratis leads')}</strong> {t('som automatiskt dras vid vinst i stället för betalning. Verkstaden kan även köpa leads i förväg via Stripe.')}</li>
+                <li>{t('Först när kunden väljer verkstadens prisförslag som vinnande debiteras en vinstavgift om')} <strong>{t('{fee} kr exklusive moms ({feeGross} kr inklusive moms)', { fee: feeKr, feeGross: feeGrossKr })}</strong>. {t('Nya verkstäder får')} <strong>{t('två gratis leads')}</strong> {t('som automatiskt dras vid vinst i stället för betalning. Verkstaden kan även köpa leads i förväg via Stripe.')}</li>
                 <li>{t('Moms beräknas utifrån tillämpliga skatteregler och de faktureringsuppgifter som lämnas i Stripe.')}</li>
                 <li>{t('Maximalt tre verkstäder kan svara per ärende. Först till kvarn gäller.')}</li>
                 <li>{t('Betalningsunderlag hanteras via Stripe.')}</li>

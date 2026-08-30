@@ -2,10 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { Gift, Zap } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
 import { useT } from '@/lib/i18n'
 
 export function FreeLeadsBanner() {
   const t = useT()
+  // Canonical pricing (contract §2.1): displayed fee = charged fee.
+  const pricing = useV2Pricing()
+  const feeKr = formatKrFromOre(pricing.amountOre)
   const { user } = useAuth()
 
   const { data: workshop } = useQuery({
@@ -38,7 +42,7 @@ export function FreeLeadsBanner() {
                 : t('{n} gratis leads kvar', { n: workshop.free_leads_remaining })}
             </h3>
             <p className="mt-0.5 text-sm text-green-700">
-              {t('Det kostar inget att svara. När kunden väljer er dras ett gratis-lead automatiskt – utan gratis-leads kostar vinsten 50 kr exkl. moms.')}
+              {t('Det kostar inget att svara. När kunden väljer er dras ett gratis-lead automatiskt – utan gratis-leads kostar vinsten {fee} kr exkl. moms.', { fee: feeKr })}
             </p>
             {!workshop.approved && (
               <p className="mt-1.5 text-xs text-amber-700 bg-amber-100 inline-block px-2 py-0.5 rounded">

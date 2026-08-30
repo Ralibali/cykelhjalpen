@@ -111,3 +111,14 @@ verify_jwt = false
 # den scopade vyn v2_public_workshop_directory (kontrakt §2.4/§3.4).
 [functions.v2-get-public-workshop]
 verify_jwt = false
+
+# --- V2 prisindex (S5) -------------------------------------------------------
+# Cron-anropas med service-nyckel (ingen användarsession); admin-JWT kan även
+# trigga manuellt. Writes gated on flag v2.prisindex.engine (G-P1).
+[functions.v2-compute-price-index]
+verify_jwt = false
+
+# Publik, sample-gated prisindex-läsning — kunder är kontolösa (anon).
+# Sample-gaten ligger i SQL-RPC:n v2_get_price_index.
+[functions.v2-get-price-index]
+verify_jwt = false

@@ -8,7 +8,7 @@ import { QuoteDisclaimer } from '@/components/legal/QuoteDisclaimer'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { LEAD_FEE_KR } from '@/lib/pricing'
+import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
 import { trackEvent } from '@/lib/analytics'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { useT } from '@/lib/i18n'
@@ -51,6 +51,8 @@ const emptyForm = {
 
 const WorkshopRequests = () => {
   const t = useT()
+  // Canonical pricing (contract §2.1): displayed fee = charged fee.
+  const feeKr = formatKrFromOre(useV2Pricing().amountOre)
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const [requests, setRequests] = useState<RequestRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -338,7 +340,7 @@ const WorkshopRequests = () => {
                       {t('Vi kan hämta cykeln')}
                     </label>
                     <div className="rounded-xl bg-background p-3.5 text-xs text-muted-foreground border">
-                      {t('Det är kostnadsfritt att svara. Först om kunden väljer dig betalar du {price} kr exkl. moms – eller så dras ett gratis-lead automatiskt om du har kvar.', { price: LEAD_FEE_KR })}
+                      {t('Det är kostnadsfritt att svara. Först om kunden väljer dig betalar du {price} kr exkl. moms – eller så dras ett gratis-lead automatiskt om du har kvar.', { price: feeKr })}
                     </div>
                     <QuoteDisclaimer variant="workshop" />
                     <Button onClick={() => submitOffer(request.id)} disabled={isSubmitting} className="w-full rounded-xl cta-playful bg-accent text-accent-foreground hover:bg-accent/90 h-11">

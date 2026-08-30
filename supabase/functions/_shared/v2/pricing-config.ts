@@ -12,9 +12,11 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import {
   V2_LIVE_PRICING,
+  resolveExperimentVariant,
   resolvePricingConfig,
   type V2PricingConfig,
   type V2PricingConfigRow,
+  type V2PricingExperimentRow,
 } from './config-schema.ts'
 import { v2FlagEnabled } from './flags.ts'
 
@@ -55,4 +57,38 @@ export async function getEffectivePricing(
   const useConfigTable = await v2FlagEnabled(supabase, 'v2.pricing.config_reader')
   if (!useConfigTable) return V2_LIVE_PRICING
   return getCanonicalPricing(supabase, key)
+}
+
+/**
+ * Pricing-experiment resolution (contract §2.8) — INERT by construction:
+ * returns null unless the v2.pricing.config_reader flag is ON (G-X1) AND an
+ * active, un-ended experiment row resolves a variant for the subject.
+ *
+ * Invariants (I1/I2): a variant can only carry winner_fee_ore — commission is
+ * ALWAYS 0 and experiments NEVER apply retroactively to already-won responses
+ * (callers may only use this for NEW settlements). Nothing in the live
+ * charging path calls this yet.
+ */
+export async function getExperimentalWinnerFeeOre(
+  supabase: SupabaseClient,
+  subjectId: string | null,
+): Promise<number | null> {
+  try {
+    const useConfigTable = await v2FlagEnabled(supabase, 'v2.pricing.config_reader')
+    if (!useConfigTable) return null
+
+    const { data, error } = await supabase
+      .from('v2_pricing_experiments')
+      .select('key, variants, active, started_at, ended_at')
+      .eq('active', true)
+
+    if (error || !data) return null
+    for (const row of data as V2PricingExperimentRow[]) {
+      const variant = resolveExperimentVariant(row, subjectId)
+      if (variant?.winner_fee_ore != null) return variant.winner_fee_ore
+    }
+    return null
+  } catch {
+    return null
+  }
 }

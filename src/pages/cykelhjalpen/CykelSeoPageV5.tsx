@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { Bike, CheckCircle2, MapPin } from 'lucide-react'
@@ -13,6 +14,7 @@ import { getCityImage } from '@/lib/cykelCityImages'
 import elsparkBanner1200 from '@/assets/cykel-elsparkcykel-1200.webp'
 import elsparkBanner640 from '@/assets/cykel-elsparkcykel-640.webp'
 import { trackClick } from '@/hooks/usePageTracking'
+import { getV2PriceIndex, type V2PriceIndexRow } from '@/lib/v2/priceIndex'
 import { useLanguage, useT, type Lang } from '@/lib/i18n'
 
 type GuidePriceRow = { repair_category: string; price_low: number; price_high: number; price_typical: number }
@@ -33,12 +35,90 @@ const EN_PRICE_LABELS: Record<string, string> = {
   Växeljustering: 'Gear adjustment',
   Bromsservice: 'Brake service',
   'Elsparkcykel-service': 'E-scooter service',
+  'Punktering / däckbyte': 'Flat tire / tire change',
+  Bromsar: 'Brakes',
+  'Växlar / kedja': 'Gears / chain',
+  'Service / genomgång': 'Service / inspection',
+  'Elcykel-problem': 'E-bike problems',
+  'Hjul / ekrar': 'Wheels / spokes',
+  'Lyse / elektronik': 'Lights / electronics',
+  Annat: 'Other',
 }
 
 const textFor = (lang: Lang, sv: string, en: string) => lang === 'en' ? en : sv
 
-const GuidePriceTable = ({ lang }: { lang: Lang }) => {
+/** Local static riktpriser — prerender/first-paint fallback, clearly labelled. */
+const LOCAL_GUIDE_ROWS: V2PriceIndexRow[] = GUIDE_PRICES.map((row) => ({
+  repair_category: row.repair_category,
+  sample_count: null,
+  median_sek: row.price_typical,
+  p25_sek: row.price_low,
+  p75_sek: row.price_high,
+  confidence: 'riktpris',
+  window_end: null,
+  kind: 'riktpris' as const,
+}))
+
+const VatNote = ({ lang }: { lang: Lang }) => (
+  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+    {textFor(lang,
+      'Bra att veta: arbetet på cykelreparationer har 12 % moms (delar 25 %). Priserna ovan är vägledande – verkstaden lämnar alltid ett pris innan arbetet påbörjas.',
+      'Good to know: labour on bike repairs carries 12 % VAT in Sweden (parts 25 %). The prices above are indicative — the workshop always quotes a price before work begins.')}
+  </p>
+)
+
+/**
+ * Sample-gated price section (contract §2.5/§3.5, gate G-P2).
+ * Renders REAL Cykelhjälpen statistics (median + p25–p75 + visible n +
+ * window) only when the SQL gate passes; otherwise clearly labelled external
+ * riktpriser. The static/prerender render shows the local riktpris block —
+ * never fabricated statistics.
+ */
+const PriceIndexSection = ({ citySlug, lang }: { citySlug: string; lang: Lang }) => {
   const text = (sv: string, en: string) => textFor(lang, sv, en)
+  const { data } = useQuery({
+    queryKey: ['v2-price-index', citySlug],
+    queryFn: () => getV2PriceIndex(citySlug),
+    staleTime: 300_000,
+  })
+
+  const showStats = Boolean(data && !data.sampleGated && data.rows.length > 0)
+  const rows: V2PriceIndexRow[] = showStats
+    ? data!.rows
+    : (data && data.rows.length > 0 ? data.rows : LOCAL_GUIDE_ROWS)
+
+  const categoryLabel = (category: string) =>
+    lang === 'en' ? EN_PRICE_LABELS[category] ?? category : category
+
+  if (showStats) {
+    const windowEnd = rows.find((row) => row.window_end)?.window_end ?? null
+    return (
+      <section className="my-10" aria-labelledby="prisstatistik-rubrik">
+        <p className="text-xs uppercase tracking-[.18em] text-accent font-semibold">{text('Prisstatistik från Cykelhjälpen', 'Price statistics from Cykelhjälpen')}</p>
+        <h2 id="prisstatistik-rubrik" className="font-display text-2xl font-bold mt-1 mb-4">{text('Vad liknande reparationer har kostat', 'What similar repairs have cost')}</h2>
+        <div className="overflow-x-auto sticker bg-card p-4 rounded-2xl">
+          <table className="w-full text-sm">
+            <thead><tr className="text-left border-b"><th className="py-2 pr-4">{text('Reparationstyp', 'Repair type')}</th><th className="py-2 pr-4">{text('Typiskt spann', 'Typical range')}</th><th className="py-2 pr-4">{text('Median', 'Median')}</th><th className="py-2">{text('Underlag', 'Sample')}</th></tr></thead>
+            <tbody>{rows.map((row) => (
+              <tr key={row.repair_category} className="border-b last:border-0">
+                <td className="py-2 pr-4 font-medium">{categoryLabel(row.repair_category)}</td>
+                <td className="py-2 pr-4">{row.p25_sek != null && row.p75_sek != null ? `${row.p25_sek}–${row.p75_sek} kr` : '—'}</td>
+                <td className="py-2 pr-4">{row.median_sek != null ? text(`cirka ${row.median_sek} kr`, `about SEK ${row.median_sek}`) : '—'}</td>
+                <td className="py-2 text-muted-foreground">{text(`${row.sample_count ?? 0} offerter`, `${row.sample_count ?? 0} quotes`)}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </div>
+        <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
+          {text(
+            `Statistik baserad på riktiga offerter via Cykelhjälpen${windowEnd ? ` (t.o.m. ${windowEnd})` : ''} – median och mittspann (25:e–75:e percentilen) efter borttag av extremvärden. Inte bindande priser: verkstaden lämnar alltid ett pris för just din cykel innan arbetet påbörjas.`,
+            `Statistics based on real quotes via Cykelhjälpen${windowEnd ? ` (through ${windowEnd})` : ''} — median and middle range (25th–75th percentile) after outlier removal. Not binding prices: the workshop always quotes a price for your specific bike before work begins.`)}
+        </p>
+        <VatNote lang={lang} />
+      </section>
+    )
+  }
+
   return (
     <section className="my-10" aria-labelledby="riktpriser-rubrik">
       <p className="text-xs uppercase tracking-[.18em] text-accent font-semibold">{text('Riktpriser', 'Guide prices')}</p>
@@ -46,10 +126,17 @@ const GuidePriceTable = ({ lang }: { lang: Lang }) => {
       <div className="overflow-x-auto sticker bg-card p-4 rounded-2xl">
         <table className="w-full text-sm">
           <thead><tr className="text-left border-b"><th className="py-2 pr-4">{text('Reparationstyp', 'Repair type')}</th><th className="py-2 pr-4">{text('Prisspann', 'Price range')}</th><th className="py-2">{text('Riktpris', 'Guide price')}</th></tr></thead>
-          <tbody>{GUIDE_PRICES.map((row) => <tr key={row.repair_category} className="border-b last:border-0"><td className="py-2 pr-4 font-medium">{lang === 'en' ? EN_PRICE_LABELS[row.repair_category] ?? row.repair_category : row.repair_category}</td><td className="py-2 pr-4">{row.price_low}–{row.price_high} kr</td><td className="py-2">{text(`cirka ${row.price_typical} kr`, `about SEK ${row.price_typical}`)}</td></tr>)}</tbody>
+          <tbody>{rows.map((row) => (
+            <tr key={row.repair_category} className="border-b last:border-0">
+              <td className="py-2 pr-4 font-medium">{categoryLabel(row.repair_category)}</td>
+              <td className="py-2 pr-4">{row.p25_sek}–{row.p75_sek} kr</td>
+              <td className="py-2">{row.median_sek != null ? text(`cirka ${row.median_sek} kr`, `about SEK ${row.median_sek}`) : '—'}</td>
+            </tr>
+          ))}</tbody>
         </table>
       </div>
-      <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{text('Generella riktpriser – inte Cykelhjälpen-statistik eller bindande offerter. Faktiskt pris beror på cykel, delar och arbetets omfattning.', 'General guide prices — not Cykelhjälpen statistics or binding quotes. Actual price depends on the bike, parts and scope of work.')}</p>
+      <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{text('Generella riktpriser från publicerade svenska verkstadsprislistor – inte Cykelhjälpen-statistik eller bindande offerter. Faktiskt pris beror på cykel, delar och arbetets omfattning. När tillräckligt många riktiga offerter finns här visas i stället statistik från Cykelhjälpen, tydligt märkt med antal.', 'General guide prices from published Swedish workshop price lists — not Cykelhjälpen statistics or binding quotes. Actual price depends on the bike, parts and scope of work. Once enough real quotes exist here, Cykelhjälpen statistics are shown instead, clearly labelled with the sample size.')}</p>
+      <VatNote lang={lang} />
     </section>
   )
 }
@@ -112,7 +199,7 @@ const CykelSeoPageV5 = () => {
     <div className="sticker rounded-3xl bg-brand-sun/30 p-6 mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"><div><p className="font-display text-xl">{page.variant === 'price-stats' ? text('Få pris för just din cykel', 'Get a price for your bike') : text('Jämför lokala svar', 'Compare local replies')}</p><p className="text-sm">{text('Gratis · Inget konto · Ingen köpplikt', 'Free · No account · No obligation')}</p></div><Button asChild className="cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-6"><Link to={requestHref} onClick={() => trackCta('top')}>{text('Få prisförslag gratis', 'Get free quotes')}</Link></Button></div>
     <div className="grid sm:grid-cols-3 gap-2 mb-10 text-sm"><div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {text('Kostnadsfritt', 'Free')}</div><div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {text('Granskade verkstäder', 'Reviewed shops')}</div><div className="flex items-center gap-2 rounded-xl bg-muted/60 p-3"><CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {text('Du väljer själv', 'You choose')}</div></div>
     {page.sections.map((item) => <section key={item.h2} className="mb-8"><h2 className="font-display text-2xl font-bold mb-2">{item.h2}</h2><p className="text-foreground/90 leading-relaxed">{item.body}</p></section>)}
-    {page.variant === 'price-stats' && <GuidePriceTable lang={lang} />}
+    {page.variant === 'price-stats' && <PriceIndexSection citySlug={citySlug} lang={lang} />}
     <section className="mt-12"><h2 className="font-display text-2xl font-bold mb-4">{text('Vanliga frågor', 'Frequently asked questions')}</h2><div className="space-y-3">{page.faq.map((item) => <details key={item.q} className="group rounded-2xl bg-card p-5 sticker"><summary className="flex items-center justify-between cursor-pointer font-display text-lg">{item.q}<span className="text-accent group-open:rotate-45 transition-transform text-3xl leading-none">+</span></summary><p className="mt-3 text-muted-foreground leading-relaxed">{item.a}</p></details>)}</div></section>
     {showDirectoryLink && <div className="mt-12 sticker rounded-3xl bg-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"><div><p className="font-display text-xl">{text('Anslutna verkstäder i {city}', 'Partnered shops in {city}').replace('{city}', city)}</p><p className="text-sm text-muted-foreground mt-1">{text('Se vilka verkstäder som svarar på förfrågningar via Cykelhjälpen.', 'See which shops answer requests through Cykelhjälpen.')}</p></div><Button asChild variant="outline" className="shrink-0"><Link to={cityDirectoryPath(citySlug)}>{text('Se verkstäderna', 'See the shops')}</Link></Button></div>}
     <RelatedPages currentSlug={page.slug} city={city} seoPages={seoPages} lang={lang} />

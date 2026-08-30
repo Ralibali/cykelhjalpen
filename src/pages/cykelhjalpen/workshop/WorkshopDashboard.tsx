@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { LEAD_FEE_KR } from '@/lib/pricing'
+import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { FreeLeadsBanner } from '@/components/workshop/FreeLeadsBanner'
 import { useT } from '@/lib/i18n'
@@ -69,6 +69,8 @@ const statusBadge = (row: ResponseRow): { label: string; className: string } => 
 
 const WorkshopDashboard = () => {
   const t = useT()
+  // Canonical pricing (contract §2.1): displayed fee = charged fee.
+  const feeKr = formatKrFromOre(useV2Pricing().amountOre)
   const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
   const location = useLocation()
   const navigate = useNavigate()
@@ -248,7 +250,7 @@ const WorkshopDashboard = () => {
                   </div>
                   <Button className="rounded-full h-11 px-6" onClick={() => payWinnerFee(row.id)} disabled={payingId === row.id}>
                     {payingId === row.id ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
-                    {t('Köp lead – {price} kr exkl. moms', { price: LEAD_FEE_KR })}
+                    {t('Köp lead – {price} kr exkl. moms', { price: feeKr })}
                   </Button>
                 </div>
                 <p className="mt-3 text-xs text-amber-800">
@@ -394,7 +396,7 @@ const WorkshopDashboard = () => {
           <ol className="list-decimal pl-5 space-y-2 text-sm text-foreground/85">
             <li>{t('Välj ett nytt uppdrag och lämna en kostnadsfri offert.')}</li>
             <li>{t('Kunden jämför maximalt tre offerter och väljer en verkstad.')}</li>
-            <li>{t('Vinner du köper du leadet för {price} kr exkl. moms, eller använder ett gratis-lead.', { price: LEAD_FEE_KR })}</li>
+            <li>{t('Vinner du köper du leadet för {price} kr exkl. moms, eller använder ett gratis-lead.', { price: feeKr })}</li>
             <li>{t('När leadet är upplåst ser du kunduppgifterna och kontaktar kunden.')}</li>
           </ol>
         </section>
