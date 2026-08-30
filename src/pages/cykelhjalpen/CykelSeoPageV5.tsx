@@ -162,6 +162,7 @@ const CykelSeoPageV5 = () => {
   const seoPages = useMemo(() => buildCykelSeoPages(t), [t])
   const slug = pathname.replace(/^\//, '').replace(/\/$/, '')
   const page = seoPages.find((candidate) => (lang === 'en' ? candidate.enSlug : candidate.slug) === slug)
+  const directoryGate = useDirectoryGate(page ? getCykelCity(page.city).slug : '__invalid__')
   if (!page) return <Navigate to="/" replace />
 
   const city = page.city
@@ -177,7 +178,6 @@ const CykelSeoPageV5 = () => {
   const requestHref = lang === 'en' ? `/submit-request?stad=${citySlug}` : cityQuery(city)
   // V2 S4: internlänk till verkstadskatalogen bara när G-D1-grinden passerar
   // (flagga på + min antal opt-in-verkstäder + admin directory_indexable).
-  const directoryGate = useDirectoryGate(citySlug)
   const showDirectoryLink = lang === 'sv' && directoryGate.indexable
   const cityHubUrl = lang === 'en' ? `https://cykelhjalpen.se/en/bike-repair-${citySlug}` : `https://cykelhjalpen.se${cityLandingPath(city)}`
   const homeUrl = lang === 'en' ? 'https://cykelhjalpen.se/en' : 'https://cykelhjalpen.se/'
