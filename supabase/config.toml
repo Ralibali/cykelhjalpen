@@ -106,3 +106,8 @@ verify_jwt = false
 # V2 S3: admin modererar recensioner.
 [functions.v2-moderate-review]
 verify_jwt = false
+
+# V2: publik verkstadsprofil (/verkstad/:slug) — anonym åtkomst, läser endast
+# den scopade vyn v2_public_workshop_directory (kontrakt §2.4/§3.4).
+[functions.v2-get-public-workshop]
+verify_jwt = false

@@ -336,6 +336,40 @@ const cykelUtilityRoutes = (): StaticSeoRoute[] => [
   },
 ]
 
+/**
+ * V2 S4 directory shells (contract §2.4/§7.4). The /verkstader pages are
+ * prerendered as NOINDEX placeholders: the G-D1 gate (min opted-in workshops +
+ * admin directory_indexable + city state) is data-driven and resolved at
+ * runtime, where the page's Helmet tag flips to index once the gate passes.
+ * Shells stay noindex in the static build so a redeploy can never make a thin
+ * directory indexable by accident. /verkstad/:slug profiles cannot be
+ * enumerated at build time (slugs are assigned at opt-in) and are covered by
+ * the robots-prefix default in seoRobots.ts instead.
+ */
+const cykelGatedDirectoryRoutes = (): StaticSeoRoute[] => [
+  {
+    path: '/verkstader',
+    title: 'Cykelverkstäder anslutna till Cykelhjälpen',
+    description: 'Se cykelverkstäder som är anslutna till Cykelhjälpen. Begär en kostnadsfri offert och jämför pris och tid utan konto.',
+    h1: 'Cykelverkstäder',
+    priority: 0.4,
+    changefreq: 'weekly',
+    lastmod: today(),
+    noindex: true,
+  },
+  ...CYKEL_CITIES.map((city) => ({
+    path: `/verkstader/${city.slug}`,
+    title: `Cykelverkstäder i ${city.name} – anslutna till Cykelhjälpen`,
+    description: `Se cykelverkstäder i ${city.name} som är anslutna till Cykelhjälpen. Begär en kostnadsfri offert och jämför pris och tid utan konto.`,
+    h1: `Cykelverkstäder i ${city.name}`,
+    city: city.name as string,
+    priority: 0.4,
+    changefreq: 'weekly' as const,
+    lastmod: today(),
+    noindex: true,
+  })),
+]
+
 const CYKEL_NOINDEX_PATHS = [
   '/mitt-arende', '/avregistrera', '/annons/verkstad',
   '/publicera', '/byraer', '/priser', '/om-oss', '/artiklar', '/verktyg', '/stader',
@@ -368,6 +402,7 @@ const updroIndexableRoutes = (): StaticSeoRoute[] => UPDRO_INDEXABLE_PATHS.map((
 
 const UPDRO_NOINDEX_PATHS = [
   '/skicka-arende', '/registrera/verkstad', '/for-cykelverkstader', '/mitt-arende',
+  '/verkstad', '/verkstader',
   ...CYKEL_SEO_PAGES.map((page) => `/${page.slug}`),
   ...CYKEL_CITIES.map((city) => cityLandingPath(city.name)),
   '/dashboard', '/admin', '/logga-in', '/registrera', '/aterstall-losenord', '/nytt-losenord',
@@ -411,7 +446,7 @@ const indexableFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro'
   : [...cykelIndexableRoutes(), ...englishRoutes()]
 const noindexFor = (host: SiteHost): StaticSeoRoute[] => host === 'updro'
   ? noindexRoutesFor(UPDRO_NOINDEX_PATHS)
-  : [...noindexRoutesFor(CYKEL_NOINDEX_PATHS), ...legacyAliasRoutes()]
+  : [...noindexRoutesFor(CYKEL_NOINDEX_PATHS), ...cykelGatedDirectoryRoutes(), ...legacyAliasRoutes()]
 
 
 export const getAllStaticSeoRoutes = (host: SiteHost = 'cykelhjalpen') => {

@@ -38,6 +38,8 @@ const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
 const CykelCityLandingPage = lazy(() => import("./pages/cykelhjalpen/CykelCityLandingPage"));
 const WorkshopAdCityPage = lazy(() => import("./pages/cykelhjalpen/WorkshopAdCityPage"));
 const UnsubscribePage = lazy(() => import("./pages/cykelhjalpen/UnsubscribePage"));
+const WorkshopProfilePage = lazy(() => import("./pages/cykelhjalpen/WorkshopProfilePage"));
+const WorkshopDirectoryPage = lazy(() => import("./pages/cykelhjalpen/WorkshopDirectoryPage"));
 
 import { CYKEL_SEO_PAGES } from "./lib/cykelSeoPages";
 import { CYKEL_CITIES, cityLandingPath } from "./lib/cykelCities";
@@ -356,6 +358,13 @@ const AppRoutes = () => {
               {/* Google Ads: rekryteringssida per stad för verkstäder (noindex) */}
               <Route path="/annons/verkstad/:citySlug" element={<WorkshopAdCityPage />} />
               <Route path="/avregistrera/:token" element={<UnsubscribePage />} />
+
+              {/* V2 S4: publika verkstadsprofiler + katalog. Sidlarna grindsjälva
+                  på flaggan v2.directory.public_profiles (404 när den är av) och
+                  renderar noindex tills G-D1-grinden passerar (kontrakt §7.4). */}
+              <Route path="/verkstad/:slug" element={<WorkshopProfilePage />} />
+              <Route path="/verkstader" element={<WorkshopDirectoryPage />} />
+              <Route path="/verkstader/:citySlug" element={<WorkshopDirectoryPage />} />
 
 
               {/* Workshop dashboard — now protected */}

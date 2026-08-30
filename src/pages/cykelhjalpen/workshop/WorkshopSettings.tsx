@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { Link, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,12 +8,15 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
-import { Loader2, Lock, MapPin, Upload, Trash2 } from 'lucide-react'
+import { Loader2, Lock, MapPin, Upload, Trash2, ExternalLink } from 'lucide-react'
 import { CYKEL_CITIES, isCykelCity } from '@/lib/cykelCities'
 import { validateNewPassword } from '@/lib/authRecovery'
+import { savePublicProfileConsent, workshopProfilePath } from '@/lib/v2/directory'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/lib/i18n'
+
+const BIO_SHORT_MAX = 280
 
 const WorkshopSettings = () => {
   const t = useT()
@@ -25,7 +28,35 @@ const WorkshopSettings = () => {
   const [confirmation, setConfirmation] = useState('')
   const [changing, setChanging] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [savingPublic, setSavingPublic] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
+
+  // V2 S4: publik profil (kontrakt §2.4) — samtycke + kort beskrivning sparas
+  // via RPC:n v2_set_public_profile som också tilldelar slug vid opt-in.
+  const savePublicProfile = async () => {
+    if (!workshop.approved) {
+      return toast.error(t('Profilen kan publiceras först när verkstaden är godkänd.'))
+    }
+    const bio = form.bio_short?.trim() || null
+    if (bio && bio.length > BIO_SHORT_MAX) {
+      return toast.error(t('Kort beskrivning får vara max {max} tecken.', { max: BIO_SHORT_MAX }))
+    }
+    setSavingPublic(true)
+    const result = await savePublicProfileConsent({ bioShort: bio, optIn: Boolean(form.public_profile_opt_in) })
+    setSavingPublic(false)
+    if ('error' in result) {
+      return toast.error(result.error === 'network' ? t('Kunde inte spara') : result.error)
+    }
+    setForm((current) => ({
+      ...current,
+      bio_short: result.bio_short,
+      public_profile_opt_in: result.public_profile_opt_in,
+      slug: result.slug ?? current.slug,
+    }))
+    toast.success(result.public_profile_opt_in
+      ? t('Profilen är nu publik i verkstadskatalogen.')
+      : t('Profilen är inte längre publik.'))
+  }
 
   const uploadLogo = async (file: File) => {
     if (!user) return
@@ -115,6 +146,7 @@ const WorkshopSettings = () => {
       instagram_url: normalizeUrl(form.instagram_url),
       booking_url: normalizeUrl(form.booking_url),
       services: (form.services || []).filter(Boolean),
+      areas_served: (form.areas_served || []).filter(Boolean),
     }
 
     const [{ error: workshopError }, { error: profileError }] = await Promise.all([
@@ -297,6 +329,16 @@ const WorkshopSettings = () => {
               placeholder={t('Service, punktering, växeljustering, elcykel')}
             />
           </div>
+
+          <div>
+            <Label htmlFor="areas_served">{t('Områden ni täcker (kommaseparerat)')}</Label>
+            <Input
+              id="areas_served"
+              value={(form.areas_served || []).join(', ')}
+              onChange={(event) => setForm({ ...form, areas_served: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })}
+              placeholder={t('Ryd, Innerstaden, Vallastaden')}
+            />
+          </div>
         </div>
 
 
@@ -312,6 +354,60 @@ const WorkshopSettings = () => {
         <Button onClick={save} disabled={saving} className="min-w-28">
           {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {saving ? t('Sparar…') : t('Spara')}
+        </Button>
+      </div>
+
+      <div className="sticker rounded-3xl bg-card p-6 space-y-5 max-w-xl mt-6">
+        <div>
+          <h2 className="font-display text-xl font-bold">{t('Publik profil i verkstadskatalogen')}</h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('Väljs det här visas verkstaden på Cykelhjälpens publika stadssidor med namn, stad, tjänster, områden, logotyp, webbplats, kort beskrivning och publicerade recensioner. E-post, telefon och adress visas aldrig.')}
+          </p>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor="bio_short">{t('Kort beskrivning (visas publikt)')}</Label>
+            <span className="text-xs text-muted-foreground">{(form.bio_short || '').length}/{BIO_SHORT_MAX}</span>
+          </div>
+          <Textarea
+            id="bio_short"
+            rows={3}
+            maxLength={BIO_SHORT_MAX}
+            value={form.bio_short || ''}
+            onChange={(event) => setForm({ ...form, bio_short: event.target.value })}
+            placeholder={t('Exempel: Familjeverkstad sedan 1998. Snabb hjälp med punktering, service och elcyklar.')}
+          />
+        </div>
+
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <Label htmlFor="public_profile_opt_in" className="cursor-pointer">{t('Visa verkstaden i den publika katalogen')}</Label>
+            <p className="text-xs text-muted-foreground mt-1">
+              {workshop.approved
+                ? t('Ni kan stänga av visningen när som helst – profilen försvinner då direkt från de publika sidorna.')
+                : t('Profilen kan publiceras först när verkstaden är godkänd av Cykelhjälpen.')}
+            </p>
+          </div>
+          <Switch
+            id="public_profile_opt_in"
+            checked={Boolean(form.public_profile_opt_in)}
+            onCheckedChange={(value) => setForm({ ...form, public_profile_opt_in: value })}
+            disabled={!workshop.approved}
+          />
+        </div>
+
+        {form.public_profile_opt_in && form.slug && (
+          <p className="text-sm">
+            <Link to={workshopProfilePath(form.slug)} className="inline-flex items-center gap-1 underline underline-offset-4" target="_blank">
+              {t('Se er publika profil')} <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          </p>
+        )}
+
+        <Button onClick={savePublicProfile} disabled={savingPublic || !workshop.approved} variant="outline" className="min-w-28">
+          {savingPublic && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {savingPublic ? t('Sparar…') : t('Spara publik profil')}
         </Button>
       </div>
 

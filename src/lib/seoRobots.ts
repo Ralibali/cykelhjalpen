@@ -10,6 +10,18 @@ const PRIVATE_ROUTE_PREFIXES = [
   '/annons/verkstad',
 ]
 
+/**
+ * V2 S4 gated public surfaces (/verkstad/:slug profiler, /verkstader katalog).
+ * Default noindex everywhere (flag v2.directory.public_profiles is OFF by
+ * default and the G-D1 threshold is resolved at runtime). When the gate passes
+ * the page's own Helmet robots tag flips to index — see
+ * src/lib/v2/directory.ts and docs/v2/CONTRACTS.md §7.4.
+ */
+const V2_GATED_ROUTE_PREFIXES = [
+  '/verkstad',
+  '/verkstader',
+]
+
 const PRIVATE_EXACT_ROUTES = [
   '/logga-in',
   '/registrera',
@@ -65,6 +77,7 @@ export const shouldNoindexPath = (pathname: string, configuredNoindexPaths: stri
     || isThinSeoFarmPath(path)
     || PRIVATE_EXACT_ROUTES.includes(path)
     || PRIVATE_ROUTE_PREFIXES.some((prefix) => matchesPrefix(path, prefix))
+    || V2_GATED_ROUTE_PREFIXES.some((prefix) => matchesPrefix(path, prefix))
 }
 
 export const getRobotsDirectiveForPath = (pathname: string, configuredNoindexPaths: string[] = []) =>
