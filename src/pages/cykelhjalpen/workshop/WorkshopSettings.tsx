@@ -13,6 +13,7 @@ import { CYKEL_CITIES, isCykelCity } from '@/lib/cykelCities'
 import { validateNewPassword } from '@/lib/authRecovery'
 import { savePublicProfileConsent, workshopProfilePath } from '@/lib/v2/directory'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
+import WorkshopRetentionPanel from '@/components/cykelhjalpen/WorkshopRetentionPanel'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/lib/i18n'
 
@@ -453,6 +454,8 @@ const WorkshopSettings = () => {
           {changing ? t('Sparar…') : t('Byt lösenord')}
         </Button>
       </div>
+
+      {workshop.approved && <WorkshopRetentionPanel workshopId={workshop.id} />}
     </div>
   )
 }
