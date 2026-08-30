@@ -65,3 +65,19 @@ verify_jwt = false
 # Påminner kunden om att välja offert inom fem dagar.
 [functions.bike-choice-reminders]
 verify_jwt = false
+
+# --- V2 lifecycle automation (S2) --------------------------------------------
+# Cron-jobb utan användarsession; beteendet är flaggat OFF tills gaterna i
+# docs/v2/CONTRACTS.md §7 passerats. Alla är idempotenta (dedupe-nycklar).
+[functions.v2-zero-quote-rescue]
+verify_jwt = false
+
+[functions.v2-winner-reminders]
+verify_jwt = false
+
+[functions.v2-stalled-winner-recovery]
+verify_jwt = false
+
+# Kontolös kund med ärendets view_token (samma mönster som select-bike-winner).
+[functions.v2-reselect-winner]
+verify_jwt = false

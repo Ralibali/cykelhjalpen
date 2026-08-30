@@ -8,6 +8,8 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
+import { buildRepostUrl, shouldCloseRequest, HOUR_MS } from '../_shared/v2/lifecycle.ts'
+import { citySlugFromName } from '../_shared/v2/config-schema.ts'
 
 const RESPONSE_WINDOW_DAYS = 5
 
@@ -67,10 +69,27 @@ Deno.serve(async (req) => {
 
     if (error) throw error
 
+    // V2: ärenden med en utförd extend_window-räddningsåtgärd (v2_rescue_actions)
+    // får sju dygn i stället för fem. Utan räddningsrader ändras inget.
+    const staleIds = (stale || []).map((row) => row.id as string)
+    const extendedIds = new Set<string>()
+    if (staleIds.length > 0) {
+      const { data: extensions } = await admin
+        .from('v2_rescue_actions')
+        .select('request_id')
+        .in('request_id', staleIds)
+        .eq('action_type', 'extend_window')
+        .eq('status', 'executed')
+      for (const row of extensions || []) extendedIds.add(row.request_id as string)
+    }
+
     const closed: string[] = []
     let emailsSent = 0
 
     for (const request of stale || []) {
+      const ageHours = (Date.now() - new Date(request.created_at as string).getTime()) / HOUR_MS
+      if (!shouldCloseRequest(ageHours, extendedIds.has(request.id))) continue
+
       const { data: responses } = await admin
         .from('workshop_responses')
         .select('id, estimated_price_min, estimated_price_max, estimated_time, status, workshops(company_name)')
@@ -127,12 +146,12 @@ Deno.serve(async (req) => {
             <h2 style="margin:0 0 16px">No quotes this time</h2>
             <p>Hi ${escapeHtml(request.customer_name)}, unfortunately no workshop in ${escapeHtml(request.city)} replied within five days, so your request is now closed.</p>
             <p>You are welcome to post a new request – it is free and often gets a reply within a day.</p>
-            <p style="margin-top:24px"><a href="https://cykelhjalpen.se/cykelreparation" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Post a new request</a></p>`
+            <p style="margin-top:24px"><a href="${buildRepostUrl(citySlugFromName(request.city))}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Post a new request</a></p>`
           : `
             <h2 style="margin:0 0 16px">Inga offerter den här gången</h2>
             <p>Hej ${escapeHtml(request.customer_name)}, tyvärr svarade ingen verkstad i ${escapeHtml(request.city)} inom fem dagar, så ditt ärende är nu stängt.</p>
             <p>Du är varmt välkommen att lägga upp ett nytt ärende – det är gratis och får oftast svar inom ett dygn.</p>
-            <p style="margin-top:24px"><a href="https://cykelhjalpen.se/cykelreparation" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Lägg upp nytt ärende</a></p>`)
+            <p style="margin-top:24px"><a href="${buildRepostUrl(citySlugFromName(request.city))}" style="display:inline-block;background:#4338CA;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Lägg upp nytt ärende</a></p>`)
 
       try {
         const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {

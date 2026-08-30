@@ -20,6 +20,8 @@ import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
 import { isHasOffersNudgeDue } from '../_shared/choice-nudge.ts'
 import { logSmsAttempt, logNotificationEvent } from '../_shared/notifications.ts'
+import { buildRepostUrl } from '../_shared/v2/lifecycle.ts'
+import { citySlugFromName } from '../_shared/v2/config-schema.ts'
 
 const CHOICE_WINDOW_DAYS = 5
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -218,7 +220,7 @@ Deno.serve(async (req) => {
           html: ctaEmail({
             lang,
             heading: lang === 'en' ? 'Your quotes have expired' : 'Dina offerter har gått ut',
-            link: 'https://cykelhjalpen.se/cykelreparation',
+            link: buildRepostUrl(citySlugFromName(row.city)),
             cta: lang === 'en' ? 'Post a new request' : 'Lägg upp nytt ärende',
             body: lang === 'en'
               ? `Hi ${escapeHtml(row.customer_name)}, you did not pick a workshop within ${CHOICE_WINDOW_DAYS} days, so the quotes for your request (${escapeHtml(row.repair_category)}, ${escapeHtml(row.city)}) have expired. You can post a new request whenever you like – it is free.`
