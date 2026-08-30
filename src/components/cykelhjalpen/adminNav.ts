@@ -1,6 +1,6 @@
 import {
   Activity, Bell, Bike, CreditCard, FileText, Home, Mail, Newspaper, Search,
-  Settings, Sparkles, Users, Wrench, BarChart3, ScrollText, Link2, Eye,
+  Settings, Sparkles, Star, Users, Wrench, BarChart3, ScrollText, Link2, Eye,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { AdminCounts } from '@/hooks/useAdminCounts'
@@ -28,6 +28,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
       { label: 'Översikt', href: '/admin', icon: Home, keywords: 'dashboard start' },
       { label: 'Cykelärenden', href: '/admin/cykelarenden', icon: Bike, badge: 'pendingRequests', keywords: 'förfrågningar kunder granska' },
       { label: 'Offerter', href: '/admin/offerter', icon: FileText, keywords: 'svar verkstadssvar' },
+      { label: 'Recensioner', href: '/admin/recensioner', icon: Star, keywords: 'omdömen betyg moderering utfall' },
       { label: 'Verkstäder', href: '/admin/verkstader', icon: Wrench, badge: 'pendingWorkshops', keywords: 'godkänna partners' },
       { label: 'Inkorg', href: '/admin/mejl', icon: Mail, badge: 'unreadMail', keywords: 'mejl email inbound' },
     ],

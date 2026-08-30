@@ -13,6 +13,9 @@ import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { useT } from '@/lib/i18n'
 import { closedChoiceDaysLeft, publishedQuotesStatusCopy } from '@/lib/customerChoiceCopy'
+import { useV2Flag } from '@/lib/v2/useV2Flag'
+import OutcomeReviewCard from '@/components/cykelhjalpen/OutcomeReviewCard'
+import WorkshopRatingBadge from '@/components/cykelhjalpen/WorkshopRatingBadge'
 
 interface WorkshopResponse {
   id: string
@@ -86,6 +89,32 @@ const CustomerResponses = () => {
   const hasWinner = Boolean(winner) || request?.status === 'completed'
   // Vinsten är reglerad först när backend släppt kontaktuppgifterna.
   const winnerSettled = Boolean(winner?.contact_unlocked)
+
+  // V2 S3: aggregerade betyg på offertkorten — published-only, flagg-gated.
+  const reviewStatsFlag = useV2Flag('v2.reviews.verified_reviews')
+  const [ratingStats, setRatingStats] = useState<Record<string, { avg_rating: number | null; published_count: number }>>({})
+
+  useEffect(() => {
+    if (!reviewStatsFlag || responses.length === 0) return
+    const workshopIds = [...new Set(responses.map((r) => r.workshop?.id).filter(Boolean))] as string[]
+    if (workshopIds.length === 0) return
+    let alive = true
+    // v2-tabellerna finns ännu inte i genererade typer (S13 regen) — oktypad klient.
+    const untyped = supabase as unknown as { from: (table: string) => any }
+    untyped
+      .from('v2_workshop_review_stats')
+      .select('workshop_id, avg_rating, published_count')
+      .in('workshop_id', workshopIds)
+      .then(({ data }) => {
+        if (!alive || !data) return
+        const map: Record<string, { avg_rating: number | null; published_count: number }> = {}
+        for (const row of data) {
+          map[row.workshop_id] = { avg_rating: row.avg_rating, published_count: row.published_count }
+        }
+        setRatingStats(map)
+      })
+    return () => { alive = false }
+  }, [reviewStatsFlag, responses])
 
 
   const load = useCallback(async (showSpinner = false) => {
@@ -289,6 +318,10 @@ const CustomerResponses = () => {
           <>
             {statusCard()}
 
+            {winnerSettled && winner?.workshop?.company_name && token && (
+              <OutcomeReviewCard token={token} workshopName={winner.workshop.company_name} />
+            )}
+
             <section className="sticker rounded-3xl bg-card p-6 mb-8" aria-labelledby="request-summary-heading">
               <h2 id="request-summary-heading" className="font-display text-lg mb-3">{t('Ditt ärende')}</h2>
               <div className="flex flex-wrap gap-2 mb-4">
@@ -371,6 +404,13 @@ const CustomerResponses = () => {
                                 </span>
                                 <div className="min-w-0">
                                   <h3 className="font-display text-xl leading-tight">{company || t('Cykelverkstad')}</h3>
+                                  {reviewStatsFlag && response.workshop?.id && ratingStats[response.workshop.id] && (
+                                    <WorkshopRatingBadge
+                                      avgRating={ratingStats[response.workshop.id].avg_rating}
+                                      publishedCount={ratingStats[response.workshop.id].published_count}
+                                      className="mt-1"
+                                    />
+                                  )}
                                   {isWinner && (
                                     <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold bg-[hsl(var(--brand-mint)/0.15)] text-[hsl(var(--brand-mint))] px-2.5 py-1 rounded-full">
                                       <CheckCircle2 className="h-3 w-3" /> {t('Ditt val')}
