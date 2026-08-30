@@ -44,6 +44,64 @@ jobs:
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 
+      - name: Apply hardening lint fixes
+        if: github.ref_name == 'agent/cykelhjalpen-lock-refresh'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('src/integrations/supabase/previewAuthStorage.ts')
+          s = p.read_text()
+          old = s
+          s = s.replace("      let timer: ReturnType<typeof setTimeout>;\n", "")
+          anchor = "      window.addEventListener('message', onMessage);\n"
+          if anchor not in s:
+              raise SystemExit('previewAuthStorage anchor missing')
+          s = s.replace(anchor, anchor + "      const timer = setTimeout(() => finish(null), TIMEOUT);\n", 1)
+          s = s.replace("      timer = setTimeout(() => finish(null), TIMEOUT);\n", "", 1)
+          if s == old:
+              raise SystemExit('previewAuthStorage unchanged')
+          p.write_text(s)
+
+          p = Path('src/pages/cykelhjalpen/CykelSeoPageV5.tsx')
+          s = p.read_text()
+          old = s
+          needle = "  const page = seoPages.find((candidate) => (lang === 'en' ? candidate.enSlug : candidate.slug) === slug)\n  if (!page) return <Navigate to=\"/\" replace />\n"
+          repl = "  const page = seoPages.find((candidate) => (lang === 'en' ? candidate.enSlug : candidate.slug) === slug)\n  const directoryGate = useDirectoryGate(page ? getCykelCity(page.city).slug : '__invalid__')\n  if (!page) return <Navigate to=\"/\" replace />\n"
+          if needle not in s:
+              raise SystemExit('CykelSeoPage page anchor missing')
+          s = s.replace(needle, repl, 1)
+          later = "  const directoryGate = useDirectoryGate(citySlug)\n"
+          if later not in s:
+              raise SystemExit('CykelSeoPage later hook missing')
+          s = s.replace(later, "", 1)
+          if s == old:
+              raise SystemExit('CykelSeoPage unchanged')
+          p.write_text(s)
+
+          p = Path('supabase/functions/_shared/publish-bike-request.ts')
+          s = p.read_text()
+          old = "  let { data: workshops, error: workshopsError } = await workshopsQuery\n  if (workshopsError) throw workshopsError\n"
+          new = "  const { data: fetchedWorkshops, error: workshopsError } = await workshopsQuery\n  if (workshopsError) throw workshopsError\n  let workshops = fetchedWorkshops\n"
+          if old not in s:
+              raise SystemExit('publish-bike-request anchor missing')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+
+      - name: Commit hardening lint fixes
+        if: github.ref_name == 'agent/cykelhjalpen-lock-refresh'
+        run: |
+          if git diff --quiet -- src/integrations/supabase/previewAuthStorage.ts src/pages/cykelhjalpen/CykelSeoPageV5.tsx supabase/functions/_shared/publish-bike-request.ts; then
+            echo 'Source fixes already current'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add src/integrations/supabase/previewAuthStorage.ts src/pages/cykelhjalpen/CykelSeoPageV5.tsx supabase/functions/_shared/publish-bike-request.ts
+            git commit -m 'Fix hardening lint regressions'
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
+
       - name: Verify generated V2 Supabase types
         run: bun run types:v2:check
 
