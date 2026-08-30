@@ -4,6 +4,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 import { useLanguage, useT } from '@/lib/i18n'
 import { toEnglishPath } from '@/i18n/routes'
+import { useV2Flag } from '@/hooks/useV2Flag'
 
 const CykelFooter = () => {
   const t = useT()
@@ -13,6 +14,8 @@ const CykelFooter = () => {
   // Swedish slugs (which client-redirect back to /en).
   const localized = (svPath: string) =>
     lang === 'en' ? (toEnglishPath(svPath) ?? svPath) : svPath
+  // /guider finns publikt först när flaggan slås på (G-C1) — länka aldrig till 404.
+  const contentSurfaceOn = useV2Flag('v2.seo.content_surface') === true
   return (
   <footer className="border-t border-border bg-muted/30 mt-24">
     <div className="container mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -39,6 +42,7 @@ const CykelFooter = () => {
           <li><Link to={localized('/skicka-arende')} className="hover:text-primary">{t('Skicka cykelärende')}</Link></li>
           <li><Link to={localized('/#sa-fungerar-det')} className="hover:text-primary">{t('Så fungerar det')}</Link></li>
           <li><Link to={localized('/vad-kostar-cykelreparation-linkoping')} className="hover:text-primary">{t('Priser på cykelreparation')}</Link></li>
+          {contentSurfaceOn && <li><Link to="/guider" className="hover:text-primary">{t('Guider och råd')}</Link></li>}
         </ul>
       </div>
 
