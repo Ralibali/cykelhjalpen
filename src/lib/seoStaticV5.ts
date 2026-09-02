@@ -90,14 +90,21 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
 
   if (route.city) {
     const city = CYKEL_CITIES.find((item) => item.name === route.city)
-    if (city && route.path === cityLandingPath(city.name)) return {
-      ...route,
-      description: `Behöver du cykelverkstad i ${city.name}? Beskriv problemet gratis. Anslutna verkstäder kan svara med pris och möjlig tid när de har kapacitet.`,
-      sections: [
-        { h2: `Cykelhjälp i ${city.name}`, body: `${city.localIntro} Ange område eller postnummer så kan verkstaden själv bedöma avstånd och möjlig tid.` },
-        { h2: 'Aktuell tillgänglighet', body: marketText(city.name) },
-        { h2: 'Vanliga cykeljobb', body: 'Punktering, däck, bromsar, växlar, kedja, hjul, service och elcykelproblem är exempel på jobb du kan beskriva.' },
-      ],
+    if (city && route.path === cityLandingPath(city.name)) {
+      // Norrköping has 0 quotes. Do not promise jämförelse/prisförslag in first-byte title.
+      const title = city.name === 'Norrköping'
+        ? 'Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners'
+        : route.title
+      return {
+        ...route,
+        title,
+        description: `Behöver du cykelverkstad i ${city.name}? Beskriv problemet gratis. Anslutna verkstäder kan svara med pris och möjlig tid när de har kapacitet.`,
+        sections: [
+          { h2: `Cykelhjälp i ${city.name}`, body: `${city.localIntro} Ange område eller postnummer så kan verkstaden själv bedöma avstånd och möjlig tid.` },
+          { h2: 'Aktuell tillgänglighet', body: marketText(city.name) },
+          { h2: 'Vanliga cykeljobb', body: 'Punktering, däck, bromsar, växlar, kedja, hjul, service och elcykelproblem är exempel på jobb du kan beskriva.' },
+        ],
+      }
     }
   }
 
