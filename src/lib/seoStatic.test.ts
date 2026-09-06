@@ -304,7 +304,8 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     const template = '<!doctype html><html><head><title>x</title><meta name="description" content="x" /><meta name="robots" content="index" /><link rel="canonical" href="https://example.com/" /></head><body><div id="root"></div></body></html>'
     const html = renderStaticHtml(template, norrkoping!, 'cykelhjalpen')
     expect(html).toMatch(/<title>Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners<\/title>/)
-    expect(html).toMatch(/<meta property="og:title" content="Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners" \/>/)
+    // Allow Helmet handoff attrs such as data-rh="true" between content and />.
+    expect(html).toMatch(/<meta property="og:title" content="Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners"[^>]*\/>/)
     expect(html).not.toMatch(/<title>[^<]*(jämför|prisförslag)/i)
     expect(html).toContain('Anslutna verkstäder kan svara med pris och möjlig tid när de har kapacitet.')
   })

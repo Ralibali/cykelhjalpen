@@ -15,14 +15,20 @@ Cykelhjälpen samlar lokala prisförslag på ett ställe så att cyklisten slipp
 - [Skicka cykelärende](https://cykelhjalpen.se/skicka-arende)
 - [För cykelverkstäder](https://cykelhjalpen.se/for-cykelverkstader)
 - [Anslut din verkstad](https://cykelhjalpen.se/registrera/verkstad)
+- [Cykelverkstad Linköping](https://cykelhjalpen.se/cykelverkstad-linkoping)
+- [Cykelverkstad Norrköping](https://cykelhjalpen.se/cykelverkstad-norrkoping)
+- [Cykelverkstad Uppsala](https://cykelhjalpen.se/cykelverkstad-uppsala)
+- [Cykelverkstad Lund](https://cykelhjalpen.se/cykelverkstad-lund)
+- [Vad kostar cykelreparation i Linköping](https://cykelhjalpen.se/vad-kostar-cykelreparation-linkoping)
 - [XML-sitemap](https://cykelhjalpen.se/sitemap.xml)
 
 ## Lokala marknader
-Cykelhjälpen har publika lokala landningssidor för:
-- Linköping
-- Norrköping
-- Uppsala
-- Lund
+Cykelhjälpen har publika lokala landningssidor. Använd dessa exakta URL:er – inte korta stadsvägar som /norrkoping:
+- [Cykelverkstad Linköping](https://cykelhjalpen.se/cykelverkstad-linkoping)
+- [Cykelverkstad Norrköping](https://cykelhjalpen.se/cykelverkstad-norrkoping)
+- [Cykelverkstad Uppsala](https://cykelhjalpen.se/cykelverkstad-uppsala)
+- [Cykelverkstad Lund](https://cykelhjalpen.se/cykelverkstad-lund)
+- [Vad kostar cykelreparation i Linköping](https://cykelhjalpen.se/vad-kostar-cykelreparation-linkoping)
 
 För varje stad finns sidor för centrala sökintentioner som cykelverkstad, cykelreparation, punktering, cykelservice, elcykelreparation, elsparkcykelreparation, mobil cykelreparation och prisguider.
 
