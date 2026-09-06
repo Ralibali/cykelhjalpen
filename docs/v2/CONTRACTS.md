@@ -458,6 +458,7 @@ All seeded OFF (`enabled=false`). `rollout.cities` narrows to city slugs; `rollo
 | `v2.retention.lifecycle` | off | retention crons | G-T1 |
 | `v2.subscriptions.enabled` | off | plan checkout + entitlements | G-S1 |
 | `v2.pricing.config_reader` | off | read pricing from v2_pricing_config instead of constants (values identical; pure indirection switch) | G-X1 |
+| `workshop_magic_quote` | off | Admin-copy SMS with `/offert/:token` so a phone-acquired workshop can quote without login. Zero outbound — copy only. | ops decision; never flip in prod in the first ship |
 
 ---
 

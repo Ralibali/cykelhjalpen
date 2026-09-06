@@ -11,6 +11,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import CykelAdminLayout from '@/components/cykelhjalpen/CykelAdminLayout'
+import { CopyQuoteSmsCard } from '@/components/admin/CopyQuoteSmsCard'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
@@ -314,6 +315,12 @@ const AdminWorkshopDetail = () => {
               </div>
             )}
           </div>
+
+          <CopyQuoteSmsCard
+            workshopId={workshop.id}
+            workshopCity={workshop.city}
+            workshopApproved={workshop.approved}
+          />
 
           {/* Offerter */}
           <div className="rounded-xl border bg-card p-5">

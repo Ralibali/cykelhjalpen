@@ -43,6 +43,7 @@ export interface AttributionStorage {
 /** Redact token URLs — view_token must never land in attribution (I3). */
 export function sanitizeTrackingPath(pathname: string): string {
   if (/^\/mitt-arende\/[^/]+/i.test(pathname)) return '/mitt-arende/[redacted]'
+  if (/^\/offert\/[^/]+/i.test(pathname)) return '/offert/[redacted]'
   return (pathname || '/').slice(0, 1000)
 }
 

@@ -56,6 +56,7 @@ describe('seoRobots', () => {
     expect(getRobotsDirectiveForPath('/admin/cykelarenden', configuredNoindexPaths)).toBe(NOINDEX_ROBOTS_DIRECTIVE)
     expect(getRobotsDirectiveForPath('/dashboard/verkstad/arenden', configuredNoindexPaths)).toBe(NOINDEX_ROBOTS_DIRECTIVE)
     expect(getRobotsDirectiveForPath('/mitt-arende/hemlig-token', configuredNoindexPaths)).toBe(NOINDEX_ROBOTS_DIRECTIVE)
+    expect(getRobotsDirectiveForPath('/offert/hemlig-token', configuredNoindexPaths)).toBe(NOINDEX_ROBOTS_DIRECTIVE)
     expect(getRobotsDirectiveForPath('/avregistrera/hemlig-token', configuredNoindexPaths)).toBe(NOINDEX_ROBOTS_DIRECTIVE)
     expect(getRobotsDirectiveForPath('/annons/verkstad/linkoping', configuredNoindexPaths)).toBe(NOINDEX_ROBOTS_DIRECTIVE)
   })
