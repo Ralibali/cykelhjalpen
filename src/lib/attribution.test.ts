@@ -94,6 +94,7 @@ describe('captureAttribution', () => {
 describe('sanitizeTrackingPath', () => {
   it('redacts mitt-arende tokens, keeps other paths', () => {
     expect(sanitizeTrackingPath('/mitt-arende/abc-def')).toBe('/mitt-arende/[redacted]')
+    expect(sanitizeTrackingPath('/offert/abc-def')).toBe('/offert/[redacted]')
     expect(sanitizeTrackingPath('/cykelreparation')).toBe('/cykelreparation')
   })
 })

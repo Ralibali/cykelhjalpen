@@ -371,7 +371,7 @@ const cykelGatedDirectoryRoutes = (): StaticSeoRoute[] => [
 ]
 
 const CYKEL_NOINDEX_PATHS = [
-  '/mitt-arende', '/avregistrera', '/annons/verkstad',
+  '/mitt-arende', '/offert', '/avregistrera', '/annons/verkstad',
   '/publicera', '/byraer', '/priser', '/om-oss', '/artiklar', '/verktyg', '/stader',
   '/jamfor', '/hitta-webbyra', '/hitta-seo-byra', '/hitta-digital-byra',
   '/redaktionell-policy', '/metod', '/landing', '/landing/byra', '/sitemap',
@@ -426,7 +426,7 @@ const updroIndexableRoutes = (): StaticSeoRoute[] => [
 ]
 
 const UPDRO_NOINDEX_PATHS = [
-  '/skicka-arende', '/registrera/verkstad', '/for-cykelverkstader', '/mitt-arende',
+  '/skicka-arende', '/registrera/verkstad', '/for-cykelverkstader', '/mitt-arende', '/offert',
   '/verkstad', '/verkstader',
   ...CYKEL_SEO_PAGES.map((page) => `/${page.slug}`),
   ...CYKEL_CITIES.map((city) => cityLandingPath(city.name)),

@@ -36,7 +36,11 @@ const ensureDataLayer = (): Gtag | null => {
 }
 
 const safePath = (pathname: string) =>
-  /^\/mitt-arende\/[^/]+/i.test(pathname) ? '/mitt-arende/[redacted]' : pathname
+  /^\/mitt-arende\/[^/]+/i.test(pathname)
+    ? '/mitt-arende/[redacted]'
+    : /^\/offert\/[^/]+/i.test(pathname)
+      ? '/offert/[redacted]'
+      : pathname
 
 const safePageLocation = (pathname: string) =>
   `${window.location.origin}${safePath(pathname)}`

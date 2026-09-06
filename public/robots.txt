@@ -15,6 +15,7 @@ Disallow: /dashboard/
 Disallow: /logga-in
 Disallow: /aterstall-losenord
 Disallow: /mitt-arende/
+Disallow: /offert/
 Disallow: /mina-svar/
 Disallow: /avregistrera/
 Disallow: /avsluta-paminnelser/

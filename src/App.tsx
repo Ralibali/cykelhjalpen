@@ -34,6 +34,7 @@ const WorkshopDashboard = lazy(() => import("./pages/cykelhjalpen/workshop/Works
 const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopRequests"));
 const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopBilling"));
 const WorkshopSettings = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopSettings"));
+const QuoteMagicLinkPage = lazy(() => import("./pages/cykelhjalpen/workshop/QuoteMagicLinkPage"));
 const CykelSeoPage = lazy(() => import("./pages/cykelhjalpen/CykelSeoPage"));
 const CykelCityLandingPage = lazy(() => import("./pages/cykelhjalpen/CykelCityLandingPage"));
 const WorkshopAdCityPage = lazy(() => import("./pages/cykelhjalpen/WorkshopAdCityPage"));
@@ -348,6 +349,7 @@ const AppRoutes = () => {
             <>
               <Route path="/skicka-arende" element={<BikeRequestWizard />} />
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
+              <Route path="/offert/:token" element={<QuoteMagicLinkPage />} />
               {/* Alias: äldre/felaktig länk till kundens ärendesida */}
               <Route path="/mina-svar/:token" element={<CustomerResponses />} />
               <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />

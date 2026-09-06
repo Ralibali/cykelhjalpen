@@ -168,6 +168,7 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     expect(indexablePaths).toContain('/cookies')
     expect(noindexPaths).not.toContain('/registrera/verkstad')
     expect(noindexPaths).toContain('/mitt-arende')
+    expect(noindexPaths).toContain('/offert')
     expect(noindexPaths).toContain('/avregistrera')
     expect(noindexPaths).toContain('/annons/verkstad')
   })
@@ -226,6 +227,7 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
 
     expect(sitemap).not.toContain('updro.se')
     expect(sitemap).not.toContain('/mitt-arende')
+    expect(sitemap).not.toContain('/offert')
     expect(sitemap).not.toContain('/annons/')
     expect(sitemap).not.toContain('/dashboard')
     expect(sitemap).not.toContain('/admin')

@@ -134,3 +134,11 @@ verify_jwt = false
 # V2 S8: kundens samtyckesinställningar via ärendets view_token.
 [functions.v2-customer-preferences]
 verify_jwt = false
+
+# Workshop magic-quote SMS link (flag workshop_magic_quote, DEFAULT OFF).
+# Public GET/POST — workshops follow a token URL and have no session.
+[functions.get-workshop-quote-link]
+verify_jwt = false
+
+[functions.submit-workshop-quote-link]
+verify_jwt = false

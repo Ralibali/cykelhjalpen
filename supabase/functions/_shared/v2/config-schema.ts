@@ -591,6 +591,9 @@ export const V2_FLAG_KEYS = [
   'v2.retention.workshop_notifications',
   'v2.subscriptions.enabled',
   'v2.pricing.config_reader',
+  // Admin-copy magic quote SMS link. DEFAULT OFF. Never enable in prod
+  // without an explicit ops decision. See workshop-quote-core.ts.
+  'workshop_magic_quote',
 ] as const
 export type V2FlagKey = (typeof V2_FLAG_KEYS)[number]
 

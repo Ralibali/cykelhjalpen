@@ -85,7 +85,7 @@ describe('vercel.json (Vite SPA)', () => {
     const appPaths = [
       '/logga-in', '/registrera', '/aterstall-losenord', '/nytt-losenord',
       '/dashboard', '/dashboard/leads', '/admin', '/admin/verkstader',
-      '/mitt-arende/abc', '/mina-svar/abc', '/avregistrera/tok',
+      '/mitt-arende/abc', '/offert/abc', '/mina-svar/abc', '/avregistrera/tok',
       '/annons/verkstad/linkoping', '/registrera/verkstad', '/registrera/byra',
       '/landing', '/landing/byra', '/sitemap',
       // Updro dynamic surfaces (shared vercel.json — must never 404)
@@ -172,7 +172,7 @@ describe('vercel.json (Vite SPA)', () => {
     for (const path of [
       '/admin', '/admin/users', '/dashboard', '/dashboard/leads',
       '/logga-in', '/registrera', '/aterstall-losenord', '/nytt-losenord',
-      '/mitt-arende/abc', '/mina-svar/abc', '/avregistrera/tok', '/annons/verkstad/linkoping',
+      '/mitt-arende/abc', '/offert/abc', '/mina-svar/abc', '/avregistrera/tok', '/annons/verkstad/linkoping',
       '/avsluta-paminnelser/some-token',
     ]) {
       expect(headerValues(path, 'X-Robots-Tag')).toContain(noindex)
@@ -200,7 +200,7 @@ describe('vercel.json (Vite SPA)', () => {
 
   it('disallows token URL spaces in robots.txt (crawl-budget guard)', () => {
     const robots = readFileSync(resolve(process.cwd(), 'public/robots.txt'), 'utf8')
-    for (const prefix of ['/mitt-arende/', '/mina-svar/', '/avregistrera/', '/avsluta-paminnelser/', '/annons/']) {
+    for (const prefix of ['/mitt-arende/', '/offert/', '/mina-svar/', '/avregistrera/', '/avsluta-paminnelser/', '/annons/']) {
       expect(robots, `robots.txt saknar Disallow: ${prefix}`).toContain(`Disallow: ${prefix}`)
     }
   })
