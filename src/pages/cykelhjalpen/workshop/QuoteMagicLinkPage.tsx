@@ -92,7 +92,7 @@ const QuoteMagicLinkPage = () => {
       estimated_price_min: form.estimated_price_min,
       estimated_price_max: form.estimated_price_max,
     })
-    if (!parsed.ok) {
+    if (parsed.ok === false) {
       setFormError(parsed.error)
       return
     }

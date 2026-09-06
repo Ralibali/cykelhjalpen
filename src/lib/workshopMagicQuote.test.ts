@@ -15,6 +15,13 @@ import {
   workshopQuoteUrl,
 } from '../../supabase/functions/_shared/workshop-quote-core'
 
+const expectFailure = (
+  result: ReturnType<typeof validateQuoteToken>,
+  reason: string,
+) => {
+  expect(result).toEqual({ ok: false, reason })
+}
+
 const HASH = 'abc123hash'
 const workshopId = '11111111-1111-4111-8111-111111111111'
 const requestId = '22222222-2222-4222-8222-222222222222'
@@ -58,38 +65,35 @@ describe('workshop magic quote token validation', () => {
   })
 
   it('rejects missing, mismatched, or empty hashes as invalid', () => {
-    expect(validateQuoteToken({ flagOn: true, record: null, expectedHash: HASH }).reason).toBe('invalid')
-    expect(validateQuoteToken({ flagOn: true, record, expectedHash: 'other' }).reason).toBe('invalid')
-    expect(validateQuoteToken({ flagOn: true, record, expectedHash: '' }).reason).toBe('invalid')
+    expectFailure(validateQuoteToken({ flagOn: true, record: null, expectedHash: HASH }), 'invalid')
+    expectFailure(validateQuoteToken({ flagOn: true, record, expectedHash: 'other' }), 'invalid')
+    expectFailure(validateQuoteToken({ flagOn: true, record, expectedHash: '' }), 'invalid')
   })
 
   it('rejects expired tokens', () => {
-    const result = validateQuoteToken({
+    expectFailure(validateQuoteToken({
       flagOn: true,
       record: { ...record, expires_at: past },
       expectedHash: HASH,
       now: new Date('2026-09-06T12:00:00.000Z'),
-    })
-    expect(result.reason).toBe('expired')
+    }), 'expired')
   })
 
   it('rejects used tokens (single-use)', () => {
-    const result = validateQuoteToken({
+    expectFailure(validateQuoteToken({
       flagOn: true,
       record: { ...record, used_at: '2026-09-06T10:00:00.000Z' },
       expectedHash: HASH,
-    })
-    expect(result.reason).toBe('used')
+    }), 'used')
   })
 
   it('rejects a token bound to a different workshop', () => {
-    const result = validateQuoteToken({
+    expectFailure(validateQuoteToken({
       flagOn: true,
       record,
       expectedHash: HASH,
       expectedWorkshopId: '33333333-3333-4333-8333-333333333333',
-    })
-    expect(result.reason).toBe('wrong_workshop')
+    }), 'wrong_workshop')
   })
 
   it('accepts a valid unused unexpired token for the bound workshop', () => {
