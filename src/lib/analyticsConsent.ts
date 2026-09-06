@@ -18,7 +18,11 @@ export function readConsentLevel(): ConsentLevel | null {
     const parsed = JSON.parse(raw) as ConsentRecord
     return parsed.level === 'all' || parsed.level === 'necessary' ? parsed.level : null
   } catch {
-    window.localStorage.removeItem(COOKIE_CONSENT_KEY)
+    try {
+      window.localStorage.removeItem(COOKIE_CONSENT_KEY)
+    } catch {
+      // Storage may be blocked for both reads and writes.
+    }
     return null
   }
 }

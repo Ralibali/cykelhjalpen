@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   COOKIE_CONSENT_EVENT,
   COOKIE_CONSENT_KEY,
@@ -8,6 +8,7 @@ import {
 } from './analyticsConsent'
 
 describe('analytics consent', () => {
+  afterEach(() => vi.restoreAllMocks())
   beforeEach(() => {
     localStorage.clear()
   })
@@ -40,5 +41,24 @@ describe('analytics consent', () => {
     expect(listener).toHaveBeenCalledTimes(1)
     expect((listener.mock.calls[0][0] as CustomEvent).detail).toBe('all')
     window.removeEventListener(COOKIE_CONSENT_EVENT, listener)
+  })
+
+  it('keeps analytics disabled when accessing storage throws', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('Storage is blocked', 'SecurityError')
+    })
+    expect(readConsentLevel()).toBeNull()
+    expect(hasAnalyticsConsent()).toBe(false)
+  })
+
+  it('keeps analytics disabled when reading and cleanup both throw', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('Storage is blocked', 'SecurityError')
+    })
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new DOMException('Storage is blocked', 'SecurityError')
+    })
+    expect(readConsentLevel()).toBeNull()
+    expect(hasAnalyticsConsent()).toBe(false)
   })
 })
