@@ -167,11 +167,15 @@ const CookieConsent = () => {
   }, [visible])
 
   const accept = (nextLevel: ConsentLevel) => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({
-      level: nextLevel,
-      date: new Date().toISOString(),
-      version: '2026-07-12',
-    }))
+    try {
+      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({
+        level: nextLevel,
+        date: new Date().toISOString(),
+        version: '2026-07-12',
+      }))
+    } catch {
+      // The current choice can still dismiss the banner without persistence.
+    }
     setLevel(nextLevel)
     applyConsent(nextLevel)
     notifyConsentChanged(nextLevel)
