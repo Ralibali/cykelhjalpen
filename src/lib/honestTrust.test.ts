@@ -33,7 +33,7 @@ const flatten = (value: unknown): string => JSON.stringify(value)
 
 describe('honest trust facts', () => {
   it('uses only the verified marketplace facts', () => {
-    expect(HONEST_TRUST_CITIES).toEqual(['Linköping', 'Norrköping', 'Uppsala', 'Lund'])
+    expect(HONEST_TRUST_CITIES).toEqual(['Linköping', 'Norrköping', 'Uppsala', 'Lund', 'Västerås', 'Örebro', 'Göteborg', 'Stockholm', 'Malmö', 'Umeå', 'Jönköping'])
     expect(HONEST_TRUST_COMPANY).toBe('Aurora Media AB')
     expect(HONEST_TRUST_COMPANY_CITY).toBe('Linköping')
     expect(HONEST_TRUST_MAX_QUOTES).toBe(3)
@@ -65,8 +65,8 @@ describe('honest trust facts', () => {
     expect(blob).toContain('två första vinsterna')
     expect(blob).toContain('first two wins')
     expect(blob).toContain('Aurora Media AB')
-    expect(blob).toContain('Linköping, Norrköping, Uppsala och Lund')
-    expect(blob).toContain('Linköping, Norrköping, Uppsala and Lund')
+    expect(blob).toContain('Linköping, Norrköping, Uppsala, Lund, Västerås, Örebro, Göteborg, Stockholm, Malmö, Umeå och Jönköping')
+    expect(blob).toContain('Linköping, Norrköping, Uppsala, Lund, Västerås, Örebro, Göteborg, Stockholm, Malmö, Umeå and Jönköping')
 
     expect(cyclistSv.facts).toHaveLength(6)
     expect(workshopSv.facts.map((fact) => fact.id)[0]).toBe('monthly-fee')

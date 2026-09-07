@@ -2,14 +2,12 @@
 // Reads v2_feature_flags via the public SELECT policy. Fails CLOSED:
 // any read error = every flag off. 60 s in-memory cache.
 
-import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '@/integrations/supabase/types'
 import type { V2FeatureFlagRow, V2FlagKey } from './contracts'
+import { asV2Client, type V2Client } from './optionalClient'
+export type { V2Client } from './optionalClient'
 
-// Typed client: the regenerated Database types (scripts/generate-v2-types.mjs)
-// include every v2_* table. Tests may still inject a minimal mock client via
-// `as unknown as V2Client` — runtime behavior is unchanged.
-export type V2Client = SupabaseClient<Database>
+// Optional V2 reads use a separate typed contract, so regenerating types from
+// a production database without V2 does not break the app build.
 
 // Lazy default client: importing the shared client module instantiates
 // Supabase at import time (needs env), which must not happen in tests that
@@ -19,7 +17,7 @@ async function db(client?: V2Client): Promise<V2Client> {
   if (client) return client
   if (!defaultClient) {
     const mod = await import('@/integrations/supabase/client')
-    defaultClient = mod.supabase
+    defaultClient = asV2Client(mod.supabase)
   }
   return defaultClient
 }

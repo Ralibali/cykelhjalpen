@@ -34,7 +34,7 @@ const CykelHomeHeroNeutral = () => {
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 backdrop-blur px-3.5 py-1.5 text-xs font-semibold">
               <MapPin className="h-3.5 w-3.5 text-primary" />
-              {text('Cykelhjälpen i Linköping, Norrköping, Uppsala och Lund', 'Cykelhjälpen in Linköping, Norrköping, Uppsala and Lund')}
+              {text('Cykelhjälpen – lokala cykelverkstäder', 'Cykelhjälpen – local bike shops')}
             </div>
 
             <h1 className="mt-6 md:mt-7 font-display text-[2.6rem] leading-[1.05] sm:text-5xl md:text-7xl font-extrabold tracking-tight text-balance">

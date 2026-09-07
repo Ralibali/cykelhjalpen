@@ -5,6 +5,7 @@
 
 import type { V2CityConfigRow, V2CityState } from './contracts'
 import type { V2Client } from './flags'
+import { asV2Client } from './optionalClient'
 
 // Lazy default client — the shared client module needs env at import time.
 let defaultClient: V2Client | null = null
@@ -12,7 +13,7 @@ async function db(client?: V2Client): Promise<V2Client> {
   if (client) return client
   if (!defaultClient) {
     const mod = await import('@/integrations/supabase/client')
-    defaultClient = mod.supabase
+    defaultClient = asV2Client(mod.supabase)
   }
   return defaultClient
 }

@@ -22,7 +22,7 @@ const CykelFooter = () => {
       <div className="col-span-2 md:col-span-1">
         <CykelLogo />
         <p className="mt-3 text-sm text-muted-foreground max-w-xs">
-          {t('Jämför pris och tid från anslutna cykelverkstäder i Linköping, Norrköping, Uppsala och Lund.')}
+          {t('Beskriv ditt cykelproblem och jämför prisförslag från verkstäder som kan hjälpa dig.')}
         </p>
         <div className="mt-4"><LanguageSwitcher /></div>
       </div>

@@ -1,9 +1,9 @@
-import { CYKEL_CITIES } from './cykelCities'
+import { SERVICE_CITIES } from './cykelCities'
 import { LEAD_FEE_KR } from './pricing'
 
-export const HONEST_TRUST_CITIES = CYKEL_CITIES.map((city) => city.name)
-export const HONEST_TRUST_CITY_LIST_SV = 'Linköping, Norrköping, Uppsala och Lund'
-export const HONEST_TRUST_CITY_LIST_EN = 'Linköping, Norrköping, Uppsala and Lund'
+export const HONEST_TRUST_CITIES = SERVICE_CITIES.map((city) => city.name)
+export const HONEST_TRUST_CITY_LIST_SV = `${HONEST_TRUST_CITIES.slice(0, -1).join(', ')} och ${HONEST_TRUST_CITIES[HONEST_TRUST_CITIES.length - 1]}`
+export const HONEST_TRUST_CITY_LIST_EN = `${HONEST_TRUST_CITIES.slice(0, -1).join(', ')} and ${HONEST_TRUST_CITIES[HONEST_TRUST_CITIES.length - 1]}`
 export const HONEST_TRUST_COMPANY = 'Aurora Media AB'
 export const HONEST_TRUST_COMPANY_CITY = 'Linköping'
 export const HONEST_TRUST_MAX_QUOTES = 3

@@ -20,7 +20,7 @@ describe('CykelHonestTrust', () => {
     expect(screen.getByText('Kunden väljer verkstad')).toBeInTheDocument()
     expect(screen.getByText('Offerter per ärende')).toBeInTheDocument()
     expect(screen.getByText('Aurora Media AB, Linköping')).toBeInTheDocument()
-    expect(screen.getByText('Linköping, Norrköping, Uppsala och Lund')).toBeInTheDocument()
+    expect(screen.getByText('Linköping, Norrköping, Uppsala, Lund, Västerås, Örebro, Göteborg, Stockholm, Malmö, Umeå och Jönköping')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Få prisförslag gratis/ })).toHaveAttribute('href', '/skicka-arende')
     expect(screen.queryByText(/jojoscykel/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/hundratals/i)).not.toBeInTheDocument()

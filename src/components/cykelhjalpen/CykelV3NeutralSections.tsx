@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, MapPin, Sparkles, Store } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
+import { CYKEL_CITIES, SERVICE_CITIES, cityLandingPath, cityQuery } from '@/lib/cykelCities'
 import { getCityImage } from '@/lib/cykelCityImages'
 import { trackClick } from '@/hooks/usePageTracking'
 import { useLanguage } from '@/lib/i18n'
@@ -20,7 +20,7 @@ export const CykelV3CitiesNeutral = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-10">
           <div>
             <p className="text-xs uppercase tracking-[.2em] text-accent font-semibold mb-3">{text('Städer', 'Cities')}</p>
-            <h2 className="font-display text-4xl md:text-5xl">{text('Cykelhjälpen i fyra städer', 'Cykelhjälpen in four cities')}</h2>
+            <h2 className="font-display text-4xl md:text-5xl">{text('Lokala guider och fler öppna städer', 'Local guides and more open cities')}</h2>
           </div>
           <p className="text-muted-foreground max-w-md">{text('Välj din stad för lokala guider och för att skicka ett kostnadsfritt cykelärende.', 'Choose your city for local guides and to send a free bike-repair request.')}</p>
         </div>
@@ -48,6 +48,17 @@ export const CykelV3CitiesNeutral = () => {
             )
           })}
         </div>
+        <div className="mt-8 rounded-2xl border border-border p-5">
+          <h3 className="font-display text-xl">{text('Vi ansluter verkstäder i fler städer', 'We are welcoming shops in more cities')}</h3>
+          <p className="mt-2 text-sm text-muted-foreground">{text('Här tar vi också emot förfrågningar. Vi granskar dem personligen medan verkstadsnätverket byggs upp, och kan ännu inte lova prisförslag.', 'We also accept requests here. We review them personally while building the workshop network, and cannot yet promise quotes.')}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {SERVICE_CITIES.filter((city) => !CYKEL_CITIES.some((guide) => guide.name === city.name)).map((city) => (
+              <Button key={city.slug} asChild variant="outline" className="rounded-full">
+                <Link to={cityQuery(city.name)}>{city.name}</Link>
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   )
@@ -63,7 +74,7 @@ export const CykelV3WorkshopRecruitmentNeutral = () => {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-background/10 px-3 py-1.5 text-xs font-semibold mb-5"><Sparkles className="h-3.5 w-3.5 text-[hsl(var(--brand-sun))]" /> Founding Partner</span>
             <h2 className="font-display text-4xl md:text-5xl">{text('Driver du cykelverkstad?', 'Do you run a bike shop?')}</h2>
-            <p className="mt-4 text-background/70 text-lg max-w-2xl">{text('Vi söker fler partnerverkstäder i Linköping, Norrköping, Uppsala och Lund. Registreringen är gratis, ni väljer själva vilka jobb ni vill svara på och de två första vunna kunderna är gratis.', 'We are looking for more partner bike shops in Linköping, Norrköping, Uppsala and Lund. Registration is free, you choose which jobs to respond to, and your first two won customers are free.')}</p>
+            <p className="mt-4 text-background/70 text-lg max-w-2xl">{text('Vi söker fler partnerverkstäder i våra öppna städer. Registreringen är gratis, ni väljer själva vilka jobb ni vill svara på och de två första vunna kunderna är gratis.', 'We are looking for more partner bike shops in our open cities. Registration is free, you choose which jobs to respond to, and your first two won customers are free.')}</p>
             <div className="mt-6 flex flex-wrap gap-2 text-xs font-semibold">
               <span className="rounded-full bg-background/10 px-3 py-1.5">0 kr/mån</span>
               <span className="rounded-full bg-background/10 px-3 py-1.5">{text('Två första vinsterna gratis', 'First two wins free')}</span>

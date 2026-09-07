@@ -2,12 +2,11 @@
 // Fallback = today's live constants from src/lib/pricing.ts (identical values),
 // so rendering never breaks and never shows a different price than charged.
 
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { useQuery } from '@tanstack/react-query'
-import type { Database } from '@/integrations/supabase/types'
 import { LEAD_FEE_ORE } from '@/lib/pricing'
 import type { V2PricingConfigRow } from './contracts'
 import type { V2Client } from './flags'
+import { asV2Client } from './optionalClient'
 
 // Lazy default client — the shared client module needs env at import time.
 let defaultClient: V2Client | null = null
@@ -15,7 +14,7 @@ async function db(client?: V2Client): Promise<V2Client> {
   if (client) return client
   if (!defaultClient) {
     const mod = await import('@/integrations/supabase/client')
-    defaultClient = mod.supabase
+    defaultClient = asV2Client(mod.supabase)
   }
   return defaultClient
 }

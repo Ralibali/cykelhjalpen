@@ -4,6 +4,7 @@
 
 import { V2_CLIENT_EVENT_NAMES, type V2ClientEventName } from './contracts'
 import type { V2Client } from './flags'
+import { asV2Client } from './optionalClient'
 import type { Json } from '@/integrations/supabase/types'
 
 // Lazy default client — the shared client module needs env at import time.
@@ -12,7 +13,7 @@ async function db(client?: V2Client): Promise<V2Client> {
   if (client) return client
   if (!defaultClient) {
     const mod = await import('@/integrations/supabase/client')
-    defaultClient = mod.supabase
+    defaultClient = asV2Client(mod.supabase)
   }
   return defaultClient
 }
