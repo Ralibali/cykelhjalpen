@@ -7,7 +7,8 @@ const failed = report.testResults.flatMap(suite => suite.assertionResults.filter
 assert(report.numTotalTests >= 573 && report.numPassedTests >= 570, 'Incomplete test execution');
 assert.equal(report.numPendingTests, 0, 'Unexpected skipped tests');
 assert.equal(report.numFailedTests, failed.length, 'Unclassified test failure');
-assert(report.numFailedTestSuites <= 1, 'Unexpected failed suite');
+assert(report.testResults.filter(suite => suite.status === 'failed').every(suite => suite.name.replaceAll('\\', '/').endsWith('/src/lib/v2/types-parity.test.ts')), 'Unexpected failed suite');
+assert.equal(report.numRuntimeErrorTestSuites || 0, 0, 'Test runner error');
 for (const failure of failed) {
   assert(failure.suite.replaceAll('\\', '/').endsWith('/src/lib/v2/types-parity.test.ts') && knownTitles.has(failure.title), `New regression: ${failure.suite} ${failure.title}`);
 }
