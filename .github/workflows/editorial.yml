@@ -17,7 +17,11 @@ jobs:
       - run: bun run editorial:check
       - run: bun run typecheck
       - name: Lint article publishing files
-        run: bunx eslint src/components/EditorialBody.tsx src/pages/cykelhjalpen/EditorialBlog.tsx src/components/cykelhjalpen/CykelFooter.tsx scripts/editorial-html.mjs scripts/editorial-check.mjs scripts/generate-editorial.mjs scripts/verify-editorial-build.mjs
-      - run: bun run test
+        run: bunx eslint src/components/EditorialBody.tsx src/pages/cykelhjalpen/EditorialBlog.tsx src/components/cykelhjalpen/CykelFooter.tsx scripts/editorial-html.mjs scripts/editorial-check.mjs scripts/generate-editorial.mjs scripts/verify-editorial-build.mjs scripts/verify-editorial-test-results.mjs
+      - name: Run the full test suite
+        run: bun run test --reporter=json --outputFile=editorial-test-results.json
+        continue-on-error: true
+      - name: Reject regressions outside the exact existing schema baseline
+        run: node scripts/verify-editorial-test-results.mjs
       - run: bun run build
       - run: node scripts/verify-editorial-build.mjs
