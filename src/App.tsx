@@ -45,6 +45,7 @@ const WorkshopDirectoryPage = lazy(() => import("./pages/cykelhjalpen/WorkshopDi
 // V2 content engine surface (S7) — routes live behind flag v2.seo.content_surface
 const ContentSurfaceGate = lazy(() => import("./components/cykelhjalpen/content/ContentSurfaceGate"));
 const CykelGuidesIndexPage = lazy(() => import("./pages/cykelhjalpen/CykelGuidesIndexPage"));
+const EditorialBlog = lazy(() => import("./pages/cykelhjalpen/EditorialBlog"));
 const CykelGuideArticlePage = lazy(() => import("./pages/cykelhjalpen/CykelGuideArticlePage"));
 const RetentionUnsubscribePage = lazy(() => import("./pages/cykelhjalpen/RetentionUnsubscribePage"));
 
@@ -348,6 +349,8 @@ const AppRoutes = () => {
           {host === 'cykelhjalpen' && (
             <>
               <Route path="/skicka-arende" element={<BikeRequestWizard />} />
+              <Route path="/blogg" element={<EditorialBlog />} />
+              <Route path="/blogg/:slug" element={<EditorialBlog />} />
               <Route path="/mitt-arende/:token" element={<CustomerResponses />} />
               <Route path="/offert/:token" element={<QuoteMagicLinkPage />} />
               {/* Alias: äldre/felaktig länk till kundens ärendesida */}
