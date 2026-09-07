@@ -39,6 +39,7 @@ export const EN_WIZARD: Record<string, string> = {
   'Du behöver inte själv veta exakt vad som är fel.': 'You don’t need to know exactly what’s wrong.',
   'Vad behöver du hjälp med?': 'What do you need help with?',
   'Beskriv problemet': 'Describe the problem',
+  'Mall: så beskriver du cykelfelet': 'Template: how to describe the bike fault',
   'Ju tydligare du beskriver, desto säkrare pris får du': 'The clearer your description, the more accurate the quote you’ll get',
   '"Cykeln hoppar ur växeln när jag trampar hårt"': '"The bike slips out of gear when I pedal hard"',
   'Vad händer?': 'What’s happening?',

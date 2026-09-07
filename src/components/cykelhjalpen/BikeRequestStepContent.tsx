@@ -1,4 +1,5 @@
 import type { ChangeEvent, ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Baby,
@@ -217,6 +218,14 @@ const BikeRequestStepContent = ({
 
         <div className="space-y-3">
           <Label htmlFor="desc" className="font-display text-lg">{t('Beskriv problemet')}</Label>
+          <p className="text-sm text-muted-foreground">
+            <Link
+              to="/blogg/beskriv-cykelfel-verkstad-mall"
+              className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              {t('Mall: så beskriver du cykelfelet')}
+            </Link>
+          </p>
           <div className="rounded-2xl border-2 border-border bg-muted/40 p-4">
             <p className="flex items-center gap-2 text-sm font-semibold">
               <Lightbulb className="h-4 w-4 text-[hsl(var(--brand-sun))]" />
