@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import CykelLogo from './CykelLogo'
 import NotificationBell from '@/components/NotificationBell'
 import { LowBalanceAlert } from '@/components/workshop/LowBalanceAlert'
-import { CYKEL_CITIES, DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
+import { SERVICE_CITIES, DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { toast } from 'sonner'
 import { useT } from '@/lib/i18n'
 
@@ -153,7 +153,7 @@ const WorkshopLayout = () => {
             <h1 className="font-display text-3xl font-bold">{t('Bekräfta verkstadens stad')}</h1>
             <p className="text-muted-foreground mt-3 mb-6">{t('Detta avgör vilka lokala cykelärenden {name} får se och notifieras om.', { name: workshop.company_name })}</p>
             <div className="grid grid-cols-2 gap-3">
-              {CYKEL_CITIES.map((city) => (
+              {SERVICE_CITIES.map((city) => (
                 <button
                   key={city.name}
                   type="button"

@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { sv, enUS } from 'date-fns/locale'
 import { ArrowRight, Flame, MapPin } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
-import { CYKEL_CITIES } from '@/lib/cykelCities'
+import { SERVICE_CITIES } from '@/lib/cykelCities'
 import { trackClick } from '@/hooks/usePageTracking'
 import { useLanguage, useT } from '@/lib/i18n'
 
@@ -68,7 +68,7 @@ const CykelOpenRequestsTeaser = ({ trackCta }: Props) => {
       </div>
 
       <div className="flex flex-wrap justify-center gap-2 mb-8">
-        {[ALL, ...CYKEL_CITIES.map((c) => c.name)].map((city) => {
+        {[ALL, ...SERVICE_CITIES.map((c) => c.name)].map((city) => {
           const active = cityFilter === city
           return (
             <button

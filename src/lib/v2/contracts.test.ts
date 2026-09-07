@@ -162,7 +162,8 @@ describe('V2 city states', () => {
     expect(citySlugFromName('Linköping')).toBe('linkoping')
     expect(citySlugFromName('norrkoping')).toBe('norrkoping')
     expect(citySlugFromName('Okänd')).toBeNull()
-    expect(cityNameFromSlug('goteborg')).toBeNull()
+    expect(cityNameFromSlug('goteborg')).toBe('Göteborg')
+    expect(cityNameFromSlug('kiruna')).toBeNull()
   })
 
   it('accepts demand only when the config row says so', () => {

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import NotFound from '@/pages/NotFound'
-import { CYKEL_CITIES, cityQuery } from '@/lib/cykelCities'
+import { SERVICE_CITIES, cityQuery } from '@/lib/cykelCities'
 import {
   cityDirectoryPath,
   fetchPublicDirectory,
@@ -78,7 +78,7 @@ const WorkshopCard = ({ workshop }: { workshop: V2PublicWorkshop }) => {
 const WorkshopDirectoryPage = () => {
   const t = useT()
   const { citySlug } = useParams()
-  const knownCity = citySlug ? CYKEL_CITIES.find((entry) => entry.slug === citySlug) ?? null : null
+  const knownCity = citySlug ? SERVICE_CITIES.find((entry) => entry.slug === citySlug) ?? null : null
   const gate = useDirectoryGate(knownCity?.slug ?? null)
 
   const [service, setService] = useState<string | null>(null)
@@ -290,7 +290,7 @@ const WorkshopDirectoryPage = () => {
             <div className="mt-10">
               <h2 className="font-display text-lg font-bold mb-3">{t('Välj stad')}</h2>
               <ul className="flex flex-wrap gap-2">
-                {CYKEL_CITIES.map((entry) => (
+                {SERVICE_CITIES.map((entry) => (
                   <li key={entry.slug}>
                     <Link to={cityDirectoryPath(entry.slug)} className="px-3 py-1.5 rounded-full border bg-card text-sm hover:border-foreground transition inline-block">
                       {t('Cykelverkstäder i {city}', { city: entry.name })}

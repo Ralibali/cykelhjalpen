@@ -16,7 +16,7 @@ import { formatKrFromOre, useV2Pricing, v2GrossOre } from '@/lib/v2/pricing'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
-import { CYKEL_CITIES, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
+import { SERVICE_CITIES, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
 import { useT } from '@/lib/i18n'
 
 const SERVICES_SV = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Elsparkcykelservice', 'Hjulbygge', 'Mobil reparation']
@@ -69,7 +69,7 @@ const RegisterWorkshopPage = () => {
   const handleTurnstileExpire = useCallback(() => setTurnstileToken(null), [])
   useEffect(() => {
     if (cityParam) {
-      const match = CYKEL_CITIES.find((c) => c.name.toLowerCase() === cityParam.toLowerCase() || c.slug === cityParam.toLowerCase())
+      const match = SERVICE_CITIES.find((c) => c.name.toLowerCase() === cityParam.toLowerCase() || c.slug === cityParam.toLowerCase())
       if (match) setForm((current) => ({ ...current, city: match.name as CykelCityName }))
     }
   }, [cityParam])
@@ -146,7 +146,7 @@ const RegisterWorkshopPage = () => {
     <div className="min-h-screen bg-background">
       <Helmet>
         <title>{t('Registrera cykelverkstad | Cykelhjälpen')}</title>
-        <meta name="description" content={t('Registrera din cykelverkstad i Linköping, Norrköping, Uppsala eller Lund. Ingen månadsavgift – ni lämnar offert gratis och betalar först när kunden väljer er.')} />
+        <meta name="description" content={t('Registrera din cykelverkstad i någon av våra öppna städer. Ingen månadsavgift – ni lämnar offert gratis och betalar först när kunden väljer er.')} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://cykelhjalpen.se/registrera/verkstad" />
         <meta property="og:type" content="website" />
@@ -182,7 +182,7 @@ const RegisterWorkshopPage = () => {
           <div>
             <Label>{t('Vilken stad arbetar ni i?')}</Label>
             <div className="grid grid-cols-2 gap-3 mt-2">
-              {CYKEL_CITIES.map((city) => (
+              {SERVICE_CITIES.map((city) => (
                 <button
                   key={city.name}
                   type="button"

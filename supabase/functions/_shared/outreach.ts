@@ -108,7 +108,14 @@ export const buildEditedEmail = (
   const paragraphs = trimmed
     .split(/\n{2,}/)
     .map((para) => {
-      const safe = escapeHtml(para).replace(/\n/g, '<br>')
+      // Linkify after splitting the raw text, escaping both labels and hrefs.
+      // Admin-edited registration URLs must remain clickable in HTML clients.
+      const safe = para.split(/(https?:\/\/[^\s<>"']+)/g).map((part) => {
+        const escaped = escapeHtml(part)
+        return /^https?:\/\//.test(part)
+          ? `<a href="${escaped}" style="color:#4338CA;text-decoration:underline;">${escaped}</a>`
+          : escaped.replace(/\n/g, '<br>')
+      }).join('')
       return `<p style="margin:0 0 16px;font-size:15px;line-height:1.6">${safe}</p>`
     })
     .join('')

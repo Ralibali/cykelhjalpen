@@ -1,3 +1,4 @@
+import { SERVICE_CITY_NAMES } from '@/lib/cykelCities'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { AdminLayout } from './AdminDashboard'
@@ -119,7 +120,7 @@ interface ResendStatus {
   reply_to: string
 }
 
-const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
+const CITIES = SERVICE_CITY_NAMES
 const STATUSES = ['new', 'review', 'approved_for_contact', 'contacted', 'replied', 'converted', 'rejected', 'do_not_contact'] as const
 
 const statusLabelSv: Record<string, string> = {

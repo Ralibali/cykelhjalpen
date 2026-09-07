@@ -1,3 +1,5 @@
+import { SERVICE_CITIES } from '../service-cities.ts'
+
 // V2 shared config schema — the single source of truth for enums, defaults and
 // pure resolution rules shared by edge functions (Deno) and the frontend.
 //
@@ -48,12 +50,9 @@ export function stateDefaults(state: V2CityState): {
 }
 
 /** ascii slug ↔ exact-match city name used by V1 tables (bike_repair_requests.city). */
-export const V2_CITY_SLUG_TO_NAME: Record<string, string> = {
-  linkoping: 'Linköping',
-  norrkoping: 'Norrköping',
-  uppsala: 'Uppsala',
-  lund: 'Lund',
-}
+export const V2_CITY_SLUG_TO_NAME: Record<string, string> = Object.fromEntries(
+  SERVICE_CITIES.map((city) => [city.slug, city.name]),
+)
 
 export const V2_CITY_NAME_TO_SLUG: Record<string, string> = Object.fromEntries(
   Object.entries(V2_CITY_SLUG_TO_NAME).map(([slug, name]) => [name, slug]),

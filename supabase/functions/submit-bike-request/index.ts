@@ -9,9 +9,9 @@ import { v2AutoApproveForCity } from '../_shared/v2/eligibility.ts'
 import { emitDomainEvent } from '../_shared/v2/events.ts'
 import { citySlugFromName } from '../_shared/v2/config-schema.ts'
 import { withUtmParams } from '../_shared/v2/utm.ts'
+import { SERVICE_CITY_NAMES } from '../_shared/service-cities.ts'
 
 
-const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
 const BIKE_TYPES = ['Vanlig cykel', 'Elcykel', 'Elsparkcykel', 'Mountainbike', 'Racercykel', 'Lådcykel', 'Barncykel', 'Annat'] as const
 const REPAIR_CATEGORIES = [
   'Punktering / däckbyte',
@@ -37,7 +37,7 @@ const BodySchema = z.object({
   customer_name: z.string().trim().min(2).max(80),
   customer_email: z.string().trim().toLowerCase().email().max(160),
   customer_phone: z.string().trim().max(40).optional().nullable(),
-  city: z.enum(CITIES),
+  city: z.enum(SERVICE_CITY_NAMES),
   customer_language: z.enum(['sv', 'en']).optional().default('sv'),
   terms_accepted: z.literal(true, {
     errorMap: () => ({ message: 'Du måste godkänna användarvillkoren för att skicka förfrågan.' }),

@@ -44,7 +44,9 @@ serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
     const { data: ws, error: workshopError } = await admin
       .from("workshops")
-      .select("id, approved, city, areas_served, service_area_mode, cluster_opt_in, services")
+      // Optional V2 columns may not yet exist. The workshop stays server-side;
+      // only the explicitly selected request fields below are returned.
+      .select("*")
       .eq("user_id", u.user.id)
       .maybeSingle();
     if (workshopError) throw workshopError;

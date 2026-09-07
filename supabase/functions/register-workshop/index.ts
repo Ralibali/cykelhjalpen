@@ -3,6 +3,7 @@ import { z } from 'npm:zod@3'
 import { corsFor, CYKELHJALPENS_SITE_ORIGIN } from '../_shared/cors.ts'
 import { notifyAdminsOfNewWorkshop } from '../_shared/notifications.ts'
 import { verifyTurnstile } from '../_shared/turnstile.ts'
+import { SERVICE_CITY_NAMES } from '../_shared/service-cities.ts'
 
 const SERVICES = [
   'Punktering',
@@ -15,8 +16,6 @@ const SERVICES = [
   'Mobil reparation',
 ] as const
 
-const CITIES = ['Linköping', 'Norrköping', 'Uppsala', 'Lund'] as const
-
 const BodySchema = z.object({
   company_name: z.string().trim().min(2).max(160),
   email: z.string().trim().email().max(254),
@@ -24,7 +23,7 @@ const BodySchema = z.object({
   phone: z.string().trim().max(40).optional().nullable(),
   address: z.string().trim().max(240).optional().nullable(),
   website: z.string().trim().max(300).optional().nullable(),
-  city: z.enum(CITIES),
+  city: z.enum(SERVICE_CITY_NAMES),
   services: z.array(z.enum(SERVICES)).max(SERVICES.length).default([]),
   terms_accepted: z.literal(true, {
     errorMap: () => ({ message: 'Du måste godkänna plattformsavtalet för att registrera dig.' })

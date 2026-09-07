@@ -1,3 +1,7 @@
+import { SERVICE_CITIES, type ServiceCityName } from '../../supabase/functions/_shared/service-cities'
+export { SERVICE_CITIES, SERVICE_CITY_NAMES } from '../../supabase/functions/_shared/service-cities'
+
+// Editorial city guides are separate from cities accepting registrations.
 export const CYKEL_CITIES = [
   {
     name: 'Linköping',
@@ -33,18 +37,30 @@ export const CYKEL_CITIES = [
   },
 ] as const
 
-export type CykelCity = typeof CYKEL_CITIES[number]
-export type CykelCityName = CykelCity['name']
+export type CykelCityName = ServiceCityName
+export type CykelCity = {
+  name: CykelCityName
+  slug: string
+  exampleArea: string
+  areas: string
+  localIntro: string
+  districts: readonly string[]
+}
 
 export const DEFAULT_CYKEL_CITY: CykelCityName = 'Linköping'
 
 export const isCykelCity = (value: unknown): value is CykelCityName => (
-  typeof value === 'string' && CYKEL_CITIES.some((city) => city.name === value)
+  typeof value === 'string' && SERVICE_CITIES.some((city) => city.name === value)
 )
 
-export const getCykelCity = (value: unknown): CykelCity => (
-  CYKEL_CITIES.find((city) => city.name === value || city.slug === value) || CYKEL_CITIES[0]
-)
+export const getCykelCity = (value: unknown): CykelCity => {
+  const guide = CYKEL_CITIES.find((city) => city.name === value || city.slug === value)
+  if (guide) return guide
+  const city = SERVICE_CITIES.find((entry) => entry.name === value || entry.slug === value)
+  return city
+    ? { ...city, exampleArea: '', areas: '', localIntro: '', districts: [] }
+    : CYKEL_CITIES[0]
+}
 
 export const cityQuery = (city: CykelCityName) => `/skicka-arende?stad=${getCykelCity(city).slug}`
 
@@ -53,7 +69,7 @@ export const resolveCykelCityParam = (value: unknown): CykelCityName | null => {
   if (typeof value !== 'string') return null
   const needle = value.trim().toLowerCase()
   if (!needle) return null
-  const match = CYKEL_CITIES.find(
+  const match = SERVICE_CITIES.find(
     (city) => city.slug === needle || city.name.toLowerCase() === needle,
   )
   return match ? match.name : null
@@ -74,5 +90,6 @@ export const slugify = (value: string) =>
 
 export const cityLandingPath = (city: CykelCityName) => {
   const match = getCykelCity(city)
+  if (!CYKEL_CITIES.some((guide) => guide.name === city)) return cityQuery(city)
   return `/cykelverkstad-${match.slug}`
 }

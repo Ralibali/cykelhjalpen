@@ -1,4 +1,4 @@
-import { CYKEL_CITIES, isCykelCity, type CykelCityName } from './cykelCities'
+import { SERVICE_CITIES, isCykelCity, type CykelCityName } from './cykelCities'
 
 /** Tables Cykel admin health/analytics may read. Nested `workshop_responses` is included. */
 export const CYKEL_MARKETPLACE_TABLES = [
@@ -35,7 +35,7 @@ export const CITY_HEALTH_LABELS: Record<CityHealthStatus, string> = {
   pause_or_recruit: 'Pausa eller rekrytera',
 }
 
-export const ROLLUP_CITIES: readonly CykelCityName[] = CYKEL_CITIES.map((city) => city.name)
+export const ROLLUP_CITIES: readonly CykelCityName[] = SERVICE_CITIES.map((city) => city.name)
 
 export interface CykelQuoteRow {
   id: string

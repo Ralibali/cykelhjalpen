@@ -258,7 +258,8 @@ describe('prefill-länkar (repeat CTA)', () => {
   })
 
   it('frontend: okänd stad ger länk utan stadsparam', () => {
-    expect(buildRepeatRequestUrl({ city: 'Göteborg' })).toBe('/skicka-arende')
+    expect(buildRepeatRequestUrl({ city: 'Kiruna' })).toBe('/skicka-arende')
+    expect(buildRepeatRequestUrl({ city: 'Göteborg' })).toBe('/skicka-arende?stad=goteborg')
   })
 })
 

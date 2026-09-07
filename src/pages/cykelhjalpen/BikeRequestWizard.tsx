@@ -18,7 +18,7 @@ import { usePageSeo } from '@/i18n/usePageSeo'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
-import { CYKEL_CITIES, resolveCykelCityParam } from '@/lib/cykelCities'
+import { CYKEL_CITIES, SERVICE_CITIES, resolveCykelCityParam } from '@/lib/cykelCities'
 import { getV2CityConfig } from '@/lib/v2/cities'
 import { isV2FlagOn } from '@/lib/v2/flags'
 import { v2CityStateNotice } from '@/lib/v2/cityMessaging'
@@ -38,7 +38,7 @@ const DRAFT_KEY = 'cykelhjalpen_request_draft_v3'
 
 /** V1 display name → ascii slug (for the v2 city-config lookup). */
 const CYKEL_CITY_SLUGS: Record<string, string> = Object.fromEntries(
-  CYKEL_CITIES.map((city) => [city.name, city.slug]),
+  SERVICE_CITIES.map((city) => [city.name, city.slug]),
 )
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
@@ -150,8 +150,14 @@ const BikeRequestWizard = () => {
     staleTime: 60 * 1000,
     retry: false,
     queryFn: async () => {
-      if (!(await isV2FlagOn('v2.liquidity.city_state_messaging'))) return null
-      const config = await getV2CityConfig(selectedCitySlug!)
+      const isExpansionCity = !CYKEL_CITIES.some((city) => city.slug === selectedCitySlug)
+      const messagingEnabled = await isV2FlagOn('v2.liquidity.city_state_messaging')
+      if (!messagingEnabled && !isExpansionCity) return null
+      const config = await getV2CityConfig(selectedCitySlug!) ?? (isExpansionCity ? {
+        city_name: SERVICE_CITIES.find((city) => city.slug === selectedCitySlug)!.name,
+        state: 'SUPPLY_BUILDING',
+        demand_open: true,
+      } : null)
       return v2CityStateNotice(config, lang === 'en' ? 'en' : 'sv')
     },
   })

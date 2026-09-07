@@ -144,7 +144,9 @@ export async function publishApprovedBikeRequest(opts: {
 
   let workshopsQuery = admin
     .from('workshops')
-    .select('id, email, company_name, phone, sms_notifications, user_id, city, areas_served, service_area_mode, cluster_opt_in, services')
+    // Read available columns so optional V2 fields cannot break live V1 delivery.
+    // These workshop records stay server-side and are never returned publicly.
+    .select('*')
     .eq('approved', true)
   if (requestRow.preferred_workshop_id) {
     workshopsQuery = workshopsQuery.eq('id', requestRow.preferred_workshop_id)
@@ -168,7 +170,7 @@ export async function publishApprovedBikeRequest(opts: {
       // The eligibility engine filters below (tiny approved-workshop set).
       workshopsQuery = admin
         .from('workshops')
-        .select('id, email, company_name, phone, sms_notifications, user_id, city, areas_served, service_area_mode, cluster_opt_in, services')
+        .select('*')
         .eq('approved', true)
     }
   }

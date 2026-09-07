@@ -31,7 +31,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { CustomerTerms } from '@/components/legal/CustomerTerms'
 import Turnstile from './Turnstile'
-import { CYKEL_CITIES, getCykelCity, isCykelCity } from '@/lib/cykelCities'
+import { SERVICE_CITIES, getCykelCity, isCykelCity } from '@/lib/cykelCities'
 import { BIKE_TYPES, REPAIR_CATEGORIES, URGENCY_OPTIONS, type BikeRequestFormState } from '@/lib/bikeRequestForm'
 import { useT } from '@/lib/i18n'
 
@@ -313,7 +313,7 @@ const BikeRequestStepContent = ({
             {t('Vilken stad finns cykeln i?')}
           </StepLabel>
           <div className="grid grid-cols-2 gap-3">
-            {CYKEL_CITIES.map((city) => (
+            {SERVICE_CITIES.map((city) => (
               <ChoiceCard
                 key={city.name}
                 selected={form.city === city.name}

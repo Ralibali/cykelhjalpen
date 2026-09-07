@@ -66,7 +66,7 @@ describe('resolveWizardCity', () => {
 
   it('stays empty instead of inventing Linköping', () => {
     expect(resolveWizardCity(null)).toBe('')
-    expect(resolveWizardCity('stockholm', 'Göteborg')).toBe('')
+    expect(resolveWizardCity('kiruna', 'Visby')).toBe('')
     expect(resolveWizardCity('')).toBe('')
   })
 })

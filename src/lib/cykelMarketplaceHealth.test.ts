@@ -217,6 +217,13 @@ describe('city rollup and health', () => {
       'Norrköping',
       'Uppsala',
       'Lund',
+      'Västerås',
+      'Örebro',
+      'Göteborg',
+      'Stockholm',
+      'Malmö',
+      'Umeå',
+      'Jönköping',
     ])
 
     const linkoping = snapshot.cityRollup[0]
@@ -242,7 +249,8 @@ describe('city rollup and health', () => {
     expect(snapshot.totals.silentWorkshops).toBe(1)
     expect(snapshot.silentWorkshops.map((workshop) => workshop.company_name)).toEqual(['Nisses'])
     expect(snapshot.totals.wonQuotes).toBe(1)
-    expect(rollupCityName('Stockholm')).toBe('Övrigt')
+    expect(rollupCityName('Stockholm')).toBe('Stockholm')
+    expect(rollupCityName('Kiruna')).toBe('Övrigt')
   })
 
   it('flags Linköping as pause_or_recruit when demand exists but no shop has quoted', () => {

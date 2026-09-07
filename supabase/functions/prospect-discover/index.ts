@@ -1,3 +1,4 @@
+import { SERVICE_CITY_NAMES } from '../_shared/service-cities.ts'
 // Admin-only: söker verkstäder i en stad via Firecrawl och sparar prospects.
 // Skickar INGA externa mejl/SMS. Dedupliceras på domän/telefon/normaliserat namn.
 
@@ -18,7 +19,7 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
 const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY')
 
-const ALLOWED_CITIES = new Set(['Linköping', 'Norrköping', 'Uppsala', 'Lund'])
+const ALLOWED_CITIES = new Set<string>(SERVICE_CITY_NAMES)
 const DEFAULT_TERMS = ['cykelverkstad', 'cykelservice', 'elcykelservice', 'cykelreparation']
 
 interface RequestBody {
