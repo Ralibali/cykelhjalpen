@@ -1,0 +1,51 @@
+[
+  {
+    "slug": "beskriv-cykelfel-verkstad-mall",
+    "title": "Beskriv cykelfelet för verkstaden: en enkel felrapport",
+    "metaDescription": "Ett ljud som kommer ibland är svårt att beskriva i en enda mening. Med en kort felrapport kan verkstaden förstå vad du har märkt och vilka frågor som åters",
+    "publishedDate": "2026-09-07",
+    "intro": "Ett ljud som kommer ibland är svårt att beskriva i en enda mening. Med en kort felrapport kan verkstaden förstå vad du har märkt och vilka frågor som återstår. Här är en mall för underlaget inför kontakten, utan att du behöver ställa en egen diagnos.",
+    "sections": [
+      {
+        "heading": "Skilj din observation från din gissning",
+        "content": "Börja med det du faktiskt har sett, hört eller känt. Skriv exempelvis att ett klickande ljud uppstår ibland när du trampar, i stället för att slå fast vilken del som behöver bytas. Om du har en misstanke kan du skriva den separat och tydligt kalla den en misstanke.\n\nDu behöver inte kunna namnen på alla delar. Beskriv var du upplever problemet och använd gärna en bild av området. Verkstaden behöver fortfarande undersöka cykeln för att bedöma felet. En tydlig beskrivning hjälper samtalet men ersätter inte den kontrollen."
+      },
+      {
+        "heading": "Anteckna när problemet märks",
+        "content": "Skriv ned de omständigheter du redan känner till: om problemet är nytt, om det kommer varje gång och vad som hände strax innan du först lade märke till det. Ange också om cykeln nyligen har varit på service eller om något har ändrats.\n\nFörsök inte framkalla ett problem som kan göra cykeln osäker att använda. Beskriv i stället det du redan observerat och fråga verkstaden hur cykeln bör lämnas in. Mallen handlar om dokumentation, inte om att provköra eller laga ett fel."
+      },
+      {
+        "heading": "Kopiera mallen till ditt cykelärende",
+        "content": "Fyll bara i sådant du vet. Skriv ”vet inte” när en uppgift saknas.\n\n- Cykelns märke och modell, om du känner till dem.\n- Typ av cykel och om den har elassistans.\n- Det jag har märkt, beskrivet med egna ord.\n- När jag först märkte problemet.\n- Om det händer ibland eller varje gång.\n- Nylig service, ändring eller händelse som kan vara relevant.\n- Bilder eller befintligt underlag som förtydligar beskrivningen.\n- Vilken stad cykeln finns i och när jag kan lämna den."
+      },
+      {
+        "heading": "Ta bilder som svarar på en fråga",
+        "content": "En översiktsbild kan visa vilken cykel det gäller. En närbild kan visa det område du nämner. Kontrollera att bilden är skarp och att delen inte skyms. Du behöver inte demontera något för att få en bild.\n\nUndvik att ta med nycklar, personliga dokument eller människor som råkar finnas i bakgrunden. Om du har ett kvitto eller tidigare serviceunderlag, lämna bara de relevanta uppgifterna. En lång samling osorterade bilder kan vara svårare att använda än två tydliga bilder med en kort förklaring."
+      },
+      {
+        "heading": "Be om ett tydligt nästa steg",
+        "content": "När verkstaden svarar, kontrollera vad svaret bygger på. Gäller det en inledande undersökning, en uppskattning eller en bestämd åtgärd? Be verkstaden förklara vad som behöver kontrolleras innan omfattningen kan fastställas.\n\nSamla frågor om inlämning, nästa besked och hur eventuellt ytterligare arbete ska stämmas av. Jämför svar som avser samma underlag. Uppdatera din beskrivning om du upptäcker att en viktig uppgift saknas, så att du inte behöver börja om i varje kontakt."
+      },
+      {
+        "heading": "Använd beskrivningen när du söker verkstad",
+        "content": "I Cykelhjälpen beskriver du cykeln och problemet och kan få svar från anslutna verkstäder i tjänstens aktuella städer. Det faktiska antalet svar och möjlig tid beror på verkstädernas kapacitet.\n\nSpara din felrapport tills kontakten är klar. Om cykeln får en annan bedömning efter undersökningen kan du använda samma anteckningar för att förstå vad verkstaden har funnit och vilket nästa steg ni har kommit överens om."
+      },
+      {
+        "heading": "Underlag och nästa steg",
+        "content": "AI-assisterad originalguide. Arbetsmallen är ett förslag att anpassa till din situation. Produktinformationen kontrollerades den 7 september 2026 mot webbplatsens aktuella innehåll. Läs mer hos [Skicka ett cykelärende](/skicka-arende)."
+      }
+    ],
+    "ctaHref": "/skicka-arende",
+    "ctaLabel": "Skicka ett cykelärende",
+    "editorial": {
+      "createdWith": "ChatGPT",
+      "aiAssisted": true,
+      "publishedAt": "2026-09-07T11:15:50.299501+00:00",
+      "sourceCheckedAt": "2026-09-07T11:15:50.299501+00:00",
+      "sourceUrls": [
+        "https://cykelhjalpen.se"
+      ],
+      "searchIntent": "Dokumentera ett cykelfel inför kontakt med verkstad, utan egen reparation eller diagnos"
+    }
+  }
+]

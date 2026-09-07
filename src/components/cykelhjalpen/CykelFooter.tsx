@@ -42,6 +42,7 @@ const CykelFooter = () => {
           <li><Link to={localized('/skicka-arende')} className="hover:text-primary">{t('Skicka cykelärende')}</Link></li>
           <li><Link to={localized('/#sa-fungerar-det')} className="hover:text-primary">{t('Så fungerar det')}</Link></li>
           <li><Link to={localized('/vad-kostar-cykelreparation-linkoping')} className="hover:text-primary">{t('Priser på cykelreparation')}</Link></li>
+          {lang === 'sv' && <li><Link to="/blogg" className="hover:text-primary">Blogg för cyklister</Link></li>}
           {contentSurfaceOn && <li><Link to="/guider" className="hover:text-primary">{t('Guider och råd')}</Link></li>}
         </ul>
       </div>

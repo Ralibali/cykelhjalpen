@@ -1,0 +1,8 @@
+{
+  "origin": "https://cykelhjalpen.se",
+  "name": "Cykelhjälpen",
+  "blogTitle": "Blogg för cyklister",
+  "blogDescription": "Praktiska guider inför kontakten med cykelverkstaden.",
+  "sectionSitemap": true,
+  "template": "app.html"
+}
