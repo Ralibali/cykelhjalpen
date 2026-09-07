@@ -1,0 +1,23 @@
+name: Editorial publication
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  editorial:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.0
+      - run: bun install --frozen-lockfile
+      - run: bun run editorial:check
+      - run: bun run typecheck
+      - name: Lint article publishing files
+        run: bunx eslint src/components/EditorialBody.tsx src/pages/cykelhjalpen/EditorialBlog.tsx src/components/cykelhjalpen/CykelFooter.tsx scripts/editorial-html.mjs scripts/editorial-check.mjs scripts/generate-editorial.mjs scripts/verify-editorial-build.mjs
+      - run: bun run test
+      - run: bun run build
+      - run: node scripts/verify-editorial-build.mjs
