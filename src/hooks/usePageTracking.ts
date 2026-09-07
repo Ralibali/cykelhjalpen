@@ -86,7 +86,7 @@ export function usePageTracking() {
     if (!analyticsEnabled) return
 
     const pathname = location.pathname
-    if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) return
+    if (pathname === '/serviceorder' || pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) return
 
     const safePath = sanitizeTrackingPath(pathname)
     if (safePath === lastLocation.current) return

@@ -3,6 +3,7 @@ export const NOINDEX_ROBOTS_DIRECTIVE = 'noindex, nofollow'
 
 const PRIVATE_ROUTE_PREFIXES = [
   '/admin',
+  '/serviceorder',
   '/dashboard',
   '/mitt-arende',
   '/offert',

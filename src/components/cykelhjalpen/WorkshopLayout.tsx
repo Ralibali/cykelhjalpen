@@ -207,6 +207,7 @@ const WorkshopLayout = () => {
           <nav className="flex md:block gap-2 md:space-y-2 text-sm min-w-max md:min-w-0 md:sticky md:top-24 md:rounded-3xl md:border-2 md:border-foreground md:bg-card md:p-3 md:shadow-[4px_4px_0_hsl(var(--ink))]">
             <NavItem to="/dashboard/verkstad" end icon={<Bike className="h-4 w-4" />} className={disabledNavCls}>{t('Affärsöversikt')}</NavItem>
             <NavItem to="/dashboard/verkstad/arenden" icon={<BriefcaseBusiness className="h-4 w-4" />} className={disabledNavCls}>{t('Nya uppdrag & offerter')}</NavItem>
+            <NavItem to="/dashboard/verkstad/arbetsorder" icon={<BriefcaseBusiness className="h-4 w-4" />} className={disabledNavCls}>{t("Arbetsorder")}</NavItem>
             <NavItem to="/dashboard/verkstad/betalningar" icon={<Receipt className="h-4 w-4" />} className={disabledNavCls}>{t('Leads & betalningar')}</NavItem>
             <NavItem to="/dashboard/verkstad/installningar" icon={<Settings className="h-4 w-4" />} className={disabledNavCls}>{t('Verkstadsprofil')}</NavItem>
           </nav>
