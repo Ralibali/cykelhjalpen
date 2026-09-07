@@ -30,6 +30,8 @@ const CustomerResponses = lazy(() => import("./pages/cykelhjalpen/CustomerRespon
 const RegisterWorkshopPage = lazy(() => import("./pages/cykelhjalpen/RegisterWorkshopPage"));
 const ForVerkstaderPage = lazy(() => import("./pages/cykelhjalpen/ForVerkstaderPage"));
 const WorkshopLayout = lazy(() => import("./components/cykelhjalpen/WorkshopLayout"));
+const WorkshopServiceOrders = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopServiceOrders"));
+const ServiceOrderCustomer = lazy(() => import("./pages/cykelhjalpen/ServiceOrderCustomer"));
 const WorkshopDashboard = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopDashboard"));
 const WorkshopRequests = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopRequests"));
 const WorkshopBilling = lazy(() => import("./pages/cykelhjalpen/workshop/WorkshopBilling"));
@@ -376,6 +378,7 @@ const AppRoutes = () => {
               {/* V2 S4: publika verkstadsprofiler + katalog. Sidlarna grindsjälva
                   på flaggan v2.directory.public_profiles (404 när den är av) och
                   renderar noindex tills G-D1-grinden passerar (kontrakt §7.4). */}
+              <Route path="/serviceorder" element={<ServiceOrderCustomer />} />
               <Route path="/verkstad/:slug" element={<WorkshopProfilePage />} />
               <Route path="/verkstader" element={<WorkshopDirectoryPage />} />
               <Route path="/verkstader/:citySlug" element={<WorkshopDirectoryPage />} />
@@ -395,6 +398,7 @@ const AppRoutes = () => {
               >
                 <Route index element={<WorkshopDashboard />} />
                 <Route path="arenden" element={<WorkshopRequests />} />
+                <Route path="arbetsorder" element={<WorkshopServiceOrders />} />
                 <Route path="betalningar" element={<WorkshopBilling />} />
                 <Route path="installningar" element={<WorkshopSettings />} />
               </Route>

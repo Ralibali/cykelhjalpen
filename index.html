@@ -139,6 +139,7 @@
       (function () {
         try {
           var host = window.location.hostname;
+          if (window.location.pathname === '/serviceorder') return;
           var isProd = host === 'cykelhjalpen.se' || host === 'www.cykelhjalpen.se';
           if (!isProd) return;
           window.plausible = window.plausible || function () {

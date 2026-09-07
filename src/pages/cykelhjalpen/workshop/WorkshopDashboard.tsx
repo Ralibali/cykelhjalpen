@@ -24,6 +24,7 @@ import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { FreeLeadsBanner } from '@/components/workshop/FreeLeadsBanner'
 import { useT } from '@/lib/i18n'
+import CreateOrderFromLead from '@/components/service-orders/CreateOrderFromLead'
 import { cn } from '@/lib/utils'
 
 interface ResponseRow {
@@ -288,6 +289,7 @@ const WorkshopDashboard = () => {
                     )}
                   </div>
 
+                  <div className="mt-3"><CreateOrderFromLead responseId={row.id} /></div>
                   {contact && (
                     <div className="mt-4 rounded-xl bg-background border p-4 space-y-3">
                       <div>

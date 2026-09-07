@@ -73,8 +73,8 @@ const applyConsent = (level: ConsentLevel) => {
     injectGtagScript()
     gtag('js', new Date())
     // Automatic page views stay disabled so personal token URLs are never sent.
-    gtag('config', GA_ID, { anonymize_ip: true, send_page_view: false })
-    gtag('config', ADS_ID, { send_page_view: false })
+    gtag('config', GA_ID, { anonymize_ip: true, send_page_view: false, page_location: window.location.origin + window.location.pathname })
+    gtag('config', ADS_ID, { send_page_view: false, page_location: window.location.origin + window.location.pathname })
   } else {
     gtag('consent', 'update', {
       analytics_storage: 'denied',
@@ -129,7 +129,7 @@ const CookieConsent = () => {
   }, [])
 
   useEffect(() => {
-    if (level !== 'all') return
+    if (level !== 'all' || location.pathname === '/serviceorder') return
     const gtag = ensureDataLayer()
     const pathname = safePath(location.pathname)
     gtag?.('event', 'page_view', {

@@ -509,3 +509,7 @@ Gates reference measurable evidence (per cross-verification §5–6). S10 owns m
 - I7: All crons must be registered in the migration pack's scheduling notes AND verified in prod before their flag flips (registry R4 lesson).
 
 **Glossary**: *fill rate* = % published requests with ≥1 quote within the window; *choice rate* = % requests-with-quotes reaching `completed`; *active workshop* = approved + ≥1 quote in trailing 30d (existing definition, `cykelMarketplaceHealth.ts`); *settled* = win paid by card or free lead/credit; *stalled winner* = won + unsettled ≥48h; *ghosted lead* = settled win where customer is unreachable ≥7 days.
+
+## Service workspace extension — 2026-09-07
+
+Authorized product development adds `v2_service_orders` and the scoped RPCs `v2_service_order_owner` / `v2_service_order_customer`. Approved workshops manage their own incoming customers and can convert a won, already unlocked marketplace response into one order. Existing winner fees, contact gates, city activation, outcome/review records and subscription rules are read-only. The workspace stores a customer snapshot, bike/frame reference, immutable quote versions, customer-link decisions and service history. Changed total prices require a new customer decision before work continues. Customer links expose only that order and workshop contact information, expire after 90 days and can be rotated or revoked. No messages, charges or marketplace completion events are sent automatically.
