@@ -95,6 +95,9 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
       const title = city.name === 'Norrköping'
         ? 'Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners'
         : route.title
+      const linkopingGuideLink = city.name === 'Linköping'
+        ? [{ label: 'Mall: så beskriver du cykelfelet', href: '/blogg/beskriv-cykelfel-verkstad-mall' }]
+        : []
       return {
         ...route,
         title,
@@ -104,6 +107,7 @@ const polish = (route: StaticSeoRoute, host: SiteHost): StaticSeoRoute => {
           { h2: 'Aktuell tillgänglighet', body: marketText(city.name) },
           { h2: 'Vanliga cykeljobb', body: 'Punktering, däck, bromsar, växlar, kedja, hjul, service och elcykelproblem är exempel på jobb du kan beskriva.' },
         ],
+        links: [...(route.links || []), ...linkopingGuideLink],
       }
     }
   }

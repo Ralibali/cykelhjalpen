@@ -301,10 +301,17 @@ describe('Cykelhjälpen SEO-konfiguration', () => {
     ])
 
     expect(linkoping?.title).toBe('Cykelverkstad Linköping – jämför lokala prisförslag')
+    expect(linkoping?.links).toEqual(expect.arrayContaining([
+      { label: 'Mall: så beskriver du cykelfelet', href: '/blogg/beskriv-cykelfel-verkstad-mall' },
+    ]))
+    expect(norrkoping?.links?.some((link) => link.href === '/blogg/beskriv-cykelfel-verkstad-mall')).toBe(false)
     expect(norrkopingEn?.title).toBe('Bike shop Norrköping — compare local replies')
 
     const template = '<!doctype html><html><head><title>x</title><meta name="description" content="x" /><meta name="robots" content="index" /><link rel="canonical" href="https://example.com/" /></head><body><div id="root"></div></body></html>'
     const html = renderStaticHtml(template, norrkoping!, 'cykelhjalpen')
+    const linkopingHtml = renderStaticHtml(template, linkoping!, 'cykelhjalpen')
+    expect(linkopingHtml).toContain('href="/blogg/beskriv-cykelfel-verkstad-mall"')
+    expect(html).not.toContain('href="/blogg/beskriv-cykelfel-verkstad-mall"')
     expect(html).toMatch(/<title>Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners<\/title>/)
     // Allow Helmet handoff attrs such as data-rh="true" between content and />.
     expect(html).toMatch(/<meta property="og:title" content="Cykelverkstad Norrköping – tillgänglighet beror på aktiva partners"[^>]*\/>/)
