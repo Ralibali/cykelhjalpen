@@ -7,7 +7,7 @@ import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import CykelHonestTrust from '@/components/cykelhjalpen/CykelHonestTrust'
 import CykelOpenRequestsTeaser from '@/components/cykelhjalpen/CykelOpenRequestsTeaser'
 import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
-import { CYKEL_CITIES } from '@/lib/cykelCities'
+import { SERVICE_CITIES } from '@/lib/cykelCities'
 import { resolveWorkshopLandingMarket, workshopLandingCopy } from '@/lib/workshopLanding'
 import { trackClick } from '@/hooks/usePageTracking'
 import { useLanguage } from '@/lib/i18n'
@@ -114,11 +114,12 @@ const ForVerkstaderPageV4 = () => {
           <div className="container mx-auto px-4 py-6 max-w-6xl">
             <p className="text-center text-sm text-muted-foreground mb-3">{text('Välj marknaden ni arbetar i', 'Choose the market you work in')}</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {CYKEL_CITIES.map((candidate) => {
+              {SERVICE_CITIES.map((candidate) => {
                 const active = candidate.name === city
                 return (
                   <Link
                     key={candidate.name}
+                    aria-current={active ? 'page' : undefined}
                     to={`/for-cykelverkstader?stad=${candidate.slug}`}
                     onClick={() => trackClick('workshop_market_selected', candidate.name, { city: candidate.name })}
                     className={`rounded-full border px-4 py-2.5 text-sm font-semibold transition-all ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-card hover:border-primary/50'}`}
@@ -158,7 +159,7 @@ const ForVerkstaderPageV4 = () => {
           </div>
         </section>
 
-        <CykelOpenRequestsTeaser trackCta={trackCta} />
+        <CykelOpenRequestsTeaser key={city || 'all'} selectedCity={city} trackCta={trackCta} />
 
         <section className="py-16 md:py-20">
           <div className="container mx-auto px-4 max-w-4xl">

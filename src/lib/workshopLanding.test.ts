@@ -1,10 +1,11 @@
+import { SERVICE_CITIES } from './cykelCities'
 import { describe, expect, it } from 'vitest'
 import { resolveWorkshopLandingMarket, workshopLandingCopy } from './workshopLanding'
 
 const text = (sv: string) => sv
 
 describe('workshop landing default', () => {
-  it('presents all four cities when no stad param is set', () => {
+  it('presents all open cities when no stad param is set', () => {
     const { selected, registerHref } = resolveWorkshopLandingMarket(null)
     const copy = workshopLandingCopy(selected, text)
 
@@ -12,9 +13,9 @@ describe('workshop landing default', () => {
     expect(registerHref).toBe('/registrera/verkstad')
     expect(copy.badge).toBe('Founding Partner')
     expect(copy.h1Lead).toBe('Få in fler lokala cykeljobb')
-    expect(copy.networkTitle).toContain('Linköping, Norrköping, Uppsala och Lund')
+    expect(copy.networkTitle).toContain('11 öppna städer')
     expect(copy.title).not.toContain('Linköping')
-    expect(copy.description).toContain('Linköping, Norrköping, Uppsala och Lund')
+    expect(copy.description).toContain('11 öppna städer')
     expect(copy.heroCta).toBe('Bli Founding Partner')
   })
 
@@ -30,4 +31,12 @@ describe('workshop landing default', () => {
     expect(copy.heroCta).toContain('Lund')
     expect(copy.bottomCta).toContain('Lund')
   })
+})
+
+// Every operational city must survive the landing → registration link.
+it.each(SERVICE_CITIES)('preserves $name in the registration destination', ({name, slug}) => {
+  const market = resolveWorkshopLandingMarket(slug)
+  expect(market.selected?.name).toBe(name)
+  expect(market.registerHref).toBe(`/registrera/verkstad?stad=${slug}`)
+  expect(workshopLandingCopy(market.selected, text).networkTitle).toContain(name)
 })
