@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { sv, enUS } from 'date-fns/locale'
 import { ArrowRight, Flame, MapPin } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
-import { SERVICE_CITIES } from '@/lib/cykelCities'
+import { SERVICE_CITIES, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { trackClick } from '@/hooks/usePageTracking'
 import { useLanguage, useT } from '@/lib/i18n'
 
@@ -25,13 +25,14 @@ const isUrgent = (urgency: string | null) =>
 
 type Props = {
   trackCta: (placement: string) => void
+  selectedCity?: CykelCityName
 }
 
-const CykelOpenRequestsTeaser = ({ trackCta }: Props) => {
+const CykelOpenRequestsTeaser = ({ trackCta, selectedCity }: Props) => {
   const t = useT()
   const { lang } = useLanguage()
   const ALL = t('Alla')
-  const [cityFilter, setCityFilter] = useState<string>(ALL)
+  const [cityFilter, setCityFilter] = useState<string>(selectedCity || '')
 
   const { data, isError } = useQuery({
     queryKey: ['cykel-open-requests-teaser'],
@@ -46,12 +47,12 @@ const CykelOpenRequestsTeaser = ({ trackCta }: Props) => {
 
   const rows = data || []
 
-  const filtered = useMemo(
-    () => (cityFilter === ALL ? rows : rows.filter((r) => r.city === cityFilter)),
-    [rows, cityFilter, ALL],
-  )
+  const filtered = cityFilter ? rows.filter((row) => row.city === cityFilter) : rows
 
   if (isError || rows.length === 0) return null
+
+  const targetCity = cityFilter ? getCykelCity(cityFilter) : null
+  const registerHref = targetCity ? `/registrera/verkstad?stad=${targetCity.slug}` : '/registrera/verkstad'
 
   const handleFilter = (city: string) => {
     setCityFilter(city)
@@ -68,11 +69,13 @@ const CykelOpenRequestsTeaser = ({ trackCta }: Props) => {
       </div>
 
       <div className="flex flex-wrap justify-center gap-2 mb-8">
-        {[ALL, ...SERVICE_CITIES.map((c) => c.name)].map((city) => {
+        {['', ...SERVICE_CITIES.map((c) => c.name)].map((city) => {
           const active = cityFilter === city
           return (
             <button
               key={city}
+              type="button"
+              aria-pressed={active}
               onClick={() => handleFilter(city)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium border transition ${
                 active
@@ -80,11 +83,15 @@ const CykelOpenRequestsTeaser = ({ trackCta }: Props) => {
                   : 'bg-card hover:bg-muted border-border'
               }`}
             >
-              {city}
+              {city || ALL}
             </button>
           )
         })}
       </div>
+
+      {filtered.length === 0 && (
+        <p className="text-center text-muted-foreground mb-6">{t('Inga öppna ärenden visas i den valda staden just nu.')}</p>
+      )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((row, idx) => {
@@ -113,7 +120,7 @@ const CykelOpenRequestsTeaser = ({ trackCta }: Props) => {
         })}
 
         <Link
-          to="/registrera/verkstad"
+          to={registerHref}
           onClick={() => trackCta('open_requests_teaser')}
           className="sticker rounded-2xl bg-primary text-primary-foreground p-5 flex flex-col justify-between gap-3 hover:opacity-95 transition"
         >

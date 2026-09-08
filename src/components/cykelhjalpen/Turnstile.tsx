@@ -24,30 +24,35 @@ const loadScript = () => {
 
   scriptPromise = new Promise<void>((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_SRC}"]`)
-
+    const script = existing || document.createElement('script')
+    const cleanup = () => {
+      window.clearTimeout(timeout)
+      script.removeEventListener('load', handleLoad)
+      script.removeEventListener('error', handleError)
+    }
+    const fail = (reason: string) => {
+      cleanup()
+      script.remove()
+      reject(new Error(reason))
+    }
     const handleLoad = () => {
-      if (window.turnstile) resolve()
-      else reject(new Error('turnstile-api-missing'))
+      if (!window.turnstile) return fail('turnstile-api-missing')
+      cleanup()
+      resolve()
     }
-    const handleError = () => reject(new Error('turnstile-load-failed'))
-
-    if (existing) {
-      existing.addEventListener('load', handleLoad, { once: true })
-      existing.addEventListener('error', handleError, { once: true })
-      window.setTimeout(() => {
-        if (window.turnstile) resolve()
-        else reject(new Error('turnstile-api-timeout'))
-      }, 5000)
-      return
-    }
-
-    const script = document.createElement('script')
-    script.src = SCRIPT_SRC
-    script.async = true
-    script.defer = true
+    const handleError = () => fail('turnstile-load-failed')
+    const timeout = window.setTimeout(() => {
+      if (window.turnstile) handleLoad()
+      else fail('turnstile-api-timeout')
+    }, 12000)
     script.addEventListener('load', handleLoad, { once: true })
     script.addEventListener('error', handleError, { once: true })
-    document.head.appendChild(script)
+    if (!existing) {
+      script.src = SCRIPT_SRC
+      script.async = true
+      script.defer = true
+      document.head.appendChild(script)
+    }
   }).catch((error) => {
     scriptPromise = null
     throw error
@@ -59,6 +64,7 @@ const loadScript = () => {
 interface Props {
   onVerify: (token: string) => void
   onExpire?: () => void
+  onStatus?: (status: 'ready' | 'expired' | 'failed') => void
   resetKey?: number
   /**
    * Action-namn skickas till Cloudflare Turnstile och kontrolleras server-side
@@ -67,13 +73,14 @@ interface Props {
   action?: string
 }
 
-const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_request' }: Props) => {
+const Turnstile = ({ onVerify, onExpire, onStatus, resetKey = 0, action = 'submit_bike_request' }: Props) => {
   const t = useT()
   const TURNSTILE_ERROR_MESSAGE = t(TURNSTILE_ERROR_MESSAGE_SV)
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetIdRef = useRef<string | null>(null)
   const onVerifyRef = useRef(onVerify)
   const onExpireRef = useRef(onExpire)
+  const onStatusRef = useRef(onStatus)
   const [siteKey, setSiteKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [retryVersion, setRetryVersion] = useState(0)
@@ -85,6 +92,14 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_req
   useEffect(() => {
     onExpireRef.current = onExpire
   }, [onExpire])
+
+  useEffect(() => {
+    onStatusRef.current = onStatus
+  }, [onStatus])
+
+  useEffect(() => {
+    if (error) onStatusRef.current?.('failed')
+  }, [error])
 
   useEffect(() => {
     let mounted = true
@@ -116,7 +131,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_req
       mounted = false
       window.clearTimeout(timeout)
     }
-  }, [retryVersion])
+  }, [retryVersion, TURNSTILE_ERROR_MESSAGE])
 
   useEffect(() => {
     if (!siteKey || !containerRef.current) return
@@ -145,12 +160,23 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_req
         sitekey: siteKey,
         action,
         callback: (token: string) => {
+          if (cancelled) return
+          onStatusRef.current?.('ready')
           setError(null)
           onVerifyRef.current(token)
         },
-        'expired-callback': () => onExpireRef.current?.(),
-        'timeout-callback': () => onExpireRef.current?.(),
+        'expired-callback': () => {
+          if (cancelled) return
+          onExpireRef.current?.()
+          onStatusRef.current?.('expired')
+        },
+        'timeout-callback': () => {
+          if (cancelled) return
+          onExpireRef.current?.()
+          onStatusRef.current?.('expired')
+        },
         'error-callback': () => {
+          if (cancelled) return
           setError(t('Säkerhetskontrollen misslyckades. Försök igen.'))
           onExpireRef.current?.()
         },
@@ -164,7 +190,7 @@ const Turnstile = ({ onVerify, onExpire, resetKey = 0, action = 'submit_bike_req
       cancelled = true
       removeWidget()
     }
-  }, [siteKey, resetKey, retryVersion, action])
+  }, [siteKey, resetKey, retryVersion, action, TURNSTILE_ERROR_MESSAGE, t])
 
   const retry = () => {
     setError(null)

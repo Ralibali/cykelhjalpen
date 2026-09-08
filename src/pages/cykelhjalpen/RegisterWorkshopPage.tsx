@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
@@ -13,7 +13,8 @@ import { WorkshopTerms } from '@/components/legal/WorkshopTerms'
 import Turnstile from '@/components/cykelhjalpen/Turnstile'
 import { Helmet } from 'react-helmet-async'
 import { formatKrFromOre, useV2Pricing, v2GrossOre } from '@/lib/v2/pricing'
-import { trackClick } from '@/hooks/usePageTracking'
+import { trackWorkshopRegistration } from '@/lib/workshopRegistrationTracking'
+import { hasAnalyticsConsent } from '@/lib/analyticsConsent'
 import { trackEvent } from '@/lib/analytics'
 import { trackAdsConversion } from '@/lib/googleAds'
 import { SERVICE_CITIES, isCykelCity, resolveCykelCityParam, type CykelCityName } from '@/lib/cykelCities'
@@ -22,12 +23,13 @@ import { useT } from '@/lib/i18n'
 const SERVICES_SV = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Elsparkcykelservice', 'Hjulbygge', 'Mobil reparation']
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
-  const gtag = (window as any).gtag
+  if (!hasAnalyticsConsent()) return
+  const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag
   if (typeof gtag === 'function') gtag('event', eventName, parameters)
 }
 
 const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
-  const context = (error as any)?.context
+  const context = (error as { context?: unknown })?.context
   if (context instanceof Response) {
     try {
       const payload = await context.clone().json()
@@ -36,7 +38,7 @@ const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
       // Edge-funktionen returnerade inte JSON.
     }
   }
-  return (error as any)?.message || fallback
+  return error instanceof Error ? error.message : fallback
 }
 
 const RegisterWorkshopPage = () => {
@@ -50,6 +52,10 @@ const RegisterWorkshopPage = () => {
   const cityParam = searchParams.get('stad')
   const initialCity = resolveCykelCityParam(cityParam) || ''
   const [loading, setLoading] = useState(false)
+  const startedRef = useRef(false)
+  const submittingRef = useRef(false)
+  const invalidFields = useRef(new Set<string>())
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [form, setForm] = useState({
@@ -67,6 +73,9 @@ const RegisterWorkshopPage = () => {
   })
   const handleTurnstileVerify = useCallback((token: string) => setTurnstileToken(token), [])
   const handleTurnstileExpire = useCallback(() => setTurnstileToken(null), [])
+  const handleTurnstileStatus = useCallback((status: 'ready' | 'expired' | 'failed') => {
+    trackWorkshopRegistration(`security_${status}`, form.city)
+  }, [form.city])
   useEffect(() => {
     if (cityParam) {
       const match = SERVICE_CITIES.find((c) => c.name.toLowerCase() === cityParam.toLowerCase() || c.slug === cityParam.toLowerCase())
@@ -74,21 +83,56 @@ const RegisterWorkshopPage = () => {
     }
   }, [cityParam])
 
-  const update = (key: string, value: unknown) => setForm((current) => ({ ...current, [key]: value }))
+  const update = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    if (!startedRef.current) {
+      trackWorkshopRegistration('started', form.city)
+      startedRef.current = true
+    }
+    setForm((current) => ({ ...current, [key]: value }))
+    setSubmitError(null)
+  }
+
+  const validationError = (reason: string, message: string) => {
+    trackWorkshopRegistration('validation_blocked', form.city, { reason })
+    setSubmitError(message)
+    toast.error(message)
+  }
+
+  const handleInvalid = (event: React.FormEvent<HTMLFormElement>) => {
+    const field = event.target as HTMLInputElement
+    const reason = ({ cn: 'company_name', em: 'email', pw: 'password', dpa: 'dpa' } as Record<string, string>)[field.id] || 'required_field'
+    if (!invalidFields.current.has(reason)) {
+      trackWorkshopRegistration('validation_blocked', form.city, { reason })
+      invalidFields.current.add(reason)
+    }
+  }
+
+  const missingRequirements = [
+    !form.terms_accepted && t('godkänn plattformsavtalet'),
+    !form.dpa_accepted && t('godkänn DPA'),
+    !turnstileToken && t('slutför säkerhetskontrollen'),
+  ].filter(Boolean)
+
   const toggleService = (service: string) => {
     update('services', form.services.includes(service) ? form.services.filter((current) => current !== service) : [...form.services, service])
   }
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!form.terms_accepted) return toast.error(t('Du måste godkänna villkoren'))
-    if (!isCykelCity(form.city)) return toast.error(t('Välj vilken stad ni arbetar i'))
-    if (form.company_name.trim().length < 2) return toast.error(t('Ange verkstadens namn'))
-    if (form.password.length < 8) return toast.error(t('Lösenordet måste vara minst åtta tecken'))
-    if (!turnstileToken) return toast.error(t('Bekräfta säkerhetskontrollen innan du registrerar verkstaden.'))
+    if (submittingRef.current) return
+    if (!form.terms_accepted) return validationError('terms', t('Du måste godkänna villkoren'))
+    if (!form.dpa_accepted) return validationError('dpa', t('Du måste godkänna DPA'))
+    if (!isCykelCity(form.city)) return validationError('city', t('Välj vilken stad ni arbetar i'))
+    if (form.company_name.trim().length < 2) return validationError('company_name', t('Ange verkstadens namn'))
+    if (form.password.length < 8) return validationError('password', t('Lösenordet måste vara minst åtta tecken'))
+    if (!turnstileToken) return validationError('security', t('Bekräfta säkerhetskontrollen innan du registrerar verkstaden.'))
 
+    submittingRef.current = true
     setLoading(true)
-    trackClick('workshop_registration_submit_clicked', 'Skicka ansökan', { services_count: form.services.length, city: form.city })
+    setSubmitError(null)
+    invalidFields.current.clear()
+    let failureReason = 'network_or_unknown'
+    trackWorkshopRegistration('submit_clicked', form.city, { services_count: form.services.length })
 
     try {
       const { data, error } = await supabase.functions.invoke('register-workshop', {
@@ -108,36 +152,62 @@ const RegisterWorkshopPage = () => {
         },
       })
 
-      if (error) throw new Error(await getFunctionErrorMessage(error, t('Registreringen misslyckades')))
-      if (data?.error) throw new Error(data.error)
+      if (error) {
+        const context = (error as { context?: Response }).context
+        failureReason = context instanceof Response ? `http_${context.status}` : 'network_or_unknown'
+        throw new Error(await getFunctionErrorMessage(error, t('Registreringen misslyckades')))
+      }
+      if (data?.error) {
+        failureReason = 'server_rejected'
+        throw new Error(data.error)
+      }
+      if (typeof data?.userId !== 'string' || !data.userId) {
+        failureReason = 'invalid_response'
+        throw new Error(t('Svaret kunde inte bekräftas. Försök logga in eller kontakta oss innan du registrerar dig igen.'))
+      }
 
-      trackClick('workshop_registration_completed', 'Skicka ansökan', { services_count: form.services.length, city: form.city })
-      trackGoogleEvent('sign_up', { method: 'workshop_registration', city: form.city })
-      trackEvent('Workshop Signup Completed', { city: form.city, user_type: 'workshop' })
-      trackAdsConversion('workshop_signup')
-
+      trackWorkshopRegistration('completed', form.city, { services_count: form.services.length })
+      try {
+        if (hasAnalyticsConsent()) {
+          trackGoogleEvent('sign_up', { method: 'workshop_registration', city: form.city })
+          trackEvent('Workshop Signup Completed', { city: form.city, user_type: 'workshop' })
+          trackAdsConversion('workshop_signup')
+        }
+      } catch {
+        // A measurement error must not report an already created account as failed.
+      }
 
       if (data?.session?.access_token && data?.session?.refresh_token) {
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        })
-        if (sessionError) throw sessionError
+        try {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          })
+          if (sessionError) throw sessionError
+        } catch {
+          trackWorkshopRegistration('session_failed', form.city)
+          navigate('/logga-in?registrerad=verkstad&steg=logga-in', { replace: true })
+          return
+        }
+        trackWorkshopRegistration('session_ready', form.city)
 
         toast.success(t('Tack! {company} är registrerad i {city} och väntar på godkännande.', { company: form.company_name, city: form.city }))
         navigate('/dashboard/verkstad')
         return
       }
 
-      toast.success(t('Kontot är skapat. Bekräfta e-postadressen via länken vi skickat innan du loggar in.'))
-      navigate('/logga-in?registrerad=verkstad')
+      trackWorkshopRegistration('confirmation_required', form.city)
+      navigate('/logga-in?registrerad=verkstad', { replace: true })
     } catch (error) {
-      trackClick('workshop_registration_failed', 'Skicka ansökan', { city: form.city })
+      trackWorkshopRegistration('failed', form.city, { reason: failureReason })
       // Vid backend-fel behöver Turnstile-token förnyas – det är single-use.
       setTurnstileToken(null)
       setTurnstileResetKey((current) => current + 1)
-      toast.error((error as Error)?.message || t('Registreringen misslyckades'))
+      const message = (error as Error)?.message || t('Registreringen misslyckades')
+      setSubmitError(message)
+      toast.error(message)
     } finally {
+      submittingRef.current = false
       setLoading(false)
     }
   }
@@ -173,10 +243,10 @@ const RegisterWorkshopPage = () => {
           <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3"><ShieldCheck className="h-4 w-4 text-primary shrink-0" /> {t('Manuell granskning')}</div>
         </div>
 
-        <form onSubmit={submit} className="sticker rounded-3xl bg-card p-6 md:p-8 space-y-5">
+        <form onSubmit={submit} onInvalidCapture={handleInvalid} className="sticker rounded-3xl bg-card p-6 md:p-8 space-y-5">
           <div>
             <Label htmlFor="cn">{t('Verkstadens namn')}</Label>
-            <Input id="cn" autoComplete="organization" required value={form.company_name} onChange={(event) => update('company_name', event.target.value)} className="rounded-xl border-2" />
+            <Input id="cn" autoComplete="organization" required minLength={2} maxLength={160} value={form.company_name} onChange={(event) => update('company_name', event.target.value)} className="rounded-xl border-2" />
           </div>
 
           <div>
@@ -199,11 +269,11 @@ const RegisterWorkshopPage = () => {
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="em">{t('E-post')}</Label>
-              <Input id="em" type="email" inputMode="email" autoComplete="email" required value={form.email} onChange={(event) => update('email', event.target.value)} className="rounded-xl border-2" />
+              <Input id="em" type="email" inputMode="email" autoComplete="email" required maxLength={254} value={form.email} onChange={(event) => update('email', event.target.value)} className="rounded-xl border-2" />
             </div>
             <div>
               <Label htmlFor="pw">{t('Lösenord')}</Label>
-              <PasswordInput id="pw" autoComplete="new-password" required minLength={8} value={form.password} onChange={(event) => update('password', event.target.value)} className="rounded-xl border-2" showLabel={t('Visa lösenord')} hideLabel={t('Dölj lösenord')} />
+              <PasswordInput id="pw" autoComplete="new-password" required minLength={8} maxLength={128} value={form.password} onChange={(event) => update('password', event.target.value)} className="rounded-xl border-2" showLabel={t('Visa lösenord')} hideLabel={t('Dölj lösenord')} />
               <p className="text-xs text-muted-foreground mt-1">{t('Minst åtta tecken.')}</p>
             </div>
           </div>
@@ -240,7 +310,7 @@ const RegisterWorkshopPage = () => {
             <WorkshopTerms accepted={form.terms_accepted} onAccept={(value) => update('terms_accepted', value)} />
 
             <label className="flex items-start gap-3 text-sm cursor-pointer">
-              <input type="checkbox" checked={form.dpa_accepted} onChange={(event) => update('dpa_accepted', event.target.checked)} className="mt-1 h-4 w-4" required />
+              <input id="dpa" type="checkbox" checked={form.dpa_accepted} onChange={(event) => update('dpa_accepted', event.target.checked)} className="mt-1 h-4 w-4" required />
               <span className="text-muted-foreground leading-relaxed">
                 {t('Jag godkänner')} <strong className="text-foreground">{t('databehandlingsavtalet (DPA)')}</strong> – {t('kunduppgifter får endast användas för att besvara förfrågan och raderas när ärendet är avslutat.')}
               </span>
@@ -265,11 +335,18 @@ const RegisterWorkshopPage = () => {
               action="register_workshop"
               onVerify={handleTurnstileVerify}
               onExpire={handleTurnstileExpire}
+              onStatus={handleTurnstileStatus}
               resetKey={turnstileResetKey}
             />
           </div>
 
-          <Button type="submit" disabled={loading || !form.terms_accepted || !form.dpa_accepted || !turnstileToken} className="w-full cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-12 text-base">
+          {submitError && <p role="alert" className="text-sm text-destructive">{submitError}</p>}
+          {missingRequirements.length > 0 && (
+            <p id="registration-requirements" aria-live="polite" className="text-sm text-muted-foreground">
+              {t('För att fortsätta:')} {missingRequirements.join(', ')}.
+            </p>
+          )}
+          <Button type="submit" aria-describedby={missingRequirements.length ? 'registration-requirements' : undefined} disabled={loading || !form.terms_accepted || !form.dpa_accepted || !turnstileToken} className="w-full cta-playful bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-12 text-base">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {loading ? t('Skapar verkstad…') : t('Registrera verkstaden kostnadsfritt')}
           </Button>

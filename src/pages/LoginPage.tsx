@@ -42,12 +42,6 @@ const LoginPage = () => {
     })
   }, [copy])
 
-  useEffect(() => {
-    if (searchParams.get('registrerad') === 'verkstad') {
-      toast.success(t('Kontot är skapat. Bekräfta e-postadressen och logga sedan in.'))
-    }
-  }, [searchParams])
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setLoading(true)
@@ -95,6 +89,19 @@ const LoginPage = () => {
             <h1 className="font-display text-4xl">{t('Logga in')}</h1>
             <p className="text-muted-foreground mt-2">{copy.welcome}</p>
           </div>
+
+          {isCykel && searchParams.get('registrerad') === 'verkstad' && (
+            <section aria-label={t('Nästa steg')} className="mb-5 rounded-2xl border border-primary/30 bg-card p-5 space-y-2">
+              <h2 className="font-semibold">{t('Kontot är skapat')}</h2>
+              <p className="text-sm text-muted-foreground">
+                {searchParams.get('steg') === 'logga-in'
+                  ? t('Den automatiska inloggningen kunde inte slutföras. Logga in här med ditt nya konto. Du behöver inte registrera verkstaden igen.')
+                  : t('Öppna bekräftelsemejlet och följ länken för att bekräfta din e-postadress. Kontrollera även skräpposten. Logga sedan in här.')}
+              </p>
+              <p className="text-sm text-muted-foreground">{t('Verkstaden granskas innan ni kan svara på kundärenden.')}</p>
+              <a href="mailto:info@cykelhjalpen.se" className="inline-block text-sm underline">{t('Behöver du hjälp? Kontakta oss')}</a>
+            </section>
+          )}
 
           <div className="bg-card rounded-3xl border-2 border-foreground p-7 sticker">
             <form onSubmit={handleSubmit} className="space-y-4">

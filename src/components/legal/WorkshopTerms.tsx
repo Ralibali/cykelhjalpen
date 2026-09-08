@@ -56,7 +56,7 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
                 <FileText className="h-5 w-5 text-gray-700" />
                 <h2 className="text-lg font-semibold text-gray-900">{t('Plattformsavtal för verkstäder')}</h2>
               </div>
-              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button type="button" aria-label={t('Stäng avtalet')} onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
                 ✕
               </button>
             </div>
@@ -176,7 +176,8 @@ export function WorkshopTerms({ onAccept, accepted }: WorkshopTermsProps) {
             </ScrollArea>
 
             <div className="p-6 border-t border-gray-200 flex justify-end">
-              <button 
+              <button
+                type="button"
                 onClick={() => setOpen(false)}
                 className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
               >
