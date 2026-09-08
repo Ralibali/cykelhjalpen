@@ -64,8 +64,8 @@ beforeEach(() => {
 describe('workshop registration journey with isolated service responses', () => {
   it('preserves the selected city and shows all open cities', () => {
     mount(); fill()
-    expect(screen.getByRole('button', { name: 'Göteborg', exact: true })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: 'Umeå', exact: true })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Göteborg' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Umeå' })).toBeVisible()
     expect(submitButton()).toBeEnabled()
     expect(mocks.invoke).not.toHaveBeenCalled()
   })
@@ -103,7 +103,7 @@ describe('workshop registration journey with isolated service responses', () => 
     expect(screen.getByText(/För att fortsätta:/)).toHaveTextContent('slutför säkerhetskontrollen')
     fill(); fireEvent.click(submitButton())
     expect(screen.getByRole('alert')).toHaveTextContent('Välj vilken stad')
-    fireEvent.click(screen.getByRole('button', { name: 'Göteborg', exact: true }))
+    fireEvent.click(screen.getByRole('button', { name: 'Göteborg' }))
     fireEvent.click(screen.getByRole('checkbox', { name: /databehandlingsavtalet/ }))
     fireEvent.submit(submitButton().closest('form')!)
     expect(mocks.invoke).not.toHaveBeenCalled()
