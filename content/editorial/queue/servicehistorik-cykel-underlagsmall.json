@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "status": "draft",
+  "writtenAt": "2026-09-10T18:29:08Z",
+  "repository": "Ralibali/cykelhjalpen",
+  "publicationGate": "Recheck current main and all published content; complete previous live article and product/source-link browser checks before promotion. Set actual publication dates only at publication.",
+  "sourceReview": {
+    "checkedAt": "2026-09-10T18:29:08Z",
+    "status": "repository_reviewed_live_product_pending",
+    "note": "Original editorial work template. Recheck the live product and links before publishing; no human review or measured outcomes claimed."
+  },
+  "article": {
+    "slug": "servicehistorik-cykel-underlagsmall",
+    "title": "Servicehistorik för cykeln: samla underlaget inför nästa verkstadskontakt",
+    "metaDescription": "Samla tidigare service, bytta delar och öppna frågor i en enkel lista. En underlagsmall som hjälper dig att hitta rätt information om cykeln.",
+    "intro": "Du minns att cykeln var på service, men inte exakt vad som gjordes. Kvittot ligger i en mejltråd och nästa verkstad frågar om tidigare arbete. En kort servicehistorik gör underlaget lättare att hitta utan att du behöver kunna bedöma cykelns tekniska skick själv.",
+    "sections": [
+      {
+        "heading": "Börja med att identifiera rätt cykel",
+        "content": "Skriv märke och modell om de är kända och koppla listan till en översiktsbild. Om flera liknande cyklar finns i hushållet kan du ge dem egna namn i ditt privata dokument.\n\nSamla bara uppgifter du faktiskt har. Märk sådant du är osäker på, till exempel modellår eller exakt benämning på en komponent. En tydligt noterad osäkerhet är lättare att reda ut än en gissning som senare behandlas som fakta."
+      },
+      {
+        "heading": "Låt originalunderlagen vara kvar",
+        "content": "Leta fram servicekvitton, arbetsbeskrivningar och meddelanden från tidigare verkstadskontakter. Spara en hänvisning till varje dokument. Din lista ska hjälpa dig att hitta tillbaka till underlaget, inte ersätta det med en sammanfattning som utelämnar viktiga detaljer.\n\nOm du bara minns att en del byttes kan du skriva just det. Lägg inte till ett datum eller en delbeteckning som du inte kan styrka. Be den tidigare verkstaden om ett förtydligande om uppgiften behövs."
+      },
+      {
+        "heading": "Skriv en rad per servicehändelse",
+        "content": "Kopiera följande fält till en lista:\n\n- Datum enligt underlaget, eller markerat som ungefärligt.\n- Verkstad eller vem som utförde arbetet.\n- Vad arbetsbeskrivningen säger blev gjort.\n- Delar som nämns i underlaget.\n- Dokument eller meddelande att hänvisa till.\n- Uppföljning eller instruktion som verkstaden lämnade.\n- Frågor som fortfarande behöver besvaras.\n\nSkilj mellan ett planerat arbete och ett arbete som dokumenterats som utfört. Ett tidigare prisförslag är inte i sig ett besked om vad som senare gjordes."
+      },
+      {
+        "heading": "Håll nya observationer i en egen del",
+        "content": "Lägg ett nytt ljud eller ett annat problem i en separat anteckning med datum. Då blandas inte verkstadens tidigare arbetsbeskrivning ihop med din nuvarande observation.\n\nAnvänd [mallen för att beskriva ett cykelfel](/blogg/beskriv-cykelfel-verkstad-mall) när du kontaktar verkstaden. Servicehistoriken är bakgrund till samtalet och innebär ingen bedömning av om cykeln är säker att använda."
+      },
+      {
+        "heading": "Dela relevant information vid nästa kontakt",
+        "content": "Välj de delar av historiken som verkar relevanta för frågan och säg när du är osäker på sambandet. Verkstaden kan bedöma vad den behöver se mer av. Du behöver inte skicka alla kvitton och personuppgifter i det första meddelandet.\n\nLåt originalen finnas tillgängliga om ett förtydligande behövs. Om cykeln undersöks och verkstaden kommer fram till något annat än din första gissning, be om en begriplig arbetsbeskrivning till historiken."
+      },
+      {
+        "heading": "Uppdatera efter avslutad kontakt",
+        "content": "Lägg in det nya underlaget medan du vet vilket arbete det gäller. Markera vilka frågor som besvarats och vilka som återstår. Om du har fått instruktioner om uppföljning, spara dem med sin källa i stället för att skriva ett eget generellt serviceintervall.\n\nNär du behöver en verkstad kan du börja med att [beskriva ditt cykelärende](/skicka-arende). Förvara själva servicehistoriken där du själv hittar den. AI-assisterad originalguide; mallen beskriver dokumentation och är ingen reparationsinstruktion eller garanti för verkstadssvar."
+      }
+    ],
+    "ctaHref": "/skicka-arende",
+    "ctaLabel": "Beskriv ditt cykelärende",
+    "editorial": {
+      "createdWith": "ChatGPT",
+      "aiAssisted": true,
+      "searchIntent": "Cykelägare som vill ordna redan utförd service och underlag inför kommande kontakt, utan egen diagnos.",
+      "sourceUrls": [
+        "https://cykelhjalpen.se"
+      ]
+    }
+  }
+}
