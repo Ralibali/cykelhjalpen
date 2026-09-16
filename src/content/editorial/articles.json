@@ -1,5 +1,50 @@
 [
   {
+    "slug": "hamta-cykel-verkstad-fragelista",
+    "title": "Hämta cykeln från verkstaden: frågor att reda ut vid överlämningen",
+    "metaDescription": "Förbered hämtningen av cykeln med en kort frågelista om utfört arbete, kvarstående frågor och verkstadens instruktioner. Spara svaren med underlaget.",
+    "intro": "Meddelandet säger att cykeln är klar. Vid hämtningen ska du samtidigt ordna transporten, förstå arbetsbeskrivningen och komma ihåg det som verkstaden berättar. En kort frågelista hjälper dig att avsluta kontakten med ett tydligt underlag att gå tillbaka till.",
+    "sections": [
+      {
+        "heading": "Ta med det ni faktiskt kom överens om",
+        "content": "Leta fram arbetsordern, prisförslaget eller meddelandet där ni bestämde arbetets omfattning. Ha också din ursprungliga felbeskrivning till hands. Syftet är att kunna ställa konkreta frågor om samma cykel och samma ärende.\n\nMarkera om ett besked kom senare under arbetet. En överenskommelse om en extra åtgärd kan finnas i en annan meddelandetråd än det första prisförslaget. Samla hänvisningarna utan att skriva om historiken i efterhand. Om något saknas är det bättre att fråga vilken beskrivning verkstaden utgått från."
+      },
+      {
+        "heading": "Be om en begriplig beskrivning av arbetet",
+        "content": "Fråga vad som har utförts och vilka delar som enligt arbetsbeskrivningen har bytts. Be om förklaring av en benämning du inte känner igen. Det räcker ofta att koppla verkstadens ord till rätt plats på cykeln och det problem ni diskuterade.\n\nSkilj mellan ett arbete som är utfört, något som endast undersökts och en åtgärd som föreslås framöver. Anteckna svaret med samma innebörd som verkstaden använder. Gör inte själv om ett besked om en viss del till ett påstående om hela cykelns skick."
+      },
+      {
+        "heading": "Använd fem frågor vid överlämningen",
+        "content": "Anpassa listan efter ditt ärende:\n\n- Vilka av de överenskomna åtgärderna har utförts?\n- Finns det någon fråga i min felbeskrivning som fortfarande är öppen?\n- Vilka instruktioner gäller för den här cykeln efter arbetet?\n- Finns det något jag ska följa upp, och hur ska jag kontakta er då?\n- Vilket underlag ska jag spara tillsammans med arbetsbeskrivningen?\n\nBe om ett skriftligt förtydligande när ett svar är svårt att minnas. Den här listan beskriver ett samtal. Den är ingen teknisk kontroll av cykeln och ersätter inte verkstadens bedömning."
+      },
+      {
+        "heading": "Kontrollera hur du ska ta hand om kvarstående frågor",
+        "content": "Om det ursprungliga problemet inte kunde återskapas, fråga vad det innebär för nästa kontakt. Notera vad verkstaden behöver veta om problemet återkommer. Du kan använda [mallen för en felrapport](/blogg/beskriv-cykelfel-verkstad-mall) för att beskriva en observation med datum och omständigheter.\n\nFråga verkstaden innan du använder cykeln om du är osäker på vad ett besked om säkerhet eller kvarstående fel betyder. Försök inte reda ut en sådan osäkerhet med ett eget prov eller en allmän checklista från nätet."
+      },
+      {
+        "heading": "Spara dokumenten innan kontakten faller i glömska",
+        "content": "Lägg arbetsbeskrivning, kvitto och eventuella instruktioner tillsammans. Skriv datum för hämtningen och en kort notering om det ni förtydligade muntligt. Håll verkstadens svar åtskilda från egna frågor som fortfarande är obesvarade.\n\nFör in händelsen i din [servicehistorik för cykeln](/blogg/servicehistorik-cykel-underlagsmall). Historiken ska peka tillbaka till dokumenten. Om du senare behöver reda ut en uppgift är originalunderlaget mer användbart än en lös minnesbild av samtalet."
+      },
+      {
+        "heading": "Avsluta med en tydlig nästa kontakt",
+        "content": "Kontrollera vilken kontaktväg och vilket ärendenummer du ska använda om en uppföljning behövs. Spara uppgiften där du förvarar cykelns dokument. Då behöver du inte börja med att leta efter vilken verkstadskontakt som gällde vilket arbete.\n\nBehöver du inleda ett nytt verkstadsärende kan du [beskriva cykelärendet hos Cykelhjälpen](/skicka-arende). Frågor om ett pågående eller utfört arbete ställer du till den verkstad som hanterar det. AI-assisterad originalguide med en frågelista för överlämningen; inga särskilda servicevillkor, rättsliga besked eller tekniska garantier utlovas."
+      }
+    ],
+    "ctaHref": "/skicka-arende",
+    "ctaLabel": "Beskriv ett nytt cykelärende",
+    "editorial": {
+      "createdWith": "ChatGPT",
+      "aiAssisted": true,
+      "searchIntent": "Cykelägare som ska hämta en redan servad cykel och behöver klargöra utfört arbete, instruktioner och nästa kontakt. Skiljer sig från första felrapporten och arkivering av historik.",
+      "sourceUrls": [
+        "https://cykelhjalpen.se/skicka-arende"
+      ],
+      "publishedAt": "2026-09-16T16:40:19.542Z",
+      "sourceCheckedAt": "2026-09-16T16:40:19.542Z"
+    },
+    "publishedDate": "2026-09-16"
+  },
+  {
     "slug": "servicehistorik-cykel-underlagsmall",
     "title": "Servicehistorik för cykeln: samla underlaget inför nästa verkstadskontakt",
     "metaDescription": "Samla tidigare service, bytta delar och öppna frågor i en enkel lista. En underlagsmall som hjälper dig att hitta rätt information om cykeln.",
