@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "status": "draft",
+  "writtenAt": "2026-09-20T13:58:28.424302+00:00",
+  "repository": "Ralibali/cykelhjalpen",
+  "publicationGate": "Earliest 2026-09-22 Europe/Stockholm. Recheck previous live article, current main, complete inventory, sources and all reader links. Set true dates only when publishing.",
+  "sourceReview": {
+    "checkedAt": "2026-09-20T13:58:28.424302+00:00",
+    "status": "product_entry_and_inventory_reviewed_recheck_before_publication",
+    "note": "Original editorial template. Product entry read in browser; no unverified integration, capacity, price or result claimed."
+  },
+  "article": {
+    "slug": "identifiera-cykeln-infor-verkstad",
+    "title": "Hitta cykelns uppgifter inför kontakten med verkstaden",
+    "metaDescription": "Samla märke, modell och tydliga referensbilder inför ett cykelärende. En enkel underlagsmall som hjälper dig att skilja kända uppgifter från sådant som är osäkert.",
+    "intro": "Inför en verkstadskontakt kan frågan om vilken cykel du har vara svårare att besvara än väntat. Ett namn på ramen, en gammal orderbekräftelse och en bild kan säga olika mycket. Samla det du faktiskt kan hitta och markera resten som okänt.",
+    "sections": [
+      {
+        "heading": "Börja med underlaget du redan har",
+        "content": "Leta efter en orderbekräftelse, ett kvitto eller tidigare serviceunderlag som hör till just den här cykeln. Skriv var uppgiften kommer ifrån. En benämning på en butikssida som du hittat i efterhand är inte samma sak som en bekräftelse på vilken modell du äger.\n\nHar du flera cyklar behöver dokumentet kunna kopplas till rätt exemplar. Använd din egen benämning och en översiktsbild som stöd. Skriv inte in ett modellår utifrån färgen eller ett liknande fotografi om du inte har ett underlag som bekräftar det."
+      },
+      {
+        "heading": "Fotografera det som går att läsa utan ingrepp",
+        "content": "Ta en tydlig bild av cykeln och av synliga märkningar som du tror är relevanta. Kontrollera att texten faktiskt går att läsa i bilden. Beskriv var märkningen sitter, så att mottagaren förstår om den avser själva cykeln eller en enskild komponent.\n\nGör inga ingrepp för att leta efter en uppgift. Om något är svårt att komma åt eller oklart att tolka kan verkstaden få avgöra vad den behöver se. Be om vägledning i nästa kontakt i stället för att plocka isär något enbart för underlagets skull."
+      },
+      {
+        "heading": "Samla uppgifterna i ett kort cykelkort",
+        "content": "Använd en enkel lista:\n\n- Din benämning på cykeln.\n- Märke och modell, om de är kända.\n- Varifrån varje uppgift kommer.\n- Ungefärligt inköpstillfälle, tydligt märkt om det är osäkert.\n- Översiktsbild och bilder av relevanta synliga märkningar.\n- Kända byten som kan göra äldre uppgifter mindre relevanta.\n- Frågor som verkstaden behöver hjälpa dig att reda ut.\n\nHåll identifierande uppgifter i det underlag som du delar med rätt mottagare. En allmänt publicerad bildsamling behöver inte innehålla privata kvitton eller andra personliga uppgifter."
+      },
+      {
+        "heading": "Skilj cykelns modell från en utbytt del",
+        "content": "En del kan ha bytts sedan cykeln köptes. Om du vet att det har hänt, skriv vilken uppgift som kommer från det ursprungliga köpet och vilken som gäller senare arbete. Hänvisa till det serviceunderlag som finns.\n\nGissa inte vad som fortfarande sitter på cykeln utifrån en äldre specifikation. Skriv hellre att dokumentet beskriver leveransen och att nuvarande del behöver bekräftas. Verkstaden får då ett begripligt underlag utan att en osäker uppgift framstår som något du har kontrollerat."
+      },
+      {
+        "heading": "Koppla identifieringen till det aktuella problemet",
+        "content": "Lägg cykelkortet bredvid [din beskrivning av cykelfelet](/blogg/beskriv-cykelfel-verkstad-mall). Kortet berättar vilken cykel underlaget gäller. Felbeskrivningen berättar vad du har observerat och vad du vill få hjälp med. De kompletterar varandra utan att du behöver ställa en egen diagnos.\n\nOm verkstaden frågar efter en särskild uppgift, notera exakt vad den behöver. Svara med den information du kan bekräfta och säg till när något saknas. Det hjälper er att avgöra vad som kan redas ut före ett besök och vad som behöver granskas på plats."
+      },
+      {
+        "heading": "Spara det bekräftade svaret för nästa kontakt",
+        "content": "När en osäker modelluppgift har retts ut kan du lägga beskedet i [cykelns servicehistorik](/blogg/servicehistorik-cykel-underlagsmall). Spara vem som bekräftade uppgiften och vilket underlag den bygger på. Behåll en notering om sådant som fortfarande är oklart.\n\nDu kan [beskriva ditt cykelärende hos Cykelhjälpen](/skicka-arende) när du vill ta nästa steg. Följ fälten i formuläret och använd ditt samlade underlag när verkstaden behöver kompletteringar. AI-assisterad originalguide; mallen innehåller ingen automatisk modellidentifiering eller bedömning av kompatibla reservdelar."
+      }
+    ],
+    "ctaHref": "/skicka-arende",
+    "ctaLabel": "Beskriv ditt cykelärende",
+    "editorial": {
+      "createdWith": "ChatGPT",
+      "aiAssisted": true,
+      "searchIntent": "Cykelägare som behöver identifiera cykel och skilja ursprunglig modellinformation från senare byten inför verkstadskontakt; ingen felsökning eller reparationsinstruktion.",
+      "sourceUrls": [
+        "https://cykelhjalpen.se/skicka-arende"
+      ]
+    }
+  }
+}
