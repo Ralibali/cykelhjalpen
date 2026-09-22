@@ -1,7 +1,8 @@
+import { setAnalyticsConsent, cleanAnalyticsUrl } from '@/lib/ga4Runtime'
 import { useState, useEffect, useRef } from 'react'
 import { Cookie } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   COOKIE_CONSENT_KEY,
   clearAnalyticsCookies,
@@ -11,7 +12,6 @@ import {
 } from '@/lib/analyticsConsent'
 import { useT } from '@/lib/i18n'
 
-const GA_ID = 'G-C0XMZG0KDQ'
 const ADS_ID = 'AW-10941540384'
 
 type Gtag = (...args: unknown[]) => void
@@ -35,26 +35,16 @@ const ensureDataLayer = (): Gtag | null => {
   return analyticsWindow.gtag
 }
 
-const safePath = (pathname: string) =>
-  /^\/mitt-arende\/[^/]+/i.test(pathname)
-    ? '/mitt-arende/[redacted]'
-    : /^\/offert\/[^/]+/i.test(pathname)
-      ? '/offert/[redacted]'
-      : pathname
-
-const safePageLocation = (pathname: string) =>
-  `${window.location.origin}${safePath(pathname)}`
-
 const injectGtagScript = () => {
   if (gtagScriptInjected || typeof document === 'undefined') return
-  if (document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${GA_ID}"]`)) {
+  if (document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) {
     gtagScriptInjected = true
     return
   }
 
   const script = document.createElement('script')
   script.async = true
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${ADS_ID}`
   document.head.appendChild(script)
   gtagScriptInjected = true
 }
@@ -63,6 +53,7 @@ const applyConsent = (level: ConsentLevel) => {
   const gtag = ensureDataLayer()
   if (!gtag) return
 
+  setAnalyticsConsent(level === 'all')
   if (level === 'all') {
     gtag('consent', 'update', {
       analytics_storage: 'granted',
@@ -71,10 +62,7 @@ const applyConsent = (level: ConsentLevel) => {
       ad_personalization: 'granted',
     })
     injectGtagScript()
-    gtag('js', new Date())
-    // Automatic page views stay disabled so personal token URLs are never sent.
-    gtag('config', GA_ID, { anonymize_ip: true, send_page_view: false, page_location: window.location.origin + window.location.pathname })
-    gtag('config', ADS_ID, { send_page_view: false, page_location: window.location.origin + window.location.pathname })
+    gtag('config', ADS_ID, { send_page_view: false, page_location: cleanAnalyticsUrl(window.location.href) || window.location.origin + "/internal" })
   } else {
     gtag('consent', 'update', {
       analytics_storage: 'denied',
@@ -87,22 +75,12 @@ const applyConsent = (level: ConsentLevel) => {
 }
 
 const CookieConsent = () => {
-  const location = useLocation()
   const t = useT()
   const [visible, setVisible] = useState(false)
   const [level, setLevel] = useState<ConsentLevel | null>(null)
   const bannerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    const gtag = ensureDataLayer()
-    gtag?.('consent', 'default', {
-      analytics_storage: 'denied',
-      ad_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied',
-      wait_for_update: 500,
-    })
-
     const storedLevel = readConsentLevel()
     if (storedLevel) {
       setLevel(storedLevel)
@@ -127,17 +105,6 @@ const CookieConsent = () => {
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
   }, [])
-
-  useEffect(() => {
-    if (level !== 'all' || location.pathname === '/serviceorder') return
-    const gtag = ensureDataLayer()
-    const pathname = safePath(location.pathname)
-    gtag?.('event', 'page_view', {
-      page_location: safePageLocation(location.pathname),
-      page_path: pathname,
-      page_title: document.title,
-    })
-  }, [level, location.pathname])
 
   useEffect(() => {
     const openSettings = () => setVisible(true)

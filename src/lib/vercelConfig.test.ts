@@ -191,7 +191,7 @@ describe('vercel.json (Vite SPA)', () => {
     const csp = headerValues('/', 'Content-Security-Policy-Report-Only')[0] ?? ''
     for (const token of [
       'https://fonts.googleapis.com', 'https://fonts.gstatic.com',
-      'https://plausible.io', 'https://www.googletagmanager.com',
+      'https://*.google-analytics.com', 'https://www.googletagmanager.com',
       'https://*.supabase.co', 'https://challenges.cloudflare.com', 'https://js.stripe.com',
     ]) {
       expect(csp).toContain(token)

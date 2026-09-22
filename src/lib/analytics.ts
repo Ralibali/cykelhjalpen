@@ -1,14 +1,6 @@
-/**
- * Typesafe wrapper around Plausible Analytics.
- *
- * Plausible is loaded via a small gate in `index.html` that only injects the
- * script on the production domain (cykelhjalpen.se / www.cykelhjalpen.se).
- * On localhost, preview environments and any other host, `window.plausible` is
- * undefined and every call here becomes a silent no-op.
- *
- * IMPORTANT (privacy):
- * - Never pass PII, free text, e-mail, phone, IDs or city+ärende-kombinationer.
- * - Only low-cardinality properties are allowed (see `AllowedProp`).
+/** Typed business events delivered through consent-gated GA4.
+ * ga4Runtime owns SPA pageviews, URL redaction and delivery callbacks.
+ * Existing exported helper names are kept for call-site compatibility.
  */
 
 export type PlausibleEventName =
@@ -31,7 +23,7 @@ type PlausibleFn = (
 
 declare global {
   interface Window {
-    plausible?: PlausibleFn & { q?: unknown[] }
+    analyticsEvent?: PlausibleFn & { q?: unknown[] }
   }
 }
 
@@ -50,7 +42,7 @@ function sanitize(props?: PlausibleProps): Record<string, string> | undefined {
 
 export function trackEvent(event: PlausibleEventName, props?: PlausibleProps): void {
   if (typeof window === 'undefined') return
-  const plausible = window.plausible
+  const plausible = window.analyticsEvent
   if (typeof plausible !== 'function') return
   try {
     const cleaned = sanitize(props)
