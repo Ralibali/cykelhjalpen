@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "status": "draft",
+  "writtenAt": "2026-09-23T01:03:04.596606+00:00",
+  "repository": "Ralibali/cykelhjalpen",
+  "publicationGate": "Earliest 2026-09-25, and only after a fresh previous-publication reader check, current main, complete published inventory and current primary-source review. Keep unpublished until all checks pass; assign actual publication dates at release.",
+  "sourceReview": {
+    "checkedAt": "2026-09-23T01:03:04.596606+00:00",
+    "publishedInventoryReviewed": 25,
+    "distinctIntent": "Samordna flera cyklars separata verkstadsärenden inom ett hushåll. Skilt från att identifiera en enskild cykel, ställa diagnos eller jämföra ett prisförslag.",
+    "note": "Owned product entry reviewed; article is an original procedural template. No invented outcomes, prices or automatic product features. Fresh source review required before publication."
+  },
+  "article": {
+    "slug": "flera-cyklar-verkstad-samordningsmall",
+    "title": "Planera verkstadskontakten när flera cyklar behöver hjälp",
+    "metaDescription": "Ordna ett underlag per cykel och samla praktiska frågor när flera cyklar behöver verkstadskontakt. Håll tidsönskemål, prisbesked och nästa steg åtskilda.",
+    "intro": "När flera cyklar i ett hushåll behöver service är det lätt att blanda ihop felbeskrivningar, besked och önskade tider. Börja med ett separat underlag för varje cykel och samla sedan de praktiska frågorna. Då kan verkstaden förstå vad som gäller för respektive cykel utan att du behöver bedöma vilka åtgärder som är tekniskt rätt.\n",
+    "sections": [
+      {
+        "heading": "Ge varje cykel en tydlig beteckning",
+        "content": "Använd en enkel beteckning som alla berörda förstår, exempelvis ”blå pendlarcykeln” och ”gröna barncykeln”. Koppla beteckningen till ett foto och kända modelluppgifter. Två liknande cyklar behöver ändå kunna skiljas åt i anteckningarna och i dialogen med verkstaden.\n\nSamla uppgifter enligt [guiden för att identifiera cykeln inför verkstad](/blogg/identifiera-cykeln-infor-verkstad). Markera sådant du inte vet. En tydlig beteckning hjälper till att hålla ordning, men ersätter inte verkstadens kontroll av modell, komponenter eller vilken hjälp som behövs."
+      },
+      {
+        "heading": "Skriv en egen beskrivning för varje cykel",
+        "content": "Anteckna vad som har observerats på just den cykeln och vad du vill fråga om. Låt inte ett fel som gäller en cykel hamna under ett gemensamt ”alla behöver service”. Den formuleringen gör det svårt att se vilket underlag som hör till vilket ärende.\n\nAnvänd [mallen för att beskriva cykelfel](/blogg/beskriv-cykelfel-verkstad-mall) när du behöver struktur. Ta bara med observationer du redan har gjort. Du behöver inte skapa en risksituation eller fortsätta använda en cykel för att försöka framkalla ett fel inför kontakten."
+      },
+      {
+        "heading": "Samla en översikt utan att slå ihop ärendena",
+        "content": "En gemensam lista kan innehålla följande fält:\n\n- Cykelns beteckning och länk till dess underlag.\n- Kort sammanfattning av frågan eller behovet.\n- Vem som kan lämna kompletterande uppgifter.\n- Önskad kontaktväg och praktiska tidsönskemål.\n- Bekräftad tid, om en sådan har avtalats.\n- Senaste besked och vad som behöver göras härnäst.\n\nListan ska hjälpa dig att samordna kontakten. Den ska inte göra ett tidsönskemål till en bokad tid eller ett preliminärt förslag till en beställd åtgärd. Skriv därför ut vad som är önskat och vad verkstaden faktiskt har bekräftat."
+      },
+      {
+        "heading": "Fråga hur verkstaden vill ta emot underlaget",
+        "content": "Kontrollera om verkstaden vill ha separata ärenden för cyklarna och hur den vill att de ska märkas vid inlämning. Fråga också om cyklarna kan lämnas tillsammans eller behöver olika tider. Utgå från det besked ni får, utan att anta att samma arbetssätt gäller överallt.\n\nOm någon annan ska lämna eller hämta en cykel behöver de praktiska detaljerna vara tydliga för den personen. Samla den information som verkstaden efterfrågar i er vanliga kontakt. Lägg inte privata kontaktuppgifter i en öppen lista som fler än de berörda kan läsa."
+      },
+      {
+        "heading": "Håll kostnadsbesked knutna till rätt cykel",
+        "content": "Spara vilket prisförslag eller besked som hör till varje cykel och vad det omfattar. Läs [mallen för att jämföra prisförslag](/blogg/jamfor-prisforslag-cykelservice-mall) om underlagen är svåra att förstå. Be om ett förtydligande innan du räknar samman delar som kan avse olika omfattning.\n\nAnteckna också vem som ska ta ställning om verkstaden återkommer med en ny fråga. Ett gemensamt inlämningstillfälle betyder inte automatiskt att alla cyklar har samma godkända åtgärder, pris eller leveranstid. Håll dessa besked separata i översikten."
+      },
+      {
+        "heading": "Avsluta med en uppdatering per cykel",
+        "content": "När en cykel är klar, spara det bekräftade underlaget i dess servicehistorik. Markera vad som återstår för de andra cyklarna. Då går det att se att en del av samordningen är färdig utan att hela listan ser avslutad ut.\n\nDu kan [beskriva ett cykelärende hos Cykelhjälpen](/skicka-arende) och följa formulärets upplägg. Fråga i den fortsatta kontakten hur flera cyklar ska hanteras. AI-assisterad originalguide med en redaktionell samordningsmall."
+      }
+    ],
+    "ctaHref": "/skicka-arende",
+    "ctaLabel": "Beskriv ditt cykelärende",
+    "editorial": {
+      "createdWith": "ChatGPT",
+      "aiAssisted": true,
+      "searchIntent": "Samordna flera cyklars separata verkstadsärenden inom ett hushåll. Skilt från att identifiera en enskild cykel, ställa diagnos eller jämföra ett prisförslag.",
+      "sourceUrls": [
+        "https://cykelhjalpen.se/skicka-arende"
+      ],
+      "sourceCheckedAt": "2026-09-23T01:03:04.596606+00:00"
+    }
+  }
+}
