@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "status": "draft",
+  "writtenAt": "2026-09-25T10:06:46.303229+00:00",
+  "repository": "Ralibali/cykelhjalpen",
+  "publicationGate": "Earliest 2026-09-27, and only after a fresh previous-publication reader check, current main, complete published inventory and current primary-source review. Keep unpublished until all checks pass; assign actual publication dates at release.",
+  "sourceReview": {
+    "checkedAt": "2026-09-25T10:06:46.303229+00:00",
+    "publishedInventoryReviewed": 26,
+    "distinctIntent": "Hushållets reselogistik under ett verkstadsbesök med önskemål skilda från bekräftade tider; skilt från cykeldiagnos, serviceval och prisjämförelse.",
+    "note": "Owned product entry reviewed; article is an original procedural template. No invented outcomes, prices or automatic product features. Fresh source review required before publication."
+  },
+  "article": {
+    "slug": "vardagsresor-under-verkstadsbesok",
+    "title": "Planera vardagsresorna medan cykeln är på verkstad",
+    "metaDescription": "Planera resorna medan cykeln är på verkstad. Skilj egna tidsbehov från bekräftade besked och samla alternativen i en enkel reservplan.",
+    "intro": "När cykeln ska lämnas till en verkstad kan den praktiska frågan vara hur vardagsresorna ska fungera under tiden. Arbete, hämtning och andra ärenden behöver ibland planeras innan det finns ett bekräftat besked om när cykeln är klar. En enkel reservplan hjälper dig att skilja egna behov från verkstadens aktuella besked.\n\nBörja med de resor som faktiskt berörs. Den här mallen handlar om planering runt verkstadsbesöket. Den bedömer inte cykelns skick, anger inga reparationstider och utlovar varken lånecykel eller någon viss service hos en verkstad.\n",
+    "sections": [
+      {
+        "heading": "Skriv upp resorna som behöver en lösning",
+        "content": "Gör en kort lista för de närmaste dagarna och ange när du behöver vara framme. Skilj fasta tider från ärenden som kan flyttas. Om fler personer påverkas kan ni också skriva vem som behöver besked och när det senast behöver lämnas.\n\nUndvik att planera efter en gissad färdigtid. En bokad inlämning betyder inte i sig att arbetet avslutas samma dag. Fråga verkstaden vad som är bekräftat, vad som behöver undersökas och hur du får nästa besked innan du låser en plan som är svår att ändra."
+      },
+      {
+        "heading": "Kontrollera alternativen för just dina resor",
+        "content": "Om kollektivtrafik är ett alternativ, kontrollera aktuell resa och tid hos trafikoperatören när du behöver uppgiften. Ska du låna något av en bekant behöver ni komma överens om perioden och återlämningen. En möjlighet som nämnts tidigare är inte samma sak som ett aktuellt löfte.\n\nDu kan fråga verkstaden om den erbjuder någon tillfällig lösning, men utgå inte från att det finns. Om ett erbjudande lämnas behöver du förstå vad som ingår, vilka villkor som gäller och vad det kostar innan du tar ställning. Spara beskedet tillsammans med din övriga planering."
+      },
+      {
+        "heading": "Håll tidsönskemål och besked åtskilda",
+        "content": "Skriv gärna ”behöver cykeln senast torsdag” som ditt behov. Lägg verkstadens svar i en separat rad med datum och källa. Då går det att se om torsdag är en önskad tid, en preliminär uppgift eller något som faktiskt har bekräftats.\n\nBestäm också när du behöver ompröva reservplanen. Om en del inväntas eller ett nytt arbete föreslås kan förutsättningarna ändras. Kontakta verkstaden genom den kanal ni har kommit överens om när du behöver reda ut en oklarhet; upprepade egna antaganden ger inget säkrare besked."
+      },
+      {
+        "heading": "Använd en liten planeringslista",
+        "content": "Följande fält räcker ofta:\n\n- Resa och tid som behöver fungera.\n- Möjligt alternativ och vad som återstår att kontrollera.\n- Eventuell kostnad enligt det aktuella erbjudandet.\n- Verkstadens senaste besked och när det lämnades.\n- När reservplanen behöver ändras eller förlängas.\n- Vem som berörs av en ändring.\n\nTa bara med uppgifter som behövs för samordningen. Om flera cyklar i hushållet har varsitt ärende kan ni använda [en gemensam samordningsmall](/blogg/flera-cyklar-verkstad-samordningsmall), men låt varje cykels besked behålla sin egen tydliga hänvisning."
+      },
+      {
+        "heading": "Avsluta reservplanen efter ett bekräftat besked",
+        "content": "Vänta med att räkna med cykeln i nästa resa tills hämtningen och det aktuella beskedet är klara. Gå igenom eventuella frågor med verkstaden. Använd gärna [frågelistan inför hämtning](/blogg/hamta-cykel-verkstad-fragelista) som stöd när du samlar vad du vill få förklarat.\n\nDu kan [beskriva ditt cykelärende](/skicka-arende) på Cykelhjälpen och ange relevanta tidsönskemål i underlaget. AI-assisterad originalguide med en planeringsmall. Den ersätter inte verkstadens bedömning och innebär inget löfte om pris, ledtid eller tillgång till en ersättningscykel."
+      }
+    ],
+    "ctaHref": "/skicka-arende",
+    "ctaLabel": "Beskriv ditt cykelärende",
+    "editorial": {
+      "createdWith": "ChatGPT",
+      "aiAssisted": true,
+      "searchIntent": "Hushållets reselogistik under ett verkstadsbesök med önskemål skilda från bekräftade tider; skilt från cykeldiagnos, serviceval och prisjämförelse.",
+      "sourceUrls": [
+        "https://cykelhjalpen.se/skicka-arende"
+      ],
+      "sourceCheckedAt": "2026-09-25T10:06:46.303229+00:00"
+    }
+  }
+}
