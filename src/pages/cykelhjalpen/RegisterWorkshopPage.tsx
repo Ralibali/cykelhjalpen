@@ -1,3 +1,4 @@
+import { sendAnalyticsEvent } from '@/lib/ga4Runtime'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
@@ -23,9 +24,7 @@ import { useT } from '@/lib/i18n'
 const SERVICES_SV = ['Punktering', 'Bromsservice', 'Växelservice', 'Komplett service', 'Elcykelservice', 'Elsparkcykelservice', 'Hjulbygge', 'Mobil reparation']
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
-  if (!hasAnalyticsConsent()) return
-  const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag
-  if (typeof gtag === 'function') gtag('event', eventName, parameters)
+  sendAnalyticsEvent(eventName, { props: parameters })
 }
 
 const getFunctionErrorMessage = async (error: unknown, fallback: string) => {

@@ -1,3 +1,4 @@
+import { sendAnalyticsEvent } from '@/lib/ga4Runtime'
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -42,8 +43,7 @@ const CYKEL_CITY_SLUGS: Record<string, string> = Object.fromEntries(
 )
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
-  const gtag = (window as any).gtag
-  if (typeof gtag === 'function') gtag('event', eventName, parameters)
+  sendAnalyticsEvent(eventName, { props: parameters })
 }
 
 const getFunctionErrorMessage = async (error: unknown, fallback: string) => {

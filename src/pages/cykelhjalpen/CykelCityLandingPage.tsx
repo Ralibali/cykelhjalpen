@@ -1,3 +1,4 @@
+import { sendAnalyticsEvent } from '@/lib/ga4Runtime'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { usePageSeo } from '@/i18n/usePageSeo'
@@ -40,8 +41,7 @@ const CykelCityLandingPage = ({ city }: { city: CykelCityName }) => {
 
   const trackCta = (placement: string) => {
     trackClick('city_request_cta_clicked', t('Få prisförslag i {city}', { city }), { city, placement })
-    const gtag = (window as any).gtag
-    if (typeof gtag === 'function') gtag('event', 'select_content', { content_type: 'city_landing_cta', item_id: cityData.slug, placement })
+    sendAnalyticsEvent('select_content', { props: { content_type: 'city_landing_cta', item_id: cityData.slug, placement } })
   }
 
   const jsonLd = {
