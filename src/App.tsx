@@ -164,6 +164,7 @@ const AdminNotificationEvents = lazy(() => import("./pages/admin/AdminNotificati
 const AdminProspects = lazy(() => import("./pages/admin/AdminProspects"));
 const AdminInbox = lazy(() => import("./pages/admin/AdminInbox"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminWorkshopFlyer = lazy(() => import("./pages/admin/AdminWorkshopFlyer"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminGuides = lazy(() => import("./pages/admin/AdminGuides"));
 const AdminArticleGenerator = lazy(() => import("./pages/admin/AdminArticleGenerator"));
@@ -454,6 +455,7 @@ const AppRoutes = () => {
           <Route path="/admin/stripe" element={<ProtectedRoute role="admin"><AdminStripeLog /></ProtectedRoute>} />
           <Route path="/admin/audit" element={<ProtectedRoute role="admin"><AdminAuditLog /></ProtectedRoute>} />
           <Route path="/admin/installningar" element={<ProtectedRoute role="admin"><AdminSettings /></ProtectedRoute>} />
+          <Route path="/admin/verkstadsblad" element={<ProtectedRoute role="admin"><AdminWorkshopFlyer /></ProtectedRoute>} />
           <Route path="/admin/notifikationer" element={<ProtectedRoute role="admin"><AdminNotifications /></ProtectedRoute>} />
           <Route path="/admin/notifieringar-logg" element={<ProtectedRoute role="admin"><AdminNotificationEvents /></ProtectedRoute>} />
           <Route path="/admin/prospekt" element={<ProtectedRoute role="admin"><AdminProspects /></ProtectedRoute>} />

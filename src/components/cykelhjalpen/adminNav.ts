@@ -1,6 +1,6 @@
 import {
   Activity, Bell, Bike, BookOpen, CreditCard, FileText, Home, Mail, Newspaper, Search,
-  Settings, Sparkles, Star, Users, Wrench, BarChart3, ScrollText, Link2, Eye,
+  Settings, Sparkles, Star, Users, Wrench, BarChart3, ScrollText, Link2, Eye, QrCode,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { AdminCounts } from '@/hooks/useAdminCounts'
@@ -45,6 +45,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     title: 'Tillväxt',
     items: [
       { label: 'Prospekt', href: '/admin/prospekt', icon: Search, badge: 'openProspects', keywords: 'rekrytering outreach' },
+      { label: 'Verkstadsblad', href: '/admin/verkstadsblad', icon: QrCode, keywords: 'qr utskrift flyer a5 rekrytering' },
       { label: 'Statistik', href: '/admin/statistik', icon: BarChart3, keywords: 'analytics siffror' },
       { label: 'Marketplace health', href: '/admin/marketplace-health', icon: Activity, keywords: 'hälsa utbud efterfrågan städer' },
       { label: 'Innehåll V2', href: '/admin/innehall', icon: BookOpen, keywords: 'guider innehåll redaktion publicera granska v2' },
