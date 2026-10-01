@@ -444,7 +444,7 @@ const AdminProspects = () => {
             <div>
               <p className="text-sm font-semibold">{t('Avsändare')}</p>
               <p className="text-xs text-muted-foreground font-mono">{resendStatus?.from || 'Christoffer på Cykelhjalpen.se <info@cykelhjalpen.se>'}</p>
-              <p className="text-xs text-muted-foreground">{t('Reply-To: {email}', { email: resendStatus?.reply_to || 'info@cykelhjalpen.se' })}</p>
+              <p className="text-xs text-muted-foreground">{t('Reply-To: {email}', { email: resendStatus?.reply_to || 'info@auroramedia.se' })}</p>
             </div>
           </div>
           <div className="flex-1 min-w-[220px]">
@@ -711,7 +711,7 @@ const AdminProspects = () => {
 
         <p className="text-xs text-muted-foreground">
           {t('Endast publika affärskontakter lagras. Prospects som markeras do-not-contact läggs automatiskt i suppression-listan och kontaktas aldrig igen.')}
-          {' '}{t('Rättelse/radering:')} <a className="underline" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a>.
+          {' '}{t('Rättelse/radering:')} <a className="underline" href="mailto:info@auroramedia.se">info@auroramedia.se</a>.
         </p>
       </div>
 

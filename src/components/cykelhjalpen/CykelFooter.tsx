@@ -53,7 +53,7 @@ const CykelFooter = () => {
           <li><Link to={localized('/for-cykelverkstader')} className="hover:text-primary">{t('Få fler lokala kunder')}</Link></li>
           <li><Link to="/registrera/verkstad" className="hover:text-primary">{t('Registrera verkstaden')}</Link></li>
           <li><Link to="/logga-in" className="hover:text-primary">{t('Logga in')}</Link></li>
-          <li><a href="mailto:info@cykelhjalpen.se" className="hover:text-primary">{t('Kontakta oss')}</a></li>
+          <li><a href="mailto:info@auroramedia.se" className="hover:text-primary">{t('Kontakta oss')}</a></li>
         </ul>
       </div>
     </div>
@@ -62,7 +62,7 @@ const CykelFooter = () => {
       <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <div className="text-center md:text-left">
           <p className="font-medium text-foreground/80">Cykelhjälpen · Aurora Media AB</p>
-          <p>{t('Säte: Linköping')} · <a href="mailto:info@cykelhjalpen.se" className="hover:text-primary">info@cykelhjalpen.se</a></p>
+          <p>{t('Säte: Linköping')} · <a href="mailto:info@auroramedia.se" className="hover:text-primary">info@auroramedia.se</a></p>
         </div>
         <div className="text-center md:text-right space-y-1">
           <p>{t('© {year} Cykelhjälpen. Alla rättigheter reserverade.', { year: new Date().getFullYear() })}</p>

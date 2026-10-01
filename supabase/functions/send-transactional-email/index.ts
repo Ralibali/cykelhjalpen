@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     }
     if (html) body.html = renderBrandedEmail(html, subject)
     if (text) body.text = text
-    if (replyTo) body.reply_to = replyTo
+    body.reply_to = replyTo || 'info@auroramedia.se'
 
     const response = await fetch(`${GATEWAY_URL}/emails`, {
       method: 'POST',

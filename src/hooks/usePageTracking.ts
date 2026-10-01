@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
-import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, hasAnalyticsConsent } from '@/lib/analyticsConsent'
+import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, hasAnalyticsConsent, hasMarketingConsent } from '@/lib/analyticsConsent'
 import { getNoindexSeoRoutes } from '@/lib/seoStatic'
 import { getCurrentHost } from '@/lib/hostConfig'
 import { shouldNoindexPath } from '@/lib/seoRobots'
@@ -37,10 +37,12 @@ function getDeviceType(): string {
 }
 
 function readAttribution(): Attribution {
+  if (!hasMarketingConsent()) return {}
   return readAttributionPure(sessionStorage, localStorage)
 }
 
 function captureAttribution(search: string, pathname: string): Attribution {
+  if (!hasMarketingConsent()) return {}
   return captureAttributionPure(
     {
       search,

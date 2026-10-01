@@ -99,7 +99,7 @@ const LoginPage = () => {
                   : t('Öppna bekräftelsemejlet och följ länken för att bekräfta din e-postadress. Kontrollera även skräpposten. Logga sedan in här.')}
               </p>
               <p className="text-sm text-muted-foreground">{t('Verkstaden granskas innan ni kan svara på kundärenden.')}</p>
-              <a href="mailto:info@cykelhjalpen.se" className="inline-block text-sm underline">{t('Behöver du hjälp? Kontakta oss')}</a>
+              <a href="mailto:info@auroramedia.se" className="inline-block text-sm underline">{t('Behöver du hjälp? Kontakta oss')}</a>
             </section>
           )}
 

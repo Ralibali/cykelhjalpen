@@ -1,46 +1,47 @@
 export const COOKIE_CONSENT_KEY = 'cykelhjalpen_cookie_consent'
 export const COOKIE_CONSENT_EVENT = 'cykelhjalpen:cookie-consent-changed'
-
-export type ConsentLevel = 'all' | 'necessary'
-
-type ConsentRecord = {
-  level?: ConsentLevel
-  date?: string
-  version?: string
-}
-
-export function readConsentLevel(): ConsentLevel | null {
-  if (typeof window === 'undefined') return null
-
+export const COOKIE_CONSENT_VERSION = '2026-09-30'
+const CONSENT_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000
+export type ConsentLevel = 'all' | 'necessary' | 'analytics' | 'marketing'
+export type ConsentRecord = { necessary: true; analytics: boolean; marketing: boolean; date: string; version: string }
+export const createConsent = (analytics: boolean, marketing: boolean, date = new Date().toISOString()): ConsentRecord => ({ necessary: true, analytics, marketing, date, version: COOKIE_CONSENT_VERSION })
+export function parseConsent(raw: string | null, now = Date.now()): ConsentRecord | null {
   try {
-    const raw = window.localStorage.getItem(COOKIE_CONSENT_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as ConsentRecord
-    return parsed.level === 'all' || parsed.level === 'necessary' ? parsed.level : null
-  } catch {
-    window.localStorage.removeItem(COOKIE_CONSENT_KEY)
-    return null
-  }
+    const value = raw ? JSON.parse(raw) : null
+    if (!value || typeof value !== 'object') return null
+    const date = typeof value.date === 'string' ? Date.parse(value.date) : NaN
+    if (!Number.isFinite(date) || date > now || now - date >= CONSENT_MAX_AGE_MS) return null
+    if (value.version !== COOKIE_CONSENT_VERSION || typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean') return null
+    return createConsent(value.analytics, value.marketing, value.date)
+  } catch { return null }
 }
-
-export function hasAnalyticsConsent(): boolean {
-  return readConsentLevel() === 'all'
+export function readConsent(): ConsentRecord | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const state = parseConsent(window.localStorage.getItem(COOKIE_CONSENT_KEY))
+    if (!state) window.localStorage.removeItem(COOKIE_CONSENT_KEY)
+    return state
+  } catch { return null }
 }
-
-export function notifyConsentChanged(level: ConsentLevel): void {
-  if (typeof window === 'undefined') return
-  window.dispatchEvent(new CustomEvent<ConsentLevel>(COOKIE_CONSENT_EVENT, { detail: level }))
+export function readConsentLevel(): ConsentLevel | null {
+  const state = readConsent()
+  return !state ? null : state.analytics ? (state.marketing ? 'all' : 'analytics') : (state.marketing ? 'marketing' : 'necessary')
+}
+export function hasAnalyticsConsent(): boolean { return readConsent()?.analytics === true }
+export function hasMarketingConsent(): boolean { return readConsent()?.marketing === true }
+export function notifyConsentChanged(state: ConsentRecord): void {
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(COOKIE_CONSENT_EVENT, { detail: state }))
 }
 
 /** Remove known non-essential Google measurement cookies after consent is withdrawn. */
-export function clearAnalyticsCookies(): void {
+function clearCookies(pattern: RegExp): void {
   if (typeof document === 'undefined' || typeof window === 'undefined') return
 
   const cookieNames = document.cookie
     .split(';')
     .map((entry) => entry.split('=')[0]?.trim())
     .filter((name): name is string => Boolean(name))
-    .filter((name) => /^(_ga|_gid|_gat|_gcl_|_gac_)/i.test(name))
+    .filter((name) => pattern.test(name))
 
   const host = window.location.hostname
   const parentDomain = host.endsWith('cykelhjalpen.se') ? '.cykelhjalpen.se' : null
@@ -53,3 +54,6 @@ export function clearAnalyticsCookies(): void {
     }
   }
 }
+
+export function clearAnalyticsCookies(): void { clearCookies(/^(_ga(?:_|$)|_gid$|_gat(?:_|$))/i) }
+export function clearMarketingCookies(): void { clearCookies(/^(_gcl_|_gac_)/i) }

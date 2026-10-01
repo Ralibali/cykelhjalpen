@@ -41,6 +41,15 @@ describe('captureAttribution', () => {
     expect(result.first_referrer).toBe('https://www.google.se')
   })
 
+  it('rejects personal data in campaign values and expires old attribution', () => {
+    const session = memoryStorage()
+    const result = captureAttribution({ search: '?utm_source=google&utm_campaign=user%40example.test', pathname: '/' }, session)
+    expect(result.utm_campaign).toBeUndefined()
+    session.setItem(ATTRIBUTION_SESSION_KEY, JSON.stringify({ ...result, captured_at: '2020-01-01T00:00:00Z' }))
+    expect(readAttribution(session)).toEqual({})
+    expect(session.getItem(ATTRIBUTION_SESSION_KEY)).toBeNull()
+  })
+
   it('redacts view_token paths (no PII in attribution)', () => {
     const session = memoryStorage()
     const result = captureAttribution(

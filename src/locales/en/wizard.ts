@@ -146,7 +146,7 @@ export const EN_WIZARD: Record<string, string> = {
   'Mitt cykelärende | Cykelhjälpen': 'My bike request | Cykelhjälpen',
   'Kunde inte läsa ärendet': 'Could not load the request',
   'Ärendet hittades inte': 'Request not found',
-  'Kontakta info@cykelhjalpen.se om du behöver hjälp.': 'Contact info@cykelhjalpen.se if you need help.',
+  'Kontakta info@auroramedia.se om du behöver hjälp.': 'Contact info@auroramedia.se if you need help.',
   'Ditt ärende': 'Your request',
   'Önskar hämtning': 'Wants pickup',
   'Dina bilder': 'Your photos',
@@ -258,7 +258,7 @@ export const EN_WIZARD: Record<string, string> = {
 
   // UnsubscribePage.tsx
   'Länken är ogiltig eller har gått ut.': 'The link is invalid or has expired.',
-  'Något gick fel. Kontakta info@cykelhjalpen.se.': 'Something went wrong. Contact info@cykelhjalpen.se.',
+  'Något gick fel. Kontakta info@auroramedia.se.': 'Something went wrong. Contact info@auroramedia.se.',
   'Avregistrering – Cykelhjälpen': 'Unsubscribe – Cykelhjälpen',
   'Avregistrering': 'Unsubscribe',
   'Cykelhjälpen – utskick till verkstäder': 'Cykelhjälpen – e-mails to bike shops',

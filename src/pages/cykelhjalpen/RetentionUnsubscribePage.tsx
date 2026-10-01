@@ -58,7 +58,7 @@ const RetentionUnsubscribePage = () => {
       const data = await res.json().catch(() => null) as { ok?: boolean; error?: string } | null
       if (!res.ok || !data?.ok) {
         setStatus('error')
-        setErrorMsg(data?.error || t('Något gick fel. Kontakta info@cykelhjalpen.se.'))
+        setErrorMsg(data?.error || t('Något gick fel. Kontakta info@auroramedia.se.'))
         return
       }
       setStatus('success')
@@ -97,7 +97,7 @@ const RetentionUnsubscribePage = () => {
               {t('Ja, avsluta påminnelserna')}
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              {t('Har vi kontaktat dig av misstag? Mejla')} <a className="underline" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a>.
+              {t('Har vi kontaktat dig av misstag? Mejla')} <a className="underline" href="mailto:info@auroramedia.se">info@auroramedia.se</a>.
             </p>
           </div>
         )}
@@ -113,7 +113,7 @@ const RetentionUnsubscribePage = () => {
           <div className="space-y-2 text-center">
             <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-600" />
             <p className="text-sm">{t('Klart. Påminnelserna är avstängda och schemalagda utskick har stoppats.')}</p>
-            <p className="text-xs text-muted-foreground">{t('Kontakta')} <a className="underline" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a> {t('för rättelse eller radering.')}</p>
+            <p className="text-xs text-muted-foreground">{t('Kontakta')} <a className="underline" href="mailto:info@auroramedia.se">info@auroramedia.se</a> {t('för rättelse eller radering.')}</p>
           </div>
         )}
 
@@ -121,7 +121,7 @@ const RetentionUnsubscribePage = () => {
           <div className="space-y-2 text-center">
             <AlertTriangle className="h-8 w-8 mx-auto text-amber-600" />
             <p className="text-sm">{errorMsg || t('Länken kunde inte verifieras.')}</p>
-            <p className="text-xs text-muted-foreground">{t('Mejla')} <a className="underline" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a> {t('så hjälper vi till manuellt.')}</p>
+            <p className="text-xs text-muted-foreground">{t('Mejla')} <a className="underline" href="mailto:info@auroramedia.se">info@auroramedia.se</a> {t('så hjälper vi till manuellt.')}</p>
           </div>
         )}
       </div>

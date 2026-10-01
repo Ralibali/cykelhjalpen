@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           to: requestRow.customer_email,
           subject: 'Uppdatering om ditt cykelärende',
-          html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111"><h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2><p>Vi kunde tyvärr inte publicera ditt cykelärende.</p><p><strong>Anledning:</strong> ${escapeHtml(reason)}</p><p>Du är välkommen att svara på detta mejl eller kontakta info@cykelhjalpen.se så hjälper vi dig.</p><p><a href="${customerUrl}">Visa ärendet</a></p></div>`,
+          html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111"><h2>Hej ${escapeHtml(requestRow.customer_name)}!</h2><p>Vi kunde tyvärr inte publicera ditt cykelärende.</p><p><strong>Anledning:</strong> ${escapeHtml(reason)}</p><p>Du är välkommen att svara på detta mejl eller kontakta info@auroramedia.se så hjälper vi dig.</p><p><a href="${customerUrl}">Visa ärendet</a></p></div>`,
         }),
       }).then(async (response) => {
         if (!response.ok) console.error('Customer review email failed', response.status, await response.text().catch(() => ''))

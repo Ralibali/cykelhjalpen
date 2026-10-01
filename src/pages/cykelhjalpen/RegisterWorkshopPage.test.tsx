@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { LanguageProvider } from '@/lib/i18n'
-import { COOKIE_CONSENT_KEY } from '@/lib/analyticsConsent'
+import { COOKIE_CONSENT_KEY, createConsent } from '@/lib/analyticsConsent'
 import RegisterWorkshopPage from './RegisterWorkshopPage'
 import LoginPage from '@/pages/LoginPage'
 
@@ -56,7 +56,7 @@ beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} })
   localStorage.clear()
   sessionStorage.clear()
-  localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({ level: 'all' }))
+  localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(createConsent(true, true)))
   mocks.invoke.mockResolvedValue({ data: { userId: 'test-user', session: null, needsEmailConfirmation: true }, error: null })
   mocks.setSession.mockResolvedValue({ error: null })
 })
@@ -157,6 +157,6 @@ describe('workshop registration journey with isolated service responses', () => 
   it('keeps confirmation instructions when the login page is reloaded', () => {
     mount('/logga-in?registrerad=verkstad')
     expect(screen.getByRole('heading', { name: 'Kontot är skapat' })).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Behöver du hjälp? Kontakta oss' })).toHaveAttribute('href', 'mailto:info@cykelhjalpen.se')
+    expect(screen.getByRole('link', { name: 'Behöver du hjälp? Kontakta oss' })).toHaveAttribute('href', 'mailto:info@auroramedia.se')
   })
 })

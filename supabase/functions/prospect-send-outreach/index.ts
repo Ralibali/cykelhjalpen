@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
           headers: {
             // RFC 8058: one-click måste peka på en URL som svarar på POST utan interaktion.
             // Edge-functionen hanterar det; frontendlänken (humanUnsubUrl) är för människor.
-            'List-Unsubscribe': `<${oneClickUrl}>, <${humanUnsubUrl}>, <mailto:info@cykelhjalpen.se?subject=Avregistrera>`,
+            'List-Unsubscribe': `<${oneClickUrl}>, <${humanUnsubUrl}>, <mailto:info@auroramedia.se?subject=Avregistrera>`,
             'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
           },
           tags: [

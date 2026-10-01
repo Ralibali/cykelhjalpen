@@ -16,7 +16,7 @@
  * här, lägg inte till GTM och koppla inte in fler Google-taggar —
  * produktmätning är Plausible tills utbudet kan bära mer efterfrågan.
  */
-import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent, type ConsentLevel } from './analyticsConsent'
+import { COOKIE_CONSENT_EVENT, hasMarketingConsent, type ConsentRecord } from './analyticsConsent'
 import { resolveAdsConfig } from './v2/adsConfig'
 
 export const googleAdsConfig = {
@@ -59,7 +59,6 @@ const setConsent = (granted: boolean): void => {
     ad_storage: granted ? 'granted' : 'denied',
     ad_user_data: granted ? 'granted' : 'denied',
     ad_personalization: granted ? 'granted' : 'denied',
-    analytics_storage: granted ? 'granted' : 'denied',
   })
 }
 
@@ -94,11 +93,11 @@ export function initGoogleAds(): void {
   initialized = true
   if (!isProdHost() || !googleAdsConfig.tagId) return
 
-  if (hasAnalyticsConsent()) enableGoogleAds()
+  if (hasMarketingConsent()) enableGoogleAds()
 
   window.addEventListener(COOKIE_CONSENT_EVENT, (event) => {
-    const level = (event as CustomEvent<ConsentLevel>).detail
-    if (level === 'all') enableGoogleAds()
+    const state = (event as CustomEvent<ConsentRecord>).detail
+    if (state.marketing) enableGoogleAds()
     else disableGoogleAds()
   })
 }
@@ -111,7 +110,7 @@ export type AdsConversion = 'request_submitted' | 'workshop_signup'
  */
 export function trackAdsConversion(kind: AdsConversion): void {
   if (typeof window === 'undefined') return
-  if (!scriptInjected || typeof window.gtag !== 'function') return
+  if (!hasMarketingConsent() || !scriptInjected || typeof window.gtag !== 'function') return
   const label = kind === 'request_submitted' ? googleAdsConfig.labelRequest : googleAdsConfig.labelSignup
   if (!googleAdsConfig.tagId || !label) return
   try {

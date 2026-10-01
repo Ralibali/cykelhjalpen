@@ -105,7 +105,7 @@ const TermsPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('5. Återbetalning och ångerrätt')}</h2>
               <p>{t('Tjänsten som säljs till verkstäder är avsedd för näringsidkare. Konsumenters lagstadgade ångerrätt gäller därför normalt inte verkstadens köp av ett lead.')}</p>
               <p className="mt-2">{t('Ett köp anses levererat när verkstadens prisförslag har registrerats som skickat och gjorts tillgängligt för kunden. Återbetalning kan medges om tjänsten inte har kunnat levereras på grund av ett tekniskt fel hos Cykelhjälpen eller om en betalning genomförts efter att ärendet redan blivit fullt. En sådan betalning ska normalt återföras automatiskt.')}</p>
-              <p className="mt-2">{t('Begäran om återbetalning görs till')} <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a> {t('med uppgift om verkstad, datum och berört ärende.')}</p>
+              <p className="mt-2">{t('Begäran om återbetalning görs till')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a> {t('med uppgift om verkstad, datum och berört ärende.')}</p>
             </div>
 
             <div>
@@ -157,7 +157,7 @@ const TermsPage = () => {
               {t('Organisationsnummer: 559272-0220')}<br />
               {t('Gustafstorpsvägen 42')}<br />
               {t('585 74 Ljungsbro')}<br />
-              {t('E-post:')} <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a></p>
+              {t('E-post:')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
             </div>
           </section>
         </article>

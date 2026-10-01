@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
       if (url.searchParams.get('confirm') === '1') {
         const contact = await findContact(admin, token)
         if (!contact) {
-          return page('Något gick fel', 'Vi kunde inte hitta din registrering. Kontakta info@cykelhjalpen.se så hjälper vi dig.')
+          return page('Något gick fel', 'Vi kunde inte hitta din registrering. Kontakta info@auroramedia.se så hjälper vi dig.')
         }
         await unsubscribe(admin, contact)
         return page('Avregistrerad', 'Du får inte längre den här typen av mejl från Cykelhjälpen. Transaktionella mejl om dina pågående ärenden påverkas inte.')

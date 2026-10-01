@@ -2,8 +2,8 @@
 // HTML/text-strängar produceras här så att både prospect-action (utkast)
 // och prospect-send-outreach (skarpt mejl) använder EXAKT samma innehåll.
 
-export const OUTREACH_FROM = 'Christoffer på Cykelhjälpen <info@cykelhjalpen.se>'
-export const OUTREACH_REPLY_TO = 'info@cykelhjalpen.se'
+export const OUTREACH_FROM = 'Christoffer på Cykelhjälpen <info@auroramedia.se>'
+export const OUTREACH_REPLY_TO = 'info@auroramedia.se'
 export const OUTREACH_SITE_URL = 'https://cykelhjalpen.se'
 export const OUTREACH_WORKSHOP_URL = 'https://cykelhjalpen.se/for-cykelverkstader'
 export const OUTREACH_DAILY_CAP = 20
@@ -101,7 +101,7 @@ export const buildEditedEmail = (
 
   const footerText = includesUnsub
     ? ''
-    : `\n\n---\nVill ni inte få fler mejl från oss? Avregistrera er här: ${unsub}\nNi får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@cykelhjalpen.se.`
+    : `\n\n---\nVill ni inte få fler mejl från oss? Avregistrera er här: ${unsub}\nNi får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@auroramedia.se.`
 
   const text = trimmed + footerText
 
@@ -128,7 +128,7 @@ export const buildEditedEmail = (
   Vill ni inte få fler mejl från oss? <a href="${safeUnsub}" style="color:#6b7280;text-decoration:underline;">Avregistrera er här</a>.
 </p>
 <p style="margin:0;font-size:12px;color:#6b7280;">
-  Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@cykelhjalpen.se.
+  Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@auroramedia.se.
 </p>`
 
   const html = `<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -187,10 +187,10 @@ export const buildEmailDraft = (prospect: ProspectForDraft): DraftBundle => {
     'Vänliga hälsningar,',
     'Christoffer',
     'Cykelhjälpen',
-    'info@cykelhjalpen.se',
+    'info@auroramedia.se',
     '',
     `Vill ni inte få fler mejl från oss? Avregistrera er här: ${unsub}`,
-    'Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@cykelhjalpen.se.',
+    'Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@auroramedia.se.',
   )
   const text = textLines.join('\n')
 
@@ -236,13 +236,13 @@ ${safeDemand}
 <p style="margin:24px 0 4px;font-size:15px;">Vänliga hälsningar,</p>
 <p style="margin:0;font-size:15px;font-weight:600;">Christoffer</p>
 <p style="margin:0;font-size:14px;color:#374151;">Cykelhjälpen</p>
-<p style="margin:0 0 24px;font-size:14px;color:#374151;">info@cykelhjalpen.se</p>
+<p style="margin:0 0 24px;font-size:14px;color:#374151;">info@auroramedia.se</p>
 <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
 <p style="margin:0 0 8px;font-size:12px;color:#6b7280;">
   Vill ni inte få fler mejl från oss? <a href="${safeUnsub}" style="color:#6b7280;text-decoration:underline;">Avregistrera er här</a>.
 </p>
 <p style="margin:0;font-size:12px;color:#6b7280;">
-  Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@cykelhjalpen.se.
+  Ni får det här mejlet eftersom er verkstad finns offentligt listad i vårt lokala nätverk. Rättelse eller radering av uppgifter: info@auroramedia.se.
 </p>
 </td></tr></table>
 </td></tr></table>
@@ -283,7 +283,7 @@ export const buildFollowUpDraft = (prospect: ProspectForFollowUp): { subject: st
     'Vänliga hälsningar,',
     'Christoffer',
     'Cykelhjälpen',
-    'info@cykelhjalpen.se',
+    'info@auroramedia.se',
   )
   return { subject, message: lines.join('\n') }
 }

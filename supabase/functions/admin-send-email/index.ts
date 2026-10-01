@@ -14,7 +14,7 @@ const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
 const FROM_EMAIL = 'Christoffer på Cykelhjälpen <info@cykelhjalpen.se>'
-const REPLY_TO = 'info@cykelhjalpen.se'
+const REPLY_TO = 'info@auroramedia.se'
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })

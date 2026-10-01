@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       domain_status: 'unknown',
       domain_message: null,
       from: 'Christoffer på Cykelhjalpen.se <info@cykelhjalpen.se>',
-      reply_to: 'info@cykelhjalpen.se',
+      reply_to: 'info@auroramedia.se',
     }
 
     if (!configured) {

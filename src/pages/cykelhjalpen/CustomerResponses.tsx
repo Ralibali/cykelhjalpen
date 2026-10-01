@@ -234,7 +234,7 @@ const CustomerResponses = () => {
           </div>
           <p className="text-sm">{t('Vi kunde inte publicera ärendet i sin nuvarande form.')}</p>
           {request.rejected_reason && <p className="text-sm mt-2"><strong>{t('Anledning:')}</strong> {request.rejected_reason}</p>}
-          <p className="text-sm mt-3">{t('Kontakta')} <a className="underline font-medium" href="mailto:info@cykelhjalpen.se">info@cykelhjalpen.se</a> {t('så hjälper vi dig vidare.')}</p>
+          <p className="text-sm mt-3">{t('Kontakta')} <a className="underline font-medium" href="mailto:info@auroramedia.se">info@auroramedia.se</a> {t('så hjälper vi dig vidare.')}</p>
         </div>
       )
     }
@@ -319,7 +319,7 @@ const CustomerResponses = () => {
         ) : !request ? (
           <div className="sticker bg-card p-8 text-center">
             <h1 className="font-display text-2xl font-bold mb-2">{t('Ärendet hittades inte')}</h1>
-            <p className="text-muted-foreground">{t('Kontakta info@cykelhjalpen.se om du behöver hjälp.')}</p>
+            <p className="text-muted-foreground">{t('Kontakta info@auroramedia.se om du behöver hjälp.')}</p>
           </div>
         ) : (
           <>

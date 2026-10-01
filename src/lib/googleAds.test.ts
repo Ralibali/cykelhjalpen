@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { COOKIE_CONSENT_KEY, COOKIE_CONSENT_EVENT } from './analyticsConsent'
+import { COOKIE_CONSENT_KEY, COOKIE_CONSENT_EVENT, createConsent } from './analyticsConsent'
 
 const TAG_SRC_ID = 'cykelhjalpen-google-ads-tag'
 
@@ -12,11 +12,13 @@ const setHost = (hostname: string) => {
 }
 
 const setConsentAll = () => {
-  window.localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify({ level: 'all', date: '2026-07-31' }))
+  window.localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(createConsent(true, true)))
 }
 
 const fireConsentEvent = (level: 'all' | 'necessary') => {
-  window.dispatchEvent(new CustomEvent(COOKIE_CONSENT_EVENT, { detail: level }))
+  const state = createConsent(level === 'all', level === 'all')
+  localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(state))
+  window.dispatchEvent(new CustomEvent(COOKIE_CONSENT_EVENT, { detail: state }))
 }
 
 const dataLayerCalls = (command: string): unknown[][] =>
@@ -107,6 +109,18 @@ describe('googleAds', () => {
     const conv = events.find((args) => args[1] === 'conversion')
     expect(conv).toBeDefined()
     expect((conv![2] as { send_to: string }).send_to).toBe('AW-123/labelXYZ')
+  })
+
+  it('stops conversion events after withdrawal and never grants analytics from Ads', async () => {
+    setHost('cykelhjalpen.se')
+    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(createConsent(false, true)))
+    const { initGoogleAds, trackAdsConversion, googleAdsConfig } = await import('./googleAds')
+    googleAdsConfig.tagId = 'AW-123'; googleAdsConfig.labelRequest = 'test'
+    initGoogleAds()
+    expect((dataLayerCalls('consent')[0]?.[2] as object)).not.toHaveProperty('analytics_storage')
+    fireConsentEvent('necessary')
+    trackAdsConversion('request_submitted')
+    expect(dataLayerCalls('event')).toHaveLength(0)
   })
 
   it('trackAdsConversion är no-op utan ifylld etikett', async () => {

@@ -50,7 +50,7 @@ const CookiePolicyPage = () => {
       <main className="flex-1 py-16 px-4">
         <article className="max-w-3xl mx-auto prose prose-slate">
           <h1 className="font-display text-3xl font-bold mb-2">{t('Cookiepolicy')}</h1>
-          <p className="text-muted-foreground text-sm mb-8">{t('Senast uppdaterad: 13 juli 2026')}</p>
+          <p className="text-muted-foreground text-sm mb-8">{t('Senast uppdaterad: 1 oktober 2026')}</p>
           {lang === 'en' && (
             <p className="text-sm italic text-muted-foreground mb-8">{t('Detta är en översättning. Den svenska versionen gäller juridiskt.')}</p>
           )}
@@ -65,7 +65,7 @@ const CookiePolicyPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('2. Vem ansvarar?')}</h2>
               <p><strong>{t('Aurora Media AB')}</strong>{t(', organisationsnummer 559272-0220, ansvarar för användningen av cookies på Cykelhjälpen.se och driver tjänsten under namnet Cykelhjälpen.')}</p>
               <p className="mt-1">{t('Postadress: Gustafstorpsvägen 42, 585 74 Ljungsbro.')}</p>
-              <p className="mt-1">{t('Kontakt:')} <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a></p>
+              <p className="mt-1">{t('Kontakt:')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
             </div>
 
             <div>
@@ -74,7 +74,7 @@ const CookiePolicyPage = () => {
               <h3 className="font-semibold text-foreground mt-3 mb-1">{t('3.1 Nödvändiga cookies')}</h3>
               <p>{t('Dessa behövs för att webbplatsen och tjänsten ska fungera. De kan till exempel användas för inloggning, säkerhet, sessionshantering och för att spara ditt cookieval. Dessa kräver inte samtycke.')}</p>
               <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li><strong>{t('Cookie-samtycke:')}</strong> {t('sparar om du valt endast nödvändiga cookies eller accepterat alla.')}</li>
+                <li><strong>{t('Cookie-samtycke:')}</strong> {t('sparar separata val för statistik och marknadsföring med datum och version.')}</li>
                 <li><strong>{t('Autentisering och session:')}</strong> {t('används när du loggar in eller använder kontofunktioner.')}</li>
                 <li><strong>{t('Säkerhet:')}</strong> {t('skyddar mot missbruk, felaktiga anrop och obehörig åtkomst.')}</li>
               </ul>
@@ -83,12 +83,25 @@ const CookiePolicyPage = () => {
               <p>{t('Med ditt samtycke använder vi Google Analytics för att förstå hur webbplatsen används, vilka sidor som fungerar bra och var vi behöver förbättra upplevelsen. Vi har konfigurerat laddningen så att Google-taggen inte laddas för analys innan du har accepterat.')}</p>
 
               <h3 className="font-semibold text-foreground mt-3 mb-1">{t('3.3 Marknadsföringscookies')}</h3>
-              <p>{t('Med ditt samtycke använder vi Google Ads för konverteringsmätning och marknadsföringsanalys. Detta hjälper oss att förstå om annonser leder till relevanta besök eller uppdrag. Dessa cookies används inte innan du har accepterat statistik och marknadsföring.')}</p>
+              <p>{t('Med ditt samtycke använder vi Google Ads för konverteringsmätning och marknadsföringsanalys. Detta hjälper oss att förstå om annonser leder till relevanta besök eller uppdrag. Dessa cookies används endast efter ditt separata marknadsföringsval.')}</p>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-xs">
+                  <caption className="mb-2 text-left text-sm font-semibold">{t('Lagring som webbplatsen kan använda')}</caption>
+                  <thead><tr><th className="p-2 text-left">{t('Namn och leverantör')}</th><th className="p-2 text-left">{t('Uppgifter och ändamål')}</th><th className="p-2 text-left">{t('Lagringstid')}</th></tr></thead>
+                  <tbody>
+                    <tr className="border-t align-top"><td className="p-2"><code>cykelhjalpen_cookie_consent</code><br />Cykelhjälpen</td><td className="p-2">{t('Nödvändig localStorage med dina kategori-val, version och datum.')}</td><td className="p-2">{t('Högst 12 månader eller tills valet ändras.')}</td></tr>
+                    <tr className="border-t align-top"><td className="p-2"><code>_cykel_attribution</code>, <code>_cykel_attribution_first</code><br />Cykelhjälpen</td><td className="p-2">{t('Kampanjvärden, annons-ID, hänvisande domän och landningssida. SessionStorage respektive localStorage efter marknadsföringsval.')}</td><td className="p-2">{t('Till fliken stängs respektive högst 90 dagar. Rensas vid återkallat marknadsföringsval.')}</td></tr>
+                    <tr className="border-t align-top"><td className="p-2"><code>_ga</code>, <code>_ga_*</code><br />Google Analytics</td><td className="p-2">{t('Pseudonyma besöks- och sessionsidentifierare för statistik efter statistikval.')}</td><td className="p-2">{t('Googles standard är två år; kan begränsas av inställningar eller webbläsaren.')}</td></tr>
+                    <tr className="border-t align-top"><td className="p-2"><code>_gcl_*</code><br />Google Ads</td><td className="p-2">{t('Annonsklick och konverteringsidentifierare efter marknadsföringsval.')}</td><td className="p-2">{t('Normalt 90 dagar enligt Google; kan begränsas av inställningar eller webbläsaren.')}</td></tr>
+                    <tr className="border-t align-top"><td className="p-2"><code>sb-*-auth-token</code><br />Supabase</td><td className="p-2">{t('Nödvändig localStorage med inloggningssession för kontofunktioner.')}</td><td className="p-2">{t('Tills du loggar ut, sessionen upphör eller lagringen rensas.')}</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('4. Samtycke')}</h2>
-              <p>{t('När du besöker webbplatsen kan du välja mellan att neka icke-nödvändiga cookies eller acceptera statistik och marknadsföring. Ett nej påverkar inte grundläggande funktioner på webbplatsen.')}</p>
+              <p>{t('När du besöker webbplatsen kan du neka valfria cookies, acceptera alla eller välja statistik och marknadsföring separat. Ett nej påverkar inte grundläggande funktioner på webbplatsen.')}</p>
               <p className="mt-2">{t('Du kan när som helst ändra ditt val genom knappen “Cookieinställningar” på webbplatsen eller via knappen nedan.')}</p>
               <Button type="button" size="sm" className="rounded-xl mt-3" onClick={openCookieSettings}>
                 {t('Ändra cookieinställningar')}
@@ -98,15 +111,16 @@ const CookiePolicyPage = () => {
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('5. Lagringstid')}</h2>
               <ul className="list-disc pl-5 space-y-1">
-                <li><strong>{t('Sessionscookies:')}</strong> {t('raderas normalt när webbläsaren stängs.')}</li>
+                <li><strong>{t('Inloggningslagring:')}</strong> {t('behålls tills du loggar ut, sessionen upphör eller lagringen rensas.')}</li>
                 <li><strong>{t('Cookieval:')}</strong> {t('sparas normalt upp till 12 månader eller tills du ändrar ditt val.')}</li>
+                <li><strong>{t('Kampanjattribution:')}</strong> {t('sparas efter marknadsföringssamtycke i högst 90 dagar och raderas vid återkallat val.')}</li>
                 <li><strong>{t('Google Analytics/Google Ads:')}</strong> {t('lagringstid styrs av Googles inställningar och används endast efter samtycke.')}</li>
               </ul>
             </div>
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('6. Tredje parter')}</h2>
-              <p>{t('Om du accepterar statistik och marknadsföring kan uppgifter behandlas av Google. Google kan behandla information som IP-adress, enhetsinformation, sidvisningar, klick och kampanjinformation enligt sina villkor och dataskyddsregler.')}</p>
+              <p>{t('Om du accepterar statistik eller marknadsföring kan uppgifter behandlas av Google för den kategori du valt. Google kan behandla information som IP-adress, enhetsinformation, sidvisningar, klick och kampanjinformation enligt sina villkor och dataskyddsregler.')}</p>
               <p className="mt-2">{t('Betalning, inloggning och drift kan även innebära tekniskt nödvändiga cookies eller lokal lagring från våra drift- och betalleverantörer, exempelvis Supabase och Stripe.')}</p>
             </div>
 
@@ -117,7 +131,7 @@ const CookiePolicyPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('8. Kontakt')}</h2>
-              <p>{t('Har du frågor om cookies eller personuppgifter? Kontakta Aurora Media AB på')} <a href="mailto:info@cykelhjalpen.se" className="text-primary hover:underline">info@cykelhjalpen.se</a> {t('eller per post till Gustafstorpsvägen 42, 585 74 Ljungsbro.')}</p>
+              <p>{t('Har du frågor om cookies eller personuppgifter? Kontakta Aurora Media AB på')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a> {t('eller per post till Gustafstorpsvägen 42, 585 74 Ljungsbro.')}</p>
               <p className="mt-2">{t('Se även vår')} <a href="/integritetspolicy" className="text-primary hover:underline">{t('integritetspolicy')}</a> {t('för mer information om hur vi behandlar personuppgifter.')}</p>
             </div>
           </section>

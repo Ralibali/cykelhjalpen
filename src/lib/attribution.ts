@@ -6,7 +6,7 @@
 // funnel (submit → lifecycle email → return visit days later → winner pick).
 //
 // Consent: this module is only called from consent-gated tracking code
-// (usePageTracking runs captureAttribution only when hasAnalyticsConsent()).
+// (usePageTracking runs captureAttribution only when hasMarketingConsent()).
 // Storage here is first-party and holds no PII — UTM params, landing path,
 // referrer origin only.
 //
@@ -62,7 +62,11 @@ export function sanitizeReferrer(value: string, origin?: string): string | undef
 
 function readKey(storage: AttributionStorage, key: string): Attribution {
   try {
-    return JSON.parse(storage.getItem(key) || '{}') as Attribution
+    const value = JSON.parse(storage.getItem(key) || '{}')
+    if (!value || typeof value !== 'object') { storage.removeItem(key); return {} }
+    const captured = typeof value.captured_at === 'string' ? Date.parse(value.captured_at) : NaN
+    if (!Number.isFinite(captured) || captured > Date.now() || Date.now() - captured >= 90 * 86400000) { storage.removeItem(key); return {} }
+    return value as Attribution
   } catch {
     storage.removeItem(key)
     return {}
@@ -121,7 +125,7 @@ export function captureAttribution(
 
   for (const key of ATTRIBUTION_PARAMS) {
     const value = params.get(key)?.trim()
-    if (value) attribution[key] = value.slice(0, 300)
+    if (value && value.length <= 80 && /^[\p{L}\p{N} _.-]+$/u.test(value)) attribution[key] = value
   }
 
   try {

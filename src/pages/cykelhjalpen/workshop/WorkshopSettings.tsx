@@ -124,7 +124,7 @@ const WorkshopSettings = () => {
     if (!isCykelCity(form.city)) return toast.error(t('Välj en giltig stad'))
     if (workshop.approved && form.city !== workshop.city) {
       setForm((current) => ({ ...current, city: workshop.city }))
-      return toast.error(t('En godkänd verkstads serviceort ändras av Cykelhjälpen efter kontroll. Kontakta info@cykelhjalpen.se.'))
+      return toast.error(t('En godkänd verkstads serviceort ändras av Cykelhjälpen efter kontroll. Kontakta info@auroramedia.se.'))
     }
 
     setSaving(true)
@@ -171,7 +171,7 @@ const WorkshopSettings = () => {
 
     if (workshopError || profileError) {
       const message = workshopError?.message?.includes('approved_workshop_city_locked')
-        ? t('Serviceorten är låst för godkända verkstäder. Kontakta info@cykelhjalpen.se.')
+        ? t('Serviceorten är låst för godkända verkstäder. Kontakta info@auroramedia.se.')
         : workshopError?.message || profileError?.message || t('Kunde inte spara')
       toast.error(message)
       return
@@ -198,7 +198,7 @@ const WorkshopSettings = () => {
           <Label>{t('Stad')}</Label>
           <p className="text-xs text-muted-foreground mt-1 mb-2">
             {workshop.approved
-              ? t('Serviceorten är låst efter godkännandet. Kontakta info@cykelhjalpen.se om verksamheten flyttar.')
+              ? t('Serviceorten är låst efter godkännandet. Kontakta info@auroramedia.se om verksamheten flyttar.')
               : t('Ni får bara ärenden från den valda staden. Orten låses när verkstaden godkänns.')}
           </p>
           <div className="grid grid-cols-2 gap-2">

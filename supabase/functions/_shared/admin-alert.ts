@@ -1,8 +1,8 @@
 // Gemensam admin-avisering via e-post. Alla nya händelser (ärenden, verkstäder,
-// offerter) skickar en kort notis till adressen i ADMIN_NOTIFY_EMAIL.
+// offerter) skickar en kort notis till info@auroramedia.se.
 
 export const getAdminNotifyEmail = () =>
-  Deno.env.get('ADMIN_NOTIFY_EMAIL') || 'info@auroramedia.se'
+  'info@auroramedia.se'
 
 const escapeHtml = (value: unknown) =>
   String(value ?? '')
