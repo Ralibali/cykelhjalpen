@@ -71,6 +71,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # The repo-root package.json puts Deno in manual node_modules mode, so
+      # npm: imports in _shared resolve from the Bun-installed node_modules.
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.0
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
