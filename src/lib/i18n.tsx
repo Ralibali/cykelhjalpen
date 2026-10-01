@@ -1,7 +1,19 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
-import { EN } from '../locales/en'
 
 export type Lang = 'sv' | 'en'
+
+/**
+ * English messages keyed by the Swedish source string. Loaded on demand by
+ * loadMessagesForLocation() so Swedish visitors never download them.
+ */
+let enMessages: Record<string, string> = {}
+
+/** Loads the English catalogue when the current URL is an /en page. Call before the first render. */
+export async function loadMessagesForLocation(): Promise<void> {
+  if (getLangFromLocation() !== 'en') return
+  const { EN } = await import('../locales/en')
+  enMessages = EN
+}
 
 /** Path prefix used for the English version of the site. */
 export const EN_PREFIX = '/en'
@@ -42,7 +54,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const lang = getLangFromLocation()
 
   const value = useMemo(() => {
-    const t: TFunction = (sv, vars) => interpolate(lang === 'en' ? EN[sv] ?? sv : sv, vars)
+    const t: TFunction = (sv, vars) => interpolate(lang === 'en' ? enMessages[sv] ?? sv : sv, vars)
     return { lang, t }
   }, [lang])
 

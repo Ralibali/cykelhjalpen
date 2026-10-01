@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_KEY, hasAnalyticsConsent, hasMarketingConsent } from '@/lib/analyticsConsent'
-import { getNoindexSeoRoutes } from '@/lib/seoStatic'
+import { getNoindexPaths } from '@/lib/seoRouteManifest'
 import { getCurrentHost } from '@/lib/hostConfig'
 import { shouldNoindexPath } from '@/lib/seoRobots'
 import {
@@ -57,7 +57,7 @@ function captureAttribution(search: string, pathname: string): Attribution {
 
 function routeShouldRemainNoindex(pathname: string): boolean {
   const host = getCurrentHost()
-  return shouldNoindexPath(pathname, getNoindexSeoRoutes(host).map((route) => route.path))
+  return shouldNoindexPath(pathname, getNoindexPaths(host))
 }
 
 export function usePageTracking() {

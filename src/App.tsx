@@ -9,15 +9,14 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "next-themes";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import CookieConsent from "@/components/CookieConsent";
-import { COMPARISON_PAGES } from "./lib/seoComparisons";
-import { getNoindexSeoRoutes } from "./lib/seoStatic";
+import { COMPARISON_SLUGS, getNoindexPaths } from "./lib/seoRouteManifest";
 import { getRobotsDirectiveForPath } from "./lib/seoRobots";
 import { getCurrentHost } from "./lib/hostConfig";
 import { EN_PREFIX, LanguageProvider, getRouterBasename, useLanguage } from "@/lib/i18n";
 import { toSwedishPath, toEnglishPath } from "@/i18n/routes";
 
-import SupplierLayout from "@/components/SupplierLayout";
-import BuyerLayout from "@/components/BuyerLayout";
+const SupplierLayout = lazy(() => import("@/components/SupplierLayout"));
+const BuyerLayout = lazy(() => import("@/components/BuyerLayout"));
 
 
 // Eager: Cykelhjälpen landing page for fastest FCP
@@ -191,7 +190,7 @@ const NoindexGuard = ({ host }: { host: 'cykelhjalpen' | 'updro' }) => {
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    const noindexPaths = getNoindexSeoRoutes(host).map((route) => route.path);
+    const noindexPaths = getNoindexPaths(host);
     const directive = getRobotsDirectiveForPath(location.pathname, noindexPaths);
 
     const applyDirective = () => {
@@ -514,8 +513,8 @@ const AppRoutes = () => {
               <Route path="/admin/innehallsplan" element={<ProtectedRoute role="admin"><AdminContentPlanner /></ProtectedRoute>} />
 
               {/* Comparison pages */}
-              {COMPARISON_PAGES.map(p => (
-                <Route key={p.slug} path={`/${p.slug}`} element={<ComparisonPage />} />
+              {COMPARISON_SLUGS.map(slug => (
+                <Route key={slug} path={`/${slug}`} element={<ComparisonPage />} />
               ))}
 
               {/* Buyer dashboard */}

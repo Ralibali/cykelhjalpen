@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import { initGoogleAds } from "./lib/googleAds";
+import { loadMessagesForLocation } from "./lib/i18n";
 import "./index.css";
 
 // Auto-recover from stale chunk hashes after a redeploy.
@@ -32,11 +33,23 @@ window.addEventListener("unhandledrejection", (e) => {
   if (isChunkLoadError(msg)) tryReload();
 });
 
-const rootEl = document.getElementById("root")!;
-rootEl.replaceChildren();
 initGoogleAds();
-createRoot(rootEl).render(
-  <HelmetProvider>
-    <App />
-  </HelmetProvider>
-);
+
+// English pages need their message catalogue before the first render; Swedish
+// pages resolve immediately. A stale chunk after a redeploy triggers the reload
+// above; any other failure still renders, with t() falling back to Swedish.
+loadMessagesForLocation()
+  .catch((error) => {
+    const msg = (error && (error.message || String(error))) || "";
+    if (isChunkLoadError(msg)) tryReload();
+    console.error("Could not load translations", error);
+  })
+  .finally(() => {
+    const rootEl = document.getElementById("root")!;
+    rootEl.replaceChildren();
+    createRoot(rootEl).render(
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
+    );
+  });

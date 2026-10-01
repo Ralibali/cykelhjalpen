@@ -30,3 +30,6 @@ package-lock.json
 
 # Build-generated at dist/ by vite seoBuildPlugin — never commit a stale copy
 public/sitemap.xml
+
+# TypeScript incremental build caches
+*.tsbuildinfo

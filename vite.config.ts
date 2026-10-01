@@ -14,6 +14,7 @@ import {
   renderStaticHtml,
   SITEMAP_SECTIONS,
 } from "./src/lib/seoStatic";
+import { seoRouteManifestPlugin } from "./seoRouteManifestPlugin";
 
 function seoBuildPlugin(host: 'cykelhjalpen' | 'updro'): Plugin {
   return {
@@ -131,6 +132,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       seoBuildPlugin(siteHost),
+      seoRouteManifestPlugin(),
     ].filter(Boolean),
     resolve: {
       alias: {
