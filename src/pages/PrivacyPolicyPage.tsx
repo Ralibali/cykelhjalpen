@@ -55,7 +55,7 @@ const PrivacyPolicyPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('1. Personuppgiftsansvarig')}</h2>
               <p><strong>{t('Aurora Media AB')}</strong>{t(', organisationsnummer 559272-0220, är personuppgiftsansvarig för behandlingen av personuppgifter på Cykelhjälpen.se och driver tjänsten under namnet Cykelhjälpen.')}</p>
               <p className="mt-1">{t('Postadress: Gustafstorpsvägen 42, 585 74 Ljungsbro.')}</p>
-              <p className="mt-1">{t('Kontakt:')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
+              <p className="mt-1">{t('Kontakt:')} <a href="mailto:info@auroramedia.se" className="text-primary underline underline-offset-2 hover:no-underline">info@auroramedia.se</a></p>
             </div>
 
             <div>
@@ -85,7 +85,7 @@ const PrivacyPolicyPage = () => {
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('4. Uppgifter som hämtas från andra källor')}</h2>
               <p>{t('När vi kontaktar en cykelverkstad kan uppgifterna ha hämtats från verkstadens egen webbplats eller andra öppet tillgängliga företagskällor. Vi använder sök- och insamlingsverktyg, bland annat Firecrawl, för att hitta och sammanställa relevanta offentliga företagsuppgifter. Vi använder i första hand generella företagsadresser och behandlar inte uppgifterna för andra ändamål än att bedöma om verkstaden är relevant för Cykelhjälpens nätverk och genomföra en begränsad kontakt.')}</p>
-              <p className="mt-2">{t('Du kan när som helst invända mot direktmarknadsföring eller begära rättelse eller radering via avregistreringslänken i mejlet eller genom att kontakta')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a>{t('. När du invänder spärrar vi adressen för framtida rekryteringsutskick.')}</p>
+              <p className="mt-2">{t('Du kan när som helst invända mot direktmarknadsföring eller begära rättelse eller radering via avregistreringslänken i mejlet eller genom att kontakta')} <a href="mailto:info@auroramedia.se" className="text-primary underline underline-offset-2 hover:no-underline">info@auroramedia.se</a>{t('. När du invänder spärrar vi adressen för framtida rekryteringsutskick.')}</p>
             </div>
 
             <div>
@@ -106,7 +106,7 @@ const PrivacyPolicyPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('6. Cookies, Google Analytics och Google Ads')}</h2>
-              <p>{t('Vi använder nödvändiga lagringsfunktioner för att webbplatsen ska fungera och för att spara ditt cookieval. Analys- och marknadsföringskod laddas först om du aktivt accepterar den i cookie-bannern. Du kan när som helst ändra ditt val via knappen ”Cookieinställningar”. Se vår')} <a href="/cookies" className="text-primary hover:underline">{t('cookiepolicy')}</a> {t('för detaljer.')}</p>
+              <p>{t('Vi använder nödvändiga lagringsfunktioner för att webbplatsen ska fungera och för att spara ditt cookieval. Analys- och marknadsföringskod laddas först om du aktivt accepterar den i cookie-bannern. Du kan när som helst ändra ditt val via knappen ”Cookieinställningar”. Se vår')} <a href="/cookies" className="text-primary underline underline-offset-2 hover:no-underline">{t('cookiepolicy')}</a> {t('för detaljer.')}</p>
             </div>
 
             <div>
@@ -128,7 +128,7 @@ const PrivacyPolicyPage = () => {
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('9. Dina rättigheter')}</h2>
               <p>{t('Du har enligt GDPR rätt att begära tillgång, rättelse, radering, begränsning och dataportabilitet samt att invända mot behandling som grundas på berättigat intresse. Du har alltid rätt att invända mot behandling för direktmarknadsföring; då upphör den behandlingen för den aktuella adressen. Du kan också återkalla ett samtycke utan att det påverkar lagligheten före återkallelsen.')}</p>
-              <p className="mt-2">{t('Kontakta')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a>. {t('Vi svarar normalt inom en månad. Klagomål kan lämnas till Integritetsskyddsmyndigheten (IMY):')} <a href="https://www.imy.se" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">www.imy.se</a>.</p>
+              <p className="mt-2">{t('Kontakta')} <a href="mailto:info@auroramedia.se" className="text-primary underline underline-offset-2 hover:no-underline">info@auroramedia.se</a>. {t('Vi svarar normalt inom en månad. Klagomål kan lämnas till Integritetsskyddsmyndigheten (IMY):')} <a href="https://www.imy.se" className="text-primary underline underline-offset-2 hover:no-underline" target="_blank" rel="noopener noreferrer">www.imy.se</a>.</p>
             </div>
 
             <div>

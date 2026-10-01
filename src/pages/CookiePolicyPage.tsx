@@ -65,7 +65,7 @@ const CookiePolicyPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('2. Vem ansvarar?')}</h2>
               <p><strong>{t('Aurora Media AB')}</strong>{t(', organisationsnummer 559272-0220, ansvarar för användningen av cookies på Cykelhjälpen.se och driver tjänsten under namnet Cykelhjälpen.')}</p>
               <p className="mt-1">{t('Postadress: Gustafstorpsvägen 42, 585 74 Ljungsbro.')}</p>
-              <p className="mt-1">{t('Kontakt:')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
+              <p className="mt-1">{t('Kontakt:')} <a href="mailto:info@auroramedia.se" className="text-primary underline underline-offset-2 hover:no-underline">info@auroramedia.se</a></p>
             </div>
 
             <div>
@@ -131,8 +131,8 @@ const CookiePolicyPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('8. Kontakt')}</h2>
-              <p>{t('Har du frågor om cookies eller personuppgifter? Kontakta Aurora Media AB på')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a> {t('eller per post till Gustafstorpsvägen 42, 585 74 Ljungsbro.')}</p>
-              <p className="mt-2">{t('Se även vår')} <a href="/integritetspolicy" className="text-primary hover:underline">{t('integritetspolicy')}</a> {t('för mer information om hur vi behandlar personuppgifter.')}</p>
+              <p>{t('Har du frågor om cookies eller personuppgifter? Kontakta Aurora Media AB på')} <a href="mailto:info@auroramedia.se" className="text-primary underline underline-offset-2 hover:no-underline">info@auroramedia.se</a> {t('eller per post till Gustafstorpsvägen 42, 585 74 Ljungsbro.')}</p>
+              <p className="mt-2">{t('Se även vår')} <a href="/integritetspolicy" className="text-primary underline underline-offset-2 hover:no-underline">{t('integritetspolicy')}</a> {t('för mer information om hur vi behandlar personuppgifter.')}</p>
             </div>
           </section>
         </article>

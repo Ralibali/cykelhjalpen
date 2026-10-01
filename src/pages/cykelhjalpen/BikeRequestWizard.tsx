@@ -568,7 +568,7 @@ const BikeRequestWizard = () => {
                         </span>
                         <span className="min-w-0">
                           <span className="block text-xs text-muted-foreground">{label}</span>
-                          <span className={`block truncate text-sm font-medium ${filled ? 'text-foreground group-hover:underline' : 'text-muted-foreground/60'}`}>
+                          <span className={`block truncate text-sm font-medium ${filled ? 'text-foreground group-hover:underline' : 'italic text-muted-foreground'}`}>
                             {filled ? value : t('Ej valt ännu')}
                           </span>
                         </span>

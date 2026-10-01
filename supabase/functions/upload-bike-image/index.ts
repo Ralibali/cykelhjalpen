@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
+import { matchesImageSignature } from '../_shared/image-signature.ts'
 
 const ALLOWED_TYPES: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -71,8 +72,12 @@ Deno.serve(async (req) => {
       return json({ error: 'Max fyra bilder per ärende.' }, 400, corsHeaders)
     }
 
-    const path = `${requestId}/${crypto.randomUUID()}.${extension}`
     const bytes = new Uint8Array(await file.arrayBuffer())
+    if (!matchesImageSignature(bytes, file.type)) {
+      return json({ error: 'Endast JPEG, PNG eller WebP tillåts.' }, 400, corsHeaders)
+    }
+
+    const path = `${requestId}/${crypto.randomUUID()}.${extension}`
 
     const { error: uploadError } = await admin.storage
       .from('bike-images')

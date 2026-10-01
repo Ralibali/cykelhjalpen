@@ -105,7 +105,7 @@ const TermsPage = () => {
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('5. Återbetalning och ångerrätt')}</h2>
               <p>{t('Tjänsten som säljs till verkstäder är avsedd för näringsidkare. Konsumenters lagstadgade ångerrätt gäller därför normalt inte verkstadens köp av ett lead.')}</p>
               <p className="mt-2">{t('Ett köp anses levererat när verkstadens prisförslag har registrerats som skickat och gjorts tillgängligt för kunden. Återbetalning kan medges om tjänsten inte har kunnat levereras på grund av ett tekniskt fel hos Cykelhjälpen eller om en betalning genomförts efter att ärendet redan blivit fullt. En sådan betalning ska normalt återföras automatiskt.')}</p>
-              <p className="mt-2">{t('Begäran om återbetalning görs till')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a> {t('med uppgift om verkstad, datum och berört ärende.')}</p>
+              <p className="mt-2">{t('Begäran om återbetalning görs till')} <a href="mailto:info@auroramedia.se" className="text-primary underline underline-offset-2 hover:no-underline">info@auroramedia.se</a> {t('med uppgift om verkstad, datum och berört ärende.')}</p>
             </div>
 
             <div>
@@ -133,7 +133,7 @@ const TermsPage = () => {
 
             <div>
               <h2 className="font-display text-lg font-semibold text-foreground mb-2">{t('8. Personuppgifter')}</h2>
-              <p>{t('Behandling av personuppgifter beskrivs i vår')} <a href="/integritetspolicy" className="text-primary hover:underline">{t('integritetspolicy')}</a>.</p>
+              <p>{t('Behandling av personuppgifter beskrivs i vår')} <a href="/integritetspolicy" className="text-primary underline underline-offset-2 hover:no-underline">{t('integritetspolicy')}</a>.</p>
             </div>
 
             <div>
@@ -141,7 +141,7 @@ const TermsPage = () => {
               <ul className="list-disc pl-5 space-y-1">
                 <li>{t('Svensk lag tillämpas på dessa villkor.')}</li>
                 <li>{t('Tvister ska i första hand försöka lösas genom kontakt och förhandling.')}</li>
-                <li>{t('En konsument som har en tvist med en verkstad kan, när förutsättningarna är uppfyllda, vända sig till')} <strong>{t('Allmänna reklamationsnämnden (ARN)')}</strong>: <a href="https://www.arn.se" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">www.arn.se</a>.</li>
+                <li>{t('En konsument som har en tvist med en verkstad kan, när förutsättningarna är uppfyllda, vända sig till')} <strong>{t('Allmänna reklamationsnämnden (ARN)')}</strong>: <a href="https://www.arn.se" className="text-primary underline underline-offset-2 hover:no-underline" target="_blank" rel="noopener noreferrer">www.arn.se</a>.</li>
                 <li>{t('Tvister mellan Cykelhjälpen och en verkstad avgörs, om de inte kan lösas genom förhandling, av svensk allmän domstol med Linköpings tingsrätt som första instans.')}</li>
               </ul>
             </div>
@@ -157,7 +157,7 @@ const TermsPage = () => {
               {t('Organisationsnummer: 559272-0220')}<br />
               {t('Gustafstorpsvägen 42')}<br />
               {t('585 74 Ljungsbro')}<br />
-              {t('E-post:')} <a href="mailto:info@auroramedia.se" className="text-primary hover:underline">info@auroramedia.se</a></p>
+              {t('E-post:')} <a href="mailto:info@auroramedia.se" className="text-primary underline underline-offset-2 hover:no-underline">info@auroramedia.se</a></p>
             </div>
           </section>
         </article>

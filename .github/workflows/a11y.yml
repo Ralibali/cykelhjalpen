@@ -1,8 +1,8 @@
 name: Accessibility audit
 
 # Körs vid varje push till main samt manuellt via "Run workflow".
-# Auditen körs mot den live publicerade sajten updro.se så att
-# resultaten speglar exakt det användarna ser efter deploy.
+# Auditen körs mot de live publicerade sajterna (cykelhjalpen.se och
+# updro.se) så att resultaten speglar exakt det användarna ser efter deploy.
 
 on:
   push:
@@ -73,10 +73,20 @@ jobs:
           mkdir -p axe-reports
           set +e
           FAILED=0
-          for path in "/" "/publicera" "/byraer" "/priser" "/om-oss"; do
-            slug=$(echo "$path" | sed 's|/|_|g; s|^_||; s|^$|home|')
-            echo "::group::axe https://updro.se${path}"
-            axe "https://updro.se${path}" \
+          for url in \
+            "https://cykelhjalpen.se/" \
+            "https://cykelhjalpen.se/skicka-arende" \
+            "https://cykelhjalpen.se/for-cykelverkstader" \
+            "https://cykelhjalpen.se/cykelverkstad-linkoping" \
+            "https://cykelhjalpen.se/en" \
+            "https://updro.se/" \
+            "https://updro.se/publicera" \
+            "https://updro.se/byraer" \
+            "https://updro.se/priser" \
+            "https://updro.se/om-oss"; do
+            slug=$(echo "$url" | sed 's|https://||; s|[/.]|_|g; s|_$||')
+            echo "::group::axe ${url}"
+            axe "$url" \
               --tags wcag2a,wcag2aa,wcag21aa \
               --save "axe-reports/${slug}.json" \
               --exit || FAILED=1

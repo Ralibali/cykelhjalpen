@@ -62,3 +62,19 @@ jobs:
         run: |
           echo 'ESLint reported errors. See the eslint-report artifact.'
           exit 1
+
+  edge-functions:
+    name: Edge function tests (Deno)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Test shared edge function logic
+        run: deno test --no-lock --allow-env --allow-read --allow-net supabase/functions
