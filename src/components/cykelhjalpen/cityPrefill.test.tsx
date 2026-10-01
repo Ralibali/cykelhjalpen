@@ -28,7 +28,7 @@ import { CykelV3MobileStickyNeutral } from './CykelV3NeutralSections'
 
 const wrap = (ui: ReactElement) => render(
   <LanguageProvider>
-    <MemoryRouter>{ui}</MemoryRouter>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>{ui}</MemoryRouter>
   </LanguageProvider>,
 )
 

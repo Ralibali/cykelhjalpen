@@ -10,7 +10,7 @@ vi.mock('./Turnstile', () => ({ default: () => null }))
 
 const wrap = (ui: ReactElement) => render(
   <LanguageProvider>
-    <MemoryRouter>{ui}</MemoryRouter>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>{ui}</MemoryRouter>
   </LanguageProvider>,
 )
 

@@ -30,7 +30,7 @@ vi.mock('@/components/cykelhjalpen/Turnstile', () => ({ default: ({ onVerify, on
 
 function mount(path = '/registrera/verkstad?stad=goteborg') {
   return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-    <LanguageProvider><HelmetProvider><MemoryRouter initialEntries={[path]}>
+    <LanguageProvider><HelmetProvider><MemoryRouter initialEntries={[path]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/registrera/verkstad" element={<RegisterWorkshopPage />} />
         <Route path="/logga-in" element={<LoginPage />} />

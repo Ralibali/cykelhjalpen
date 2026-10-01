@@ -560,7 +560,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename={getRouterBasename()}>
+      <BrowserRouter basename={getRouterBasename()} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <LanguageProvider>
           <AuthProvider>
             <HreflangTags />
