@@ -22,6 +22,8 @@ import {
   type V2ReviewState,
 } from './config-schema.ts'
 
+export type { V2OutcomeState, V2ReviewState }
+
 export const V2_WORKSHOP_REPORTS = ['completed', 'no_show', 'cancelled'] as const
 export type V2WorkshopReport = (typeof V2_WORKSHOP_REPORTS)[number]
 

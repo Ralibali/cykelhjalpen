@@ -9,6 +9,7 @@
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
+import { requireCronAuth } from '../_shared/cron-auth.ts'
 import { logNotificationEvent } from '../_shared/notifications.ts'
 import { emitDomainEvent } from '../_shared/v2/events.ts'
 import { v2FlagEnabled } from '../_shared/v2/flags.ts'
@@ -96,6 +97,9 @@ Deno.serve(async (req) => {
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers })
 
   if (req.method === 'OPTIONS') return new Response(null, { headers })
+
+  const denied = requireCronAuth(req, headers, 'v2-outcome-invites')
+  if (denied) return denied
   if (req.method !== 'POST') return json({ error: 'Metoden stöds inte.' }, 405)
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''

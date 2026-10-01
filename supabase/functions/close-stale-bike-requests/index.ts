@@ -8,6 +8,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
+import { requireCronAuth } from '../_shared/cron-auth.ts'
 import { buildRepostUrl, shouldCloseRequest, HOUR_MS } from '../_shared/v2/lifecycle.ts'
 import { citySlugFromName } from '../_shared/v2/config-schema.ts'
 import { emitDomainEvent } from '../_shared/v2/events.ts'
@@ -44,6 +45,9 @@ const priceLabel = (row: ResponseRow, lang: 'sv' | 'en') => {
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+
+  const denied = requireCronAuth(req, corsHeaders, 'close-stale-bike-requests')
+  if (denied) return denied
 
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
     status,

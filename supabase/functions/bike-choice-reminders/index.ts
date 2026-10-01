@@ -18,6 +18,7 @@
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
+import { requireCronAuth } from '../_shared/cron-auth.ts'
 import { isHasOffersNudgeDue } from '../_shared/choice-nudge.ts'
 import { logSmsAttempt, logNotificationEvent } from '../_shared/notifications.ts'
 import { buildRepostUrl } from '../_shared/v2/lifecycle.ts'
@@ -107,6 +108,9 @@ const ctaEmail = (opts: {
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+
+  const denied = requireCronAuth(req, corsHeaders, 'bike-choice-reminders')
+  if (denied) return denied
 
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
     status,

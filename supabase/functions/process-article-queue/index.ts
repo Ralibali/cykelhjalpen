@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { checkCronAuth } from "../_shared/cron-auth.ts";
+import { isAdminOrServiceRequest } from "../_shared/admin-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,6 +24,19 @@ serve(async (req: Request) => {
     if (!SUPABASE_URL || !SERVICE_ROLE) {
       return new Response(JSON.stringify({ error: "Missing supabase env" }), {
         status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const cronAuth = checkCronAuth(req, {
+      cronSecret: Deno.env.get("CRON_SECRET") ?? "",
+      serviceRoleKey: SERVICE_ROLE,
+    });
+    if (cronAuth === "unconfigured") {
+      console.warn("[process-article-queue] CRON_SECRET saknas – funktionen kan anropas utan autentisering.");
+    } else if (cronAuth === "unauthorized" && !(await isAdminOrServiceRequest(req))) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -59,12 +74,17 @@ serve(async (req: Request) => {
     for (let i = 0; i < queueRows.length; i++) {
       const row = queueRows[i];
 
-      // Mark as generating
-      await admin
+      // Mark as generating. Optimistic lock: skip rows another run already claimed.
+      const { data: claimed } = await admin
         .from("article_queue")
         .update({ status: "generating" })
         .eq("id", row.id)
-        .eq("status", "queued"); // optimistic lock
+        .eq("status", "queued")
+        .select("id");
+      if (!claimed || claimed.length === 0) {
+        results.push({ id: row.id, status: "skipped" });
+        continue;
+      }
 
       try {
         const genUrl = `${SUPABASE_URL}/functions/v1/generate-article`;

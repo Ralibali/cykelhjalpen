@@ -18,6 +18,7 @@
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { corsFor } from '../_shared/cors.ts'
+import { requireCronAuth } from '../_shared/cron-auth.ts'
 import { sendInAppNotifications } from '../_shared/notifications.ts'
 import { v2FlagEnabled } from '../_shared/v2/flags.ts'
 import { emitDomainEvent } from '../_shared/v2/events.ts'
@@ -329,6 +330,9 @@ const reconcileOnboarding = async (
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req)
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
+
+  const denied = requireCronAuth(req, corsHeaders, 'v2-stalled-winner-recovery')
+  if (denied) return denied
 
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
     status,
