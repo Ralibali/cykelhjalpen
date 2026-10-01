@@ -2,6 +2,7 @@
 // Reads v2_feature_flags via the public SELECT policy. Fails CLOSED:
 // any read error = every flag off. 60 s in-memory cache.
 
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { V2FeatureFlagRow, V2FlagKey } from './contracts'
 import { asV2Client, type V2Client } from './optionalClient'
 export type { V2Client } from './optionalClient'
@@ -56,6 +57,24 @@ export async function fetchV2Flags(
 export async function isV2FlagOn(key: V2FlagKey): Promise<boolean> {
   const flags = await fetchV2Flags()
   return flags.get(key)?.enabled === true
+}
+
+/**
+ * Admin-only toggle (RLS policy "V2 admin manages feature flags"). RLS filters
+ * a non-admin update to zero rows without an error, so that case throws too.
+ * Clears the cache so the next read sees the new value.
+ */
+export async function setV2FlagEnabled(key: V2FlagKey, enabled: boolean, client?: V2Client): Promise<void> {
+  // V2Client is typed read-only on purpose; this is the one write path.
+  const writable = (await db(client)) as unknown as SupabaseClient
+  const { data, error } = await writable
+    .from('v2_feature_flags')
+    .update({ enabled, updated_at: new Date().toISOString() })
+    .eq('key', key)
+    .select('key')
+  if (error) throw error
+  if (!data || data.length === 0) throw new Error(`Flag ${key} was not updated (missing row or not admin).`)
+  cache = null
 }
 
 /** City/percent-scoped check; mirrors _shared/v2/config-schema.ts isFlagOnFor. */

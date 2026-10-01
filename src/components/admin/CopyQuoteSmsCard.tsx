@@ -1,10 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Copy, Loader2, MessageSquare } from 'lucide-react'
+import { Copy, Loader2, MessageSquare, Power } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { useT } from '@/lib/i18n'
-import { useWorkshopMagicQuoteFlag } from '@/lib/workshopMagicQuote'
+import { setWorkshopMagicQuoteEnabled, useWorkshopMagicQuoteFlag } from '@/lib/workshopMagicQuote'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import {
   Select,
   SelectContent,
@@ -38,7 +49,8 @@ export function CopyQuoteSmsCard(props: {
   workshopApproved: boolean
 }) {
   const t = useT()
-  const flagOn = useWorkshopMagicQuoteFlag()
+  const [flagOn, reloadFlag] = useWorkshopMagicQuoteFlag()
+  const [toggling, setToggling] = useState(false)
   const [requests, setRequests] = useState<OpenRequest[]>([])
   const [requestId, setRequestId] = useState<string>('')
   const [busy, setBusy] = useState(false)
@@ -101,13 +113,57 @@ export function CopyQuoteSmsCard(props: {
     }
   }
 
+  const toggleFlag = async (enabled: boolean) => {
+    setToggling(true)
+    try {
+      await setWorkshopMagicQuoteEnabled(enabled)
+      const { data: auth } = await supabase.auth.getUser()
+      if (auth.user) {
+        await supabase.from('audit_log').insert({
+          admin_id: auth.user.id,
+          action: enabled ? 'feature_flag_enabled' : 'feature_flag_disabled',
+          target_type: 'feature_flag',
+          details: { key: 'workshop_magic_quote' },
+        })
+      }
+      toast.success(enabled ? t('Offert-SMS är påslaget.') : t('Offert-SMS är avstängt.'))
+      reloadFlag()
+    } catch {
+      toast.error(t('Kunde inte ändra inställningen. Är du inloggad som admin?'))
+    } finally {
+      setToggling(false)
+    }
+  }
+
   if (flagOn === false) {
     return (
-      <div className="rounded-xl border bg-card p-5">
-        <h2 className="font-display font-semibold mb-1">{t('Offert-SMS')}</h2>
-        <p className="text-sm text-muted-foreground">
-          {t('Funktionen är avstängd. Slå på flaggan workshop_magic_quote när ni vill testa.')}
-        </p>
+      <div className="rounded-xl border bg-card p-5 space-y-3">
+        <div>
+          <h2 className="font-display font-semibold mb-1">{t('Offert-SMS')}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t('Avstängt. När det är påslaget kan du kopiera ett SMS med en länk där verkstaden lämnar offert på ett riktigt ärende utan att logga in. Inget skickas automatiskt.')}
+          </p>
+        </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button size="sm" disabled={toggling}>
+              {toggling ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Power className="h-4 w-4 mr-1" />}
+              {t('Slå på offert-SMS')}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('Slå på offert-SMS?')}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('Admins kan då skapa engångslänkar (giltiga i 48 timmar) som låter en godkänd verkstad lämna offert utan att logga in. Ni skickar själva SMS:et. Du kan stänga av det här igen när som helst, och då slutar alla oanvända länkar att fungera direkt.')}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('Avbryt')}</AlertDialogCancel>
+              <AlertDialogAction onClick={() => toggleFlag(true)}>{t('Slå på')}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     )
   }
@@ -115,7 +171,14 @@ export function CopyQuoteSmsCard(props: {
   return (
     <div className="rounded-xl border bg-card p-5 space-y-3">
       <div>
-        <h2 className="font-display font-semibold">{t('Offert-SMS')}</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-display font-semibold">{t('Offert-SMS')}</h2>
+          {flagOn === true && (
+            <Button variant="ghost" size="sm" disabled={toggling} onClick={() => toggleFlag(false)}>
+              {t('Stäng av')}
+            </Button>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground mt-1">
           {t('Kopiera ett SMS med länk så verkstaden kan lämna offert utan att logga in. Skickas inte automatiskt.')}
         </p>

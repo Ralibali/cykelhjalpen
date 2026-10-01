@@ -3638,6 +3638,14 @@ export type Database = {
           urgency: string
         }[]
       }
+      get_cykel_open_request_counts: {
+        Args: never
+        Returns: {
+          city: string
+          latest_at: string
+          open_count: number
+        }[]
+      }
       get_cykel_price_stats: {
         Args: never
         Returns: {

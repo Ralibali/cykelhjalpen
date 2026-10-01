@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { SERVICE_CITIES, getCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { trackClick } from '@/hooks/usePageTracking'
 import { useLanguage, useT } from '@/lib/i18n'
+import { openRequestsSummary, summarizeOpenRequestCounts, type OpenRequestCountRow } from '@/lib/openRequestCounts'
 
 type TeaserRow = {
   repair_category: string
@@ -45,12 +46,26 @@ const CykelOpenRequestsTeaser = ({ trackCta, selectedCity }: Props) => {
     retry: false,
   })
 
+  // Exakta antal per stad; teasern ovan visar bara de 12 senaste ärendena.
+  const { data: countRows } = useQuery({
+    queryKey: ['cykel-open-request-counts'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_cykel_open_request_counts')
+      if (error) throw error
+      return (data || []) as OpenRequestCountRow[]
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  })
+  const counts = summarizeOpenRequestCounts(countRows)
+
   const rows = data || []
 
   const filtered = cityFilter ? rows.filter((row) => row.city === cityFilter) : rows
 
   if (isError || rows.length === 0) return null
 
+  const summary = openRequestsSummary(counts, cityFilter, t)
   const targetCity = cityFilter ? getCykelCity(cityFilter) : null
   const registerHref = targetCity ? `/registrera/verkstad?stad=${targetCity.slug}` : '/registrera/verkstad'
 
@@ -66,11 +81,18 @@ const CykelOpenRequestsTeaser = ({ trackCta, selectedCity }: Props) => {
         <p className="text-muted-foreground max-w-xl mx-auto">
           {t('Ett urval av manuellt granskade cykelärenden som verkstäder kan svara på just nu.')}
         </p>
+        {summary && (
+          <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary" aria-live="polite">
+            <Flame className="h-4 w-4" aria-hidden="true" />
+            {summary}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-wrap justify-center gap-2 mb-8">
         {['', ...SERVICE_CITIES.map((c) => c.name)].map((city) => {
           const active = cityFilter === city
+          const cityCount = city ? counts.byCity.get(city) ?? 0 : 0
           return (
             <button
               key={city}
@@ -84,6 +106,11 @@ const CykelOpenRequestsTeaser = ({ trackCta, selectedCity }: Props) => {
               }`}
             >
               {city || ALL}
+              {cityCount > 0 && (
+                <span className="ml-1.5 tabular-nums opacity-80">
+                  {cityCount}
+                </span>
+              )}
             </button>
           )
         })}

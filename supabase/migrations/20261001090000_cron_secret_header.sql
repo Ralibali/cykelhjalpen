@@ -11,6 +11,10 @@
 -- Innan båda är gjorda beter sig allt som tidigare: utan Vault-hemlighet
 -- skickas ingen header, och utan CRON_SECRET släpper funktionerna igenom
 -- anropet (med en varning i loggen).
+--
+-- Rollback: kör om cron.schedule-anropen i 20260831_v2_lifecycle_crons.sql
+-- (headers utan x-cron-secret) och
+--   DROP FUNCTION IF EXISTS public.edge_cron_headers();
 -- ============================================
 
 create or replace function public.edge_cron_headers()
