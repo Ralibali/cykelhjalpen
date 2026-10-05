@@ -86,7 +86,10 @@ jobs:
             "https://updro.se/om-oss"; do
             slug=$(echo "$url" | sed 's|https://||; s|[/.]|_|g; s|_$||')
             echo "::group::axe ${url}"
+            # --load-delay: sidorna tonas in (framer-motion, ~0,9 s). Utan
+            # väntan mäts kontrasten på halvgenomskinlig text och ger falsklarm.
             axe "$url" \
+              --load-delay 2000 \
               --tags wcag2a,wcag2aa,wcag21aa \
               --save "axe-reports/${slug}.json" \
               --exit || FAILED=1
