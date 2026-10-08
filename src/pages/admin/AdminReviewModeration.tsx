@@ -14,21 +14,7 @@ import { useT } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import type { V2ModerateReviewRequest } from '@/lib/v2/contracts'
 
-type ReviewState = 'submitted' | 'verified' | 'published' | 'flagged' | 'rejected' | 'removed'
-type OutcomeState = 'pending' | 'reported_by_workshop' | 'confirmed_by_customer' | 'completed' | 'no_show' | 'cancelled' | 'disputed' | 'expired'
-
-interface ReviewRow {
-  id: string
-  rating: number
-  body: string | null
-  state: ReviewState
-  workshop_response: string | null
-  created_at: string
-  moderated_at: string | null
-  moderation_note: string | null
-  workshops: { company_name: string; city: string } | null
-  v2_job_outcomes: { state: OutcomeState; final_price_sek: number | null } | null
-}
+import { loadAdminReviews, type AdminReview, type ReviewState, type OutcomeState } from '@/lib/adminReviews'
 
 const REVIEW_STATE_STYLE: Record<ReviewState, string> = {
   submitted: 'bg-amber-100 text-amber-800',
@@ -59,26 +45,24 @@ const ACTIONS: { action: V2ModerateReviewRequest['action']; label: string; varia
 
 const AdminReviewModeration = () => {
   const t = useT()
-  const [reviews, setReviews] = useState<ReviewRow[]>([])
+  const [reviews, setReviews] = useState<AdminReview[]>([])
+  const [canModerate, setCanModerate] = useState(false)
+  const [loadError, setLoadError] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
-    // v2-tabellerna finns ännu inte i genererade typer (S13 regen) — oktypad klient.
-    const untyped = supabase as unknown as { from: (table: string) => any }
-    const { data, error } = await untyped
-      .from('v2_reviews')
-      .select('id, rating, body, state, workshop_response, created_at, moderated_at, moderation_note, workshops(company_name, city), v2_job_outcomes(state, final_price_sek)')
-      .order('created_at', { ascending: false })
-      .limit(200)
-    if (error) {
-      toast.error(t('Kunde inte läsa recensioner'), { description: error.message })
-    } else {
-      const rows = (data as unknown as ReviewRow[]) || []
+    setLoadError(false)
+    try {
+      const result = await loadAdminReviews(supabase)
       const weight = (state: ReviewState) => (state === 'submitted' || state === 'flagged' ? 0 : 1)
-      rows.sort((a, b) => weight(a.state) - weight(b.state))
-      setReviews(rows)
+      setReviews(result.reviews.sort((a, b) => weight(a.state) - weight(b.state)))
+      setCanModerate(result.canModerate)
+    } catch {
+      setLoadError(true)
+      setCanModerate(false)
+      toast.error('Kunde inte läsa recensioner. Försök igen.')
     }
     setLoading(false)
   }, [])
@@ -86,6 +70,7 @@ const AdminReviewModeration = () => {
   useEffect(() => { load() }, [load])
 
   const moderate = async (reviewId: string, action: V2ModerateReviewRequest['action']) => {
+    if (!canModerate) return
     setBusyId(reviewId)
     try {
       const note = action === 'reject' || action === 'remove'
@@ -100,7 +85,7 @@ const AdminReviewModeration = () => {
       await load()
     } catch (error) {
       toast.error(t('Kunde inte moderera recensionen'), {
-        description: (error as Error)?.message,
+        description: 'Försök igen. Kontakta supporten om felet kvarstår.',
       })
     } finally {
       setBusyId(null)
@@ -113,7 +98,7 @@ const AdminReviewModeration = () => {
         <div>
           <h1 className="font-display text-2xl">{t('Recensioner')}</h1>
           <p className="text-sm text-muted-foreground">
-            {t('Väntande recensioner överst. Publicering kräver genomfört uppdrag (completion evidence).')}
+            {canModerate ? 'Väntande recensioner överst. Publicering kräver ett genomfört uppdrag.' : 'Publicerade kundrecensioner. Moderering är inte tillgänglig för dessa recensioner.'}
           </p>
         </div>
         <Button variant="outline" onClick={load} disabled={loading}>
@@ -122,7 +107,7 @@ const AdminReviewModeration = () => {
         </Button>
       </div>
 
-      {loading && reviews.length === 0 ? (
+      {loadError ? <p role="alert" className="py-6 text-sm">Recensionerna kunde inte hämtas. Använd Uppdatera för att försöka igen.</p> : loading && reviews.length === 0 ? (
         <div className="flex justify-center py-16"><Loader2 className="animate-spin" /></div>
       ) : reviews.length === 0 ? (
         <p className="text-sm text-muted-foreground py-10 text-center">{t('Inga recensioner ännu.')}</p>
@@ -136,13 +121,13 @@ const AdminReviewModeration = () => {
                     <Star key={star} className={cn('h-3.5 w-3.5', star <= review.rating ? 'fill-[hsl(var(--brand-sun))] text-[hsl(var(--brand-sun))]' : 'text-muted-foreground/30')} />
                   ))}
                 </span>
-                <Badge className={cn('border-0', REVIEW_STATE_STYLE[review.state])}>{review.state}</Badge>
+                <Badge className={cn('border-0', REVIEW_STATE_STYLE[review.state])}>{{ submitted: 'Väntar', verified: 'Verifierad', published: 'Publicerad', flagged: 'Flaggad', rejected: 'Avvisad', removed: 'Borttagen' }[review.state]}</Badge>
                 <span className="text-xs text-muted-foreground">
                   {t('Utfall:')} {review.v2_job_outcomes ? OUTCOME_LABEL[review.v2_job_outcomes.state] : '—'}
                   {review.v2_job_outcomes?.final_price_sek != null && ` · ${review.v2_job_outcomes.final_price_sek} kr`}
                 </span>
                 <span className="text-xs text-muted-foreground ml-auto">
-                  {review.workshops?.company_name ?? '—'} · {new Date(review.created_at).toLocaleDateString('sv-SE')}
+                  {review.workshops?.company_name ?? '—'} · {review.created_at ? new Date(review.created_at).toLocaleDateString('sv-SE') : '–'}
                 </span>
               </div>
               {review.body && <p className="text-sm whitespace-pre-wrap mb-2">{review.body}</p>}
@@ -155,7 +140,7 @@ const AdminReviewModeration = () => {
                 <p className="text-xs text-muted-foreground mb-2">{t('Anteckning:')} {review.moderation_note}</p>
               )}
               <div className="flex flex-wrap gap-2 mt-2">
-                {ACTIONS.map(({ action, label, variant }) => (
+                {canModerate && ACTIONS.map(({ action, label, variant }) => (
                   <Button
                     key={action}
                     size="sm"

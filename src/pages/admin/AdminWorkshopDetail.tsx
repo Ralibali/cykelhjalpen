@@ -1,3 +1,4 @@
+import { bikeResponseSummary, bikeResponseLabel } from '@/lib/bikeResponseSummary'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
@@ -192,7 +193,7 @@ const AdminWorkshopDetail = () => {
     }
   }
 
-  const paidResponses = responses.filter((r) => r.paid).length
+  const responseSummary = bikeResponseSummary(responses)
   const revenue = charges.filter((c) => c.status === 'paid').reduce((sum, c) => sum + (c.amount || 0), 0)
 
   return (
@@ -326,7 +327,7 @@ const AdminWorkshopDetail = () => {
           <div className="rounded-xl border bg-card p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-display font-semibold">{t('Senaste offerter')}</h2>
-              <span className="text-sm text-muted-foreground">{paidResponses} {t('skickade')} · {formatMoney(revenue)} {t('intäkt')}</span>
+              <span className="text-sm text-muted-foreground">Utkast: {responseSummary.drafts} · Skickade: {responseSummary.sent} · {formatMoney(revenue)} {t('intäkt')}</span>
             </div>
             {responses.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">{t('Inga offerter ännu.')}</p>
@@ -345,7 +346,7 @@ const AdminWorkshopDetail = () => {
                     </div>
                     <span className={cn('text-xs font-semibold rounded-full px-2.5 py-1 shrink-0',
                       row.paid ? 'bg-emerald-100 text-emerald-800' : row.status === 'closed_for_responses' ? 'bg-muted text-muted-foreground' : 'bg-amber-100 text-amber-800')}>
-                      {row.paid ? (row.used_free_lead ? t('Skickad · gratis') : t('Skickad')) : row.status === 'closed_for_responses' ? t('Stängd') : t('Ej skickad')}
+                      {bikeResponseLabel(row.status, row.paid, row.used_free_lead)}
                     </span>
                   </div>
                 ))}

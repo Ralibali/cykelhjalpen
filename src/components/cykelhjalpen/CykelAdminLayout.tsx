@@ -30,6 +30,10 @@ const Badge = ({ value, danger }: { value: number; danger?: boolean }) => (
 const CykelAdminLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation()
   const { counts } = useAdminCounts()
+  useEffect(() => {
+    const item = [...ADMIN_NAV_FLAT].sort((a, b) => b.href.length - a.href.length).find(item => isActivePath(location.pathname, item.href))
+    document.title = `${item?.label || 'Admin'} | Cykelhjälpen`
+  }, [location.pathname])
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [mobileMenu, setMobileMenu] = useState(false)
 
