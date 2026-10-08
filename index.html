@@ -128,6 +128,20 @@
       });
     </script>
 
+    <!-- Fetch only the homepage's visual assets before the React bundle is ready. -->
+    <script>
+      if (/^\/(?:en(?:\/book)?\/?)?$/.test(window.location.pathname)) {
+        const photo = document.createElement('link');
+        photo.rel = 'preload'; photo.as = 'image'; photo.href = '/images/home/hero-960.avif';
+        photo.imageSrcset = '/images/home/hero-640.avif 640w, /images/home/hero-960.avif 960w, /images/home/hero-1600.avif 1600w, /images/home/hero-1920.avif 1920w';
+        photo.imageSizes = '100vw'; photo.fetchPriority = 'high'; document.head.appendChild(photo);
+        [400, 500, 600].forEach(function (weight) {
+          const font = document.createElement('link');
+          font.rel = 'preload'; font.as = 'font'; font.type = 'font/woff2'; font.crossOrigin = 'anonymous';
+          font.href = '/fonts/geist-' + weight + '.woff2'; document.head.appendChild(font);
+        });
+      }
+    </script>
   </head>
 
   <body>

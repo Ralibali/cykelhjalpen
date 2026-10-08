@@ -6,7 +6,7 @@ import { useLanguage, useT } from '@/lib/i18n'
 import { toEnglishPath } from '@/i18n/routes'
 import { useV2Flag } from '@/hooks/useV2Flag'
 
-const CykelFooter = () => {
+const CykelFooter = ({ homeDesign = false }: { homeDesign?: boolean }) => {
   const t = useT()
   const { lang } = useLanguage()
   // Under the /en router basename, Link `to` values are in-router paths.
@@ -22,7 +22,7 @@ const CykelFooter = () => {
       <div className="col-span-2 md:col-span-1">
         <CykelLogo />
         <p className="mt-3 text-sm text-muted-foreground max-w-xs">
-          {t('Beskriv ditt cykelproblem och jämför prisförslag från verkstäder som kan hjälpa dig.')}
+          {homeDesign ? (lang === 'en' ? 'Cykelhjälpen is made by Aurora Media AB in Linköping.' : 'Cykelhjälpen görs av Aurora Media AB i Linköping.') : t('Beskriv ditt cykelproblem och jämför prisförslag från verkstäder som kan hjälpa dig.')}
         </p>
         <div className="mt-4"><LanguageSwitcher /></div>
       </div>

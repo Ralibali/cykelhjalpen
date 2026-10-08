@@ -78,9 +78,9 @@ const CookieConsent = () => {
     setAnalytics(statistics); setMarketing(ads); applyConsent(state); setVisible(false)
   }
 
-  if (!visible) return <button type="button" onClick={() => setVisible(true)} className="fixed bottom-3 left-3 z-40 inline-flex items-center gap-1.5 rounded-full border-2 border-border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm" aria-label={t('Ändra cookieinställningar')}><Cookie className="h-3.5 w-3.5" />{t('Cookieinställningar')}</button>
+  if (!visible) return <button type="button" onClick={() => setVisible(true)} className="cookie-preferences fixed bottom-3 left-3 z-40 inline-flex items-center gap-1.5 rounded-full border-2 border-border bg-background/95 px-3 py-1.5 text-xs text-muted-foreground shadow-sm" aria-label={t('Ändra cookieinställningar')}><Cookie className="h-3.5 w-3.5" />{t('Cookieinställningar')}</button>
 
-  return <div ref={bannerRef} className="fixed bottom-0 inset-x-0 z-50 p-2 md:p-4" role="dialog" aria-labelledby="cookie-heading">
+  return <div ref={bannerRef} className="cookie-consent fixed bottom-0 inset-x-0 z-50 p-2 md:p-4" role="dialog" aria-labelledby="cookie-heading">
     <div className="max-w-3xl mx-auto bg-card border-2 border-foreground rounded-2xl shadow-lg p-3 md:p-6 flex flex-col gap-3">
       <h2 id="cookie-heading" className="font-display text-lg">{t('Dina cookieinställningar')}</h2>
       <p className="text-sm">{t('Nödvändig lagring används för tjänsten. Välj valfri statistik och marknadsföring separat. Du kan ändra ditt val när som helst.')}{' '}<Link to="/cookies" className="underline">{t('Cookiepolicy')}</Link>{' · '}<Link to="/integritetspolicy" className="underline">{t('Integritetspolicy')}</Link></p>

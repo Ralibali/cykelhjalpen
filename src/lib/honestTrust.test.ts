@@ -87,15 +87,21 @@ describe('honest trust facts', () => {
     }
   })
 
-  it('is mounted on the production home and workshop landings', () => {
+  it('keeps honest claims on the production home and workshop landings', () => {
     const home = readFileSync(resolve(process.cwd(), 'src/pages/cykelhjalpen/CykelhjalpenIndexV3.tsx'), 'utf8')
+      + readFileSync(resolve(process.cwd(), 'src/components/HomeHero.tsx'), 'utf8')
     const workshop = readFileSync(resolve(process.cwd(), 'src/pages/cykelhjalpen/ForVerkstaderPageV4.tsx'), 'utf8')
     const indexBarrel = readFileSync(resolve(process.cwd(), 'src/pages/cykelhjalpen/CykelhjalpenIndex.tsx'), 'utf8')
     const workshopBarrel = readFileSync(resolve(process.cwd(), 'src/pages/cykelhjalpen/ForVerkstaderPage.tsx'), 'utf8')
 
     expect(indexBarrel).toContain("from './CykelhjalpenIndexV3'")
     expect(workshopBarrel).toContain("from './ForVerkstaderPageV4'")
-    expect(home).toContain('CykelHonestTrust')
+    expect(home).toContain('Kostar ingenting')
+    expect(home).toContain('Högst tre svar')
+    expect(home).toContain('Du bestämmer själv')
+    expect(home).toContain('De två första kunderna du vinner är gratis')
+    expect(home).toContain('50 kr exkl. moms per jobb')
+    for (const pattern of FORBIDDEN) expect(home).not.toMatch(pattern)
     expect(workshop).toContain('CykelHonestTrust')
     expect(home).not.toMatch(/jojoscykel/i)
     expect(workshop).not.toMatch(/jojoscykel/i)

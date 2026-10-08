@@ -6,7 +6,7 @@
   "packageManager": "bun@1.2.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/generate-editorial.mjs",
+    "build": "vite build && node scripts/generate-editorial.mjs && node scripts/prerender-home-hero.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",
