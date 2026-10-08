@@ -87,20 +87,29 @@ describe('vercel.json (Vite SPA)', () => {
       '/dashboard', '/dashboard/leads', '/admin', '/admin/verkstader',
       '/mitt-arende/abc', '/offert/abc', '/mina-svar/abc', '/avregistrera/tok',
       '/annons/verkstad/linkoping', '/registrera/verkstad', '/registrera/byra',
-      '/landing', '/landing/byra', '/sitemap',
-      // Updro dynamic surfaces (shared vercel.json — must never 404)
-      '/byraer/nisse-webb', '/byraer/linkoping/seo', '/artiklar/guide',
-      '/verktyg/kalkyl', '/stader/linkoping', '/leveranser/webbutveckling',
-      '/guider', '/guider/slug', '/kunskapsbank', '/support', '/updro-vs-partna',
+      '/sitemap', '/support',
       // V2 gated surfaces — client-rendered, must never hard-404 in prod
       '/verkstad/nagon-slug', '/avsluta-paminnelser/some-token',
       // English-basename variants
       '/en/mitt-arende/abc', '/en/logga-in', '/en/dashboard', '/en/admin/verkstader',
-      '/en/integritetspolicy', '/en/villkor', '/en/cookies', '/en/registrera/verkstad',
+      '/en/registrera/verkstad',
       '/en/verkstad/nagon-slug', '/en/avsluta-paminnelser/some-token',
     ]
     for (const path of appPaths) {
       expect(appShellRewrite(path), path).toBe(true)
+    }
+  })
+
+  it('does not serve the Cykelhjälpen app shell for copied Updro routes', () => {
+    const foreignPaths = [
+      '/landing', '/landing/byra', '/byraer/nisse-webb', '/byraer/linkoping/seo',
+      '/artiklar/guide', '/verktyg/kalkyl', '/stader/linkoping',
+      '/leveranser/webbutveckling', '/guider', '/guider/slug',
+      '/kunskapsbank', '/updro-vs-partna',
+    ]
+    for (const path of foreignPaths) {
+      expect(anyRewrite(path), path).toBe(false)
+      expect(anyRewrite(`/en${path}`), `/en${path}`).toBe(false)
     }
   })
 
@@ -145,8 +154,13 @@ describe('vercel.json (Vite SPA)', () => {
     // Legacy EN-footer URLs (Swedish slugs under /en) → correct English twins
     expect(bySource.get('/en/cykelverkstad-lund')?.destination).toBe('/en/bike-repair-lund')
     expect(bySource.get('/en/vad-kostar-cykelreparation-linkoping')?.destination).toBe('/en/bike-repair-cost-linkoping')
+    const legalPaths = ['/villkor', '/integritetspolicy', '/cookies']
+    for (const path of legalPaths) {
+      expect(bySource.get(`/en${path}`)).toMatchObject({ destination: path, statusCode: 301 })
+      expect(anyRewrite(`/en${path}`)).toBe(false)
+    }
     for (const rule of redirects) {
-      expect(rule.statusCode).toBe(308)
+      if (!legalPaths.some(path => rule.source === `/en${path}`)) expect(rule.statusCode).toBe(308)
     }
   })
 
