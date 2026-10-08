@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useCallback, useRef, createContext, useContext, ReactNode } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import type { User, Session } from '@supabase/supabase-js'
 import type { Profile, SupplierProfile, UserRole } from '@/types'
 import { toast } from 'sonner'
+import { getCurrentHost } from '@/lib/hostConfig'
+import { withAuthTimeout } from '@/lib/authErrors'
 
 interface AuthContextType {
   user: User | null
@@ -11,6 +12,7 @@ interface AuthContextType {
   profile: Profile | null
   supplierProfile: SupplierProfile | null
   loading: boolean
+  profileError: string | null
   isAuthenticated: boolean
   isBuyer: boolean
   isSupplier: boolean
@@ -47,28 +49,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [supplierProfile, setSupplierProfile] = useState<SupplierProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileError, setProfileError] = useState<string | null>(null)
+  const currentUserId = useRef<string | null>(null)
+  const profileRequest = useRef(0)
+  const profileController = useRef<AbortController | null>(null)
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    profileController.current?.abort()
+    const controller = new AbortController()
+    profileController.current = controller
+    const request = ++profileRequest.current
+    const isCurrent = () => !controller.signal.aborted && request === profileRequest.current && currentUserId.current === userId
+    setLoading(true)
+    setProfileError(null)
 
-    if (profileData) {
-      setProfile(profileData as unknown as Profile)
-
-      if (profileData.role === 'supplier') {
-        const { data: supplierData } = await supabase
-          .from('supplier_profiles')
+    try {
+      const result = await withAuthTimeout((async () => {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
           .select('*')
           .eq('id', userId)
-          .single()
+          .abortSignal(controller.signal)
+          .maybeSingle()
+        if (error || !profileData) throw error ?? new Error('missing_profile')
 
-        if (supplierData) {
-          setSupplierProfile(supplierData as unknown as SupplierProfile)
+        // Workshops live in workshops, not Updro's supplier_profiles table.
+        let supplierData: SupplierProfile | null = null
+        if (getCurrentHost() === 'updro' && profileData.role === 'supplier') {
+          const { data, error: supplierError } = await supabase
+            .from('supplier_profiles')
+            .select('*')
+            .eq('id', userId)
+            .abortSignal(controller.signal)
+            .maybeSingle()
+          if (supplierError) throw supplierError
+          supplierData = data as unknown as SupplierProfile | null
         }
+        return { profileData, supplierData }
+      })())
+      if (isCurrent()) {
+        setProfile(result.profileData as unknown as Profile)
+        setSupplierProfile(result.supplierData)
       }
+    } catch {
+      if (isCurrent()) {
+        setProfile(null)
+        setSupplierProfile(null)
+        setProfileError('Du är inloggad, men vi kunde inte läsa in ditt konto. Försök igen. Kontakta oss om problemet kvarstår.')
+      }
+    } finally {
+      if (isCurrent()) setLoading(false)
+      controller.abort()
     }
   }, [])
 
@@ -104,49 +135,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let isMounted = true
+    let authEventReceived = false
 
-    // First, get the initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const applySession = (nextSession: Session | null) => {
       if (!isMounted) return
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        await fetchProfile(session.user.id)
-        createPendingProject(session.user.id)
+      const nextId = nextSession?.user.id ?? null
+      if (currentUserId.current !== nextId) {
+        currentUserId.current = nextId
+        ++profileRequest.current
+        profileController.current?.abort()
+        setProfile(null)
+        setSupplierProfile(null)
+        setProfileError(null)
+        setLoading(!!nextId)
       }
-      if (isMounted) setLoading(false)
-    })
+      setSession(nextSession)
+      setUser(nextSession?.user ?? null)
+      if (!nextId) setLoading(false)
+    }
 
-    // Then listen for auth changes (don't await inside callback)
+    // Keep the auth callback synchronous and free of Supabase requests.
+    // Profile work runs separately, after Supabase has released its auth lock.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (!isMounted) return
-        setSession(session)
-        setUser(session?.user ?? null)
-
-        if (session?.user) {
-          fetchProfile(session.user.id).then(() => {
-            if (isMounted) setLoading(false)
-            // Auto-create pending project after email verification
-            createPendingProject(session.user.id)
-          })
-        } else {
-          setProfile(null)
-          setSupplierProfile(null)
-          setLoading(false)
-        }
+      (_event, nextSession) => {
+        authEventReceived = true
+        applySession(nextSession)
       }
     )
 
+    void withAuthTimeout(supabase.auth.getSession()).then(({ data, error }) => {
+      if (!isMounted || authEventReceived) return
+      if (error) throw error
+      applySession(data.session)
+    }).catch(() => {
+      if (!isMounted || authEventReceived) return
+      setProfileError('Kunde inte läsa din inloggning. Försök logga in igen.')
+      setLoading(false)
+    })
+
     return () => {
       isMounted = false
+      profileController.current?.abort()
       subscription.unsubscribe()
     }
-  }, [fetchProfile, createPendingProject])
+  }, [])
+
+  const userId = user?.id
+  useEffect(() => {
+    if (!userId) return
+    const timer = setTimeout(() => {
+      void fetchProfile(userId)
+      if (getCurrentHost() === 'updro') void createPendingProject(userId)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [userId, fetchProfile, createPendingProject])
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error: error as Error | null }
+    setProfileError(null)
+    try {
+      const { error } = await withAuthTimeout(supabase.auth.signInWithPassword({ email: email.trim(), password }))
+      return { error: error as Error | null }
+    } catch (error) {
+      return { error: error instanceof Error ? error : new Error('sign_in_failed') }
+    }
   }
 
   const signUp = async (data: SignUpData) => {
@@ -203,6 +254,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profile,
     supplierProfile,
     loading,
+    profileError,
     isAuthenticated: !!user,
     isBuyer: profile?.role === 'buyer',
     isSupplier: profile?.role === 'supplier',
