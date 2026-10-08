@@ -1,5 +1,19 @@
 /** English strings for the authentication and password-recovery flows. */
 export const EN_AUTH: Record<string, string> = {
+  'Bekräfta din e-postadress via länken i bekräftelsemejlet innan du loggar in. Kontrollera även skräpposten.':
+    'Confirm your email address using the link in the confirmation email before signing in. Please also check your spam folder.',
+  'Fel e-postadress eller lösenord. Försök igen eller välj Glömt lösenord.':
+    'Incorrect email address or password. Try again or choose Forgot password.',
+  'Kunde inte ansluta till inloggningen. Kontrollera din internetanslutning och försök igen.':
+    'We could not connect to sign-in. Check your internet connection and try again.',
+  'Du är inloggad, men vi kunde inte läsa in ditt konto. Försök igen. Kontakta oss om problemet kvarstår.':
+    'You are signed in, but we could not load your account. Try again. Contact us if the problem persists.',
+  'Kunde inte läsa din inloggning. Försök logga in igen.':
+    'We could not restore your session. Please try signing in again.',
+  'Kunde inte läsa in din verkstad. Försök igen. Du behöver inte registrera dig på nytt.':
+    'We could not load your workshop. Try again. You do not need to register again.',
+  'Läser in ditt konto…': 'Loading your account…',
+  'Laddar konto': 'Loading account',
   'Visa lösenord': 'Show password',
   'Dölj lösenord': 'Hide password',
   'Glömt lösenord': 'Forgot password',

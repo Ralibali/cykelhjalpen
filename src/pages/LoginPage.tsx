@@ -9,15 +9,16 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
-import { toast } from 'sonner'
 import { Mail, Lock } from 'lucide-react'
 import { setSEOMeta } from '@/lib/seoHelpers'
 import { getCurrentHost } from '@/lib/hostConfig'
 import { useT } from '@/lib/i18n'
+import { loginErrorMessage } from '@/lib/authErrors'
+import AuthLoadError from '@/components/AuthLoadError'
 
 const LoginPage = () => {
   const t = useT()
-  const { signIn, profile } = useAuth()
+  const { signIn, profile, user, loading: authLoading, profileError, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const host = getCurrentHost()
@@ -25,6 +26,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   const copy = useMemo(() => ({
     title: t('Logga in | Cykelhjälpen'),
@@ -44,19 +46,21 @@ const LoginPage = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (loading || authLoading) return
+    setLoginError(null)
     setLoading(true)
-    const { error } = await signIn(email.trim(), password)
-    setLoading(false)
-
-    if (error) {
-      toast.error(t('Kunde inte logga in. Kontrollera e-post, lösenord och att kontot är bekräftat.'))
-    } else {
-      toast.success(t('Inloggad!'))
+    try {
+      const { error } = await signIn(email.trim(), password)
+      if (error) setLoginError(loginErrorMessage(error))
+    } catch (error) {
+      setLoginError(loginErrorMessage(error))
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (!profile) return
+    if (!profile || authLoading || profileError) return
 
     if (profile.role === 'admin') {
       navigate('/admin', { replace: true })
@@ -72,7 +76,7 @@ const LoginPage = () => {
     if (profile.role === 'supplier') navigate('/dashboard/supplier', { replace: true })
     else if (profile.role === 'buyer') navigate('/dashboard/buyer', { replace: true })
     else navigate('/', { replace: true })
-  }, [profile, navigate, isCykel])
+  }, [profile, authLoading, profileError, navigate, isCykel])
 
   const Header = isCykel ? CykelNavbar : Navbar
   const PageFooter = isCykel ? CykelFooter : Footer
@@ -104,7 +108,16 @@ const LoginPage = () => {
           )}
 
           <div className="bg-card rounded-3xl border-2 border-foreground p-7 sticker">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {user ? (
+              profileError && !authLoading ? (
+                <AuthLoadError message={profileError} onRetry={() => void refreshProfile()} />
+              ) : (
+                <p role="status">{t('Läser in ditt konto…')}</p>
+              )
+            ) : <form onSubmit={handleSubmit} className="space-y-4">
+              {(loginError || profileError) && (
+                <p role="alert" className="text-sm text-destructive">{t(loginError || profileError || '')}</p>
+              )}
               <div>
                 <Label htmlFor="email">{t('E-post')}</Label>
                 <div className="relative mt-1">
@@ -140,10 +153,10 @@ const LoginPage = () => {
                 />
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full rounded-full py-6 text-base shadow-brand cta-playful">
-                {loading ? t('Loggar in…') : t('Logga in')}
+              <Button type="submit" disabled={loading || authLoading} className="w-full rounded-full py-6 text-base shadow-brand cta-playful">
+                {loading || authLoading ? t('Loggar in…') : t('Logga in')}
               </Button>
-            </form>
+            </form>}
 
             <div className="mt-4 text-center text-sm">
               <Link to="/aterstall-losenord" className="text-primary hover:underline">
