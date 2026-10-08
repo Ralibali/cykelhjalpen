@@ -1,0 +1,157 @@
+/* Shared homepage design. Geist is sourced from Google Fonts and served locally. */
+@font-face{font-family:Geist;font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/geist-400.woff2') format('woff2')}
+@font-face{font-family:Geist;font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/geist-500.woff2') format('woff2')}
+@font-face{font-family:Geist;font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/geist-600.woff2') format('woff2')}
+.home-page{--home-accent:#161f39;--home-ink:#1d1d1f;--home-muted:#636366;--home-line:rgba(29,29,31,.14);--background:0 0% 100%;--foreground:240 3% 12%;--card:0 0% 100%;--card-foreground:240 3% 12%;--primary:225 44% 15%;--primary-foreground:0 0% 100%;--secondary:240 5% 91%;--secondary-foreground:240 3% 12%;--muted:240 5% 91%;--muted-foreground:240 2% 40%;--border:240 3% 85%;--accent:225 44% 15%;--accent-foreground:0 0% 100%;color:var(--home-ink);background:#fff;font:400 16px/1.5 Geist,sans-serif;font-synthesis:none;-webkit-font-smoothing:antialiased}
+.home-page.home-cycle{--home-accent:#00a665;--primary:157 100% 33%;--primary-foreground:240 3% 12%;--accent:157 100% 33%;--accent-foreground:240 3% 12%}
+.home-page :is(h1,h2,h3,p,ul,ol){margin:0}
+.home-page *{font-family:Geist,sans-serif}
+.home-page :is(h1,h2,h3,strong,b){font-weight:600}
+.home-page h1{font-size:clamp(34px,5vw,48px);line-height:1.3;letter-spacing:-.035em;text-wrap:balance}
+.home-page h2{font-size:clamp(26px,3vw,32px);line-height:1.3;letter-spacing:-.03em;text-wrap:balance}
+.home-page h3{font-size:20px;line-height:1.3;letter-spacing:-.02em}
+.home-page :is(button,a,summary){-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.home-page :is(button,a,summary,input):focus-visible{outline:3px solid var(--home-accent);outline-offset:5px}
+.home-page .home-hero :is(a,button):focus-visible{outline-color:#fff}
+.home-page section[id],.home-page details[id]{scroll-margin-top:92px}
+.home-container{width:calc(100% - 2 * clamp(16px,3vw,32px));max-width:1120px;margin-inline:auto}
+.home-section{padding-block:64px}
+.home-section-heading{margin-bottom:28px!important}
+.home-eyebrow{font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;line-height:1.5;margin-bottom:18px!important}
+.home-muted{color:var(--home-muted)}
+.home-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:13px 23px;border:1px solid transparent;border-radius:100px;background:var(--home-accent);color:#fff;font-size:15px;font-weight:500;line-height:1.5;text-decoration:none;cursor:pointer;transition:transform 160ms cubic-bezier(.23,1,.32,1),box-shadow 160ms cubic-bezier(.23,1,.32,1)}
+.home-button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(29,29,31,.16)}
+.home-button:disabled{opacity:.65;cursor:wait;transform:none}
+.home-cycle .home-button{color:#1d1d1f}
+.home-button-light{background:#fff!important;color:#1d1d1f!important}
+.home-button-outline{background:transparent!important;color:inherit!important;border-color:var(--home-line)}
+.home-text-link{display:inline-flex;align-items:center;min-height:44px;text-underline-offset:5px;font-size:14px;font-weight:500}
+.home-text-link:hover{text-decoration:underline}
+.home-hero{position:relative;isolation:isolate;display:flex;align-items:flex-end;min-height:660px;background:#1d1d1f;color:#fff}
+.home-hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% center;z-index:-2}
+.home-hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.14) 80%),linear-gradient(90deg,rgba(0,0,0,.6),rgba(0,0,0,.02) 92%)}
+.home-hero-content{padding-block:140px 44px;position:relative}
+.home-hero-copy{max-width:650px}
+.home-hero-intro{max-width:610px;margin-top:20px!important;font-size:clamp(16px,1.7vw,20px);line-height:1.5;color:#fff}
+.home-hero .home-button{margin-top:28px}
+.home-facts{display:flex;flex-wrap:wrap;gap:6px 13px;padding:0;list-style:none;margin-top:24px!important;font-size:13px;color:#fff}
+.home-facts li+li::before{content:'·';padding-right:13px}
+.home-grid{display:grid;gap:16px}
+.home-step{padding-top:24px;border-top:1px solid var(--home-line)}
+.home-number{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin-bottom:22px;border-radius:12px;border:1px solid var(--home-line);font-size:18px;font-weight:500}
+.home-step h3{margin-bottom:12px}
+.home-step p{color:var(--home-muted);max-width:36ch}
+.home-soft{background:#e8e8ea}
+.home-card{display:block;padding:26px;border:1px solid var(--home-line);border-radius:16px;background:#fff;box-shadow:0 8px 40px rgba(29,29,31,.12);transition:transform 160ms cubic-bezier(.23,1,.32,1)}
+a.home-card:hover{transform:translateY(-3px)}
+.home-city{min-height:136px;position:relative;padding:22px}
+.home-city h3{margin-bottom:12px}
+.home-city p{font-size:14px;color:#636366;max-width:18ch}
+.home-city-mark{position:absolute;right:20px;top:22px;font-size:20px;color:#1d1d1f}
+.home-chips{display:flex;flex-wrap:wrap;gap:10px}
+.home-chip{display:inline-flex;align-items:center;min-height:48px;padding:12px 18px;border:1px solid var(--home-line);border-radius:12px;background:#fff;font-size:15px;transition:transform 160ms cubic-bezier(.23,1,.32,1)}
+a.home-chip:hover{transform:translateY(-2px);border-color:var(--home-accent)}
+.home-faq-layout{display:grid;gap:26px}
+.home-faq details{border-bottom:1px solid var(--home-line)}
+.home-faq summary{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:64px;padding:18px 0;cursor:pointer;list-style:none;font-weight:500}
+.home-faq summary::-webkit-details-marker{display:none}
+.home-faq summary::after{content:'+';font-size:24px;font-weight:400;flex:none}
+.home-faq details[open]>summary::after{content:'−'}
+.home-faq details p{padding-bottom:22px;color:var(--home-muted);max-width:65ch}
+.home-faq .home-more{margin-top:12px;border-bottom:0}
+.home-faq .home-more>summary{font-size:14px;color:var(--home-muted)}
+.home-recruit{background:#1d1d1f;color:#fff;border-radius:24px;padding:32px 24px;display:grid;gap:24px;align-items:center}
+.home-recruit h2{max-width:480px}
+.home-recruit p{max-width:580px;margin-top:18px;color:#fff}
+.home-recruit .home-button{justify-self:start}
+.home-footer{border-top:1px solid var(--home-line);padding-block:40px}
+.home-footer .home-container{display:flex;flex-direction:column;gap:25px}
+.home-footer p{font-size:14px;color:var(--home-muted)}
+.home-footer nav{display:flex;flex-wrap:wrap;gap:0 22px}
+.home-footer a{font-size:14px;min-height:44px;display:inline-flex;align-items:center}
+.home-footer a:hover{text-decoration:underline;text-underline-offset:4px}
+.home-brand{display:inline-flex;align-items:center;min-height:44px;font-size:19px;font-weight:600;letter-spacing:-.045em;white-space:nowrap}
+.home-header{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--home-line);background:#fff}
+.home-header-row{height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.home-desktop-nav,.home-header-actions{display:none}
+.home-menu-trigger{min-width:64px;min-height:44px;border:1px solid var(--home-line);border-radius:100px;font-size:14px}
+.home-mobile-menu{background:#fff;color:#1d1d1f;font-family:Geist,sans-serif}
+.home-mobile-menu nav{display:grid;gap:8px;margin-top:24px}
+.home-mobile-menu nav :is(a,button){min-height:48px;text-align:left;padding:12px;border-bottom:1px solid rgba(29,29,31,.14);font:500 16px/1.5 Geist,sans-serif}
+.home-stats{display:grid;gap:0;border-bottom:1px solid var(--home-line);padding-block:6px}
+.home-stat{padding:23px 0;display:grid;gap:7px;border-bottom:1px solid var(--home-line)}
+.home-stat:last-child{border-bottom:0}
+.home-stat strong{font-size:clamp(26px,3vw,32px);line-height:1.3;letter-spacing:-.035em}
+.home-stat span{font-size:14px;color:#636366}
+.home-before-after{display:grid;gap:16px}
+.home-comparison{padding:30px 24px;border-radius:24px;background:#e8e8ea}
+.home-comparison.home-after{background:#161f39;color:#fff}
+.home-comparison p{margin-top:18px;font-size:18px;line-height:1.5;max-width:40ch}
+.home-comparison h3{font-size:14px;text-transform:uppercase;letter-spacing:.1em;font-weight:500}
+.home-feature{min-height:188px}
+.home-feature .home-feature-index{display:block;font-size:13px;color:#636366;margin-bottom:30px}
+.home-feature p{margin-top:12px;color:#636366}
+.home-audience{margin-top:36px;display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px}
+.home-audience p{font-size:14px;color:#636366}
+.home-price{max-width:600px;margin-inline:auto;text-align:center;padding:36px 24px;border-radius:24px;background:#fff;border:1px solid var(--home-line);box-shadow:0 8px 40px rgba(29,29,31,.12)}
+.home-price h2{max-width:440px;margin-inline:auto;}
+.home-price p{margin-top:18px;color:#636366}
+.home-price .home-button{margin-top:26px}
+.home-price small{display:block;font-size:14px;color:#636366;margin-top:8px}
+.home-existing{padding-top:0}
+.home-existing-actions{display:flex;flex-wrap:wrap;gap:10px 22px;padding-block:20px}
+.home-extra{border-top:1px solid var(--home-line);padding-block:8px}
+.home-extra>summary{cursor:pointer;min-height:52px;display:flex;justify-content:space-between;align-items:center;list-style:none;font-weight:500}
+.home-extra>summary::after{content:'+';font-size:24px}
+.home-extra[open]>summary::after{content:'−'}
+.home-extra-body{padding-block:20px}
+.home-reveal-in{animation:home-reveal 160ms cubic-bezier(.23,1,.32,1) both}
+@keyframes home-reveal{from{opacity:.2;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* Keep shared navigation, authentication, language and theme controls intact. */
+.home-cycle>header{background:#fff;border-bottom:1px solid var(--home-line);backdrop-filter:none;box-shadow:none}
+.home-cycle>header>.container{max-width:1184px;height:72px;padding-inline:clamp(16px,3vw,32px)}
+.home-cycle>header :is(a,button){min-height:44px;font-size:14px;font-weight:500;border-radius:100px}
+.home-cycle>header a[aria-label='Cykelhjälpen logotyp']{font-size:21px;font-weight:600;letter-spacing:-.045em;gap:0}
+.home-cycle>header a[aria-label='Cykelhjälpen logotyp']>svg{display:none}
+.home-cycle>header a[aria-label='Cykelhjälpen logotyp'] span{color:#1d1d1f}
+.home-cycle>header button{min-width:44px}
+.home-cycle>header .border-2{border-width:1px;border-color:var(--home-line)}
+.home-cycle>footer{margin-top:0;background:#fff;border-color:var(--home-line)}
+.home-cycle>footer .container{max-width:1184px;padding-inline:clamp(16px,3vw,32px)}
+.home-cycle>footer a{display:inline-flex;align-items:center;min-height:44px;font-size:14px}
+.home-cycle>footer p{font-size:14px}
+.home-cycle>footer a[aria-label='Cykelhjälpen logotyp']{font-size:21px}
+.home-cycle>footer a[aria-label='Cykelhjälpen logotyp']>svg{display:none}
+.home-cycle>footer a[aria-label='Cykelhjälpen logotyp'] span{color:#1d1d1f}
+.home-cycle>footer .space-y-2>:not([hidden])~:not([hidden]){margin-top:0}
+body:has(.home-page) [role='dialog'],body:has(.home-page) [role='dialog'] *,body:has(.home-page) [data-radix-popper-content-wrapper] *,body:has(.home-page)>#root>div{font-family:Geist,sans-serif}
+@media(min-width:640px){.home-cities{grid-template-columns:repeat(2,1fr)}.home-features{grid-template-columns:repeat(2,1fr)}.home-stats{grid-template-columns:repeat(3,1fr);padding-block:32px;gap:24px}.home-stat{padding:0 20px 0 0;border-bottom:0;border-right:1px solid var(--home-line)}.home-stat:last-child{border-right:0}.home-before-after{grid-template-columns:repeat(2,1fr)}.home-comparison{padding:36px}.home-hero{min-height:620px}.home-hero-content{padding-block:180px 60px}.home-price{padding:48px}}
+@media(min-width:900px){.home-section{padding-block:96px}.home-steps{grid-template-columns:repeat(3,1fr);gap:40px}.home-cities,.home-features{grid-template-columns:repeat(4,1fr)}.home-faq-layout{grid-template-columns:.85fr 1.15fr;gap:80px}.home-recruit{grid-template-columns:1fr auto;padding:52px}.home-footer .home-container{flex-direction:row;justify-content:space-between;align-items:start}.home-existing{padding-top:0}.home-section-heading{margin-bottom:36px!important}.home-desktop-nav,.home-header-actions{display:flex;align-items:center;gap:24px;font-size:14px}.home-desktop-nav a,.home-header-actions a{min-height:44px;display:inline-flex;align-items:center}.home-header-actions{gap:18px}.home-menu-trigger{display:none}.home-hero{min-height:640px}.home-hero-content{padding-block:190px 64px}.home-hero-copy{max-width:660px}}
+@media(min-width:768px) and (max-width:1100px){.home-cycle>header>div>.hidden.md\:flex{display:none}.home-cycle>header>div>.md\:hidden{display:flex}.home-cycle>header>.md\:hidden{display:block}}
+@media(prefers-reduced-motion:reduce){.home-page *,.home-reveal-in{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+body:has(.home-page) *{font-family:Geist,sans-serif}
+body:has(.home-page) :is(.font-bold,.font-extrabold,.font-black){font-weight:600}
+body:has(.home-page) .cookie-consent{font-family:Geist,sans-serif;--background:0 0% 100%;--foreground:240 3% 12%;--card:0 0% 100%;--primary:225 44% 15%;--primary-foreground:0 0% 100%;--border:240 3% 85%;--muted:240 5% 91%;--muted-foreground:240 2% 40%}
+body:has(.home-page) .cookie-consent button{min-height:44px;border-radius:100px;font-size:13px}
+body:has(.home-page) .cookie-consent button[aria-label]{min-width:44px}
+body:has(.home-page) .cookie-preferences{min-height:44px;border-radius:100px;background:#fff;color:#636366;border:1px solid rgba(29,29,31,.14);font-size:13px;padding-inline:14px}
+body:has(.home-page) .cookie-consent .flex.items-center.gap-2{flex-wrap:wrap}
+
+.home-page :is(a,button){min-width:44px}
+.home-page [aria-label="Språk / Language"]{height:48px;border:1px solid rgba(29,29,31,.14)}
+.home-page [aria-label="Språk / Language"] button{min-width:44px;min-height:44px}
+body:has(.home-page) [role="dialog"]{--background:0 0% 100%;--foreground:240 3% 12%;--primary:225 44% 15%;--primary-foreground:0 0% 100%;--muted-foreground:240 2% 40%;border-radius:24px;background:#fff;color:#1d1d1f}
+body:has(.home-page) [role="dialog"] :is(button,input){min-height:44px;border-radius:12px}
+body:has(.home-page) [role="dialog"] button[type="submit"]{border-radius:100px}
+body:has(.home-page) button[aria-label="Kontakta oss"]{background:#161f39;color:#fff}
+
+.home-cycle>header nav a{color:#1d1d1f}
+
+.home-modal-loading{position:fixed;inset:40% 16px auto;z-index:100;margin:auto;max-width:400px;padding:24px;background:#fff;color:#1d1d1f;border:1px solid rgba(29,29,31,.14);border-radius:16px;box-shadow:0 8px 40px rgba(29,29,31,.12);text-align:center}
+
+body:has(.home-page){margin:0}
+.home-page,.home-page *,.home-page::before,.home-page::after{box-sizing:border-box}
+.home-brand{color:inherit;text-decoration:none}
+/* Existing consent access belongs beside the footer, clear of page content. */
+body:has(.home-page) .cookie-preferences{position:static;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:none}

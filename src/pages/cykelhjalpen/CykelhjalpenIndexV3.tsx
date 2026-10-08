@@ -1,19 +1,15 @@
-import { lazy, Suspense } from 'react'
+import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
-import CykelHomeHeroNeutral from '@/components/cykelhjalpen/CykelHomeHeroNeutral'
-import CykelHonestTrust from '@/components/cykelhjalpen/CykelHonestTrust'
-import Reveal from '@/components/cykelhjalpen/Reveal'
+import { HomeHero } from '@/components/HomeHero';
+import { HomeReveal } from '@/components/HomeReveal'
 import { buildCykelHomeFaqs } from '@/components/cykelhjalpen/CykelHomeTrust'
-import { CykelV3FaqAndFinalCta, CykelV3QuotePreview, CykelV3WhyCompare } from '@/components/cykelhjalpen/CykelHomeV3Full'
-import { CykelV3CitiesNeutral, CykelV3MobileStickyNeutral, CykelV3WorkshopRecruitmentNeutral } from '@/components/cykelhjalpen/CykelV3NeutralSections'
+import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 import { trackClick } from '@/hooks/usePageTracking'
 import { usePageSeo } from '@/i18n/usePageSeo'
 import { useLanguage, useT } from '@/lib/i18n'
-
-const CykelHowItWorks = lazy(() => import('@/components/cykelhjalpen/CykelHowItWorks'))
-const SectionFallback = () => <div aria-hidden className="min-h-[240px]" />
+import '@/home-design.css'
 
 const CykelhjalpenIndexV3 = () => {
   const t = useT()
@@ -53,7 +49,7 @@ const CykelhjalpenIndexV3 = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-hero-gradient">
+    <div className="home-page home-cycle">
       <Helmet>
         <title>{text('Cykelhjälpen – jämför lokala cykelverkstäder', 'Cykelhjälpen – compare local bike shops')}</title>
         <meta name="description" content={text('Beskriv felet på din cykel och jämför pris och möjlig tid från lokala cykelverkstäder i Linköping, Norrköping, Uppsala och Lund.', 'Describe the problem with your bike and compare price and available time from local bike shops in Linköping, Norrköping, Uppsala and Lund.')} />
@@ -70,27 +66,69 @@ const CykelhjalpenIndexV3 = () => {
       </Helmet>
 
       <CykelNavbar />
-      <main>
-        <CykelHomeHeroNeutral />
-        <Suspense fallback={<SectionFallback />}>
-          <Reveal><CykelHowItWorks /></Reveal>
-          <Reveal>
-            <CykelHonestTrust
-              variant="cyclist"
-              ctaHref="/skicka-arende"
-              ctaLabel={text('Få prisförslag gratis', 'Get a free quote')}
-              onCtaClick={() => trackClick('home_trust_cta', 'Få prisförslag gratis')}
-            />
-          </Reveal>
-          <Reveal><CykelV3QuotePreview /></Reveal>
-          <Reveal><CykelV3WhyCompare /></Reveal>
-          <Reveal><CykelV3CitiesNeutral /></Reveal>
-          <Reveal><CykelV3WorkshopRecruitmentNeutral /></Reveal>
-          <Reveal><CykelV3FaqAndFinalCta /></Reveal>
-        </Suspense>
+      <main id="home-main">
+        <HomeHero lang={lang}>
+          <Link className="home-button" to="/skicka-arende" onClick={() => trackClick('home_primary_cta_clicked', 'Få prisförslag gratis')}>{text('Beskriv felet', 'Describe the problem')} <span aria-hidden="true">↗</span></Link>
+        </HomeHero>
+
+        <section id="sa-fungerar-det" className="home-section">
+          <HomeReveal className="home-container">
+            <h2 className="home-section-heading">{text('Så går det till', 'How it works')}</h2>
+            <div className="home-grid home-steps">
+              {[
+                [text('Berätta vad som är fel', 'Tell us what is wrong'), text('Kedjan hoppar, bromsen tar dåligt, det låter konstigt bak. Skriv det som du skulle säga det till en kompis.', 'The chain skips, the brakes feel weak, something rattles at the back. Explain it as you would to a friend.')],
+                [text('Verkstäderna svarar', 'The workshops reply'), text('De som har tid och kan jobbet skickar pris och när de kan ta emot cykeln.', 'Workshops that have time and can do the job send a price and when they can take the bike.')],
+                [text('Du väljer', 'You choose'), text('Jämför svaren och ta den som passar. Eller ingen alls.', 'Compare the replies and choose the one that suits you. Or none at all.')],
+              ].map(([title, body], index) => <div className="home-step" key={title}><span className="home-number">{index + 1}</span><h3>{title}</h3><p>{body}</p></div>)}
+            </div>
+          </HomeReveal>
+        </section>
+
+        <section id="stader" className="home-section home-soft">
+          <HomeReveal className="home-container">
+            <h2 className="home-section-heading">{text('Var bor du?', 'Where do you live?')}</h2>
+            <div className="home-grid home-cities">
+              {CYKEL_CITIES.map(city => <Link className="home-card home-city" key={city.name} to={cityLandingPath(city.name)} onClick={() => trackClick('home_v3_city_clicked', city.name, { city: city.name })}><h3>{city.name}</h3><p>{text('Lokala tips och verkstäder', 'Local advice and workshops')}</p><span className="home-city-mark" aria-hidden="true">↗</span></Link>)}
+            </div>
+          </HomeReveal>
+        </section>
+
+        <section className="home-section">
+          <HomeReveal className="home-container">
+            <h2 className="home-section-heading">{text('Det här brukar folk skriva om', 'Common bike problems')}</h2>
+            <div className="home-chips">
+              {[
+                [text('Punka', 'Flat tyre'), 'Punktering'], [text('Växlarna hoppar', 'Skipping gears'), 'Växlar'], [text('Bromsarna tar dåligt', 'Weak brakes'), 'Bromsar'], [text('Vårservice', 'Spring service'), 'Service'], [text('Elcykeln krånglar', 'E-bike trouble'), 'Elcykel-problem'],
+              ].map(([label, problem]) => <Link className="home-chip" key={problem} to={`/skicka-arende?problem=${encodeURIComponent(problem)}`} onClick={() => trackClick('home_quickstart_clicked', label, { problem })}>{label}</Link>)}
+            </div>
+          </HomeReveal>
+        </section>
+
+        <section id="vanliga-fragor" className="home-section" style={{ paddingTop: 0 }}>
+          <HomeReveal className="home-container home-faq-layout">
+            <h2>{text('Bra att veta', 'Good to know')}</h2>
+            <div className="home-faq">
+              {[
+                [text('Kostar det något?', 'Does it cost anything?'), text('Nej. Du betalar bara verkstaden, om du väljer att anlita någon.', 'No. You only pay the workshop if you choose to use one.')],
+                [text('Hur många svar får jag?', 'How many replies will I get?'), text('Högst tre. Det ska vara lätt att jämföra, inte jobbigt.', 'Up to three. Comparing should be easy, not a chore.')],
+                [text('Måste jag välja någon?', 'Do I have to choose a workshop?'), text('Nej. Passar inget så låter du bli.', 'No. If none of the replies suit you, leave it at that.')],
+              ].map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}
+              {/* Keep the original structured-data answers available to visitors. */}
+              <details className="home-more"><summary>{text('Fler frågor om Cykelhjälpen', 'More about Cykelhjälpen')}</summary>{faqs.map(({ q, a }) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}</details>
+            </div>
+          </HomeReveal>
+        </section>
+
+        <section className="home-section" style={{ paddingTop: 0 }}>
+          <HomeReveal className="home-container">
+            <div className="home-recruit">
+              <div><p className="home-eyebrow">{text('För verkstäder', 'For workshops')}</p><h2>{text('Har du en cykelverkstad?', 'Do you run a bike workshop?')}</h2><p>{text('Få jobb från folk i stan som redan vet vad de vill ha hjälp med. Ingen månadsavgift. De två första kunderna du vinner är gratis, sen kostar det 50 kr exkl. moms per jobb.', 'Get jobs from people nearby who know what they need help with. No monthly fee. The first two customers you win are free, then it costs SEK 50 excluding VAT per job.')}</p></div>
+              <Link className="home-button" to="/for-cykelverkstader" onClick={() => trackClick('home_v3_workshop_cta', 'Founding Partner')}>{text('Läs mer och anslut', 'Learn more and join')} <span aria-hidden="true">↗</span></Link>
+            </div>
+          </HomeReveal>
+        </section>
       </main>
-      <CykelFooter />
-      <CykelV3MobileStickyNeutral />
+      <CykelFooter homeDesign />
     </div>
   )
 }
