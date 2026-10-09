@@ -1,5 +1,6 @@
+import { bikeResponseSummary } from '@/lib/bikeResponseSummary'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Check, Download, ExternalLink, Loader2, Megaphone, RefreshCw, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -23,7 +24,7 @@ interface BikeRequestRow {
   status: string
   admin_status: string
   rejected_reason?: string | null
-  workshop_responses?: { id: string; paid: boolean; workshop_id: string }[]
+  workshop_responses?: { id: string; paid: boolean; workshop_id: string; status: string }[]
 }
 
 type FilterKey = 'pending' | 'approved' | 'rejected' | 'all'
@@ -46,7 +47,11 @@ const AdminBikeRequests = () => {
   const [items, setItems] = useState<BikeRequestRow[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
-  const [filter, setFilter] = useState<FilterKey>('pending')
+  const [params, setParams] = useSearchParams()
+  const status = params.get('status')
+  const filter: FilterKey = status === 'godkand' ? 'approved' : status === 'avvisad' ? 'rejected' : status === 'alla' ? 'all' : 'pending'
+  const setFilter = (value: FilterKey) => { const next = new URLSearchParams(params); next.set('status', { approved: 'godkand', rejected: 'avvisad', all: 'alla', pending: 'vantar' }[value]); next.delete('has_reply'); setParams(next); }
+  const withoutReply = params.get('has_reply') === 'false'
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<string[]>([])
   const [bulkBusy, setBulkBusy] = useState(false)
@@ -55,11 +60,11 @@ const AdminBikeRequests = () => {
     setLoading(true)
     const { data, error } = await supabase
       .from('bike_repair_requests')
-      .select('id, view_token, created_at, customer_name, customer_email, bike_type, repair_category, description, city, status, admin_status, rejected_reason, workshop_responses(id, paid, workshop_id)')
+      .select('id, view_token, created_at, customer_name, customer_email, bike_type, repair_category, description, city, status, admin_status, rejected_reason, workshop_responses(id, paid, workshop_id, status)')
       .order('created_at', { ascending: false })
 
     if (error) {
-      toast.error(t('Kunde inte läsa cykelärenden: {msg}', { msg: error.message }))
+      toast.error(t('Kunde inte läsa cykelärenden. Försök igen.'))
       setItems([])
     } else {
       setItems((data as BikeRequestRow[]) || [])
@@ -85,12 +90,12 @@ const AdminBikeRequests = () => {
           : filter === 'approved' ? item.admin_status === 'approved'
             : filter === 'rejected' ? item.admin_status === 'rejected'
               : item.admin_status !== 'approved' && item.admin_status !== 'rejected'
-      if (!matchesFilter) return false
+      if (!matchesFilter || (withoutReply && bikeResponseSummary(item.workshop_responses).hasReply)) return false
       if (!term) return true
       return [item.customer_name, item.customer_email, item.city, item.repair_category, item.bike_type]
         .some((value) => (value || '').toLowerCase().includes(term))
     })
-  }, [items, filter, search])
+  }, [items, filter, search, withoutReply])
 
   const selectablePending = visible.filter((item) => item.admin_status !== 'approved')
   const allSelected = selectablePending.length > 0 && selectablePending.every((item) => selected.includes(item.id))
@@ -189,7 +194,7 @@ const AdminBikeRequests = () => {
         beskrivning: item.description,
         granskning: item.admin_status,
         status: item.status,
-        offerter: (item.workshop_responses || []).length,
+        skickade_offerter: bikeResponseSummary(item.workshop_responses).sent,
         betalda: (item.workshop_responses || []).filter((r) => r.paid).length,
       })),
       'cykelarenden',
@@ -220,6 +225,7 @@ const AdminBikeRequests = () => {
         </div>
       </div>
 
+      {withoutReply && <p role="status" className="text-sm mb-3">Visar ärenden utan skickad offert. <button type="button" className="underline" onClick={() => { const next = new URLSearchParams(params); next.delete('has_reply'); setParams(next) }}>Visa även ärenden med svar</button></p>}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {filters.map((tab) => (
           <button
@@ -276,7 +282,7 @@ const AdminBikeRequests = () => {
             <tbody>
               {visible.map((item) => {
                 const responses = item.workshop_responses || []
-                const paidResponses = responses.filter((response) => response.paid).length
+                const summary = bikeResponseSummary(responses)
                 const isBusy = busy === item.id
                 return (
                   <tr key={item.id} className="border-t align-top">
@@ -313,7 +319,7 @@ const AdminBikeRequests = () => {
                         {item.admin_status === 'approved' ? t('Godkänd') : item.admin_status === 'rejected' ? t('Avvisad') : t('Väntar')}
                       </span>
                     </td>
-                    <td className="p-3">{t('{paid} betalda / {total} totalt', { paid: paidResponses, total: responses.length })}</td>
+                    <td className="p-3">{summary.sent === 0 && summary.drafts === 0 ? '–' : `${summary.sent} skickade · ${summary.drafts} utkast · ${summary.won} vunna`}</td>
                     <td className="p-3">
                       <div className="flex justify-end gap-2">
                         {item.view_token && (
@@ -324,7 +330,7 @@ const AdminBikeRequests = () => {
                             </Link>
                           </Button>
                         )}
-                        {item.admin_status === 'approved' && responses.length === 0 && (
+                        {item.admin_status === 'approved' && !summary.hasReply && (
                           <Button size="sm" variant="outline" onClick={() => nudge(item)} disabled={isBusy}>
                             {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Megaphone className="h-4 w-4 mr-1" />}
                             {t('Puffa verkstäder')}

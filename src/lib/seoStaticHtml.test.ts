@@ -80,9 +80,9 @@ describe('renderAppShellHtml – SPA-skalet för dynamiska/gated routes', () => 
     expect(html).toContain('<title>Cykelhjälpen</title>')
   })
 
-  it('sätter ingen robots-meta (gated routes noindex:as via X-Robots-Tag-headern)', () => {
+  it('sätter noindex redan i rå HTML för Cykelhjälpens app-rutter', () => {
     const html = renderAppShellHtml(template, 'cykelhjalpen')
-    expect(html).not.toContain('name="robots"')
+    expect(html).toContain('<meta name="robots" content="noindex, follow" />')
   })
 })
 

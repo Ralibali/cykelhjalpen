@@ -680,15 +680,15 @@ export const renderStaticHtml = (template: string, route: StaticSeoRoute, host: 
  * (/mitt-arende/<token>, /admin, Updro's /byraer/<slug>, …).
  * Unlike the old /index.html fallback it does NOT pretend to be the homepage:
  * no canonical, no og:url, no homepage body — just a generic title and the
- * app bundle. Robots meta is deliberately omitted: gated prefixes are noindexed
- * via the X-Robots-Tag HTTP header (vercel.json) + useNoindex() client-side,
+ * app bundle. Cykelhjälpen's shell is noindex before JavaScript; other hosts use
+ * the X-Robots-Tag HTTP header (vercel.json) + useNoindex() client-side,
  * while indexable client-rendered pages (e.g. Updro agency profiles) must not
  * ship noindex in the initial HTML — Google may skip rendering such pages,
  * which would lock them out of the index even after JS sets index,follow.
  */
 export const renderAppShellHtml = (template: string, host: SiteHost = 'cykelhjalpen') => {
   const brand = host === 'updro' ? 'Updro' : 'Cykelhjälpen'
-  return stripTemplateSeoTags(template).replace('</head>', `    <title>${brand}</title>\n  </head>`)
+  return stripTemplateSeoTags(template).replace('</head>', `    <title>${brand}</title>${host === 'cykelhjalpen' ? '<meta name="robots" content="noindex, follow" />' : ''}\n  </head>`)
 }
 
 /**

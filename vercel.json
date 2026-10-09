@@ -6,31 +6,82 @@
   "outputDirectory": "dist",
   "trailingSlash": false,
   "redirects": [
-    { "source": "/index.html", "destination": "/", "statusCode": 308 },
-    { "source": "/app.html", "destination": "/", "statusCode": 308 },
-    { "source": "/404.html", "destination": "/", "statusCode": 308 },
-    { "source": "/cykelreparation", "destination": "/skicka-arende", "statusCode": 308 },
-    { "source": "/en/cykelverkstad-linkoping", "destination": "/en/bike-repair-linkoping", "statusCode": 308 },
-    { "source": "/en/cykelverkstad-norrkoping", "destination": "/en/bike-repair-norrkoping", "statusCode": 308 },
-    { "source": "/en/cykelverkstad-uppsala", "destination": "/en/bike-repair-uppsala", "statusCode": 308 },
-    { "source": "/en/cykelverkstad-lund", "destination": "/en/bike-repair-lund", "statusCode": 308 },
-    { "source": "/en/vad-kostar-cykelreparation-linkoping", "destination": "/en/bike-repair-cost-linkoping", "statusCode": 308 }
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/app.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/404.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/cykelreparation",
+      "destination": "/skicka-arende",
+      "statusCode": 308
+    },
+    {
+      "source": "/en/cykelverkstad-linkoping",
+      "destination": "/en/bike-repair-linkoping",
+      "statusCode": 308
+    },
+    {
+      "source": "/en/cykelverkstad-norrkoping",
+      "destination": "/en/bike-repair-norrkoping",
+      "statusCode": 308
+    },
+    {
+      "source": "/en/cykelverkstad-uppsala",
+      "destination": "/en/bike-repair-uppsala",
+      "statusCode": 308
+    },
+    {
+      "source": "/en/cykelverkstad-lund",
+      "destination": "/en/bike-repair-lund",
+      "statusCode": 308
+    },
+    {
+      "source": "/en/vad-kostar-cykelreparation-linkoping",
+      "destination": "/en/bike-repair-cost-linkoping",
+      "statusCode": 308
+    },
+    {
+      "source": "/en/villkor",
+      "destination": "/villkor",
+      "statusCode": 301
+    },
+    {
+      "source": "/en/integritetspolicy",
+      "destination": "/integritetspolicy",
+      "statusCode": 301
+    },
+    {
+      "source": "/en/cookies",
+      "destination": "/cookies",
+      "statusCode": 301
+    }
   ],
   "rewrites": [
     {
-      "source": "/:prefix(mitt-arende|mina-svar|offert|avregistrera|avsluta-paminnelser|annons|dashboard|admin|byraer|artiklar|verktyg|stader|leveranser|guider|kunskapsbank|landing|registrera|sitemap|verkstad)/:path*",
+      "source": "/:prefix(mitt-arende|mina-svar|offert|avregistrera|avsluta-paminnelser|annons|dashboard|admin|registrera|sitemap|verkstad)/:path*",
       "destination": "/app.html"
     },
     {
-      "source": "/en/:prefix(mitt-arende|mina-svar|offert|avregistrera|avsluta-paminnelser|annons|dashboard|admin|byraer|artiklar|verktyg|stader|leveranser|guider|kunskapsbank|landing|registrera|sitemap|verkstad)/:path*",
+      "source": "/en/:prefix(mitt-arende|mina-svar|offert|avregistrera|avsluta-paminnelser|annons|dashboard|admin|registrera|sitemap|verkstad)/:path*",
       "destination": "/app.html"
     },
     {
-      "source": "/:page(logga-in|aterstall-losenord|nytt-losenord|support|updro-vs-partna|jamfor-partna|alternativ-till-partna)",
+      "source": "/:page(logga-in|aterstall-losenord|nytt-losenord|support)",
       "destination": "/app.html"
     },
     {
-      "source": "/en/:page(logga-in|aterstall-losenord|nytt-losenord|integritetspolicy|villkor|cookies|support|updro-vs-partna|jamfor-partna|alternativ-till-partna)",
+      "source": "/en/:page(logga-in|aterstall-losenord|nytt-losenord|support)",
       "destination": "/app.html"
     }
   ],
@@ -38,12 +89,30 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" },
-        { "key": "Cross-Origin-Resource-Policy", "value": "cross-origin" },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
+        },
         {
           "key": "Content-Security-Policy-Report-Only",
           "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://challenges.cloudflare.com https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://challenges.cloudflare.com https://api.stripe.com; frame-src https://challenges.cloudflare.com https://js.stripe.com https://hooks.stripe.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
@@ -53,137 +122,215 @@
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/admin",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/admin/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/en/admin/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/dashboard",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/dashboard/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/en/dashboard/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/mitt-arende/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/offert/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/mina-svar/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/avregistrera/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/avsluta-paminnelser/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/annons/:path*",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/logga-in",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/registrera",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/aterstall-losenord",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/nytt-losenord",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
       ]
     },
     {
       "source": "/sitemap.xml",
       "headers": [
-        { "key": "Content-Type", "value": "application/xml; charset=utf-8" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
       ]
     },
     {
       "source": "/sitemap-index.xml",
       "headers": [
-        { "key": "Content-Type", "value": "application/xml; charset=utf-8" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
       ]
     },
     {
       "source": "/sitemap-:name.xml",
       "headers": [
-        { "key": "Content-Type", "value": "application/xml; charset=utf-8" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
       ]
     },
     {
       "source": "/robots.txt",
       "headers": [
-        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
       ]
     },
     {
       "source": "/404.html",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     }
   ]

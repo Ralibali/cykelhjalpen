@@ -463,7 +463,7 @@ const BikeRequestStepContent = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">{t('Mobilnummer')}</Label>
+          <Label htmlFor="phone">{t('Mobilnummer (valfritt)')}</Label>
           <Input
             id="phone"
             type="tel"

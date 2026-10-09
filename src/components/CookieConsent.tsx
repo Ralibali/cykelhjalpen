@@ -52,7 +52,7 @@ const CookieConsent = () => {
       setAnalytics(stored?.analytics ?? false)
       setMarketing(stored?.marketing ?? false)
       applyConsent(stored ?? createConsent(false, false))
-      if (!stored) setVisible(true)
+      setVisible(!stored)
     }
     restore()
     const onStorage = (event: StorageEvent) => { if (event.key === COOKIE_CONSENT_KEY || event.key === null) restore() }

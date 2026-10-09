@@ -1,3 +1,4 @@
+import { bikeResponseSummary } from '@/lib/bikeResponseSummary'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
@@ -101,9 +102,9 @@ const CykelAdminOverview = () => {
       supabase.from('notification_events').select('*', { count: 'exact', head: true }).eq('status', 'failed').gte('created_at', sevenDaysAgo),
     ])
 
-    const errors = [requestResult.error, workshopResult.error, chargeResult.error].filter(Boolean)
+    const errors = [requestResult.error, workshopResult.error, chargeResult.error, prospectResult.error, clickResult.error, mailResult.error, notifResult.error].filter(Boolean)
     if (errors.length > 0) {
-      toast.error(t('Admin kunde inte läsa all data: {msg}', { msg: errors[0]?.message || '' }))
+      toast.error(t('Översikten kunde inte läsa all data. Försök igen.'))
     }
 
     setRequests((requestResult.data as RequestRow[]) || [])
@@ -124,6 +125,7 @@ const CykelAdminOverview = () => {
     setLoading(false)
     setIncomingPending(0)
     knownRequestIds.current = new Set(((requestResult.data as RequestRow[]) || []).map((row) => row.id))
+    return errors.length === 0
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -235,7 +237,7 @@ const CykelAdminOverview = () => {
     [workshops],
   )
   const paidResponses = useMemo(
-    () => requests.reduce((sum, request) => sum + (request.workshop_responses || []).filter((response) => response.status === 'won' || response.paid).length, 0),
+    () => requests.reduce((sum, request) => sum + bikeResponseSummary(request.workshop_responses).settled, 0),
     [requests],
   )
   const revenue30d = useMemo(() => {
@@ -245,7 +247,7 @@ const CykelAdminOverview = () => {
       .reduce((sum, charge) => sum + (charge.amount || 0), 0)
   }, [charges])
   const approvedWithoutResponse = useMemo(
-    () => approvedRequests.filter((request) => !(request.workshop_responses || []).some((response) => response.status === 'sent' || response.status === 'won' || response.paid)).length,
+    () => approvedRequests.filter((request) => !bikeResponseSummary(request.workshop_responses).hasReply).length,
     [approvedRequests],
   )
 
@@ -258,7 +260,7 @@ const CykelAdminOverview = () => {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">{t('Granska ärenden och verkstäder innan de publiceras.')}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading} aria-label={t('Uppdatera admin-översikten')}>
+        <Button variant="outline" size="sm" onClick={async () => { if (await load()) toast.success(t('Översikten är uppdaterad')); }} disabled={loading} aria-label={t('Uppdatera admin-översikten')}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('Uppdatera')}
           {incomingPending > 0 && (
             <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
@@ -298,7 +300,7 @@ const CykelAdminOverview = () => {
               <p className="text-xs text-muted-foreground">{t('Svarat')}</p>
             </div>
             <div className="rounded-lg bg-muted/40 p-3">
-              <p className="text-xl font-bold font-display">{funnel.converted}</p>
+              <p className="text-xl font-bold font-display">{funnel.converted ?? 0}</p>
               <p className="text-xs text-muted-foreground">{t('Anslutna')}</p>
             </div>
           </div>
@@ -317,7 +319,7 @@ const CykelAdminOverview = () => {
               <span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-muted-foreground" /> {t('Misslyckade notiser (7 d)')}</span>
               <span className={failedNotifs > 0 ? 'font-semibold text-destructive' : 'text-muted-foreground'}>{failedNotifs}</span>
             </Link>
-            <Link to="/admin/cykelarenden" className="flex items-center justify-between rounded-lg px-2 py-2 hover:bg-muted/40 transition-colors">
+            <Link to="/admin/cykelarenden?status=godkand&has_reply=false" className="flex items-center justify-between rounded-lg px-2 py-2 hover:bg-muted/40 transition-colors">
               <span className="flex items-center gap-2"><Bike className="h-4 w-4 text-muted-foreground" /> {t('Godkända ärenden utan svar')}</span>
               <span className={approvedWithoutResponse > 0 ? 'font-semibold' : 'text-muted-foreground'}>{approvedWithoutResponse}</span>
             </Link>

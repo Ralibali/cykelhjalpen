@@ -1,10 +1,11 @@
 type Translator = (sv: string, vars?: Record<string, string | number>) => string
 
-const identity: Translator = (s) => s
+const identity: Translator = (s, vars) => s.replace(/\{(\w+)\}/g, (match, key) => vars && key in vars ? String(vars[key]) : match)
 
 export function timeAgo(dateStr: string, t: Translator = identity): string {
   const now = new Date()
   const date = new Date(dateStr)
+  if (!Number.isFinite(date.getTime())) return '–'
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
   if (seconds < 60) return t('Just nu')
