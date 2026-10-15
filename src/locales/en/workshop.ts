@@ -48,6 +48,7 @@ export const EN_WORKSHOP: Record<string, string> = {
   'Din offert är sparad som utkast och kan skickas när du är redo.': 'Your quote is saved as a draft and can be sent when you are ready.',
   'Beskriv ditt svar lite mer, minst tjugo tecken.': 'Describe your response a bit more, at least twenty characters.',
   'Priset kan inte vara negativt.': 'The price cannot be negative.',
+  'Ange priset i hela kronor.': 'Enter the price in whole kronor.',
   'Pris till måste vara samma som eller högre än pris från.': 'The "price to" must be the same as or higher than the "price from".',
   'Ärendet är fullt – tre verkstäder har redan svarat.': 'The request is full – three bike shops have already responded.',
   'Ditt utkast är sparat men kan inte skickas. Vi tar bort ärendet från listan.': 'Your draft is saved but cannot be sent. We are removing the request from the list.',

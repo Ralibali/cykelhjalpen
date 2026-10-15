@@ -40,7 +40,8 @@ export default function WorkshopServiceOrders() {
   const {
     data: orders = [],
     isLoading,
-    error: loadError,
+    isLoadingError,
+    isRefetchError,
     refetch,
   } = useQuery({
     queryKey: ["service-orders", workshop.id],
@@ -174,7 +175,18 @@ export default function WorkshopServiceOrders() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
-      {loadError ? (
+      {isRefetchError && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
+        >
+          Kunde inte uppdatera
+          <Button size="sm" variant="outline" onClick={() => void refetch()}>
+            Försök igen
+          </Button>
+        </div>
+      )}
+      {isLoadingError ? (
         <div role="alert">
           Arbetsordrarna kunde inte hämtas.{" "}
           <Button onClick={() => void refetch()}>Försök igen</Button>

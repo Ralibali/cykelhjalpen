@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import { trackClick } from '@/hooks/usePageTracking'
 import { trackEvent } from '@/lib/analytics'
 import { useT } from '@/lib/i18n'
+import { getFunctionErrorMessage } from '@/lib/functionErrors'
 import { closedChoiceDaysLeft, publishedQuotesStatusCopy } from '@/lib/customerChoiceCopy'
 import { useV2Flag } from '@/lib/v2/useV2Flag'
 import OutcomeReviewCard from '@/components/cykelhjalpen/OutcomeReviewCard'
@@ -153,7 +154,9 @@ const CustomerResponses = () => {
       }
       setResponses(nextResponses)
     } catch (error) {
-      setLoadError((error as Error)?.message || t('Kunde inte läsa ärendet just nu.'))
+      // Ett tillfälligt fel vid bakgrundsuppdateringen ska inte ersätta det
+      // som redan visas – felkortet bara när inget har laddats ännu.
+      if (firstLoadRef.current) setLoadError(await getFunctionErrorMessage(error, t('Kunde inte läsa ärendet just nu.')))
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -210,8 +213,11 @@ const CustomerResponses = () => {
       await load()
     } catch (error) {
       toast.error(t('Kunde inte registrera valet.'), {
-        description: (error as Error)?.message || t('Försök igen om en stund.'),
+        description: await getFunctionErrorMessage(error, t('Försök igen om en stund.')),
       })
+      // Ärendet kan redan vara valt eller ha gått ut – hämta om så att
+      // inaktuella val-knappar försvinner.
+      await load()
     } finally {
       setSelectingId(null)
     }

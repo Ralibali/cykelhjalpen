@@ -85,6 +85,43 @@ describe('workshop access', () => {
     expect(screen.queryByText('Registrering')).not.toBeInTheDocument()
   })
 
+  it('keeps the page mounted while the profile refreshes in the background', async () => {
+    const view = render(<App />)
+    const page = await screen.findByText('Verkstadskonto')
+    let resolve!: (value: unknown) => void
+    mock.query.mockReturnValueOnce(new Promise(done => { resolve = done }))
+    auth = { ...auth, loading: true }
+    view.rerender(<App />)
+    expect(screen.getByText('Verkstadskonto')).toBe(page)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    auth = { ...auth, loading: false, profile: { role: 'supplier' } }
+    view.rerender(<App />)
+    expect(screen.getByText('Verkstadskonto')).toBe(page)
+    await act(async () => resolve({ data: { id: 'workshop' }, error: null }))
+    expect(screen.getByText('Verkstadskonto')).toBe(page)
+    expect(screen.queryByText('Registrering')).not.toBeInTheDocument()
+  })
+
+  it('keeps a role-gated page mounted while the profile refreshes in the background', () => {
+    const Billing = () => <MemoryRouter><ProtectedRoute role="supplier"><h1>Fakturering</h1></ProtectedRoute></MemoryRouter>
+    const view = render(<Billing />)
+    const page = screen.getByText('Fakturering')
+    auth = { ...auth, loading: true }
+    view.rerender(<Billing />)
+    expect(screen.getByText('Fakturering')).toBe(page)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('still shows the spinner while retrying a failed profile load', () => {
+    auth = { ...auth, profile: null, profileError: 'Du är inloggad, men vi kunde inte läsa in ditt konto.' }
+    const view = render(<App />)
+    expect(screen.getByRole('alert')).toBeInTheDocument()
+    auth = { ...auth, loading: true, profileError: null }
+    view.rerender(<App />)
+    expect(screen.getByRole('status')).toBeInTheDocument()
+    expect(screen.queryByText('Verkstadskonto')).not.toBeInTheDocument()
+  })
+
   it('preserves admin access without requiring a workshop record', async () => {
     auth = { ...auth, profile: { role: 'admin' } }
     render(<App />)

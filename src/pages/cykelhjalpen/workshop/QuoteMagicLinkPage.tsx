@@ -11,6 +11,7 @@ import CykelNavbar from '@/components/cykelhjalpen/CykelNavbar'
 import CykelFooter from '@/components/cykelhjalpen/CykelFooter'
 import { supabase } from '@/integrations/supabase/client'
 import { useT } from '@/lib/i18n'
+import { getFunctionErrorBody } from '@/lib/functionErrors'
 import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
 import { validateQuoteForm } from '@/lib/workshopMagicQuote'
 
@@ -37,6 +38,10 @@ type PageState =
   | { kind: 'ready'; request: MagicRequest; workshopName: string; alreadyQuoted: boolean }
   | { kind: 'success' }
 
+// Svar som aldrig går att rätta i formuläret: länken eller ärendet är förbrukat.
+const isTerminalSubmitError = (payload: { reason?: unknown; error?: unknown } | null) =>
+  Boolean(payload?.reason) || /bike_request_full|ärendet är fullt/i.test(String(payload?.error ?? ''))
+
 const emptyForm = {
   message: '',
   estimated_price_min: '',
@@ -58,26 +63,28 @@ const QuoteMagicLinkPage = () => {
       const { data, error } = await supabase.functions.invoke('get-workshop-quote-link', {
         body: { token },
       })
+      // Vid icke-2xx är data null; serverns svar finns bara i felets kropp.
+      const payload = data ?? (await getFunctionErrorBody(error))
       if (cancelled) return
-      if (data?.disabled || data?.reason === 'flag_off') {
+      if (payload?.disabled || payload?.reason === 'flag_off') {
         setState({
           kind: 'disabled',
-          message: data?.error || t('Funktionen är avstängd just nu.'),
+          message: payload?.error || t('Funktionen är avstängd just nu.'),
         })
         return
       }
-      if (error || data?.error || !data?.ok || !data.request) {
+      if (error || payload?.error || !payload?.ok || !payload.request) {
         setState({
           kind: 'error',
-          message: data?.error || t('Länken är ogiltig eller har gått ut.'),
+          message: payload?.error || t('Länken är ogiltig eller har gått ut.'),
         })
         return
       }
       setState({
         kind: 'ready',
-        request: data.request as MagicRequest,
-        workshopName: data.workshop?.company_name || t('din verkstad'),
-        alreadyQuoted: Boolean(data.already_quoted),
+        request: payload.request as MagicRequest,
+        workshopName: payload.workshop?.company_name || t('din verkstad'),
+        alreadyQuoted: Boolean(payload.already_quoted),
       })
     }
     if (token) load()
@@ -106,13 +113,18 @@ const QuoteMagicLinkPage = () => {
         estimated_price_max: parsed.estimated_price_max,
       },
     })
+    const payload = data ?? (await getFunctionErrorBody(error))
     setSubmitting(false)
-    if (data?.disabled || data?.reason === 'flag_off') {
-      setState({ kind: 'disabled', message: data?.error || t('Funktionen är avstängd just nu.') })
+    if (payload?.disabled || payload?.reason === 'flag_off') {
+      setState({ kind: 'disabled', message: payload?.error || t('Funktionen är avstängd just nu.') })
       return
     }
-    if (error || data?.error) {
-      setFormError(data?.error || t('Kunde inte skicka offerten. Försök igen om en stund.'))
+    if (isTerminalSubmitError(payload)) {
+      setState({ kind: 'error', message: payload?.error || t('Länken är ogiltig eller har gått ut.') })
+      return
+    }
+    if (error || payload?.error) {
+      setFormError(payload?.error || t('Kunde inte skicka offerten. Försök igen om en stund.'))
       return
     }
     setState({ kind: 'success' })

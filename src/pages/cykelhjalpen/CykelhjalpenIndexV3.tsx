@@ -9,6 +9,7 @@ import { CYKEL_CITIES, cityLandingPath } from '@/lib/cykelCities'
 import { trackClick } from '@/hooks/usePageTracking'
 import { usePageSeo } from '@/i18n/usePageSeo'
 import { useLanguage, useT } from '@/lib/i18n'
+import { toEnglishPath } from '@/i18n/routes'
 import '@/home-design.css'
 
 const CykelhjalpenIndexV3 = () => {
@@ -17,6 +18,10 @@ const CykelhjalpenIndexV3 = () => {
   const pageSeo = usePageSeo('/')
   const faqs = buildCykelHomeFaqs(t)
   const text = (sv: string, en: string) => lang === 'en' ? en : sv
+  // Under the /en router basename, Link `to` values are in-router paths: use the
+  // English twins so EN visitors never land on Swedish slugs.
+  const localized = (svPath: string) =>
+    lang === 'en' ? (toEnglishPath(svPath) ?? svPath) : svPath
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -68,7 +73,7 @@ const CykelhjalpenIndexV3 = () => {
       <CykelNavbar />
       <main id="home-main">
         <HomeHero lang={lang}>
-          <Link className="home-button" to="/skicka-arende" onClick={() => trackClick('home_primary_cta_clicked', 'Få prisförslag gratis')}>{text('Beskriv felet', 'Describe the problem')} <span aria-hidden="true">↗</span></Link>
+          <Link className="home-button" to={localized('/skicka-arende')} onClick={() => trackClick('home_primary_cta_clicked', 'Få prisförslag gratis')}>{text('Beskriv felet', 'Describe the problem')} <span aria-hidden="true">↗</span></Link>
         </HomeHero>
 
         <section id="sa-fungerar-det" className="home-section">
@@ -88,7 +93,7 @@ const CykelhjalpenIndexV3 = () => {
           <HomeReveal className="home-container">
             <h2 className="home-section-heading">{text('Var bor du?', 'Where do you live?')}</h2>
             <div className="home-grid home-cities">
-              {CYKEL_CITIES.map(city => <Link className="home-card home-city" key={city.name} to={cityLandingPath(city.name)} onClick={() => trackClick('home_v3_city_clicked', city.name, { city: city.name })}><h3>{city.name}</h3><p>{text('Lokala tips och verkstäder', 'Local advice and workshops')}</p><span className="home-city-mark" aria-hidden="true">↗</span></Link>)}
+              {CYKEL_CITIES.map(city => <Link className="home-card home-city" key={city.name} to={localized(cityLandingPath(city.name))} onClick={() => trackClick('home_v3_city_clicked', city.name, { city: city.name })}><h3>{city.name}</h3><p>{text('Lokala tips och verkstäder', 'Local advice and workshops')}</p><span className="home-city-mark" aria-hidden="true">↗</span></Link>)}
             </div>
           </HomeReveal>
         </section>
@@ -99,7 +104,7 @@ const CykelhjalpenIndexV3 = () => {
             <div className="home-chips">
               {[
                 [text('Punka', 'Flat tyre'), 'Punktering'], [text('Växlarna hoppar', 'Skipping gears'), 'Växlar'], [text('Bromsarna tar dåligt', 'Weak brakes'), 'Bromsar'], [text('Vårservice', 'Spring service'), 'Service'], [text('Elcykeln krånglar', 'E-bike trouble'), 'Elcykel-problem'],
-              ].map(([label, problem]) => <Link className="home-chip" key={problem} to={`/skicka-arende?problem=${encodeURIComponent(problem)}`} onClick={() => trackClick('home_quickstart_clicked', label, { problem })}>{label}</Link>)}
+              ].map(([label, problem]) => <Link className="home-chip" key={problem} to={`${localized('/skicka-arende')}?problem=${encodeURIComponent(problem)}`} onClick={() => trackClick('home_quickstart_clicked', label, { problem })}>{label}</Link>)}
             </div>
           </HomeReveal>
         </section>

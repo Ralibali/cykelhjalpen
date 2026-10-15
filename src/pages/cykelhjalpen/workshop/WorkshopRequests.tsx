@@ -81,9 +81,10 @@ const WorkshopRequests = () => {
       setLoadError(openData?.error || openError?.message || t('Kunde inte läsa öppna ärenden.'))
     } else {
       setRequests((openData?.requests || []) as RequestRow[])
+      // Utan tidigare svar vet vi inte vilka ärenden som redan är besvarade, så inga offertformulär visas.
+      if (mineError) setLoadError(t('Kunde inte läsa dina tidigare offerter.'))
     }
 
-    if (mineError) toast.error(t('Kunde inte läsa dina tidigare offerter.'))
     setResponses((mine || []) as ExistingResponse[])
     setLoading(false)
   }
@@ -106,6 +107,10 @@ const WorkshopRequests = () => {
 
     if ((min !== null && min < 0) || (max !== null && max < 0)) {
       toast.error(t('Priset kan inte vara negativt.'))
+      return false
+    }
+    if ((min !== null && !Number.isInteger(min)) || (max !== null && !Number.isInteger(max))) {
+      toast.error(t('Ange priset i hela kronor.'))
       return false
     }
     if (min !== null && max !== null && max < min) {
@@ -154,6 +159,13 @@ const WorkshopRequests = () => {
 
     try {
       let response = responseByRequest.get(requestId)
+      const offer = {
+        message: form.message.trim(),
+        estimated_price_min: form.estimated_price_min ? Number(form.estimated_price_min) : null,
+        estimated_price_max: form.estimated_price_max ? Number(form.estimated_price_max) : null,
+        estimated_time: form.estimated_time.trim() || null,
+        can_pickup: form.can_pickup,
+      }
 
       if (!response) {
         const { data, error } = await supabase
@@ -161,11 +173,7 @@ const WorkshopRequests = () => {
           .insert({
             request_id: requestId,
             workshop_id: workshop.id,
-            message: form.message.trim(),
-            estimated_price_min: form.estimated_price_min ? Number(form.estimated_price_min) : null,
-            estimated_price_max: form.estimated_price_max ? Number(form.estimated_price_max) : null,
-            estimated_time: form.estimated_time.trim() || null,
-            can_pickup: form.can_pickup,
+            ...offer,
             status: 'draft',
           })
           .select('id, request_id, paid, status')
@@ -180,6 +188,20 @@ const WorkshopRequests = () => {
 
         response = data as ExistingResponse
         setResponses((current) => [...current, response!])
+      } else if (response.status === 'draft' || response.status === 'pending_payment') {
+        // submit-bike-response skickar raden som den är sparad, så det som just skrevs måste sparas först.
+        const { error } = await supabase
+          .from('workshop_responses')
+          .update(offer)
+          .eq('id', response.id)
+          .in('status', ['draft', 'pending_payment'])
+
+        if (error) {
+          toast.error(t('Kunde inte spara offerten.'), {
+            description: error.message || t('Försök igen om en stund.'),
+          })
+          return
+        }
       }
 
       const { data: result, error } = await supabase.functions.invoke('submit-bike-response', {
@@ -317,11 +339,11 @@ const WorkshopRequests = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label htmlFor={`min-${request.id}`}>{t('Pris från (kr, inkl. moms)')}</Label>
-                        <Input id={`min-${request.id}`} type="number" min="0" value={form.estimated_price_min} onChange={(event) => setForm({ ...form, estimated_price_min: event.target.value })} className="rounded-xl border-2 bg-background" />
+                        <Input id={`min-${request.id}`} type="number" min="0" step="1" value={form.estimated_price_min} onChange={(event) => setForm({ ...form, estimated_price_min: event.target.value })} className="rounded-xl border-2 bg-background" />
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor={`max-${request.id}`}>{t('Pris till (kr, inkl. moms)')}</Label>
-                        <Input id={`max-${request.id}`} type="number" min="0" value={form.estimated_price_max} onChange={(event) => setForm({ ...form, estimated_price_max: event.target.value })} className="rounded-xl border-2 bg-background" />
+                        <Input id={`max-${request.id}`} type="number" min="0" step="1" value={form.estimated_price_max} onChange={(event) => setForm({ ...form, estimated_price_max: event.target.value })} className="rounded-xl border-2 bg-background" />
                       </div>
                     </div>
                     <div className="space-y-1.5">

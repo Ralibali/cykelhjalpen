@@ -73,7 +73,7 @@ export default function ServiceOrderCustomer() {
       <h1 className="font-display text-3xl font-bold">Din cykelservice</h1>
       {!token ? (
         <p>Öppna hela kundlänken som du fick från verkstaden.</p>
-      ) : loadError ? (
+      ) : loadError && !order ? (
         <div role="alert">
           <p>
             {loadError instanceof Error
@@ -89,6 +89,21 @@ export default function ServiceOrderCustomer() {
       ) : (
         order && (
           <>
+            {loadError && (
+              <div
+                role="status"
+                className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
+              >
+                Kunde inte uppdatera
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void refetch()}
+                >
+                  Försök igen
+                </Button>
+              </div>
+            )}
             <header className="rounded-2xl border bg-card p-5">
               <h2 className="text-xl font-semibold">{order.workshop?.name}</h2>
               <p className="text-sm mt-1">

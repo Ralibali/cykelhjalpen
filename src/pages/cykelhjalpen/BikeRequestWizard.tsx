@@ -34,6 +34,7 @@ import {
   type BikeRequestFormState,
 } from '@/lib/bikeRequestForm'
 import { useT, useLanguage } from '@/lib/i18n'
+import { getFunctionErrorMessage } from '@/lib/functionErrors'
 
 const DRAFT_KEY = 'cykelhjalpen_request_draft_v3'
 
@@ -44,23 +45,6 @@ const CYKEL_CITY_SLUGS: Record<string, string> = Object.fromEntries(
 
 const trackGoogleEvent = (eventName: string, parameters: Record<string, unknown> = {}) => {
   sendAnalyticsEvent(eventName, { props: parameters })
-}
-
-const getFunctionErrorMessage = async (error: unknown, fallback: string) => {
-  const context = (error as any)?.context
-  if (context instanceof Response) {
-    try {
-      const payload = await context.clone().json()
-      if (typeof payload?.error === 'string') return payload.error
-      if (payload?.error && typeof payload.error === 'object') {
-        const firstMessage = Object.values(payload.error).flat().find((value) => typeof value === 'string')
-        if (typeof firstMessage === 'string') return firstMessage
-      }
-    } catch {
-      // Edge-funktionen returnerade inte JSON.
-    }
-  }
-  return (error as any)?.message || fallback
 }
 
 const STEP_HINTS_SV = ['Berätta om cykeln', 'Vad är fel?', 'Var finns den?', 'Vem skickar?']

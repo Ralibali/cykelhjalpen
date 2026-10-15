@@ -185,6 +185,23 @@ const PageLoader = () => (
 
 const PageTracker = () => { usePageTracking(); return null; };
 
+/** Router navigation (pushState) never scrolls to a #hash, so links like /#stader need this. */
+export const ScrollToHash = () => {
+  const { hash, key } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+    // Wait for the new page to render before looking up the target.
+    const timeoutId = window.setTimeout(() => {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [hash, key]);
+
+  return null;
+};
+
 const NoindexGuard = ({ host }: { host: 'cykelhjalpen' | 'updro' }) => {
   const location = useLocation();
 
@@ -339,6 +356,7 @@ const AppRoutes = () => {
     <>
       <PageTracker />
       <NoindexGuard host={host} />
+      <ScrollToHash />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Root: differs by host */}

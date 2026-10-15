@@ -24,14 +24,18 @@ const NotificationBell = () => {
   const navigate = useNavigate()
   const [notifications, setNotifications] = useState<Notif[]>([])
   const [open, setOpen] = useState(false)
+  // Keyed on the id: Supabase replaces the user object on tab refocus and token
+  // refresh. Re-running would get back the channel removeChannel left leaving,
+  // and live notifications would stop until a reload.
+  const userId = user?.id
 
   useEffect(() => {
-    if (!user) return
+    if (!userId) return
     const fetch = async () => {
       const { data } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(10)
       if (data) setNotifications(data as Notif[])
@@ -39,14 +43,14 @@ const NotificationBell = () => {
     fetch()
 
     const channel = supabase
-      .channel('notif-' + user.id)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, (payload) => {
+      .channel('notif-' + userId)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, (payload) => {
         setNotifications(prev => [payload.new as Notif, ...prev.slice(0, 9)])
       })
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [user])
+  }, [userId])
 
   const unread = notifications.filter(n => !n.is_read).length
 

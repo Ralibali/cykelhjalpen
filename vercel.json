@@ -26,11 +26,11 @@
       "destination": "/app.html"
     },
     {
-      "source": "/:page(logga-in|aterstall-losenord|nytt-losenord|support|updro-vs-partna|jamfor-partna|alternativ-till-partna)",
+      "source": "/:page(logga-in|aterstall-losenord|nytt-losenord|serviceorder|support|updro-vs-partna|jamfor-partna|alternativ-till-partna)",
       "destination": "/app.html"
     },
     {
-      "source": "/en/:page(logga-in|aterstall-losenord|nytt-losenord|integritetspolicy|villkor|cookies|support|updro-vs-partna|jamfor-partna|alternativ-till-partna)",
+      "source": "/en/:page(logga-in|aterstall-losenord|nytt-losenord|serviceorder|integritetspolicy|villkor|cookies|support|updro-vs-partna|jamfor-partna|alternativ-till-partna)",
       "destination": "/app.html"
     }
   ],

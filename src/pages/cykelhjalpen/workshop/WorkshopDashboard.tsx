@@ -24,6 +24,7 @@ import { formatKrFromOre, useV2Pricing } from '@/lib/v2/pricing'
 import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import { FreeLeadsBanner } from '@/components/workshop/FreeLeadsBanner'
 import { useT } from '@/lib/i18n'
+import { getFunctionErrorMessage } from '@/lib/functionErrors'
 import CreateOrderFromLead from '@/components/service-orders/CreateOrderFromLead'
 import { cn } from '@/lib/utils'
 
@@ -134,7 +135,7 @@ const WorkshopDashboard = () => {
     setRevealingId(null)
     if (error || data?.error) {
       toast.error(t('Kunde inte läsa kontaktuppgifterna.'), {
-        description: String(data?.error || error?.message || t('Försök igen om en stund.')),
+        description: String(data?.error || await getFunctionErrorMessage(error, t('Försök igen om en stund.'))),
       })
       return
     }
@@ -190,7 +191,7 @@ const WorkshopDashboard = () => {
     setPayingId(null)
     if (error || data?.error) {
       toast.error(t('Kunde inte starta leadköpet.'), {
-        description: String(data?.error || error?.message || t('Försök igen om en stund.')),
+        description: String(data?.error || await getFunctionErrorMessage(error, t('Försök igen om en stund.'))),
       })
       return
     }

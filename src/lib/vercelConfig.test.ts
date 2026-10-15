@@ -88,6 +88,8 @@ describe('vercel.json (Vite SPA)', () => {
       '/mitt-arende/abc', '/offert/abc', '/mina-svar/abc', '/avregistrera/tok',
       '/annons/verkstad/linkoping', '/registrera/verkstad', '/registrera/byra',
       '/landing', '/landing/byra', '/sitemap',
+      // Customer service-order link from serviceLink() (/serviceorder#token=…)
+      '/serviceorder',
       // Updro dynamic surfaces (shared vercel.json — must never 404)
       '/byraer/nisse-webb', '/byraer/linkoping/seo', '/artiklar/guide',
       '/verktyg/kalkyl', '/stader/linkoping', '/leveranser/webbutveckling',
@@ -97,7 +99,7 @@ describe('vercel.json (Vite SPA)', () => {
       // English-basename variants
       '/en/mitt-arende/abc', '/en/logga-in', '/en/dashboard', '/en/admin/verkstader',
       '/en/integritetspolicy', '/en/villkor', '/en/cookies', '/en/registrera/verkstad',
-      '/en/verkstad/nagon-slug', '/en/avsluta-paminnelser/some-token',
+      '/en/verkstad/nagon-slug', '/en/avsluta-paminnelser/some-token', '/en/serviceorder',
     ]
     for (const path of appPaths) {
       expect(appShellRewrite(path), path).toBe(true)

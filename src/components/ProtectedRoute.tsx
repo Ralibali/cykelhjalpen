@@ -58,7 +58,9 @@ const ProtectedRoute = ({ children, role }: ProtectedRouteProps) => {
     }
   }, [role, userId, loading, profileError, isAdmin, attempt])
 
-  if (loading) return <Spinner />
+  // refreshProfile() also sets loading. Keep the page mounted while a profile is
+  // already shown, or a page that refreshes on mount unmounts and loops.
+  if (loading && !profile) return <Spinner />
   if (!isAuthenticated) return <Navigate to="/logga-in" replace />
   if (profileError) return (
     <main className="min-h-screen flex items-center justify-center p-4">
