@@ -10,6 +10,8 @@ import { LowBalanceAlert } from '@/components/workshop/LowBalanceAlert'
 import { SERVICE_CITIES, DEFAULT_CYKEL_CITY, isCykelCity, type CykelCityName } from '@/lib/cykelCities'
 import { toast } from 'sonner'
 import { useT } from '@/lib/i18n'
+import { withAuthTimeout } from '@/lib/authErrors'
+import AuthLoadError from '@/components/AuthLoadError'
 
 const PENDING_CITY_KEY = 'cykelhjalpen_pending_workshop_city'
 const confirmedCityKey = (userId: string) => `cykelhjalpen_workshop_city_confirmed_${userId}`
@@ -47,59 +49,72 @@ const WorkshopLayout = () => {
   const { user, loading: authLoading, signOut } = useAuth()
   const [workshop, setWorkshop] = useState<WorkshopContext | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const [needsCityConfirmation, setNeedsCityConfirmation] = useState(false)
   const [cityChoice, setCityChoice] = useState<CykelCityName>(DEFAULT_CYKEL_CITY)
   const [savingCity, setSavingCity] = useState(false)
+  // Keyed on the id: an hourly token refresh replaces the user object, and that
+  // must not reload the workshop or unmount the page someone is working in.
+  const userId = user?.id
 
   useEffect(() => {
+    if (authLoading || !userId) return
+    let cancelled = false
     const load = async () => {
-      if (!user) return
-      const { data, error } = await supabase
-        .from('workshops')
-        .select('id, company_name, email, phone, address, website, city, approved, sms_notifications, free_leads_remaining, logo_url, description, opening_hours, org_number, founded_year, facebook_url, instagram_url, price_info, booking_url, services, slug, bio_short, public_profile_opt_in, areas_served')
-        .eq('user_id', user.id)
-        .maybeSingle()
+      setLoading(true)
+      setLoadError(false)
+      try {
+        const { data, error } = await withAuthTimeout(supabase
+          .from('workshops')
+          .select('id, company_name, email, phone, address, website, city, approved, sms_notifications, free_leads_remaining, logo_url, description, opening_hours, org_number, founded_year, facebook_url, instagram_url, price_info, booking_url, services, slug, bio_short, public_profile_opt_in, areas_served')
+          .eq('user_id', userId)
+          .maybeSingle())
+        // A failed read is not a missing workshop: never send a registered shop to sign up again.
+        if (error) throw error
 
-      if (error) {
-        toast.error(t('Kunde inte läsa verkstadsprofilen.'))
-        setLoading(false)
-        return
-      }
+        // V2-kolumnerna (bio_short, public_profile_opt_in, areas_served, slug)
+        // saknas i de genererade typerna tills S13 regenererat dem (kontrakt §1).
+        let nextWorkshop = data as unknown as WorkshopContext | null
+        const pendingCity = localStorage.getItem(PENDING_CITY_KEY)
+        const confirmationKey = confirmedCityKey(userId)
 
-      // V2-kolumnerna (bio_short, public_profile_opt_in, areas_served, slug)
-      // saknas i de genererade typerna tills S13 regenererat dem (kontrakt §1).
-      let nextWorkshop = data as unknown as WorkshopContext | null
-      const pendingCity = localStorage.getItem(PENDING_CITY_KEY)
-      const confirmationKey = confirmedCityKey(user.id)
+        if (nextWorkshop && isCykelCity(pendingCity)) {
+          const [{ error: workshopError }, { error: profileError }] = await Promise.all([
+            supabase.from('workshops').update({ city: pendingCity }).eq('id', nextWorkshop.id),
+            supabase.from('profiles').update({ city: pendingCity }).eq('id', userId),
+          ])
 
-      if (nextWorkshop && isCykelCity(pendingCity)) {
-        const [{ error: workshopError }, { error: profileError }] = await Promise.all([
-          supabase.from('workshops').update({ city: pendingCity }).eq('id', nextWorkshop.id),
-          supabase.from('profiles').update({ city: pendingCity }).eq('id', user.id),
-        ])
-
-        if (!workshopError && !profileError) {
-          nextWorkshop = { ...nextWorkshop, city: pendingCity }
-          localStorage.removeItem(PENDING_CITY_KEY)
-          localStorage.setItem(confirmationKey, '1')
-        } else {
-          console.error('Could not sync workshop city', workshopError || profileError)
-          toast.error(t('Staden kunde inte sparas automatiskt. Bekräfta den innan du fortsätter.'))
+          if (!workshopError && !profileError) {
+            nextWorkshop = { ...nextWorkshop, city: pendingCity }
+            localStorage.removeItem(PENDING_CITY_KEY)
+            localStorage.setItem(confirmationKey, '1')
+          } else {
+            console.error('Could not sync workshop city', workshopError || profileError)
+            toast.error(t('Staden kunde inte sparas automatiskt. Bekräfta den innan du fortsätter.'))
+          }
         }
-      }
+        if (cancelled) return
 
-      if (nextWorkshop) {
-        const currentCity = isCykelCity(nextWorkshop.city) ? nextWorkshop.city : DEFAULT_CYKEL_CITY
-        setCityChoice(currentCity)
-        setNeedsCityConfirmation(localStorage.getItem(confirmationKey) !== '1')
-      }
+        if (nextWorkshop) {
+          const currentCity = isCykelCity(nextWorkshop.city) ? nextWorkshop.city : DEFAULT_CYKEL_CITY
+          setCityChoice(currentCity)
+          setNeedsCityConfirmation(localStorage.getItem(confirmationKey) !== '1')
+        }
 
-      setWorkshop(nextWorkshop)
-      setLoading(false)
+        setWorkshop(nextWorkshop)
+      } catch (error) {
+        if (cancelled) return
+        console.error('Could not load workshop', error)
+        setLoadError(true)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
 
-    if (!authLoading && user) load()
-  }, [user, authLoading])
+    void load()
+    return () => { cancelled = true }
+  }, [userId, authLoading, attempt])
 
   const confirmCity = async () => {
     if (!user || !workshop) return
@@ -124,6 +139,17 @@ const WorkshopLayout = () => {
 
   if (authLoading || loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>
+  }
+
+  if (loadError) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-4">
+        <AuthLoadError
+          message="Kunde inte läsa in din verkstad. Försök igen. Du behöver inte registrera dig på nytt."
+          onRetry={() => setAttempt(value => value + 1)}
+        />
+      </main>
+    )
   }
 
   if (!workshop) {
