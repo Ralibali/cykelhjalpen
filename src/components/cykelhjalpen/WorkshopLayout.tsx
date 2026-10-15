@@ -91,7 +91,11 @@ const WorkshopLayout = () => {
         const pendingCity = localStorage.getItem(PENDING_CITY_KEY)
         const confirmationKey = confirmedCityKey(userId)
 
-        if (nextWorkshop && isCykelCity(pendingCity)) {
+        if (nextWorkshop?.approved && pendingCity) {
+          // The database locks an approved workshop's city; a leftover sign-up
+          // choice would only fail on every load and skew the profile city.
+          localStorage.removeItem(PENDING_CITY_KEY)
+        } else if (nextWorkshop && isCykelCity(pendingCity)) {
           const [{ error: workshopError }, { error: profileError }] = await Promise.all([
             supabase.from('workshops').update({ city: pendingCity }).eq('id', nextWorkshop.id),
             supabase.from('profiles').update({ city: pendingCity }).eq('id', userId),

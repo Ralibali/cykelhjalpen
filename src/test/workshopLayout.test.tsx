@@ -117,6 +117,14 @@ describe('city confirmation', () => {
     expect(await screen.findByText('Bekräfta verkstadens stad')).toBeInTheDocument()
   })
 
+  it('drops a leftover sign-up city instead of overwriting an approved workshop', async () => {
+    localStorage.setItem('cykelhjalpen_pending_workshop_city', 'Lund')
+    render(<App />)
+    expect(await screen.findByText('Panelinnehåll')).toBeInTheDocument()
+    expect(mock.update).not.toHaveBeenCalled()
+    expect(localStorage.getItem('cykelhjalpen_pending_workshop_city')).toBeNull()
+  })
+
   it('remembers a confirmation on this device', async () => {
     localStorage.setItem(confirmedKey, '1')
     mock.query.mockResolvedValueOnce({ data: { ...workshop, approved: false }, error: null })
