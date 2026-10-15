@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { Bike, BriefcaseBusiness, Receipt, Settings, LogOut, Loader2, Clock, MapPin } from 'lucide-react'
@@ -44,6 +44,13 @@ export interface WorkshopContext {
   areas_served: string[] | null
 }
 
+export interface WorkshopOutletContext {
+  workshop: WorkshopContext
+  // Pages that save workshop fields report them here, so a page opened later
+  // does not start from the values loaded at sign-in.
+  setWorkshop: Dispatch<SetStateAction<WorkshopContext | null>>
+}
+
 const WorkshopLayout = () => {
   const t = useT()
   const { user, loading: authLoading, signOut } = useAuth()
@@ -57,6 +64,8 @@ const WorkshopLayout = () => {
   // Keyed on the id: an hourly token refresh replaces the user object, and that
   // must not reload the workshop or unmount the page someone is working in.
   const userId = user?.id
+  // register-workshop has stored the chosen city in user_metadata since cc77f49.
+  const signupCity = typeof user?.user_metadata?.city === 'string' ? user.user_metadata.city : null
 
   useEffect(() => {
     if (authLoading || !userId) return
@@ -65,17 +74,20 @@ const WorkshopLayout = () => {
       setLoading(true)
       setLoadError(false)
       try {
+        // Read whatever columns exist. Naming the optional V2 columns (bio_short,
+        // public_profile_opt_in) failed the whole query on a database without
+        // them, and no workshop could open the dashboard.
         const { data, error } = await withAuthTimeout(supabase
           .from('workshops')
-          .select('id, company_name, email, phone, address, website, city, approved, sms_notifications, free_leads_remaining, logo_url, description, opening_hours, org_number, founded_year, facebook_url, instagram_url, price_info, booking_url, services, slug, bio_short, public_profile_opt_in, areas_served')
+          .select('*')
           .eq('user_id', userId)
           .maybeSingle())
         // A failed read is not a missing workshop: never send a registered shop to sign up again.
         if (error) throw error
 
-        // V2-kolumnerna (bio_short, public_profile_opt_in, areas_served, slug)
-        // saknas i de genererade typerna tills S13 regenererat dem (kontrakt §1).
-        let nextWorkshop = data as unknown as WorkshopContext | null
+        let nextWorkshop = data
+          ? { bio_short: null, public_profile_opt_in: false, ...data } as unknown as WorkshopContext
+          : null
         const pendingCity = localStorage.getItem(PENDING_CITY_KEY)
         const confirmationKey = confirmedCityKey(userId)
 
@@ -99,7 +111,11 @@ const WorkshopLayout = () => {
         if (nextWorkshop) {
           const currentCity = isCykelCity(nextWorkshop.city) ? nextWorkshop.city : DEFAULT_CYKEL_CITY
           setCityChoice(currentCity)
-          setNeedsCityConfirmation(localStorage.getItem(confirmationKey) !== '1')
+          // Only accounts from the June sign-ups that stored a hard-coded Linköping
+          // need to confirm. Approved workshops are city-locked by the database and
+          // were reviewed with their city; later sign-ups chose it in the form.
+          const cityIsSettled = nextWorkshop.approved || (isCykelCity(nextWorkshop.city) && signupCity === nextWorkshop.city)
+          setNeedsCityConfirmation(!cityIsSettled && localStorage.getItem(confirmationKey) !== '1')
         }
 
         setWorkshop(nextWorkshop)
@@ -114,7 +130,7 @@ const WorkshopLayout = () => {
 
     void load()
     return () => { cancelled = true }
-  }, [userId, authLoading, attempt])
+  }, [userId, authLoading, attempt, signupCity])
 
   const confirmCity = async () => {
     if (!user || !workshop) return
@@ -240,7 +256,7 @@ const WorkshopLayout = () => {
         </aside>
         <main>
           {workshop.approved ? (
-            <Outlet context={{ workshop }} />
+            <Outlet context={{ workshop, setWorkshop } satisfies WorkshopOutletContext} />
           ) : (
             <div className="sticker bg-card p-8 max-w-xl">
               <Clock className="h-8 w-8 text-primary mb-4" />

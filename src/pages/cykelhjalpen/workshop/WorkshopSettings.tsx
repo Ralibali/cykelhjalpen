@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -9,10 +9,10 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Loader2, Lock, MapPin, Upload, Trash2, ExternalLink } from 'lucide-react'
-import { CYKEL_CITIES, isCykelCity } from '@/lib/cykelCities'
+import { SERVICE_CITIES, isCykelCity } from '@/lib/cykelCities'
 import { validateNewPassword } from '@/lib/authRecovery'
 import { savePublicProfileConsent, workshopProfilePath } from '@/lib/v2/directory'
-import type { WorkshopContext } from '@/components/cykelhjalpen/WorkshopLayout'
+import type { WorkshopContext, WorkshopOutletContext } from '@/components/cykelhjalpen/WorkshopLayout'
 import WorkshopRetentionPanel from '@/components/cykelhjalpen/WorkshopRetentionPanel'
 import { useAuth } from '@/hooks/useAuth'
 import { useV2Flag } from '@/hooks/useV2Flag'
@@ -22,9 +22,15 @@ const BIO_SHORT_MAX = 280
 
 const WorkshopSettings = () => {
   const t = useT()
-  const { workshop } = useOutletContext<{ workshop: WorkshopContext }>()
+  const { workshop, setWorkshop } = useOutletContext<WorkshopOutletContext>()
   const { user } = useAuth()
   const [form, setForm] = useState(workshop)
+  // The layout outlives this page. Without passing saved fields up, coming back
+  // re-seeded the form from sign-in data and the next save reverted them.
+  const keepSaved = (saved: Partial<WorkshopContext>) => {
+    setForm((current) => ({ ...current, ...saved }))
+    setWorkshop((current) => current && { ...current, ...saved })
+  }
   const [saving, setSaving] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
@@ -55,12 +61,11 @@ const WorkshopSettings = () => {
     if ('error' in result) {
       return toast.error(result.error === 'network' ? t('Kunde inte spara') : result.error)
     }
-    setForm((current) => ({
-      ...current,
+    keepSaved({
       bio_short: result.bio_short,
       public_profile_opt_in: result.public_profile_opt_in,
-      slug: result.slug ?? current.slug,
-    }))
+      slug: result.slug ?? form.slug,
+    })
     toast.success(result.public_profile_opt_in
       ? t('Profilen är nu publik i verkstadskatalogen.')
       : t('Profilen är inte längre publik.'))
@@ -87,14 +92,14 @@ const WorkshopSettings = () => {
     setUploading(false)
 
     if (error) return toast.error(t('Kunde inte spara logotypen.'))
-    setForm((current) => ({ ...current, logo_url: publicUrl.publicUrl }))
+    keepSaved({ logo_url: publicUrl.publicUrl })
     toast.success(t('Logotypen är uppdaterad.'))
   }
 
   const removeLogo = async () => {
     const { error } = await supabase.from('workshops').update({ logo_url: null }).eq('id', workshop.id)
     if (error) return toast.error(t('Kunde inte ta bort logotypen.'))
-    setForm((current) => ({ ...current, logo_url: null }))
+    keepSaved({ logo_url: null })
     toast.success(t('Logotypen är borttagen.'))
   }
 
@@ -116,8 +121,6 @@ const WorkshopSettings = () => {
     setConfirmation('')
     toast.success(t('Lösenordet är uppdaterat.'))
   }
-
-  useEffect(() => { setForm(workshop) }, [workshop])
 
   const save = async () => {
     if (form.company_name.trim().length < 2) return toast.error(t('Ange verkstadens namn'))
@@ -177,7 +180,7 @@ const WorkshopSettings = () => {
       return
     }
 
-    setForm((current) => ({ ...current, ...workshopUpdate }))
+    keepSaved(workshopUpdate)
     toast.success(t('Inställningarna är sparade'))
   }
 
@@ -202,7 +205,7 @@ const WorkshopSettings = () => {
               : t('Ni får bara ärenden från den valda staden. Orten låses när verkstaden godkänns.')}
           </p>
           <div className="grid grid-cols-2 gap-2">
-            {CYKEL_CITIES.map((city) => {
+            {SERVICE_CITIES.map((city) => {
               const disabled = workshop.approved
               return (
                 <button

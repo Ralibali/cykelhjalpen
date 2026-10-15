@@ -66,7 +66,10 @@ jobs:
       - name: Install axe-core CLI + Chrome
         run: |
           npm install -g @axe-core/cli@4
-          npx -y puppeteer browsers install chrome
+          # axe picks up the matching Chrome + ChromeDriver pair from
+          # ~/.browser-driver-manager/.env. The runner's own Chrome drifts out
+          # of step with the bundled ChromeDriver and every scan then failed.
+          npx -y browser-driver-manager@2 install chrome
 
       - name: Run axe against key pages
         run: |

@@ -42,10 +42,13 @@ const WorkshopRetentionPanel = ({ workshopId }: Props) => {
   const [completeness, setCompleteness] = useState<ProfileCompleteness | null>(null)
   const [savingKey, setSavingKey] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  // The prefs table only exists where the V2 migrations ran. Without it every
+  // toggle showed a default and failed to save, so the block stays hidden.
+  const [prefsAvailable, setPrefsAvailable] = useState(false)
 
   useEffect(() => {
     const load = async () => {
-      const [{ data: prefRow }, { data: workshopRow }] = await Promise.all([
+      const [{ data: prefRow, error: prefError }, { data: workshopRow }] = await Promise.all([
         db
           .from('v2_workshop_notification_prefs')
           .select('digest_enabled, seasonal_enabled, performance_enabled, profile_nudge_enabled, review_notifications_enabled, sms_enabled')
@@ -53,10 +56,12 @@ const WorkshopRetentionPanel = ({ workshopId }: Props) => {
           .maybeSingle(),
         db
           .from('workshops')
-          .select('bio_short, description, logo_url, areas_served, services, website')
+          // '*': bio_short is a V2 column, and naming a missing column fails the read.
+          .select('*')
           .eq('id', workshopId)
           .maybeSingle(),
       ])
+      setPrefsAvailable(!prefError)
       if (prefRow) setPrefs({ ...DEFAULT_NOTIFICATION_PREFS, ...(prefRow as WorkshopNotificationPrefs) })
       if (workshopRow) setCompleteness(computeProfileCompleteness(workshopRow))
       setLoading(false)
@@ -109,7 +114,7 @@ const WorkshopRetentionPanel = ({ workshopId }: Props) => {
             </div>
           )}
 
-          <div className="pt-4 border-t space-y-4">
+          {prefsAvailable && <div className="pt-4 border-t space-y-4">
             <div>
               <h3 className="font-display text-lg font-bold">{t('Mejl och påminnelser')}</h3>
               <p className="text-xs text-muted-foreground mt-1">
@@ -130,7 +135,7 @@ const WorkshopRetentionPanel = ({ workshopId }: Props) => {
                 />
               </div>
             ))}
-          </div>
+          </div>}
         </>
       )}
     </div>
