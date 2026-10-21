@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "status": "draft",
+  "writtenAt": "2026-09-30T11:15:06.684216+00:00",
+  "repository": "Ralibali/cykelhjalpen",
+  "publicationGate": "Earliest 2026-10-02, at least two Stockholm calendar days after the actual preceding original. Require current main, full inventory, fresh primary source and previous reader-flow review. No publication dates while draft.",
+  "sourceReview": {
+    "checkedAt": "2026-09-30T11:15:06.684216+00:00",
+    "publishedInventoryReviewed": 28,
+    "distinctIntent": "Samordna att en annan person lämnar eller hämtar en viss cykel utan att transporthjälp förväxlas med beslut om nytt arbete. Skilt från servicehistorik, flera cyklar och felsymtom.",
+    "note": "Original communication template. Current public request form verified; no statement of workshop authorization policy, legal powers, repair safety, pricing or guaranteed service."
+  },
+  "article": {
+    "slug": "annan-person-lamnar-hamtar-cykeln",
+    "title": "När någon annan lämnar eller hämtar cykeln åt dig",
+    "metaDescription": "Gör ett tydligt underlag när någon hjälper dig att lämna eller hämta cykeln. Skilj transporthjälp från verkstadens frågor och nya beslut.",
+    "intro": "En vän eller familjemedlem kan hjälpa till med det praktiska när du inte kan besöka verkstaden själv. För att undvika missförstånd behöver både hjälparen och verkstaden veta vilket ärende det gäller, vilka besked som redan finns och vem som ska svara på nya frågor. Här är en enkel mall att anpassa tillsammans.",
+    "sections": [
+      {
+        "heading": "Börja med verkstadens besked",
+        "content": "Fråga verkstaden om någon annan kan lämna eller hämta cykeln och vilket underlag som i så fall behövs. Skriv ned svaret och datumet. Utgå från den aktuella kontakten, inte från hur ett tidigare besök hos en annan verkstad fungerade.\n\nEn egen lista är ett stöd för överlämningen. Den ersätter inte verkstadens krav eller ett besked om vem som får fatta beslut. Om något är oklart behöver det redas ut innan hjälparen åker dit."
+      },
+      {
+        "heading": "Ge hjälparen rätt underlag",
+        "content": "Skriv vilken cykel det gäller, vilket besök ni har kommit överens om och hur ärendet kan hittas. En bokningsbekräftelse eller annan referens kan vara till hjälp om den finns. Ange vad som ska lämnas med cykeln och vad som ska stanna hemma, enligt den överenskommelse du har fått.\n\nLåt din egen [beskrivning av cykelproblemet](/blogg/beskriv-cykelfel-verkstad-mall) följa med oförändrad. Hjälparen behöver inte kunna förklara ett tekniskt fel eller fylla i sådant som saknas. Markera vad som är din observation och vilka frågor verkstaden får ställa direkt till dig."
+      },
+      {
+        "heading": "Skilj transporthjälp från nya beslut",
+        "content": "Var tydlig med vad hjälparen har åtagit sig: att lämna cykeln, föra vidare ett meddelande eller hämta efter ett klart besked. Bestäm vem verkstaden ska kontakta om den föreslår ytterligare arbete eller behöver ett godkännande.\n\nSkriv exempelvis: ”Jag hjälper till med transporten. Kontakta cykelägaren om omfattning, kostnad eller nytt arbete behöver bestämmas.” Det är ett förslag på tydlig kommunikation, inte ett påstående om rättslig behörighet. Anpassa formuleringen till vad ni och verkstaden faktiskt har kommit överens om."
+      },
+      {
+        "heading": "Gör ett kort överlämningsblad",
+        "content": "Samla följande i ett meddelande som hjälparen kan hitta vid besöket:\n\n- Vilken cykel och vilket ärende det gäller.\n- Avtalad plats och tid, med hänvisning till beskedet.\n- Vad hjälparen ska lämna eller hämta.\n- Vilken befintlig felbeskrivning som ska följa med.\n- Vem som svarar på frågor och fattar nya beslut.\n- Kontaktväg till den personen.\n- Vad hjälparen ska återkoppla efter besöket.\n\nDela bara de uppgifter som behövs. Kontolösenord, fullständiga personliga handlingar eller andra ovidkommande dokument hör inte hemma i ett vanligt överlämningsmeddelande."
+      },
+      {
+        "heading": "Bekräfta vad som faktiskt hände",
+        "content": "Be hjälparen återkoppla att cykeln lämnades eller hämtades och föra vidare verkstadens exakta besked. Skilj beskedet från hjälparens egen tolkning. Om något behöver följas upp, kontakta verkstaden genom den överenskomna kanalen.\n\nVid hämtning kan [frågelistan inför utlämningen](/blogg/hamta-cykel-verkstad-fragelista) hjälpa dig att välja frågor som bör vara besvarade. Artikeln ger ingen bedömning av cykelns skick eller hur den ska transporteras. På Cykelhjälpen kan du [beskriva ditt cykelärende](/skicka-arende) och nämna relevanta praktiska önskemål. AI-assisterad originalguide; kontrollera alltid upplägget med den aktuella verkstaden."
+      }
+    ],
+    "ctaHref": "/skicka-arende",
+    "ctaLabel": "Beskriv ditt cykelärende",
+    "editorial": {
+      "createdWith": "ChatGPT",
+      "aiAssisted": true,
+      "searchIntent": "Samordna att en annan person lämnar eller hämtar en viss cykel utan att transporthjälp förväxlas med beslut om nytt arbete. Skilt från servicehistorik, flera cyklar och felsymtom.",
+      "sourceUrls": [
+        "https://cykelhjalpen.se/skicka-arende"
+      ],
+      "sourceCheckedAt": "2026-09-30T11:15:06.684216+00:00"
+    }
+  }
+}
