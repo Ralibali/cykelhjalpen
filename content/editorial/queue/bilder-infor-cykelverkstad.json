@@ -1,0 +1,38 @@
+{
+  "slug": "bilder-infor-cykelverkstad",
+  "title": "Bilder inför verkstadskontakten: visa cykeln och sammanhanget",
+  "metaDescription": "Förbered bilder som hjälper verkstaden förstå din cykelbeskrivning. En checklista för översikt, detaljer och uppgifter som inte behöver följa med.",
+  "intro": "En bild kan komplettera en beskrivning av ett cykelproblem. Den ersätter inte verkstadens undersökning, och allt som känns eller låter under färd syns inte på ett foto. Börja med att fråga vilken information verkstaden behöver och vilken kontaktväg den vill använda. Texten är skriven med AI-stöd av ChatGPT.",
+  "sections": [
+    {
+      "heading": "Skriv vad bilden ska förklara",
+      "content": "Beskriv problemet med egna ord innan du fotograferar. Ange vilken del du menar och när du lade märke till förändringen. Skilj på det du sett och det du tror är orsaken. Skriv exempelvis att något sitter löst om det är din observation, utan att själv namnge en okänd reservdel.\n\nFotografera cykeln stillastående på en plats där det går att göra säkert. Försök inte återskapa ett fel genom att cykla samtidigt som du filmar eller genom att belasta en del som verkar skadad."
+    },
+    {
+      "heading": "Ta en översikt och en tydlig detalj",
+      "content": "Börja med en bild som visar var på cykeln delen sitter. Komplettera med en närbild om den tillför något. Kontrollera att det du vill visa är i fokus och inte döljs av skugga eller reflexer. Flera nästan identiska bilder gör inte alltid underlaget tydligare.\n\nBehåll bilden som den är om en redigering skulle förändra hur delen ser ut. Om du behöver markera ett område kan du spara både originalet och en märkt kopia. Skriv att markeringen är din egen."
+    },
+    {
+      "heading": "Se vad som följer med i bakgrunden",
+      "content": "Titta igenom bilderna innan du skickar dem. Ansikten, privata papper, skärmar eller andra saker i omgivningen behöver normalt inte vara med för att beskriva ett cykelproblem. Ta om bilden med lugnare bakgrund om det är enklare än att redigera.\n\nLåt verkstaden säga till om den behöver cykelns identifierande uppgifter för ett särskilt ändamål. Lägg inte ett helt kvitto eller annan dokumentation i en öppen bildlänk av slentrian. Använd den kontaktväg ni kommit överens om."
+    },
+    {
+      "heading": "Koppla bilderna till samma ärende",
+      "content": "Märk vilket foto som visar översikten och vilket som visar detaljen. Skriv en kort förklaring för varje bild och hänvisa till samma ärende om du kompletterar senare. Berätta om cykeln eller felet har förändrats sedan bilden togs.\n\nDu kan börja med en skriftlig beskrivning via [Cykelhjälpens ärendeformulär](/skicka-arende). Om en verkstad vill ha bilder, följ dess instruktioner för kompletteringen. Vänta med egna ingrepp för att förbättra fotot; verkstaden kan behöva undersöka delen i det skick du beskriver."
+    }
+  ],
+  "ctaHref": "/skicka-arende",
+  "ctaLabel": "Beskriv ditt cykelärende",
+  "editorial": {
+    "createdWith": "ChatGPT",
+    "aiAssisted": true,
+    "searchIntent": "Förbereda ett begripligt bildunderlag inför verkstadskontakt utan att ställa diagnos eller lova en viss uppladdningsfunktion.",
+    "sourceUrls": [
+      "https://cykelhjalpen.se/skicka-arende"
+    ],
+    "sourceReviewStatus": "Kontrollera aktuella källor och erbjudande före publicering."
+  },
+  "status": "draft",
+  "written_at": "2026-11-18T10:15:22.218848+00:00",
+  "publication_gate": "Opublicerat utkast. Läs aktuell main och hela inventeringen, kontrollera källor och produktlänkar på nytt och verifiera föregående läsflöde före publicering. Minst två kalenderdagar efter senaste verkliga originalpublicering i Europe/Stockholm. Inget publiceringsdatum är satt."
+}
