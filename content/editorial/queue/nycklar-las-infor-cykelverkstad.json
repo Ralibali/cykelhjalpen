@@ -1,0 +1,44 @@
+{
+  "slug": "nycklar-las-infor-cykelverkstad",
+  "title": "Nycklar och lås inför verkstadsbesöket",
+  "metaDescription": "Stäm av vilka nycklar och tillbehör verkstaden behöver, välj en tydlig överlämning och kontrollera vad du får tillbaka när cykeln hämtas.",
+  "intro": "Ett verkstadsbesök blir lättare att förbereda när det är klart vilka nycklar och lås som berörs. Gör en enkel avstämning före och efter överlämningen. Texten är skriven med AI-stöd av ChatGPT.",
+  "sections": [
+    {
+      "heading": "Fråga vad som behövs för det avtalade arbetet",
+      "content": "Beskriv vilka lås eller nyckelberoende delar som finns på cykeln och fråga vad verkstaden behöver komma åt. Utgå från det arbete ni har kommit överens om. Lämna inte fler nycklar eller tillbehör än vad mottagaren har bett om.\n\nOm du är osäker på vilken nyckel som hör till vilken del, red ut det före överlämningen. Försök inte forcera ett lås för att förbereda besöket. Be verkstaden om ett besked om hur cykeln ska lämnas in när en nyckel saknas."
+    },
+    {
+      "heading": "Håll cykelnyckeln skild från andra nycklar",
+      "content": "Ordna den överenskomna nyckeln så att den går att identifiera vid mottagningen. Undvik att lämna hela hemnyckelknippan tillsammans med cykeln. En märkning behöver inte innehålla hemadress eller andra uppgifter som saknar betydelse för arbetet.\n\nFråga mottagaren hur eventuella koder eller annan åtkomst ska lämnas. Skriv inte sådana uppgifter i en offentlig bild eller annons. Den här guiden förutsätter ingen viss kanal för känsliga uppgifter och ger inga instruktioner för att kringgå lås."
+    },
+    {
+      "heading": "Notera vad som faktiskt lämnas över",
+      "content": "Gör en kort lista med de nycklar och lösa tillbehör som verkstaden tar emot. Kontrollera listan vid överlämningen så att båda parter förstår vad den beskriver. Anteckna också sådant som ni har kommit överens om att du behåller hemma.\n\nOm någon annan lämnar cykeln kan du använda [överlämningsguiden](/blogg/annan-person-lamnar-hamtar-cykeln) för att samla de praktiska beskeden. Låt inte den personen behöva gissa vilka nycklar som ska lämnas eller vad verkstaden har bekräftat."
+    },
+    {
+      "heading": "Gör samma kontroll när cykeln hämtas",
+      "content": "Ta fram listan och stäm av nycklar och tillbehör innan du lämnar mottagningen. Fråga om något har hanterats separat under arbetet. Om något saknas, beskriv det direkt och kom överens om vem som följer upp.\n\nBörja med att beskriva själva cykelärendet i [Cykelhjälpens formulär](/skicka-arende). Kom överens med den aktuella verkstaden om nycklar och praktisk överlämning. Formuläret innebär inte att någon viss verkstad redan har godkänt ett inlämningssätt."
+    }
+  ],
+  "ctaHref": "/skicka-arende",
+  "ctaLabel": "Beskriv ditt cykelärende",
+  "editorial": {
+    "createdWith": "ChatGPT",
+    "aiAssisted": true,
+    "searchIntent": "Planera nycklar, lås och åtkomst vid verkstadsbesök; skilt från fullmakt för annan person, identifiering av cykel och felbeskrivning.",
+    "sourceUrls": [
+      "https://cykelhjalpen.se/skicka-arende"
+    ],
+    "sourceCheckedAt": null
+  },
+  "status": "draft",
+  "written_at": "2026-11-21T13:52:08.517352+00:00",
+  "publication_gate": {
+    "earliest_date": "2026-11-23",
+    "timezone": "Europe/Stockholm",
+    "requires_fresh_inventory_source_product_and_live_checks": true,
+    "note": "Utkast utan publiceringsdatum. Kontrollera verklig senaste publicering före användning."
+  },
+  "review_notes": "Originalutkast av ChatGPT. Källor och produktväg måste läsas på nytt före publicering; inga externa sakpåståenden eller produktfunktioner ska anses godkända genom detta köutkast."
+}
